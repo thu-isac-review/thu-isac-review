@@ -34,7 +34,7 @@
             
             <div class="flex flex-wrap gap-2">
                 <button onclick="exportToCSV()" class="h-9 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-3 rounded-lg text-sm transition-all flex items-center gap-1.5 shadow-sm">
-                    <i class="fa-solid fa-file-export text-emerald-600"></i> 匯出清單 (匯入用範本)
+                    <i class="fa-solid fa-file-export text-emerald-600"></i> 匯出清單
                 </button>
                 <button id="btn-import" onclick="document.getElementById('import-file').click()" class="h-9 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-3 rounded-lg text-sm transition-all flex items-center gap-1.5 shadow-sm">
                     <i class="fa-solid fa-file-import text-blue-600"></i> 批次匯入
@@ -64,11 +64,19 @@
                 </select>
             </div>
 
-            <!-- 💡 新增：批次操作懸浮列 (隱藏狀態，選取後出現) -->
+            <!-- 批次操作懸浮列 -->
             <div id="batch-action-bar" class="hidden absolute inset-0 bg-blue-50 border border-blue-200 rounded-lg px-4 flex items-center justify-between z-10 shadow-sm animate-fade">
-                <div class="flex items-center gap-2 text-blue-700">
-                    <i class="fa-solid fa-circle-check text-lg"></i>
+                <div class="flex items-center text-blue-700">
+                    <i class="fa-solid fa-circle-check text-lg mr-2"></i>
                     <span class="text-sm font-bold">已選擇 <span id="selected-count" class="text-lg mx-1 font-black">0</span> 個系所</span>
+                    
+                    <!-- 💡 跨頁全選按鈕 -->
+                    <button id="btn-select-all-filtered" onclick="selectAllFiltered()" class="hidden ml-4 text-xs font-bold text-blue-600 underline hover:text-blue-800 transition-colors">
+                        選取全部符合條件的 <span id="filtered-total-count">0</span> 筆
+                    </button>
+                    <button id="btn-clear-selection" onclick="clearSelection()" class="ml-4 text-xs font-bold text-slate-500 underline hover:text-slate-700 transition-colors">
+                        取消選取
+                    </button>
                 </div>
                 <div class="flex gap-2">
                     <button onclick="batchUpdateStatus(true)" class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-md text-xs font-bold transition-all shadow-sm flex items-center gap-1"><i class="fa-solid fa-play"></i> 批次啟用</button>
@@ -91,9 +99,8 @@
                 <table class="w-full text-left table-fixed">
                     <thead class="bg-slate-50 sticky top-0 z-10 shadow-sm border-b border-slate-200">
                         <tr>
-                            <!-- 💡 新增：全選 Checkbox -->
                             <th class="px-4 py-3.5 text-center w-[5%]">
-                                <input type="checkbox" id="selectAll" onchange="toggleSelectAll(event)" class="w-4 h-4 rounded border-slate-300 text-blue-600 cursor-pointer">
+                                <input type="checkbox" id="selectAll" onchange="toggleSelectPage(event)" class="w-4 h-4 rounded border-slate-300 text-blue-600 cursor-pointer">
                             </th>
                             <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[12%]">學院</th>
                             <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[20%]">學系</th>
@@ -116,7 +123,7 @@
         </div>
     </div>
 
-    <!-- 學院設定 Modal -->
+    <!-- Modal 結構皆與之前相同 -->
     <div id="college-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeCollegeModal()"></div>
         <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden modal-enter relative flex flex-col max-h-[90vh]">
@@ -150,7 +157,6 @@
         </div>
     </div>
 
-    <!-- 系所設定 Modal -->
     <div id="dept-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeDeptModal()"></div>
         <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden modal-enter relative max-h-[90vh] flex flex-col">
@@ -215,8 +221,8 @@
         let currentPage = 1; 
         const itemsPerPage = 10;
         
-        // 💡 批次處理用的陣列
         let selectedIds = [];
+        let filteredDepts = []; // 用來存儲目前篩選出的所有資料
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -229,53 +235,70 @@
                     allDepts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     // 資料更新時清空選擇
                     selectedIds = [];
-                    document.getElementById('selectAll').checked = false;
                     updateBatchActionBar();
                     renderTable();
                 }, (error) => {
-                    // 💡 補回：讀取失敗或權限不足時的提示
                     document.getElementById('dept-table-body').innerHTML = `<tr><td colspan="7" class="px-6 py-16 text-center text-rose-500 font-bold"><i class="fa-solid fa-lock text-3xl mb-3"></i><p>資料讀取失敗，權限不足。</p></td></tr>`;
                 });
             } else {
-                // 💡 補回：未登入時的提示
                 document.getElementById('dept-table-body').innerHTML = `<tr><td colspan="7" class="px-6 py-16 text-center text-slate-400 font-bold"><i class="fa-solid fa-shield-halved text-3xl mb-3 text-slate-300"></i><p>請先登入系統以存取資料。</p></td></tr>`;
             }
         });
 
-        // 💡 批次處理邏輯開始 💡
-        window.toggleSelectAll = (e) => {
+        // 💡 批次處理邏輯開始
+        window.toggleSelectPage = (e) => {
             const isChecked = e.target.checked;
-            const checkboxes = document.querySelectorAll('.row-checkbox');
-            selectedIds = [];
+            // 計算目前畫面上顯示的 ID
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const currentPaginatedIds = filteredDepts.slice(startIndex, startIndex + itemsPerPage).map(d => d.id);
+            
             if (isChecked) {
-                checkboxes.forEach(cb => {
-                    cb.checked = true;
-                    selectedIds.push(cb.value);
+                currentPaginatedIds.forEach(id => {
+                    if (!selectedIds.includes(id)) selectedIds.push(id);
                 });
             } else {
-                checkboxes.forEach(cb => cb.checked = false);
+                selectedIds = selectedIds.filter(id => !currentPaginatedIds.includes(id));
             }
             updateBatchActionBar();
+            renderTable();
         };
 
         window.toggleSelect = (id) => {
             const index = selectedIds.indexOf(id);
-            if (index === -1) {
-                selectedIds.push(id);
-            } else {
-                selectedIds.splice(index, 1);
-            }
-            const visibleCheckboxes = document.querySelectorAll('.row-checkbox').length;
-            document.getElementById('selectAll').checked = (selectedIds.length === visibleCheckboxes && visibleCheckboxes > 0);
+            if (index === -1) selectedIds.push(id);
+            else selectedIds.splice(index, 1);
             updateBatchActionBar();
+            renderTable();
+        };
+
+        window.selectAllFiltered = () => {
+            selectedIds = filteredDepts.map(d => d.id);
+            updateBatchActionBar();
+            renderTable();
+        };
+
+        window.clearSelection = () => {
+            selectedIds = [];
+            updateBatchActionBar();
+            renderTable();
         };
 
         function updateBatchActionBar() {
             const bar = document.getElementById('batch-action-bar');
             const count = document.getElementById('selected-count');
+            const btnSelectAll = document.getElementById('btn-select-all-filtered');
+            
             if (selectedIds.length > 0) {
                 bar.classList.remove('hidden');
                 count.innerText = selectedIds.length;
+                
+                // 如果還沒全選所有符合條件的，顯示「選取全部X筆」按鈕
+                if (selectedIds.length < filteredDepts.length) {
+                    btnSelectAll.classList.remove('hidden');
+                    document.getElementById('filtered-total-count').innerText = filteredDepts.length;
+                } else {
+                    btnSelectAll.classList.add('hidden');
+                }
             } else {
                 bar.classList.add('hidden');
             }
@@ -284,7 +307,6 @@
         window.batchUpdateStatus = async (status) => {
             if (!confirm(`確定要將選取的 ${selectedIds.length} 個系所全部${status ? '啟用' : '停用'}嗎？`)) return;
             try {
-                // 因無 writeBatch 需求，直接迴圈更新
                 for (let id of selectedIds) {
                     await updateDoc(doc(db, "departments", id), { is_active: status });
                 }
@@ -299,7 +321,7 @@
                 }
             } catch (e) { alert("批次刪除發生錯誤: " + e.message); }
         };
-        // 💡 批次處理邏輯結束 💡
+        // 💡 批次處理邏輯結束
 
 
         window.openCollegeModal = () => document.getElementById('college-modal').classList.remove('hidden');
@@ -397,10 +419,6 @@
 
         window.changePage = (page) => { 
             currentPage = page; 
-            // 換頁時清空勾選狀態策更安全
-            selectedIds = [];
-            document.getElementById('selectAll').checked = false;
-            updateBatchActionBar();
             renderTable(); 
         };
 
@@ -410,20 +428,21 @@
             const filterCollege = document.getElementById('filter-college').value;
             const filterStatus = document.getElementById('filter-status').value;
 
-            let filtered = allDepts.filter(d => {
+            // 💡 更新全域的 filteredDepts
+            filteredDepts = allDepts.filter(d => {
                 const matchSearch = d.name.toLowerCase().includes(searchTerm) || (d.shortName && d.shortName.toLowerCase().includes(searchTerm)) || d.code.toLowerCase().includes(searchTerm) || (d.contacts && d.contacts.some(c => c.name.includes(searchTerm)));
                 const matchCollege = filterCollege === 'all' || d.college === filterCollege;
                 const matchStatus = filterStatus === 'all' || (filterStatus === 'active' ? d.is_active : !d.is_active);
                 return matchSearch && matchCollege && matchStatus;
             });
 
-            filtered.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
+            filteredDepts.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
 
-            const totalItems = filtered.length;
+            const totalItems = filteredDepts.length;
             const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
-            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage > totalPages) currentPage = totalPages || 1;
             const startIndex = (currentPage - 1) * itemsPerPage;
-            const paginatedItems = filtered.slice(startIndex, startIndex + itemsPerPage);
+            const paginatedItems = filteredDepts.slice(startIndex, startIndex + itemsPerPage);
 
             document.getElementById('pagination-info').innerText = totalItems > 0 ? `顯示 ${startIndex + 1} 到 ${Math.min(startIndex + itemsPerPage, totalItems)} 筆，共 ${totalItems} 筆` : '尚無資料';
             
@@ -433,6 +452,11 @@
             btnHtml += `<button onclick="changePage(${currentPage + 1})" class="px-3 py-1 border border-slate-200 rounded-md text-sm font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-40 transition-colors" ${currentPage === totalPages ? 'disabled' : ''}>下一頁</button>`;
             document.getElementById('pagination-buttons').innerHTML = btnHtml;
 
+            // 💡 動態判斷全選 Checkbox 狀態
+            const currentPaginatedIds = paginatedItems.map(d => d.id);
+            const isAllVisibleSelected = currentPaginatedIds.length > 0 && currentPaginatedIds.every(id => selectedIds.includes(id));
+            document.getElementById('selectAll').checked = isAllVisibleSelected;
+
             if (totalItems === 0) {
                 tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-16 text-center text-slate-400 font-bold bg-white">找不到符合條件的系所。</td></tr>`;
                 return;
@@ -441,13 +465,15 @@
             let html = '';
             paginatedItems.forEach((data, idx) => {
                 const globalIndex = startIndex + idx; 
+                
+                // 💡 承辦窗口靠左排版：姓名 / 電子郵件
                 let contactsHtml = data.contacts && data.contacts.length > 0 ? data.contacts.map(c => `
-                    <div class="flex flex-col items-center mb-2 last:mb-0">
-                        <div class="text-sm font-bold text-slate-700 truncate" title="${c.name}">${c.name || '未填寫'}</div>
-                        <div class="text-[11px] text-slate-400 font-mono tracking-tight truncate">${c.email || ''}</div>
+                    <div class="text-xs mb-1 last:mb-0">
+                        <span class="font-bold text-slate-700">${c.name || '未填寫'}</span>
+                        <span class="text-slate-300 mx-1">/</span>
+                        <span class="text-slate-500 font-mono">${c.email || ''}</span>
                     </div>`).join('') : '<span class="text-slate-400 text-xs font-bold bg-slate-100 px-2 py-1 rounded">- 尚未設定 -</span>';
 
-                // 檢查是否已被勾選
                 const isChecked = selectedIds.includes(data.id) ? 'checked' : '';
 
                 html += `
@@ -458,7 +484,7 @@
                     <td class="px-4 py-4 align-middle text-center"><span class="text-slate-700 font-bold text-sm">${data.college}</span></td>
                     <td class="px-4 py-4 align-middle text-center"><div class="text-sm font-bold text-slate-800 break-words leading-tight">${data.shortName || data.name}</div></td>
                     <td class="px-4 py-4 align-middle text-center"><div class="inline-block px-2.5 py-1 rounded-md bg-slate-100 border border-slate-300 font-mono text-xs font-bold text-slate-600 tracking-widest shadow-inner">${data.code}</div></td>
-                    <td class="px-4 py-4 align-middle"><div class="flex flex-col items-center">${contactsHtml}</div></td>
+                    <td class="px-4 py-4 align-middle"><div class="flex flex-col items-start text-left pl-2">${contactsHtml}</div></td>
                     <td class="px-4 py-4 align-middle text-center whitespace-nowrap">
                         <div class="flex items-center justify-center">
                             <label class="relative inline-flex items-center cursor-pointer group/toggle whitespace-nowrap">
@@ -471,7 +497,7 @@
                     <td class="px-4 py-4 align-middle text-center">
                         <div class="flex items-center justify-center gap-2 opacity-100 transition-opacity">
                             <button onclick="window.moveOrder('${data.id}', 'up')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all disabled:opacity-20 shrink-0" ${globalIndex === 0 ? 'disabled' : ''}><i class="fa-solid fa-chevron-up text-xs"></i></button>
-                            <button onclick="window.moveOrder('${data.id}', 'down')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all disabled:opacity-20 shrink-0" ${globalIndex === filtered.length - 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-down text-xs"></i></button>
+                            <button onclick="window.moveOrder('${data.id}', 'down')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all disabled:opacity-20 shrink-0" ${globalIndex === filteredDepts.length - 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-down text-xs"></i></button>
                             <button onclick="window.editDept('${data.id}')" class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all shrink-0"><i class="fa-solid fa-pen text-sm"></i></button>
                             <button onclick="window.deleteDept('${data.id}', '${data.name}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all shrink-0"><i class="fa-solid fa-trash-can text-sm"></i></button>
                         </div>
@@ -481,16 +507,19 @@
             tbody.innerHTML = html;
         }
 
-        // 💡 匯入/匯出格式完全標準化：學院,系所代碼,學系全名,學系簡稱,聯絡人姓名,聯絡人Email,系統狀態
+        // 💡 匯入/匯出格式完全標準化：學院,系所代碼,學系全名,學系簡稱,聯絡人資訊(姓名:信箱|姓名2:信箱2),系統狀態
         window.exportToCSV = () => {
             if (allDepts.length === 0) { alert("沒有資料可供匯出！"); return; }
-            let csv = '\uFEFF學院,系所代碼,學系全名,學系簡稱,聯絡人姓名,聯絡人Email,系統狀態\n';
+            // 更新匯出表頭，明確提示格式
+            let csv = '\uFEFF學院,系所代碼,學系全名,學系簡稱,聯絡人資訊(姓名:信箱|姓名2:信箱2),系統狀態\n';
             let sorted = [...allDepts].sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
             sorted.forEach(d => {
                 let status = d.is_active ? '啟用' : '停用';
-                let cName = (d.contacts && d.contacts.length > 0) ? d.contacts[0].name : '';
-                let cEmail = (d.contacts && d.contacts.length > 0) ? d.contacts[0].email : '';
-                csv += [d.college, d.code, d.name, d.shortName || '', cName, cEmail, status].map(v => `"${(v+'').replace(/"/g, '""')}"`).join(',') + '\n';
+                // 💡 將多位聯絡人轉為字串：姓名:信箱 | 姓名2:信箱2
+                let contactsStr = d.contacts && d.contacts.length > 0 
+                    ? d.contacts.map(c => `${c.name || ''}:${c.email || ''}`).join(' | ') 
+                    : '';
+                csv += [d.college, d.code, d.name, d.shortName || '', contactsStr, status].map(v => `"${(v+'').replace(/"/g, '""')}"`).join(',') + '\n';
             });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
@@ -512,7 +541,7 @@
                     const rows = event.target.result.split('\n').map(row => row.trim()).filter(row => row);
                     let maxOrder = allDepts.length > 0 ? Math.max(...allDepts.map(d => d.sortOrder || 0)) : 0;
                     let addedCount = 0;
-                    // 預期格式：學院,系所代碼,學系全名,學系簡稱,聯絡人姓名,聯絡人Email,系統狀態
+                    
                     for (let i = 1; i < rows.length; i++) {
                         const cols = rows[i].split(',').map(col => col.replace(/(^"|"$)/g, '').trim());
                         if (cols.length >= 3) {
@@ -520,13 +549,23 @@
                             const code = (cols[1] || '').toUpperCase();
                             const name = cols[2] || '';
                             const shortName = cols[3] || '';
-                            const cName = cols[4] || '';
-                            const cEmail = cols[5] || '';
-                            const statusStr = cols[6] || '啟用';
+                            const contactsRaw = cols[4] || '';
+                            const statusStr = cols[5] || '啟用';
 
-                            if(!college || !code || !name) continue; // 防呆
+                            if(!college || !code || !name) continue; 
 
-                            const contacts = (cName || cEmail) ? [{ name: cName, email: cEmail }] : [];
+                            // 💡 解析多位聯絡人格式：姓名:信箱 | 姓名2:信箱2
+                            let contacts = [];
+                            if (contactsRaw) {
+                                contacts = contactsRaw.split('|').map(str => {
+                                    const parts = str.split(':');
+                                    return { 
+                                        name: (parts[0] || '').trim(), 
+                                        email: (parts[1] || '').trim() 
+                                    };
+                                }).filter(c => c.name || c.email);
+                            }
+
                             const is_active = (statusStr.trim() !== '停用');
                             
                             maxOrder += 10;
@@ -600,9 +639,9 @@
             }
         };
         
-        document.getElementById('search-input').addEventListener('input', renderTable);
-        document.getElementById('filter-college').addEventListener('change', renderTable);
-        document.getElementById('filter-status').addEventListener('change', renderTable);
+        document.getElementById('search-input').addEventListener('input', () => { currentPage = 1; renderTable(); });
+        document.getElementById('filter-college').addEventListener('change', () => { currentPage = 1; renderTable(); });
+        document.getElementById('filter-status').addEventListener('change', () => { currentPage = 1; renderTable(); });
     </script>
 </body>
 </html>
