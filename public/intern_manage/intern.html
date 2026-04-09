@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>實習記錄管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        tailwind.config = { theme: { extend: { colors: { brand: { 50: '#f0f5fa', 500: '#2c75b3', 600: '#1a5c96', 700: '#004785' } } } } }
+    </script>
+    <style>
+        body { background-color: transparent; margin: 0; padding: 0; font-family: "SF Pro TC", "Noto Sans TC", sans-serif; -webkit-font-smoothing: antialiased; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .modal-enter { animation: modalFadeIn 0.2s ease-out forwards; }
+        @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.97) translateY(-5px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        table { table-layout: fixed; width: 100%; } td { word-break: break-word; }
+        tr { transition: background-color 0.2s; }
+        th, td { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <div class="shrink-0 px-6 pt-6 pb-4 space-y-4 animate-fade">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shrink-0">
+                    <i class="fa-solid fa-clipboard-check text-2xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800 tracking-tight" id="page-title">實習記錄管理</h2>
+                    <p class="text-xs text-slate-500 mt-1">串連學生、機構與多門實習課程之查核樞紐，可作為教育部報表及審查進度之基礎。</p>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap gap-2">
+                <button onclick="exportToCSV()" class="h-10 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-4 rounded-xl text-sm transition-all flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-file-export text-emerald-600"></i> 匯出紀錄
+                </button>
+                <div class="w-px h-6 bg-slate-200 self-center mx-1"></div>
+                <button onclick="openModal()" class="h-10 bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 rounded-xl text-sm transition-all flex items-center gap-1.5 shadow-md shadow-blue-500/20 active:scale-95">
+                    <i class="fa-solid fa-plus text-base"></i> 新增實習紀錄
+                </button>
+            </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4 w-full relative">
+            <div class="flex gap-2 w-full md:w-auto">
+                <select id="filter-semester" onchange="window.renderTable()" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl px-4 h-11 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm min-w-[140px]">
+                    <option value="all">學期：全部</option>
+                    <!-- 動態載入 -->
+                </select>
+                <select id="filter-period" onchange="window.renderTable()" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl px-4 h-11 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
+                    <option value="all">實習時間：全部</option>
+                    <option value="寒假實習">寒假實習</option>
+                    <option value="暑假實習">暑假實習</option>
+                    <option value="學期期間實習">學期期間實習</option>
+                    <option value="單一學期實習">單一學期實習</option>
+                    <option value="全學年">全學年</option>
+                </select>
+            </div>
+
+            <!-- 批次操作懸浮列 -->
+            <div id="batch-action-bar" class="hidden absolute -inset-3 bg-slate-50 px-3 flex items-center justify-between z-20 animate-fade">
+                <div class="flex items-center text-blue-700">
+                    <div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                        <i class="fa-solid fa-check-double text-blue-600"></i>
+                    </div>
+                    <span class="text-sm font-bold">已選擇 <span id="selected-count" class="text-lg mx-1 font-black text-blue-600">0</span> 筆紀錄</span>
+                    
+                    <button id="btn-select-all-filtered" onclick="selectAllFiltered()" class="hidden ml-4 text-xs font-bold text-blue-600 hover:text-white bg-blue-50 hover:bg-blue-600 border border-blue-200 hover:border-blue-600 px-3 py-2 rounded-lg transition-all shadow-sm">
+                        選取全部符合條件的 <span id="filtered-total-count">0</span> 筆
+                    </button>
+                    <button id="btn-clear-selection" onclick="clearSelection()" class="ml-2 text-xs font-bold text-slate-500 hover:text-white bg-slate-100 hover:bg-slate-500 border border-slate-200 hover:border-slate-500 px-3 py-2 rounded-lg transition-all shadow-sm">
+                        取消選取
+                    </button>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="batchDelete()" class="bg-rose-500 hover:bg-rose-600 text-white px-5 py-2 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"><i class="fa-solid fa-trash-can"></i> 批次刪除選取</button>
+                </div>
+            </div>
+
+            <div class="relative w-full md:w-80 shadow-sm rounded-xl overflow-hidden border border-slate-200 bg-white">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                <input type="text" id="search-input" oninput="window.renderTable()" placeholder="搜尋姓名、學號或機構..." class="w-full pl-11 pr-4 h-11 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+            </div>
+        </div>
+    </div>
+
+    <!-- 表格滾動區 -->
+    <div class="flex-1 overflow-hidden px-6 pb-6 flex flex-col animate-fade">
+        <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-200 flex flex-col flex-1 overflow-hidden">
+            <div class="flex-1 overflow-auto custom-scrollbar relative">
+                <!-- 取消 fixed 寬度，讓表格適當展開 -->
+                <table class="w-full text-left border-collapse min-w-[1200px]">
+                    <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+                        <tr>
+                            <th class="px-2 py-4 text-center w-[45px]">
+                                <input type="checkbox" id="selectAll" onchange="toggleSelectPage(event)" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shadow-sm transition-all">
+                            </th>
+                            <th class="px-4 py-4 text-left text-xs font-bold text-slate-500 w-[180px] whitespace-nowrap">實習生資訊</th>
+                            <th class="px-4 py-4 text-left text-xs font-bold text-slate-500 w-[200px]">實習機構 / 證明</th>
+                            <th class="px-4 py-4 text-left text-xs font-bold text-slate-500 min-w-[200px]">關聯課程 (可多筆)</th>
+                            <th class="px-4 py-4 text-center text-xs font-bold text-slate-500 w-[160px] whitespace-nowrap">實習時間與時數</th>
+                            <th class="px-4 py-4 text-center text-xs font-bold text-slate-500 w-[140px] whitespace-nowrap">投保與勞雇</th>
+                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[100px] whitespace-nowrap">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body" class="divide-y divide-slate-100 text-sm">
+                        <tr><td colspan="7" class="px-6 py-16 text-center text-slate-400"><i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-blue-500"></i><p class="font-bold">資料載入與關聯解析中...</p></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="bg-slate-50 border-t border-slate-200 px-6 py-4 flex justify-between items-center shrink-0">
+                <div id="pagination-info" class="text-xs font-bold text-slate-500">顯示 0 到 0 筆，共 0 筆</div>
+                <div id="pagination-buttons" class="flex gap-1.5"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         彈跳視窗：全幅分類卡片表單 (新增/編輯紀錄)
+         ========================================== -->
+    <div id="data-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 sm:p-6">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div class="bg-slate-50 rounded-[2.5rem] shadow-2xl w-full max-w-5xl overflow-hidden modal-enter relative max-h-[95vh] flex flex-col border border-slate-200">
+            <div class="px-8 py-5 flex justify-between items-center shrink-0 bg-white border-b border-slate-200 z-10 shadow-sm">
+                <h3 id="modal-title" class="font-black text-slate-800 text-xl flex items-center gap-3">
+                    <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center"><i class="fa-solid fa-file-pen text-lg"></i></div>
+                    建立實習紀錄主檔
+                </h3>
+                <button onclick="closeModal()" class="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            
+            <form id="data-form" class="flex-1 overflow-y-auto custom-scrollbar p-8">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    
+                    <!-- 左欄：主檔關聯 (佔 5 欄) -->
+                    <div class="lg:col-span-5 space-y-6">
+                        
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                            <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><i class="fa-solid fa-user"></i> 1. 實習生身分綁定</h4>
+                            
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-600 mb-2">搜尋並選擇學生 <span class="text-rose-500">*</span></label>
+                                    <input type="text" id="input-student" required list="student-list" placeholder="輸入學號或姓名..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-bold text-slate-700 shadow-sm" onchange="window.autoFillStudentInfo()">
+                                    <datalist id="student-list"></datalist>
+                                    <!-- 💡 升級為動態資訊卡片 -->
+                                    <div id="student-info-card" class="hidden mt-3 p-4 border rounded-xl transition-all"></div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-600 mb-2">當學年年級 <span class="text-rose-500">*</span></label>
+                                    <select id="input-grade" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-bold text-slate-700 shadow-sm cursor-pointer">
+                                        <option value="大一">大一</option><option value="大二">大二</option>
+                                        <option value="大三" selected>大三</option><option value="大四">大四</option>
+                                        <option value="延畢">延畢</option><option value="碩一">碩一</option>
+                                        <option value="碩二">碩二</option><option value="博一">博一</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                            <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><i class="fa-solid fa-building"></i> 2. 實習機構綁定</h4>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-2">搜尋並選擇機構 <span class="text-rose-500">*</span></label>
+                                <input type="text" id="input-institution" required list="institution-list" placeholder="輸入機構名稱或統編..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-bold text-slate-700 shadow-sm" onchange="window.autoFillInstInfo()">
+                                <datalist id="institution-list"></datalist>
+                                <!-- 💡 升級為動態資訊卡片 -->
+                                <div id="inst-info-card" class="hidden mt-3 p-4 border rounded-xl transition-all"></div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- 右欄：實習條件與課程 (佔 7 欄) -->
+                    <div class="lg:col-span-7 space-y-6">
+                        
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                            <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><i class="fa-solid fa-clock"></i> 3. 實習條件與保障</h4>
+                            
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-600 mb-1.5">實習時間 <span class="text-rose-500">*</span></label>
+                                    <select id="input-period-type" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="寒假實習">寒假實習</option><option value="暑假實習" selected>暑假實習</option>
+                                        <option value="學期期間實習">學期期間實習</option><option value="單一學期實習">單一學期實習</option>
+                                        <option value="全學年">全學年</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-600 mb-1.5">實習起訖時間 <span class="text-rose-500">*</span></label>
+                                    <input type="text" id="input-duration" required placeholder="如: 113/07/01-113/08/31" pattern="^\d{2,3}\/\d{2}\/\d{2}-\d{2,3}\/\d{2}\/\d{2}$" title="格式：YYY/MM/DD-YYY/MM/DD" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold font-mono text-center text-slate-700 shadow-sm outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4 mb-4 border-t border-slate-100 pt-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-600 mb-1.5">投保情形 <span class="text-rose-500">*</span></label>
+                                    <select id="input-insurance" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="兩者皆有">兩者皆有 (校外實習保險+勞保)</option>
+                                        <option value="僅校外實習保險" selected>僅校外實習保險</option>
+                                        <option value="僅勞保">僅勞保</option>
+                                        <option value="兩者皆無">兩者皆無</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-600 mb-1.5">是否為勞雇關係 <span class="text-rose-500">*</span></label>
+                                    <select id="input-employment" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="是">是</option><option value="否" selected>否</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4 border-t border-slate-100 pt-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-600 mb-1.5">證明文件類型 <span class="text-rose-500">*</span></label>
+                                    <select id="input-proof-type" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="合約" selected>合約</option><option value="公函">公函</option><option value="其他證明文件">其他證明文件</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-600 mb-1.5">核定實習時數 <span class="text-rose-500">*</span></label>
+                                    <input type="number" id="input-hours" required min="1" placeholder="填寫數字" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold font-mono text-center text-slate-700 shadow-sm outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                            <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <i class="fa-solid fa-layer-group"></i> 4. 關聯實習課程 <span class="text-rose-500 ml-1">*</span>
+                            </h4>
+                            <p class="text-[11px] text-slate-500 mb-3">請勾選該生此次實習紀錄對應之一門或多門實習課程：</p>
+                            
+                            <!-- 課程多選區 -->
+                            <div class="border border-slate-200 rounded-xl bg-slate-50 p-2 h-40 overflow-y-auto custom-scrollbar" id="course-checkbox-container">
+                                <!-- JS 動態產生 checkboxes -->
+                                <div class="text-center text-xs text-slate-400 mt-10">資料讀取中...</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                            <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="fa-solid fa-comment-dots"></i> 5. 紀錄備註</h4>
+                            <textarea id="input-notes" rows="2" placeholder="可選填相關備註說明..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-medium text-slate-700 shadow-sm resize-none"></textarea>
+                        </div>
+
+                    </div>
+                </div>
+            </form>
+            
+            <div class="p-6 border-t border-slate-200 shrink-0 flex gap-4 bg-white z-10 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]">
+                <button type="button" onclick="closeModal()" class="flex-1 py-3 text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all">取消不儲存</button>
+                <button type="button" id="btn-submit" onclick="submitForm()" class="flex-[2] bg-blue-600 hover:bg-blue-700 text-white font-black py-3 rounded-xl shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 active:scale-[0.98]">
+                    建立 / 儲存實習紀錄
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase 邏輯 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY", authDomain: "thu-isac-review.firebaseapp.com", projectId: "thu-isac-review", storageBucket: "thu-isac-review.firebasestorage.app", messagingSenderId: "453299876735", appId: "1:453299876735:web:1d8babca3315423161a04a" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app); 
+        const db = getFirestore(app);
+        
+        // 集合參考
+        const recordsCol = collection(db, "internship_records");
+        const studentsCol = collection(db, "internship_students");
+        const instsCol = collection(db, "internship_institutions");
+        const coursesCol = collection(db, "internship_courses");
+        
+        // 狀態管理
+        let allRecords = []; 
+        let allStudents = [];
+        let allInsts = [];
+        let allCourses = [];
+        let editingId = null; 
+        let currentPage = 1; 
+        const itemsPerPage = 10;
+        let selectedIds = [];
+        let filteredRecords = []; 
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // 平行抓取關聯資料庫
+                Promise.all([
+                    getDocs(studentsCol).then(s => allStudents = s.docs.map(d => ({id: d.id, ...d.data()}))),
+                    getDocs(instsCol).then(s => allInsts = s.docs.map(d => ({id: d.id, ...d.data()}))),
+                    getDocs(coursesCol).then(s => {
+                        allCourses = s.docs.map(d => ({id: d.id, ...d.data()}));
+                        allCourses.sort((a,b) => (a.academic_year === b.academic_year) ? (b.term || '').localeCompare(a.term || '') : (b.academic_year || '').localeCompare(a.academic_year || ''));
+                        populateDatalists();
+                        renderCourseCheckboxes();
+                    })
+                ]);
+
+                // 監聽主要紀錄
+                onSnapshot(recordsCol, (snapshot) => {
+                    allRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    populateSemesterFilter();
+                    selectedIds = [];
+                    updateBatchActionBar();
+                    window.renderTable();
+                }, (error) => {
+                    document.getElementById('table-body').innerHTML = `<tr><td colspan="7" class="px-6 py-16 text-center text-rose-500 font-bold bg-white"><i class="fa-solid fa-lock text-3xl mb-3"></i><p>資料讀取失敗，權限不足。</p></td></tr>`;
+                });
+            } else {
+                document.getElementById('table-body').innerHTML = `<tr><td colspan="7" class="px-6 py-16 text-center text-slate-400 font-bold bg-white"><i class="fa-solid fa-shield-halved text-3xl mb-3 text-slate-300"></i><p>請先登入系統以存取資料。</p></td></tr>`;
+            }
+        });
+
+        function populateDatalists() {
+            const stuList = document.getElementById('student-list');
+            stuList.innerHTML = allStudents.map(s => `<option value="${s.student_id} - ${s.name}">${s.department} (${s.college})</option>`).join('');
+            
+            const instList = document.getElementById('institution-list');
+            instList.innerHTML = allInsts.map(i => `<option value="${i.name}">${i.tax_id ? '統編: ' + i.tax_id : '無統編'}</option>`).join('');
+        }
+
+        function renderCourseCheckboxes() {
+            const container = document.getElementById('course-checkbox-container');
+            if (allCourses.length === 0) {
+                container.innerHTML = '<div class="text-center text-xs text-slate-400 mt-10">尚無任何課程資料，請先至課程管理建立</div>';
+                return;
+            }
+            
+            let html = '';
+            // 依據學期分組顯示
+            let currentSem = '';
+            allCourses.forEach(c => {
+                if (c.semester !== currentSem) {
+                    currentSem = c.semester;
+                    html += `<div class="px-3 py-1.5 mt-2 mb-1 bg-slate-200/50 rounded-lg text-xs font-black text-slate-500 sticky top-0 backdrop-blur z-10 shadow-sm">${currentSem} 學期</div>`;
+                }
+                html += `
+                    <label class="flex items-start gap-3 p-3 hover:bg-white rounded-xl cursor-pointer transition-colors border border-transparent hover:border-slate-200 mb-1 group shadow-sm">
+                        <input type="checkbox" name="selected_courses" value="${c.id}" class="mt-1 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 shadow-sm cursor-pointer">
+                        <div class="flex flex-col">
+                            <span class="text-sm font-bold text-slate-700 group-hover:text-blue-700 transition-colors">${c.course_name}</span>
+                            <span class="text-[11px] text-slate-400 font-mono tracking-tight">${c.department} | 代號: ${c.course_code}</span>
+                        </div>
+                    </label>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        window.autoFillStudentInfo = () => {
+            const inputVal = document.getElementById('input-student').value;
+            const card = document.getElementById('student-info-card');
+            const studentIdMatch = inputVal.split(' - ')[0];
+            const stu = allStudents.find(s => s.student_id === studentIdMatch);
+            
+            if (stu) {
+                card.innerHTML = `
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold shrink-0">
+                            ${stu.name.charAt(0)}
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-sm font-bold text-slate-800">${stu.name} <span class="text-xs text-slate-500 font-mono ml-1">${stu.student_id}</span></div>
+                            <div class="text-xs text-slate-500 mt-1 flex flex-wrap gap-1.5">
+                                <span class="bg-white border border-slate-200 px-2 py-0.5 rounded-md font-medium">${stu.college}</span>
+                                <span class="bg-white border border-slate-200 px-2 py-0.5 rounded-md font-medium">${stu.department}</span>
+                                <span class="bg-white border border-slate-200 px-2 py-0.5 rounded-md font-medium">${stu.gender || '未知'}</span>
+                                <span class="bg-white border border-slate-200 px-2 py-0.5 rounded-md font-medium">${stu.nationality || '本國籍'}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                card.className = 'mt-3 p-4 border rounded-xl transition-all border-blue-200 bg-blue-50/50 block';
+            } else {
+                card.innerHTML = `
+                    <div class="flex items-center gap-2 text-rose-600 text-sm font-bold">
+                        <i class="fa-solid fa-circle-xmark"></i> 查無此學生主檔，將建立獨立文字紀錄
+                    </div>
+                `;
+                card.className = 'mt-3 p-4 border rounded-xl transition-all border-rose-200 bg-rose-50 block';
+            }
+        };
+
+        window.autoFillInstInfo = () => {
+            const inputVal = document.getElementById('input-institution').value;
+            const card = document.getElementById('inst-info-card');
+            const inst = allInsts.find(i => i.name === inputVal);
+            
+            if (inst) {
+                const isDomestic = inst.country === '中華民國';
+                const dispTaxId = isDomestic && inst.tax_id ? inst.tax_id : '無統編';
+                const dispCity = isDomestic && inst.city ? inst.city : '海外';
+
+                card.innerHTML = `
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold shrink-0">
+                            <i class="fa-solid fa-building text-lg"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-sm font-bold text-slate-800">${inst.name} <span class="text-xs text-slate-500 font-mono ml-1">(${dispTaxId})</span></div>
+                            <div class="text-xs text-slate-500 mt-1 flex flex-wrap gap-1.5">
+                                <span class="bg-white border border-slate-200 px-2 py-0.5 rounded-md font-medium">${inst.country}</span>
+                                <span class="bg-white border border-slate-200 px-2 py-0.5 rounded-md font-medium">${dispCity}</span>
+                            </div>
+                            <div class="text-xs text-slate-500 mt-2 line-clamp-1 font-medium" title="${inst.address}">
+                                <i class="fa-solid fa-location-dot text-slate-400 mr-1"></i>${inst.address}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                card.className = 'mt-3 p-4 border rounded-xl transition-all border-emerald-200 bg-emerald-50/50 block';
+            } else {
+                card.innerHTML = `
+                    <div class="flex items-center gap-2 text-rose-600 text-sm font-bold">
+                        <i class="fa-solid fa-circle-info"></i> 查無此機構主檔，將建立獨立文字紀錄
+                    </div>
+                `;
+                card.className = 'mt-3 p-4 border rounded-xl transition-all border-rose-200 bg-rose-50 block';
+            }
+        };
+
+        function populateSemesterFilter() {
+            // 擷取有紀錄的關聯學期，為簡化處理，先固定寫死或從現有課程抓
+            const sems = [...new Set(allCourses.map(d => d.semester))].filter(Boolean).sort().reverse();
+            const filterSem = document.getElementById('filter-semester');
+            const currentVal = filterSem.value;
+            let html = '<option value="all">學期：全部</option>';
+            sems.forEach(s => html += `<option value="${s}">${s}</option>`);
+            filterSem.innerHTML = html;
+            if (sems.includes(currentVal)) { filterSem.value = currentVal; }
+        }
+
+        window.toggleSelectPage = (e) => {
+            const isChecked = e.target.checked;
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const currentPaginatedIds = filteredRecords.slice(startIndex, startIndex + itemsPerPage).map(d => d.id);
+            if (isChecked) {
+                currentPaginatedIds.forEach(id => { if (!selectedIds.includes(id)) selectedIds.push(id); });
+            } else {
+                selectedIds = selectedIds.filter(id => !currentPaginatedIds.includes(id));
+            }
+            updateBatchActionBar();
+            window.renderTable();
+        };
+
+        window.toggleSelect = (id) => {
+            const index = selectedIds.indexOf(id);
+            if (index === -1) selectedIds.push(id);
+            else selectedIds.splice(index, 1);
+            updateBatchActionBar();
+            window.renderTable();
+        };
+
+        window.selectAllFiltered = () => {
+            selectedIds = filteredRecords.map(d => d.id);
+            updateBatchActionBar();
+            window.renderTable();
+        };
+
+        window.clearSelection = () => {
+            selectedIds = [];
+            updateBatchActionBar();
+            window.renderTable();
+        };
+
+        function updateBatchActionBar() {
+            const bar = document.getElementById('batch-action-bar');
+            const count = document.getElementById('selected-count');
+            const btnSelectAll = document.getElementById('btn-select-all-filtered');
+            if (selectedIds.length > 0) {
+                bar.classList.remove('hidden');
+                count.innerText = selectedIds.length;
+                if (selectedIds.length < filteredRecords.length) {
+                    btnSelectAll.classList.remove('hidden');
+                    document.getElementById('filtered-total-count').innerText = filteredRecords.length;
+                } else {
+                    btnSelectAll.classList.add('hidden');
+                }
+            } else {
+                bar.classList.add('hidden');
+            }
+        }
+
+        window.batchDelete = async () => {
+            if (!confirm(`警告：確定要刪除選取的 ${selectedIds.length} 筆實習紀錄嗎？\n此操作無法復原！`)) return;
+            try {
+                for (let id of selectedIds) { await deleteDoc(doc(db, "internship_records", id)); }
+                selectedIds = [];
+                updateBatchActionBar();
+            } catch (e) { alert("批次刪除發生錯誤: " + e.message); }
+        };
+
+        window.openModal = () => {
+            if (!editingId) { 
+                document.getElementById('data-form').reset();
+                document.getElementById('student-info-card').classList.add('hidden');
+                document.getElementById('inst-info-card').classList.add('hidden');
+                document.getElementById('modal-title').innerHTML = '<div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center"><i class="fa-solid fa-file-pen text-lg"></i></div> 建立實習紀錄主檔';
+                // Reset checkboxes
+                document.querySelectorAll('input[name="selected_courses"]').forEach(cb => cb.checked = false);
+            }
+            document.getElementById('data-modal').classList.remove('hidden');
+        };
+
+        window.closeModal = () => { document.getElementById('data-modal').classList.add('hidden'); editingId = null; };
+        
+        window.changePage = (page) => { currentPage = page; window.renderTable(); };
+
+        window.renderTable = () => {
+            const tbody = document.getElementById('table-body');
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const filterSem = document.getElementById('filter-semester').value;
+            const filterPeriod = document.getElementById('filter-period').value;
+
+            filteredRecords = allRecords.filter(d => {
+                const matchSearch = (d.student_raw || '').toLowerCase().includes(searchTerm) || (d.inst_raw || '').toLowerCase().includes(searchTerm);
+                const matchPeriod = filterPeriod === 'all' || d.period_type === filterPeriod;
+                
+                // 學期篩選
+                let matchSem = filterSem === 'all';
+                if (!matchSem && d.courses && d.courses.length > 0) {
+                    const linkedCourseDocs = allCourses.filter(c => d.courses.includes(c.id));
+                    matchSem = linkedCourseDocs.some(c => c.semester === filterSem);
+                } else if (!matchSem && (!d.courses || d.courses.length === 0)) {
+                    matchSem = false; 
+                }
+
+                return matchSearch && matchPeriod && matchSem;
+            });
+
+            filteredRecords.sort((a, b) => {
+                const dateA = a.created_at ? a.created_at.toMillis() : 0;
+                const dateB = b.created_at ? b.created_at.toMillis() : 0;
+                return dateB - dateA; 
+            });
+
+            const totalItems = filteredRecords.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+            if (currentPage > totalPages) currentPage = totalPages || 1;
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const paginatedItems = filteredRecords.slice(startIndex, startIndex + itemsPerPage);
+
+            document.getElementById('pagination-info').innerText = totalItems > 0 ? `顯示 ${startIndex + 1} 到 ${Math.min(startIndex + itemsPerPage, totalItems)} 筆，共 ${totalItems} 筆` : '尚無資料';
+            
+            let btnHtml = '';
+            btnHtml += `<button onclick="changePage(${currentPage - 1})" class="px-3 py-1 border border-slate-200 rounded-md text-sm font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-40 transition-colors" ${currentPage === 1 ? 'disabled' : ''}>上一頁</button>`;
+            btnHtml += `<span class="px-4 py-1 text-sm font-bold text-blue-600 bg-blue-50 rounded-md mx-1">${currentPage} / ${totalPages}</span>`;
+            btnHtml += `<button onclick="changePage(${currentPage + 1})" class="px-3 py-1 border border-slate-200 rounded-md text-sm font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-40 transition-colors" ${currentPage === totalPages ? 'disabled' : ''}>下一頁</button>`;
+            document.getElementById('pagination-buttons').innerHTML = btnHtml;
+
+            const currentPaginatedIds = paginatedItems.map(d => d.id);
+            const isAllVisibleSelected = currentPaginatedIds.length > 0 && currentPaginatedIds.every(id => selectedIds.includes(id));
+            document.getElementById('selectAll').checked = isAllVisibleSelected;
+
+            if (totalItems === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-16 text-center text-slate-400 font-bold bg-white"><i class="fa-solid fa-magnifying-glass text-3xl mb-3 text-slate-300"></i><p>找不到符合條件的紀錄資料。</p></td></tr>`;
+                return;
+            }
+
+            let html = '';
+            paginatedItems.forEach((data) => {
+                const isChecked = selectedIds.includes(data.id) ? 'checked' : '';
+                
+                // 學生解析
+                const stuIdMatch = (data.student_raw || '').split(' - ')[0];
+                const stuDoc = allStudents.find(s => s.student_id === stuIdMatch);
+                const stuName = stuDoc ? stuDoc.name : data.student_raw;
+                const stuDept = stuDoc ? stuDoc.department : '未綁定學系';
+
+                // 課程 Badge 渲染
+                let coursesHtml = '<span class="text-xs text-slate-400 font-medium">未關聯課程</span>';
+                if (data.courses && data.courses.length > 0) {
+                    coursesHtml = data.courses.map(cid => {
+                        const cDoc = allCourses.find(c => c.id === cid);
+                        return cDoc 
+                            ? `<div class="inline-block bg-blue-50 border border-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded-lg mb-1 mr-1 shadow-sm"><span class="opacity-50 mr-1">${cDoc.semester}</span>${cDoc.course_name}</div>` 
+                            : `<div class="inline-block bg-slate-100 text-slate-500 text-xs px-2 py-1 rounded mb-1 mr-1">未知課程</div>`;
+                    }).join('');
+                }
+
+                // 投保與勞雇 Badge
+                let insColor = data.insurance === '兩者皆無' ? 'text-rose-600 bg-rose-50 border-rose-200' : 'text-emerald-600 bg-emerald-50 border-emerald-200';
+                let empColor = data.employment === '是' ? 'text-indigo-600 bg-indigo-50 border-indigo-200' : 'text-slate-500 bg-slate-50 border-slate-200';
+
+                html += `
+                <tr class="group bg-white hover:bg-blue-50/40 transition-all duration-150 text-center">
+                    <td class="px-2 py-3 align-middle">
+                        <input type="checkbox" class="row-checkbox w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shadow-sm transition-all" value="${data.id}" onchange="toggleSelect('${data.id}')" ${isChecked}>
+                    </td>
+                    <td class="px-4 py-3 align-middle text-left">
+                        <div class="text-sm font-bold text-slate-800 leading-tight">${stuName} <span class="text-xs font-bold text-slate-400 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded ml-1">${data.grade}</span></div>
+                        <div class="text-[11px] font-bold text-slate-500 mt-1 uppercase">${stuIdMatch} <span class="mx-1 opacity-50">|</span> ${stuDept}</div>
+                    </td>
+                    <td class="px-4 py-3 align-middle text-left">
+                        <div class="text-sm font-bold text-slate-800 leading-tight truncate w-full max-w-[200px]" title="${data.inst_raw}">${data.inst_raw}</div>
+                        <div class="text-[11px] font-bold text-slate-400 mt-1"><i class="fa-solid fa-file-contract"></i> ${data.proof_type}</div>
+                    </td>
+                    <td class="px-4 py-3 align-middle text-left">
+                        <div class="flex flex-wrap items-center">
+                            ${coursesHtml}
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 align-middle">
+                        <div class="text-[11px] font-bold text-blue-600 tracking-wider mb-1">${data.period_type}</div>
+                        <div class="text-sm font-bold text-slate-700 font-mono tracking-tighter">${data.duration}</div>
+                        <div class="text-[11px] font-bold text-slate-400 mt-0.5">時數: <span class="text-slate-700">${data.hours}</span> 小時</div>
+                    </td>
+                    <td class="px-4 py-3 align-middle">
+                        <div class="flex flex-col gap-1.5 items-center">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-md border text-[10px] font-bold ${insColor}">${data.insurance}</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-md border text-[10px] font-bold ${empColor}">勞雇關係: ${data.employment}</span>
+                        </div>
+                    </td>
+                    <td class="px-2 py-3 align-middle whitespace-nowrap">
+                        <div class="flex items-center justify-center gap-1.5 opacity-100">
+                            <button onclick="window.editData('${data.id}')" class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all shrink-0" title="編輯紀錄"><i class="fa-solid fa-pen text-[11px]"></i></button>
+                            <button onclick="window.deleteData('${data.id}', '${stuName}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-all shrink-0" title="刪除"><i class="fa-solid fa-trash-can text-[11px]"></i></button>
+                        </div>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        };
+
+        window.exportToCSV = () => {
+            if (filteredRecords.length === 0) { alert("沒有資料可供匯出！"); return; }
+            let csv = '\uFEFF實習生,當學年年級,實習機構,實習時間,實習起訖時間,核定時數,證明文件類型,投保情形,勞雇關係,關聯課程清單,備註\n';
+            
+            filteredRecords.forEach(d => {
+                let courseNames = (d.courses || []).map(cid => {
+                    const c = allCourses.find(x => x.id === cid);
+                    return c ? `[${c.semester}]${c.course_name}` : '未知';
+                }).join(' / ');
+
+                csv += [
+                    d.student_raw, d.grade, d.inst_raw, d.period_type, d.duration, d.hours, 
+                    d.proof_type, d.insurance, d.employment, courseNames, d.notes || ''
+                ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+            });
+            const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+            link.download = `實習紀錄總表_${new Date().toISOString().split('T')[0]}.csv`; link.click();
+        };
+
+        window.submitForm = async () => {
+            const btn = document.getElementById('btn-submit');
+            
+            // 收集多選課程
+            const courseCheckboxes = document.querySelectorAll('input[name="selected_courses"]:checked');
+            const selectedCourses = Array.from(courseCheckboxes).map(cb => cb.value);
+
+            const durationInput = document.getElementById('input-duration').value.trim();
+            const regex = /^\d{2,3}\/\d{2}\/\d{2}-\d{2,3}\/\d{2}\/\d{2}$/;
+            if (!regex.test(durationInput)) {
+                alert("「實習起訖時間」格式錯誤！\n請輸入如：113/07/01-113/08/31");
+                return;
+            }
+
+            if (selectedCourses.length === 0) {
+                alert("請至少勾選一門關聯實習課程！");
+                return;
+            }
+
+            const payload = { 
+                student_raw: document.getElementById('input-student').value.trim(),
+                grade: document.getElementById('input-grade').value,
+                inst_raw: document.getElementById('input-institution').value.trim(),
+                period_type: document.getElementById('input-period-type').value,
+                duration: durationInput,
+                insurance: document.getElementById('input-insurance').value,
+                employment: document.getElementById('input-employment').value,
+                proof_type: document.getElementById('input-proof-type').value,
+                hours: Number(document.getElementById('input-hours').value),
+                notes: document.getElementById('input-notes').value.trim(),
+                courses: selectedCourses
+            };
+
+            if(!payload.student_raw || !payload.inst_raw || !payload.duration || !payload.hours) { 
+                alert("請填寫所有帶有 * 號之必填欄位！"); return; 
+            }
+
+            btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> 建立中...';
+            try {
+                if (editingId) { await updateDoc(doc(db, "internship_records", editingId), { ...payload, updated_at: serverTimestamp() }); } 
+                else { await addDoc(recordsCol, { ...payload, created_at: serverTimestamp() }); }
+                closeModal();
+            } catch (err) { alert("儲存發生錯誤：" + err.message); } 
+            finally { btn.disabled = false; btn.innerHTML = '建立 / 儲存實習紀錄'; }
+        };
+
+        window.editData = (id) => {
+            const docData = allRecords.find(d => d.id === id); if (!docData) return;
+            editingId = id;
+            
+            document.getElementById('input-student').value = docData.student_raw || '';
+            document.getElementById('input-grade').value = docData.grade || '大三';
+            document.getElementById('input-institution').value = docData.inst_raw || '';
+            document.getElementById('input-period-type').value = docData.period_type || '暑假實習';
+            document.getElementById('input-duration').value = docData.duration || '';
+            document.getElementById('input-insurance').value = docData.insurance || '僅校外實習保險';
+            document.getElementById('input-employment').value = docData.employment || '否';
+            document.getElementById('input-proof-type').value = docData.proof_type || '合約';
+            document.getElementById('input-hours').value = docData.hours || 0;
+            document.getElementById('input-notes').value = docData.notes || '';
+            
+            window.autoFillStudentInfo();
+            window.autoFillInstInfo();
+
+            // 處理多選勾選
+            document.querySelectorAll('input[name="selected_courses"]').forEach(cb => {
+                cb.checked = (docData.courses || []).includes(cb.value);
+            });
+
+            document.getElementById('modal-title').innerHTML = '<div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center"><i class="fa-solid fa-file-pen text-lg"></i></div> 編輯實習紀錄主檔';
+            document.getElementById('data-modal').classList.remove('hidden');
+        };
+
+        window.deleteData = async (id, name) => {
+            if (confirm(`警告：確定要刪除學生「${name}」的這筆實習紀錄嗎？\n此操作無法復原。`)) {
+                await deleteDoc(doc(db, "internship_records", id));
+                window.renderTable();
+            }
+        };
+
+    </script>
+</body>
+</html>
