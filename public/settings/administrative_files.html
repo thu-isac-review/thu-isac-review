@@ -28,7 +28,7 @@
                 </div>
                 <div>
                     <h2 class="text-xl font-bold text-slate-800 tracking-tight">行政文件審查設定</h2>
-                    <p class="text-xs text-slate-500 mt-1">綁定教育部查核指標，設定系所應繳交之對應佐證文件，並規範標準上傳檔名。</p>
+                    <p class="text-xs text-slate-500 mt-1">綁定教育部查核指標，設定系所應繳交之對應佐證文件，並規範標準上傳檔名 (全系統通用)。</p>
                 </div>
             </div>
             
@@ -50,6 +50,11 @@
                     <option value="school">全校統一文件</option>
                     <option value="department">各系所獨立文件</option>
                 </select>
+                <select id="filter-status" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 h-10 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
+                    <option value="all">狀態：全部</option>
+                    <option value="active">狀態：啟用中</option>
+                    <option value="inactive">狀態：已停用</option>
+                </select>
             </div>
             <div class="relative w-full md:w-72 shadow-sm rounded-lg">
                 <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
@@ -67,13 +72,14 @@
                         <tr>
                             <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 w-[15%]">適用層級</th>
                             <th class="px-6 py-3.5 text-left text-xs font-bold text-slate-500 w-[20%]">所屬指標 (代碼)</th>
-                            <th class="px-6 py-3.5 text-left text-xs font-bold text-slate-500 w-[30%]">要求上傳文件名稱</th>
-                            <th class="px-6 py-3.5 text-left text-xs font-bold text-slate-500 w-[20%]">預設上傳檔名規則</th>
-                            <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 w-[15%]">操作</th>
+                            <th class="px-6 py-3.5 text-left text-xs font-bold text-slate-500 w-[25%]">要求上傳文件名稱</th>
+                            <th class="px-6 py-3.5 text-left text-xs font-bold text-slate-500 w-[15%]">預設上傳檔名規則</th>
+                            <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 w-[12%] whitespace-nowrap">系統狀態</th>
+                            <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 w-[13%]">操作</th>
                         </tr>
                     </thead>
                     <tbody id="doc-table-body" class="divide-y divide-slate-100 text-sm">
-                        <tr><td colspan="5" class="px-6 py-16 text-center text-slate-400"><i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-blue-500"></i><p class="font-bold">資料載入與驗證中...</p></td></tr>
+                        <tr><td colspan="6" class="px-6 py-16 text-center text-slate-400"><i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-blue-500"></i><p class="font-bold">資料載入與驗證中...</p></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -85,9 +91,7 @@
         </div>
     </div>
 
-    <!-- ==========================================
-         彈跳視窗：新增/編輯文件
-         ========================================== -->
+    <!-- 彈跳視窗：新增/編輯文件 -->
     <div id="doc-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeDocModal()"></div>
         <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden modal-enter relative max-h-[90vh] flex flex-col">
@@ -95,7 +99,7 @@
                 <h3 id="modal-title" class="font-black text-slate-800 text-lg flex items-center gap-2">
                     <i class="fa-solid fa-file-circle-plus text-blue-600"></i> 新增行政文件
                 </h3>
-                <button onclick="closeDocModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 bg-white shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <button onclick="closeDocModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 bg-white shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors shrink-0"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             
             <form id="doc-form" class="p-8 space-y-6 overflow-y-auto custom-scrollbar flex-1 bg-white">
@@ -150,7 +154,6 @@
         </div>
     </div>
 
-    <!-- Firebase 邏輯 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -161,43 +164,41 @@
         const auth = getAuth(app); 
         const db = getFirestore(app);
         
+        // 💡 直接讀取全域集合 (移除 where semester)
         const docsCollection = collection(db, "admin_files_settings");
         const indicatorsCollection = collection(db, "moe_indicators_master");
 
         let allDocs = []; 
-        let allIndicators = []; // 存儲指標主檔
+        let allIndicators = []; 
         let editingId = null; 
         let currentPage = 1; 
         const itemsPerPage = 10;
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // 載入指標主檔供下拉選單使用
+                // 載入全域的指標主檔供下拉選單使用
                 onSnapshot(indicatorsCollection, (snapshot) => {
                     allIndicators = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    // 根據排序欄位進行排序
                     allIndicators.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
                     updateIndicatorDropdown();
                 });
 
-                // 載入行政文件設定
+                // 載入全域的行政文件設定
                 onSnapshot(docsCollection, (snapshot) => {
                     allDocs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     renderTable();
                 }, (error) => {
-                    document.getElementById('doc-table-body').innerHTML = `<tr><td colspan="5" class="px-6 py-16 text-center text-rose-500 font-bold"><i class="fa-solid fa-lock text-3xl mb-3"></i><p>資料讀取失敗，權限不足。</p></td></tr>`;
+                    document.getElementById('doc-table-body').innerHTML = `<tr><td colspan="6" class="px-6 py-16 text-center text-rose-500 font-bold"><i class="fa-solid fa-lock text-3xl mb-3"></i><p>資料讀取失敗，權限不足。</p></td></tr>`;
                 });
             } else {
-                document.getElementById('doc-table-body').innerHTML = `<tr><td colspan="5" class="px-6 py-16 text-center text-slate-400 font-bold"><i class="fa-solid fa-shield-halved text-3xl mb-3 text-slate-300"></i><p>請先登入系統以存取資料。</p></td></tr>`;
+                document.getElementById('doc-table-body').innerHTML = `<tr><td colspan="6" class="px-6 py-16 text-center text-slate-400 font-bold"><i class="fa-solid fa-shield-halved text-3xl mb-3 text-slate-300"></i><p>請先登入系統以存取資料。</p></td></tr>`;
             }
         });
 
-        // 建立指標下拉選單
         function updateIndicatorDropdown() {
             const select = document.getElementById('input-indicator');
             let html = '<option value="">請選擇要綁定的主檔指標...</option>';
             allIndicators.forEach(ind => {
-                // 僅顯示有代碼的指標
                 if (ind.code) {
                     html += `<option value="${ind.id}" data-code="${ind.code}">[${ind.code}] ${ind.item_name}</option>`;
                 }
@@ -205,7 +206,6 @@
             select.innerHTML = html;
         }
 
-        // 動態預覽檔名邏輯
         window.updatePreview = () => {
             const indSelect = document.getElementById('input-indicator');
             const seq = document.getElementById('input-sequence').value || '[序號]';
@@ -219,10 +219,11 @@
 
             const previewEl = document.getElementById('preview-filename');
             
+            // 💡 使用通用的 [學期] 變數，表示這是全域規則
             if (level === 'school') {
-                previewEl.innerText = `${code}-${seq}_THU_東海大學_114-1${name}.pdf`;
+                previewEl.innerText = `${code}-${seq}_THU_東海大學_[學期]${name}.pdf`;
             } else {
-                previewEl.innerText = `${code}-${seq}_110_中文系_114-1${name}.pdf`;
+                previewEl.innerText = `${code}-${seq}_110_中文系_[學期]${name}.pdf`;
             }
         };
 
@@ -242,14 +243,15 @@
             const tbody = document.getElementById('doc-table-body');
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
             const filterLevel = document.getElementById('filter-level').value;
+            const filterStatus = document.getElementById('filter-status').value;
 
             let filtered = allDocs.filter(d => {
                 const matchSearch = (d.name || '').toLowerCase().includes(searchTerm) || (d.indicator_code || '').toLowerCase().includes(searchTerm);
                 const matchLevel = filterLevel === 'all' || d.level === filterLevel;
-                return matchSearch && matchLevel;
+                const matchStatus = filterStatus === 'all' || (filterStatus === 'active' ? d.is_active : !d.is_active);
+                return matchSearch && matchLevel && matchStatus;
             });
 
-            // 優先以「指標代碼 + 序號」排序
             filtered.sort((a, b) => {
                 const codeA = (a.indicator_code || '') + '-' + (a.sequence || 0);
                 const codeB = (b.indicator_code || '') + '-' + (b.sequence || 0);
@@ -272,7 +274,7 @@
             document.getElementById('pagination-buttons').innerHTML = btnHtml;
 
             if (totalItems === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-16 text-center text-slate-400 font-bold bg-white">找不到符合條件的文件項目。</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-16 text-center text-slate-400 font-bold bg-white">找不到符合條件的文件項目。</td></tr>`;
                 return;
             }
 
@@ -283,14 +285,13 @@
                     ? `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold"><i class="fa-solid fa-building-columns"></i> 全校</span>` 
                     : `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold"><i class="fa-solid fa-graduation-cap"></i> 系所</span>`;
 
-                // 從資料庫找出關聯的指標名稱
                 const boundIndicator = allIndicators.find(ind => ind.id === data.indicator_id);
                 const indicatorName = boundIndicator ? boundIndicator.item_name : '<span class="text-rose-500">指標已遺失</span>';
 
-                // 合成範例檔名
+                // 💡 使用通用的 [學期] 變數顯示在表格中
                 let previewFile = data.level === 'school'
-                    ? `${data.indicator_code}-${data.sequence}_THU_東海大學_114-1${data.name}.pdf`
-                    : `${data.indicator_code}-${data.sequence}_110_中文系_114-1${data.name}.pdf`;
+                    ? `${data.indicator_code}-${data.sequence}_THU_東海大學_[學期]${data.name}.pdf`
+                    : `${data.indicator_code}-${data.sequence}_110_中文系_[學期]${data.name}.pdf`;
 
                 html += `
                 <tr class="group bg-white hover:bg-blue-50/40 transition-all duration-150 ${!data.is_active ? 'opacity-60 grayscale-[20%] bg-slate-50/50' : ''}">
@@ -304,7 +305,7 @@
                     <td class="px-6 py-4 align-middle">
                         <div class="flex items-center">
                             <span class="text-sm font-bold text-slate-800 leading-tight">${data.name}</span>
-                            <span class="text-[10px] text-slate-400 bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5 ml-2">序 ${data.sequence}</span>
+                            <span class="text-[10px] text-slate-400 bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5 ml-2 whitespace-nowrap">序 ${data.sequence}</span>
                         </div>
                     </td>
                     <td class="px-6 py-4 align-middle">
@@ -312,10 +313,19 @@
                             ${previewFile}
                         </div>
                     </td>
+                    <td class="px-6 py-4 align-middle text-center whitespace-nowrap">
+                        <div class="flex items-center justify-center">
+                            <label class="relative inline-flex items-center cursor-pointer group/toggle whitespace-nowrap">
+                                <input type="checkbox" class="sr-only peer" ${data.is_active ? 'checked' : ''} onchange="window.toggleStatus('${data.id}', ${data.is_active})">
+                                <div class="relative w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-[20px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner shrink-0 min-w-[44px]"></div>
+                                <span class="ml-3 text-sm font-bold ${data.is_active ? 'text-emerald-600' : 'text-slate-400'} whitespace-nowrap">${data.is_active ? '啟用' : '停用'}</span>
+                            </label>
+                        </div>
+                    </td>
                     <td class="px-6 py-4 align-middle text-center">
                         <div class="flex items-center justify-center gap-2 opacity-100 transition-opacity">
-                            <button onclick="window.editDoc('${data.id}')" class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all" title="編輯文件"><i class="fa-solid fa-pen text-sm"></i></button>
-                            <button onclick="window.deleteDoc('${data.id}', '${data.name}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all" title="刪除文件"><i class="fa-solid fa-trash-can text-sm"></i></button>
+                            <button onclick="window.editDoc('${data.id}')" class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all shrink-0" title="編輯文件"><i class="fa-solid fa-pen text-sm"></i></button>
+                            <button onclick="window.deleteDoc('${data.id}', '${data.name}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all shrink-0" title="刪除文件"><i class="fa-solid fa-trash-can text-sm"></i></button>
                         </div>
                     </td>
                 </tr>`;
@@ -325,9 +335,8 @@
 
         window.exportToCSV = () => {
             if (allDocs.length === 0) { alert("沒有資料可供匯出！"); return; }
-            let csv = '\uFEFF適用層級,指標代碼,文件序號,文件名稱\n';
+            let csv = '\uFEFF適用層級,指標代碼,文件序號,文件名稱,系統狀態\n';
             
-            // 排序匯出
             let sorted = [...allDocs].sort((a, b) => {
                 const codeA = (a.indicator_code || '') + '-' + (a.sequence || 0);
                 const codeB = (b.indicator_code || '') + '-' + (b.sequence || 0);
@@ -335,8 +344,9 @@
             });
 
             sorted.forEach(d => {
+                let status = d.is_active ? '啟用' : '停用';
                 let level = d.level === 'school' ? '全校統一文件' : '各系所獨立文件';
-                csv += [level, d.indicator_code, d.sequence, d.name].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+                csv += [level, d.indicator_code, d.sequence, d.name, status].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
             });
             const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
             link.download = `ISAC行政文件設定_${new Date().toISOString().split('T')[0]}.csv`; link.click();
@@ -346,7 +356,6 @@
             const btn = document.getElementById('btn-submit');
             const indSelect = document.getElementById('input-indicator');
             
-            // 取得選擇的指標代碼
             let indicatorCode = '';
             if (indSelect.selectedIndex > 0) {
                 indicatorCode = indSelect.options[indSelect.selectedIndex].getAttribute('data-code');
@@ -357,7 +366,8 @@
                 indicator_code: indicatorCode,
                 level: document.getElementById('input-level').value,
                 sequence: document.getElementById('input-sequence').value,
-                name: document.getElementById('input-name').value.trim(), 
+                name: document.getElementById('input-name').value.trim()
+                // 💡 移除了學期綁定
             };
 
             if(!payload.indicator_id || !payload.sequence || !payload.name) { 
@@ -392,6 +402,8 @@
             document.getElementById('doc-modal').classList.remove('hidden');
         };
         
+        window.toggleStatus = async (id, status) => { await updateDoc(doc(db, "admin_files_settings", id), { is_active: !status }); };
+
         window.deleteDoc = async (id, name) => {
             if (confirm(`警告：確定要刪除文件「${name}」嗎？\n此操作無法復原。`)) {
                 await deleteDoc(doc(db, "admin_files_settings", id));
@@ -402,6 +414,7 @@
 
         document.getElementById('search-input').addEventListener('input', renderTable);
         document.getElementById('filter-level').addEventListener('change', renderTable);
+        document.getElementById('filter-status').addEventListener('change', renderTable);
     </script>
 </body>
 </html>
