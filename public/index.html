@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ISAC 實習文件書審查核平台</title>
     
-    <!-- 1. 核心套件載入 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="importmap">
       {
@@ -25,19 +24,9 @@
                 extend: {
                     colors: {
                         brand: {
-                            50: '#f0f5fa',
-                            100: '#e1ebf4',
-                            500: '#2c75b3',
-                            600: '#1a5c96',
-                            700: '#004785', // 東海藍
-                            800: '#003666',
-                            900: '#002244',
+                            50: '#f0f5fa', 100: '#e1ebf4', 500: '#2c75b3', 600: '#1a5c96', 700: '#004785', 800: '#003666', 900: '#002244'
                         },
                         sidebar: '#0f172a',
-                    },
-                    boxShadow: {
-                        'card': '0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.03)',
-                        'float': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05)',
                     }
                 }
             }
@@ -46,22 +35,15 @@
 
     <style>
         html, body, #root { height: 100%; margin: 0; padding: 0; background-color: #f8fafc; overflow: hidden; }
-        * {
-            font-family: "SF Pro TC", "SF Pro Display", "PingFang TC", "Noto Sans TC", sans-serif !important;
-            -webkit-font-smoothing: antialiased;
-        }
+        * { font-family: "SF Pro TC", "SF Pro Display", "PingFang TC", "Noto Sans TC", sans-serif !important; -webkit-font-smoothing: antialiased; }
 
-        /* 側邊欄選中狀態還原 */
         .sidebar-item.active { background-color: rgba(255, 255, 255, 0.1); color: #ffffff; border-left: 3px solid #3b82f6; }
         .sidebar-item { border-left: 3px solid transparent; transition: all 0.2s ease; cursor: pointer; }
         .sidebar-item:hover:not(.active) { background-color: rgba(255, 255, 255, 0.05); color: #f8fafc; }
 
         iframe { border: none; width: 100%; height: 100%; background: transparent; }
-        
-        /* 滾動條美化 */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade { animation: fadeIn 0.4s ease-out forwards; }
     </style>
@@ -73,7 +55,6 @@
         import React, { useState, useEffect } from 'react';
         import ReactDOM from 'react-dom/client';
         
-        // 載入 Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
@@ -119,7 +100,6 @@
 
             if (!user) return <LoginView />;
 
-            // 判斷當前標題
             const getPageTitle = () => {
                 if (contentUrl.includes('dashboard')) return '總覽儀表板';
                 if (contentUrl.includes('list')) return '學生待查核名單';
@@ -129,7 +109,6 @@
 
             return (
                 <div className="flex h-full overflow-hidden text-slate-800">
-                    {/* --- 還原：左側深色導航欄 --- */}
                     <aside className="w-64 bg-sidebar text-slate-300 flex flex-col shrink-0 z-20 shadow-xl">
                         <div className="h-16 flex items-center px-6 border-b border-slate-700/50">
                             <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center mr-3 shadow-md">
@@ -139,15 +118,13 @@
                         </div>
 
                         <div className="flex-1 overflow-y-auto py-4 custom-scrollbar">
-                            <div className="px-6 mb-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">主要業務</div>
-                            
+                            <div className="px-6 mb-2 text-xs font-bold text-slate-500 uppercase tracking-widest">主要業務</div>
                             <MenuBtn 
                                 active={contentUrl === '/dashboard-content.html'} 
                                 label="總覽儀表板" 
                                 icon="ph-fill ph-squares-four" 
                                 onClick={() => setContentUrl('/dashboard-content.html')} 
                             />
-                            
                             <MenuBtn 
                                 active={contentUrl === '/list.html'} 
                                 label="學生待查核名單" 
@@ -155,7 +132,7 @@
                                 onClick={() => setContentUrl('/list.html')} 
                             />
 
-                            <div className="px-6 mt-8 mb-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">設定與維護</div>
+                            <div className="px-6 mt-8 mb-2 text-xs font-bold text-slate-500 uppercase tracking-widest">設定與維護</div>
                             
                             <MenuBtn 
                                 active={contentUrl === '/manage/departments.html'} 
@@ -164,57 +141,51 @@
                                 onClick={() => setContentUrl('/manage/departments.html')} 
                             />
                             
-                            <div className="sidebar-item w-full flex items-center px-6 py-3 text-sm font-medium mb-1 text-slate-500 opacity-50 cursor-not-allowed">
+                            <div className="sidebar-item w-full flex items-center px-6 py-3 text-base font-medium mb-1 text-slate-500 opacity-50 cursor-not-allowed">
                                 <i className="ph-fill ph-file-text text-xl mr-3 opacity-80"></i> 指標與表單設定
                             </div>
                         </div>
 
-                        {/* --- 還原：底部使用者區塊 --- */}
+                        {/* 底部帳號狀態：調整字體大小，並確保完全無觸碰背景反色 */}
                         <div className="p-4 border-t border-slate-700/50">
-                            <div className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-800 transition-colors group">
-                                <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-400 flex items-center justify-center text-white font-bold text-xs shadow-md">
+                            <div className="flex items-center gap-3 px-2 py-2">
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-400 flex items-center justify-center text-white font-bold text-sm shadow-md">
                                     Ad
                                 </div>
                                 <div className="flex-1 overflow-hidden">
-                                    <div className="text-sm font-bold text-white truncate">系統管理員</div>
-                                    <div className="text-[10px] text-slate-500 truncate font-mono">{user.email}</div>
+                                    <div className="text-base font-bold text-white truncate">系統管理員</div>
+                                    <div className="text-xs text-slate-500 truncate font-mono">{user.email}</div>
                                 </div>
-                                <button onClick={handleLogout} className="text-slate-500 hover:text-rose-400 transition-colors">
-                                    <i className="ph-bold ph-sign-out text-lg"></i>
+                                <button onClick={handleLogout} className="text-slate-400 hover:text-white transition-colors p-1" title="登出">
+                                    <i className="ph-bold ph-sign-out text-xl"></i>
                                 </button>
                             </div>
                         </div>
                     </aside>
 
-                    {/* --- 還原：右側主要內容區 --- */}
                     <main className="flex-1 flex flex-col h-full relative overflow-hidden bg-slate-50">
                         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 z-10 shadow-sm">
                             <div className="flex items-center gap-4">
                                 <h2 className="text-lg font-bold text-slate-800">{getPageTitle()}</h2>
                             </div>
-
                             <div className="flex items-center gap-6">
                                 <div className="relative hidden lg:block">
                                     <i className="ph-bold ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                                    <input type="text" className="pl-9 pr-4 py-1.5 bg-slate-100 border-transparent rounded-lg text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all w-64" placeholder="搜尋系統內容..." />
+                                    <input type="text" className="pl-9 pr-4 py-1.5 bg-slate-100 border-transparent rounded-lg text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all w-64 outline-none" placeholder="搜尋系統內容..." />
                                 </div>
                                 <div className="h-6 w-px bg-slate-200"></div>
-                                <div className="flex items-center gap-3">
-                                    <span className="text-sm font-bold text-slate-700">114-1 學年度</span>
-                                    <button className="relative w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-500 transition-colors">
-                                        <i className="ph-bold ph-bell text-lg"></i>
-                                        <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border border-white"></span>
-                                    </button>
+                                <div className="text-sm font-bold text-slate-700 flex items-center gap-2 cursor-pointer">
+                                    114-1 學年度 <i className="ph-bold ph-bell text-slate-400 text-lg"></i>
                                 </div>
                             </div>
                         </header>
 
-                        {/* Iframe 內容載入區 */}
                         <div className="flex-1 overflow-hidden relative">
                             <iframe 
                                 src={contentUrl} 
                                 key={contentUrl}
                                 className="animate-fade"
+                                title="Content View"
                             />
                         </div>
                     </main>
@@ -222,20 +193,15 @@
             );
         }
 
-        // 側邊欄按鈕子元件
         function MenuBtn({ active, label, icon, onClick }) {
             return (
-                <div 
-                    onClick={onClick} 
-                    className={`sidebar-item w-full flex items-center px-6 py-3 text-sm font-medium mb-1 ${active ? 'active' : ''}`}
-                >
+                <div onClick={onClick} className={`sidebar-item w-full flex items-center px-6 py-3 text-base font-medium mb-1 ${active ? 'active' : ''}`}>
                     <i className={`${icon} text-xl mr-3 ${active ? 'opacity-100' : 'opacity-80'}`}></i>
                     <span className="tracking-tight">{label}</span>
                 </div>
             );
         }
 
-        // 還原質感的登入頁面
         function LoginView() {
             const [isLoggingIn, setIsLoggingIn] = useState(false);
             const handleLogin = async (e) => {
