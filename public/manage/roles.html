@@ -7,9 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script>
-        tailwind.config = {
-            theme: { extend: { colors: { brand: { 50: '#f0f5fa', 500: '#2c75b3', 600: '#1a5c96', 700: '#004785' } } } }
-        }
+        tailwind.config = { theme: { extend: { colors: { brand: { 50: '#f0f5fa', 500: '#2c75b3', 600: '#1a5c96', 700: '#004785' } } } } }
     </script>
     <style>
         body { background-color: transparent; margin: 0; padding: 0; font-family: "SF Pro TC", "Noto Sans TC", sans-serif; -webkit-font-smoothing: antialiased; }
@@ -17,13 +15,11 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .modal-enter { animation: modalFadeIn 0.2s ease-out forwards; }
         @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.97) translateY(-5px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-        table { table-layout: fixed; width: 100%; }
-        td { word-break: break-word; }
+        table { table-layout: fixed; width: 100%; } td { word-break: break-word; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden">
 
-    <!-- 頂部操作列 -->
     <div class="shrink-0 px-6 pt-6 pb-4 space-y-4 animate-fade">
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div class="flex items-center gap-3">
@@ -54,7 +50,6 @@
             <div class="flex gap-2 w-full md:w-auto">
                 <select id="filter-role" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 h-10 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
                     <option value="all">權限角色：全部</option>
-                    <!-- 動態生成角色選項 -->
                 </select>
                 <select id="filter-status" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 h-10 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
                     <option value="all">狀態：全部</option>
@@ -110,8 +105,6 @@
             </div>
             
             <form id="user-form" class="p-8 space-y-6 overflow-y-auto custom-scrollbar flex-1 bg-white">
-                
-                <!-- 單位資訊 -->
                 <div class="grid grid-cols-2 gap-5">
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-2">一級單位 <span class="text-rose-500">*</span></label>
@@ -123,7 +116,6 @@
                     </div>
                 </div>
 
-                <!-- 職務與角色 -->
                 <div class="grid grid-cols-2 gap-5">
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-2">職務名稱 <span class="text-rose-500">*</span></label>
@@ -132,14 +124,12 @@
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-2">系統權限角色 <span class="text-rose-500">*</span></label>
                         <select id="input-role" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
-                            <!-- 動態生成角色選項 -->
                         </select>
                     </div>
                 </div>
 
                 <div class="h-px bg-slate-100 my-2"></div>
 
-                <!-- 個人資訊 -->
                 <div class="grid grid-cols-2 gap-5">
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-2">使用者姓名 <span class="text-rose-500">*</span></label>
@@ -156,26 +146,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- 密碼區塊 (僅新增時顯示) -->
-                <div id="password-section" class="grid grid-cols-2 gap-5 p-4 bg-slate-50 rounded-xl border border-slate-200">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-2">設定初始登入密碼 <span class="text-rose-500">*</span></label>
-                        <div class="relative">
-                            <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input type="password" id="input-password" placeholder="8~20碼，含大小寫字母及數字" class="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm font-mono">
-                        </div>
-                        <p class="text-[10px] text-slate-400 mt-1">需包含至少一個大寫、小寫字母及數字。</p>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-2">確認密碼 <span class="text-rose-500">*</span></label>
-                        <div class="relative">
-                            <i class="fa-solid fa-lock-open absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input type="password" id="input-password-confirm" placeholder="再次輸入密碼" class="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm font-mono">
-                        </div>
-                    </div>
-                </div>
-
             </form>
             
             <div class="p-6 border-t border-slate-100 shrink-0 flex gap-4 bg-slate-50">
@@ -213,44 +183,40 @@
 
     <!-- Firebase 邏輯 -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        // 💡 確保引入完整的 Firebase 套件 (包含 getApps 與 addDoc)
+        import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, setDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // 主應用程式 (用於讀取資料與確認目前身分)
         const firebaseConfig = { apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY", authDomain: "thu-isac-review.firebaseapp.com", projectId: "thu-isac-review", storageBucket: "thu-isac-review.firebasestorage.app", messagingSenderId: "453299876735", appId: "1:453299876735:web:1d8babca3315423161a04a" };
-        const app = initializeApp(firebaseConfig); 
+        
+        // 💡 防呆機制：防止 iframe 重複載入時拋出 "Duplicate App" 錯誤導致畫面死機
+        const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
         const auth = getAuth(app); 
         const db = getFirestore(app);
         
-        // 💡 建立「第二個」Firebase實例，專門用來在後台建立新帳號，這樣才不會把目前登入的管理員踢出去
-        const adminApp = initializeApp(firebaseConfig, "AdminApp");
+        let adminApp;
+        const existingAdminApp = getApps().find(a => a.name === "AdminApp");
+        if (existingAdminApp) {
+            adminApp = existingAdminApp;
+        } else {
+            adminApp = initializeApp(firebaseConfig, "AdminApp");
+        }
         const adminAuth = getAuth(adminApp);
 
         const usersCollection = collection(db, "users");
         const roleDocRef = doc(db, "settings", "roles");
 
-        let allUsers = []; 
-        let roleList = [];
-        let editingId = null; 
-        let currentPage = 1; 
-        const itemsPerPage = 10;
+        let allUsers = []; let roleList = []; let editingId = null; let currentPage = 1; const itemsPerPage = 10;
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // 載入角色清單
                 onSnapshot(roleDocRef, (docSnap) => {
-                    if (docSnap.exists()) {
-                        roleList = docSnap.data().list || [];
-                    } else {
-                        roleList = ["系統管理員 (Admin)", "一般查核員 (Reviewer)"];
-                        setDoc(roleDocRef, { list: roleList }); 
-                    }
-                    renderRoleUI();
-                    renderTable();
+                    if (docSnap.exists()) { roleList = docSnap.data().list || []; } 
+                    else { roleList = ["系統管理員 (Admin)", "一般查核員 (Reviewer)"]; setDoc(roleDocRef, { list: roleList }); }
+                    renderRoleUI(); renderTable();
                 });
 
-                // 載入用戶清單
                 onSnapshot(usersCollection, (snapshot) => {
                     allUsers = snapshot.docs.map(doc => {
                         const data = doc.data();
@@ -278,9 +244,7 @@
             }
         });
 
-        // =====================================
-        // 角色設定邏輯
-        // =====================================
+        // 角色設定 UI
         window.openRoleModal = () => document.getElementById('role-modal').classList.remove('hidden');
         window.closeRoleModal = () => document.getElementById('role-modal').classList.add('hidden');
 
@@ -305,12 +269,8 @@
             `).join('');
 
             const optionsHtml = roleList.map(r => `<option value="${r}">${r}</option>`).join('');
-            
-            const filterSelect = document.getElementById('filter-role');
-            filterSelect.innerHTML = `<option value="all">權限角色：全部</option>` + optionsHtml;
-            
-            const inputSelect = document.getElementById('input-role');
-            inputSelect.innerHTML = `<option value="">請選擇權限角色...</option>` + optionsHtml;
+            document.getElementById('filter-role').innerHTML = `<option value="all">權限角色：全部</option>` + optionsHtml;
+            document.getElementById('input-role').innerHTML = `<option value="">請選擇權限角色...</option>` + optionsHtml;
         }
 
         window.addRole = async () => {
@@ -350,29 +310,18 @@
             }
         };
 
-        // =====================================
         // 用戶表單與表格邏輯
-        // =====================================
         window.openUserModal = () => {
             if (!editingId) { 
                 document.getElementById('user-form').reset();
                 document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-user-plus text-blue-600"></i> 新增授權用戶';
                 document.getElementById('input-email').readOnly = false;
                 document.getElementById('input-email').classList.remove('bg-slate-100', 'text-slate-500');
-                
-                // 顯示密碼區塊，並加上 required 屬性
-                document.getElementById('password-section').style.display = 'grid';
-                document.getElementById('input-password').required = true;
-                document.getElementById('input-password-confirm').required = true;
             }
             document.getElementById('user-modal').classList.remove('hidden');
         };
 
-        window.closeUserModal = () => {
-            document.getElementById('user-modal').classList.add('hidden');
-            editingId = null;
-        };
-
+        window.closeUserModal = () => { document.getElementById('user-modal').classList.add('hidden'); editingId = null; };
         window.changePage = (page) => { currentPage = page; renderTable(); };
 
         function renderTable() {
@@ -382,10 +331,7 @@
             const filterStatus = document.getElementById('filter-status').value;
 
             let filtered = allUsers.filter(u => {
-                const matchSearch = (u.name || '').toLowerCase().includes(searchTerm) || 
-                                    (u.email || '').toLowerCase().includes(searchTerm) ||
-                                    (u.level1Unit || '').toLowerCase().includes(searchTerm) ||
-                                    (u.level2Unit || '').toLowerCase().includes(searchTerm);
+                const matchSearch = (u.name || '').toLowerCase().includes(searchTerm) || (u.email || '').toLowerCase().includes(searchTerm) || (u.level1Unit || '').toLowerCase().includes(searchTerm) || (u.level2Unit || '').toLowerCase().includes(searchTerm);
                 const matchRole = filterRole === 'all' || u.role === filterRole;
                 const matchStatus = filterStatus === 'all' || (filterStatus === 'active' ? u.is_active : !u.is_active);
                 return matchSearch && matchRole && matchStatus;
@@ -429,7 +375,6 @@
 
                 html += `
                 <tr class="group bg-white hover:bg-blue-50/40 transition-all duration-150 ${!data.is_active ? 'opacity-60 grayscale-[20%] bg-slate-50/50' : ''}">
-                    <!-- 使用者資訊 (包含姓名、信箱、職稱) -->
                     <td class="px-6 py-4 align-middle">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0 ${isSuperAdmin ? 'bg-indigo-100 text-indigo-600' : 'bg-blue-100 text-blue-600'}">
@@ -444,14 +389,11 @@
                             </div>
                         </div>
                     </td>
-                    <!-- 所屬單位 (一級與二級) -->
                     <td class="px-6 py-4 align-middle text-center">
                         <div class="text-sm font-bold text-slate-700">${data.level1Unit || '-'}</div>
                         <div class="text-xs text-slate-500 mt-0.5">${data.level2Unit || '-'}</div>
                     </td>
-                    <!-- 角色 -->
                     <td class="px-6 py-4 align-middle text-center">${roleBadge}</td>
-                    <!-- 狀態 -->
                     <td class="px-6 py-4 align-middle text-center">
                         <div class="flex items-center justify-center">
                             <label class="relative inline-flex items-center ${isDefaultAdmin ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} group/toggle" title="${isDefaultAdmin ? '預設管理員無法停用' : '點擊切換狀態'}">
@@ -461,7 +403,6 @@
                             </label>
                         </div>
                     </td>
-                    <!-- 操作 -->
                     <td class="px-6 py-4 align-middle text-center">
                         <div class="flex items-center justify-center gap-2 opacity-100 transition-opacity">
                             <button onclick="window.editUser('${data.id}')" class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all" title="編輯用戶資料"><i class="fa-solid fa-user-pen text-sm"></i></button>
@@ -501,58 +442,32 @@
             }
 
             const isValidDomain = payload.email === 'thu.isac.review@gmail.com' || payload.email.endsWith('@thu.edu.tw');
-            if (!isValidDomain) { 
-                alert("錯誤：僅允許設定東海大學信箱 (@thu.edu.tw) 為系統操作帳號！"); return; 
-            }
-
-            // 新增時的密碼檢查邏輯
-            let password = '';
-            if (!editingId) {
-                password = document.getElementById('input-password').value;
-                const confirmPwd = document.getElementById('input-password-confirm').value;
-                
-                // 密碼規則：8~20 個字元，至少一個大寫、一個小寫字母及數字
-                const pwdRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,20}$/;
-                
-                if (!pwdRegex.test(password)) {
-                    alert("密碼不符合規則！\n請輸入 8~20 個字元，並包含至少一個「大寫字母」、一個「小寫字母」及「數字」。");
-                    return;
-                }
-                if (password !== confirmPwd) {
-                    alert("兩次輸入的密碼不相符！");
-                    return;
-                }
-            }
+            if (!isValidDomain) { alert("錯誤：僅允許設定東海大學信箱 (@thu.edu.tw) 為系統操作帳號！"); return; }
 
             btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> 儲存中...';
             try {
                 if (editingId) { 
-                    // 編輯模式
                     await updateDoc(doc(db, "users", editingId), { ...payload, updated_at: serverTimestamp() }); 
                 } else {
-                    // 新增模式：檢查信箱是否重複
                     if(allUsers.some(u => u.email === payload.email)) { 
                         alert("此電子郵件已經存在於系統中！"); btn.disabled = false; btn.innerHTML = '儲存設定'; return; 
                     }
                     
-                    // 使用第二個 Auth 實例建立帳號 (避免當前管理員被登出)
-                    const userCredential = await createUserWithEmailAndPassword(adminAuth, payload.email, password);
+                    const defaultPassword = "Isac@2026";
+                    const userCredential = await createUserWithEmailAndPassword(adminAuth, payload.email, defaultPassword);
                     const newUid = userCredential.user.uid;
-                    
-                    // 建立成功後立刻登出第二個實例，保持乾淨
                     await signOut(adminAuth);
 
-                    // 將用戶資料寫入 Firestore，使用 Auth 產生的 UID 作為 Document ID
-                    await setDoc(doc(db, "users", newUid), { ...payload, is_active: true, created_at: serverTimestamp() });
+                    await setDoc(doc(db, "users", newUid), { ...payload, is_active: true, isFirstLogin: true, created_at: serverTimestamp() });
+                    
+                    alert(`✅ 新增成功！\n\n請通知使用者以預設密碼「${defaultPassword}」登入，系統將會引導其設定專屬密碼。`);
                 }
                 closeUserModal();
             } catch (err) { 
                 let errorMsg = err.message;
                 if (err.code === 'auth/email-already-in-use') errorMsg = "此信箱已被其他帳號使用！";
                 alert("儲存發生錯誤：" + errorMsg); 
-            } finally { 
-                btn.disabled = false; btn.innerText = '儲存設定'; 
-            }
+            } finally { btn.disabled = false; btn.innerText = '儲存設定'; }
         };
 
         window.editUser = (id) => {
@@ -567,11 +482,6 @@
             document.getElementById('input-role').value = user.role || '';
             document.getElementById('input-name').value = user.name || ''; 
             document.getElementById('input-email').value = user.email || ''; 
-            
-            // 編輯時隱藏密碼區塊並取消必填
-            document.getElementById('password-section').style.display = 'none';
-            document.getElementById('input-password').required = false;
-            document.getElementById('input-password-confirm').required = false;
 
             document.getElementById('input-email').readOnly = true; 
             document.getElementById('input-email').classList.add('bg-slate-100', 'text-slate-500');
@@ -579,4 +489,19 @@
             document.getElementById('user-modal').classList.remove('hidden');
         };
 
-        window.toggleStatus = async (id, status) => { await updateDoc(doc(db, "users", id),
+        window.toggleStatus = async (id, status) => { await updateDoc(doc(db, "users", id), { is_active: !status }); };
+        
+        window.deleteUser = async (id, name, email) => {
+            if (confirm(`警告：確定要移除用戶「${name} (${email})」的系統存取權限嗎？\n(註：這僅會移除系統內的權限資料，若需徹底刪除登入帳號請至 Firebase 主控台操作)`)) {
+                await deleteDoc(doc(db, "users", id));
+                if (currentPage > Math.ceil((allUsers.length - 1) / itemsPerPage) || 1) currentPage = Math.ceil((allUsers.length - 1) / itemsPerPage) || 1;
+                renderTable();
+            }
+        };
+
+        document.getElementById('search-input').addEventListener('input', renderTable);
+        document.getElementById('filter-role').addEventListener('change', renderTable);
+        document.getElementById('filter-status').addEventListener('change', renderTable);
+    </script>
+</body>
+</html>
