@@ -94,22 +94,22 @@
     <div class="flex-1 overflow-hidden px-6 pb-6 flex flex-col animate-fade">
         <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-200 flex flex-col flex-1 overflow-hidden">
             <div class="flex-1 overflow-auto custom-scrollbar relative">
-                <table class="w-full text-left table-fixed">
+                <table class="w-full text-left table-fixed border-collapse">
                     <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10 shadow-sm">
                         <tr>
-                            <!-- 💡 優化：重新校準寬度比例，給予課程名稱最大空間 -->
-                            <th class="px-2 py-4 text-center w-[40px]">
+                            <!-- 💡 重新校準寬度比例，防止換行，並給予課程名稱適當空間 -->
+                            <th class="px-2 py-4 text-center w-[45px]">
                                 <input type="checkbox" id="selectAll" onchange="toggleSelectPage(event)" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shadow-sm transition-all">
                             </th>
-                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[65px]">學年-學期</th>
-                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[85px]">開課學制</th>
-                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[75px]">開課學院</th>
-                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[85px]">開課學系</th>
-                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[75px]">選課代號</th>
-                            <th class="px-4 py-4 text-center text-xs font-bold text-slate-500 w-[auto]">課程名稱</th>
-                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[95px]">實習課程屬性</th>
-                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[80px]">實習學分數</th>
-                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[125px]">操作</th>
+                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[95px] whitespace-nowrap">學年-學期</th>
+                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[110px] whitespace-nowrap">開課學制</th>
+                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[90px] whitespace-nowrap">開課學院</th>
+                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[110px] whitespace-nowrap">開課學系</th>
+                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[90px] whitespace-nowrap">選課代號</th>
+                            <th class="px-4 py-4 text-center text-xs font-bold text-slate-500">課程名稱</th>
+                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[110px] whitespace-nowrap">實習課程屬性</th>
+                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[90px] whitespace-nowrap">實習學分數</th>
+                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[140px] whitespace-nowrap">操作</th>
                         </tr>
                     </thead>
                     <tbody id="table-body" class="divide-y divide-slate-100 text-sm">
@@ -459,22 +459,22 @@
                     <td class="px-2 py-3 align-middle">
                         <input type="checkbox" class="row-checkbox w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shadow-sm transition-all" value="${data.id}" onchange="toggleSelect('${data.id}')" ${isChecked}>
                     </td>
-                    <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight">${data.academic_year}-${data.term}</td>
-                    <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight">${data.edu_system}</td>
-                    <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight">${colDispName}</td>
-                    <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight">${deptDispName}</td>
-                    <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight uppercase font-mono">${data.course_code}</td>
+                    <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight whitespace-nowrap">${data.academic_year}-${data.term}</td>
+                    <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight whitespace-nowrap">${data.edu_system}</td>
+                    <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight whitespace-nowrap">${colDispName}</td>
+                    <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight whitespace-nowrap">${deptDispName}</td>
+                    <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight uppercase font-mono whitespace-nowrap">${data.course_code}</td>
                     <td class="px-4 py-3 align-middle text-sm font-bold text-slate-800 leading-tight text-center">
-                        <div class="inline-block text-left w-full max-w-full truncate" title="${data.course_name}">${data.course_name}</div>
+                        <div class="inline-block text-left w-full max-w-full" title="${data.course_name}">${data.course_name}</div>
                     </td>
-                    <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight">${data.course_type}</td>
-                    <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight">${data.credits}</td>
-                    <td class="px-2 py-3 align-middle">
-                        <div class="flex items-center justify-center gap-1 opacity-100">
-                            <button onclick="window.moveOrder('${data.id}', 'up')" class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-300 hover:text-blue-600 hover:bg-blue-50 transition-all disabled:opacity-0" ${globalIndex === 0 ? 'disabled' : ''}><i class="fa-solid fa-chevron-up text-[10px]"></i></button>
-                            <button onclick="window.moveOrder('${data.id}', 'down')" class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-300 hover:text-blue-600 hover:bg-blue-50 transition-all disabled:opacity-0" ${globalIndex === filteredCourses.length - 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-down text-[10px]"></i></button>
-                            <button onclick="window.editData('${data.id}')" class="w-7 h-7 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all shrink-0" title="編輯"><i class="fa-solid fa-pen text-[10px]"></i></button>
-                            <button onclick="window.deleteData('${data.id}', '${data.course_name}')" class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-all shrink-0" title="刪除"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
+                    <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight whitespace-nowrap">${data.course_type}</td>
+                    <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight whitespace-nowrap">${data.credits}</td>
+                    <td class="px-2 py-3 align-middle whitespace-nowrap">
+                        <div class="flex items-center justify-center gap-1.5 opacity-100">
+                            <button onclick="window.moveOrder('${data.id}', 'up')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 hover:text-blue-600 hover:bg-blue-50 transition-all disabled:opacity-0" ${globalIndex === 0 ? 'disabled' : ''}><i class="fa-solid fa-chevron-up text-[10px]"></i></button>
+                            <button onclick="window.moveOrder('${data.id}', 'down')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 hover:text-blue-600 hover:bg-blue-50 transition-all disabled:opacity-0" ${globalIndex === filteredCourses.length - 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-down text-[10px]"></i></button>
+                            <button onclick="window.editData('${data.id}')" class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all shrink-0" title="編輯"><i class="fa-solid fa-pen text-[11px]"></i></button>
+                            <button onclick="window.deleteData('${data.id}', '${data.course_name}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-all shrink-0" title="刪除"><i class="fa-solid fa-trash-can text-[11px]"></i></button>
                         </div>
                     </td>
                 </tr>`;
