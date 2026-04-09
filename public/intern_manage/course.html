@@ -47,7 +47,7 @@
             </div>
         </div>
 
-        <div class="flex flex-col md:flex-row justify-between items-center gap-4 w-full">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4 w-full relative">
             <div class="flex gap-2 w-full md:w-auto">
                 <select id="filter-semester" onchange="renderTable()" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 h-10 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
                     <option value="all">學年/期：全部</option>
@@ -60,6 +60,27 @@
                     <option value="all">開課學系：全部</option>
                 </select>
             </div>
+
+            <!-- 💡 批次操作懸浮列 (完美無殘影版本) -->
+            <div id="batch-action-bar" class="hidden absolute -inset-3 bg-slate-50 px-3 flex items-center justify-between z-20 animate-fade">
+                <div class="flex items-center text-blue-700">
+                    <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                        <i class="fa-solid fa-check-double text-blue-600"></i>
+                    </div>
+                    <span class="text-sm font-bold">已選擇 <span id="selected-count" class="text-lg mx-1 font-black text-blue-600">0</span> 筆課程</span>
+                    
+                    <button id="btn-select-all-filtered" onclick="selectAllFiltered()" class="hidden ml-4 text-xs font-bold text-blue-600 hover:text-white bg-blue-50 hover:bg-blue-600 border border-blue-200 hover:border-blue-600 px-3 py-1.5 rounded-lg transition-all shadow-sm">
+                        選取全部符合條件的 <span id="filtered-total-count">0</span> 筆
+                    </button>
+                    <button id="btn-clear-selection" onclick="clearSelection()" class="ml-2 text-xs font-bold text-slate-500 hover:text-white bg-slate-100 hover:bg-slate-500 border border-slate-200 hover:border-slate-500 px-3 py-1.5 rounded-lg transition-all shadow-sm">
+                        取消選取
+                    </button>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="batchDelete()" class="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"><i class="fa-solid fa-trash-can"></i> 批次刪除</button>
+                </div>
+            </div>
+
             <div class="relative w-full md:w-72 shadow-sm rounded-lg">
                 <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
                 <input type="text" id="search-input" oninput="renderTable()" placeholder="搜尋選課代號或課程名稱..." class="w-full bg-white border border-slate-200 rounded-lg pl-9 pr-3 h-10 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all">
@@ -72,20 +93,24 @@
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col flex-1 overflow-hidden">
             <div class="flex-1 overflow-auto custom-scrollbar relative">
                 <table class="w-full text-left table-fixed">
-                    <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
+                    <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10 shadow-sm">
                         <tr>
+                            <!-- 💡 調整欄寬以置入 Checkbox -->
+                            <th class="px-4 py-3.5 text-center w-[5%]">
+                                <input type="checkbox" id="selectAll" onchange="toggleSelectPage(event)" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shadow-sm transition-all">
+                            </th>
                             <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[8%] whitespace-nowrap">學年/期</th>
-                            <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[12%]">開課單位</th>
+                            <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[15%]">開課單位</th>
                             <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[10%]">選課代號</th>
                             <th class="px-4 py-3.5 text-left text-xs font-bold text-slate-500 w-[25%]">課程名稱</th>
-                            <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[12%]">實習課程屬性</th>
-                            <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[8%]">學分數</th>
+                            <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[10%]">課程屬性</th>
+                            <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[7%]">學分數</th>
                             <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[10%]">學制</th>
-                            <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[15%]">操作</th>
+                            <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[10%]">操作</th>
                         </tr>
                     </thead>
                     <tbody id="table-body" class="divide-y divide-slate-100 text-sm">
-                        <tr><td colspan="8" class="px-6 py-16 text-center text-slate-400"><i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-blue-500"></i><p class="font-bold">資料載入與驗證中...</p></td></tr>
+                        <tr><td colspan="9" class="px-6 py-16 text-center text-slate-400"><i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-blue-500"></i><p class="font-bold">資料載入與驗證中...</p></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -199,11 +224,15 @@
         const dataCollection = collection(db, "internship_courses");
         
         let allData = []; 
-        let globalDepts = []; // 存儲全域系所清單
-        let orderedColleges = []; // 存儲系統設定好的學院順序
+        let globalDepts = []; 
+        let orderedColleges = []; 
         let editingId = null; 
         let currentPage = 1; 
         const itemsPerPage = 10;
+        
+        // 💡 批次處理用的陣列
+        let selectedIds = [];
+        let filteredCourses = []; // 存儲目前篩選出的所有資料
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -222,17 +251,89 @@
                 // 3. 載入「全部歷年」課程
                 onSnapshot(dataCollection, (snapshot) => {
                     allData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    populateSemesterFilter(); // 動態萃取所有學期選項
+                    populateSemesterFilter(); 
+                    
+                    // 資料更新時清空選擇
+                    selectedIds = [];
+                    updateBatchActionBar();
                     renderTable();
                 }, (error) => {
-                    document.getElementById('table-body').innerHTML = `<tr><td colspan="8" class="px-6 py-16 text-center text-rose-500 font-bold"><i class="fa-solid fa-lock text-3xl mb-3"></i><p>資料讀取失敗，權限不足。</p></td></tr>`;
+                    document.getElementById('table-body').innerHTML = `<tr><td colspan="9" class="px-6 py-16 text-center text-rose-500 font-bold"><i class="fa-solid fa-lock text-3xl mb-3"></i><p>資料讀取失敗，權限不足。</p></td></tr>`;
                 });
             } else {
-                document.getElementById('table-body').innerHTML = `<tr><td colspan="8" class="px-6 py-16 text-center text-slate-400 font-bold"><i class="fa-solid fa-shield-halved text-3xl mb-3 text-slate-300"></i><p>請先登入系統以存取資料。</p></td></tr>`;
+                document.getElementById('table-body').innerHTML = `<tr><td colspan="9" class="px-6 py-16 text-center text-slate-400 font-bold"><i class="fa-solid fa-shield-halved text-3xl mb-3 text-slate-300"></i><p>請先登入系統以存取資料。</p></td></tr>`;
             }
         });
 
-        // 載入學院選項 (使用設定檔中的排序)
+        // 💡 批次處理邏輯開始
+        window.toggleSelectPage = (e) => {
+            const isChecked = e.target.checked;
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const currentPaginatedIds = filteredCourses.slice(startIndex, startIndex + itemsPerPage).map(d => d.id);
+            
+            if (isChecked) {
+                currentPaginatedIds.forEach(id => {
+                    if (!selectedIds.includes(id)) selectedIds.push(id);
+                });
+            } else {
+                selectedIds = selectedIds.filter(id => !currentPaginatedIds.includes(id));
+            }
+            updateBatchActionBar();
+            renderTable();
+        };
+
+        window.toggleSelect = (id) => {
+            const index = selectedIds.indexOf(id);
+            if (index === -1) selectedIds.push(id);
+            else selectedIds.splice(index, 1);
+            updateBatchActionBar();
+            renderTable();
+        };
+
+        window.selectAllFiltered = () => {
+            selectedIds = filteredCourses.map(d => d.id);
+            updateBatchActionBar();
+            renderTable();
+        };
+
+        window.clearSelection = () => {
+            selectedIds = [];
+            updateBatchActionBar();
+            renderTable();
+        };
+
+        function updateBatchActionBar() {
+            const bar = document.getElementById('batch-action-bar');
+            const count = document.getElementById('selected-count');
+            const btnSelectAll = document.getElementById('btn-select-all-filtered');
+            
+            if (selectedIds.length > 0) {
+                bar.classList.remove('hidden');
+                count.innerText = selectedIds.length;
+                
+                // 如果還沒全選所有符合條件的，顯示「選取全部X筆」按鈕
+                if (selectedIds.length < filteredCourses.length) {
+                    btnSelectAll.classList.remove('hidden');
+                    document.getElementById('filtered-total-count').innerText = filteredCourses.length;
+                } else {
+                    btnSelectAll.classList.add('hidden');
+                }
+            } else {
+                bar.classList.add('hidden');
+            }
+        }
+
+        window.batchDelete = async () => {
+            if (!confirm(`警告：確定要刪除選取的 ${selectedIds.length} 筆課程嗎？\n此操作無法復原！\n(若已有學生選修此課程，刪除可能會導致紀錄無法對應)`)) return;
+            try {
+                for (let id of selectedIds) {
+                    await deleteDoc(doc(db, "internship_courses", id));
+                }
+            } catch (e) { alert("批次刪除發生錯誤: " + e.message); }
+        };
+        // 💡 批次處理邏輯結束
+
+        // 載入學院選項
         function populateColleges() {
             const colleges = orderedColleges.length > 0 
                 ? orderedColleges 
@@ -264,12 +365,10 @@
             if (sems.includes(currentVal)) {
                 filterSem.value = currentVal;
             } else if (sems.includes(shellSemester)) {
-                // 預設篩選至外殼選定的學期
                 filterSem.value = shellSemester;
             }
         }
 
-        // 根據選擇的學院連動更新學系選項 (篩選列)
         window.updateFilterDepts = () => {
             const selectedCol = document.getElementById('filter-college').value;
             const filterDept = document.getElementById('filter-dept');
@@ -278,14 +377,13 @@
             if (selectedCol !== 'all') {
                 const depts = globalDepts.filter(d => d.college === selectedCol);
                 depts.forEach(d => {
-                    const dispName = d.shortName || d.name; // 優先使用簡稱
+                    const dispName = d.shortName || d.name; 
                     html += `<option value="${d.name}">${dispName}</option>`;
                 });
             }
             filterDept.innerHTML = html;
         };
 
-        // 根據選擇的學院連動更新學系選項 (表單內)
         window.updateFormDepts = (preselectedValue = '') => {
             const selectedCol = document.getElementById('input-college').value;
             const inputDept = document.getElementById('input-department');
@@ -294,7 +392,7 @@
             if (selectedCol) {
                 const depts = globalDepts.filter(d => d.college === selectedCol);
                 depts.forEach(d => {
-                    const dispName = d.shortName || d.name; // 優先使用簡稱
+                    const dispName = d.shortName || d.name;
                     html += `<option value="${d.name}">${dispName}</option>`;
                 });
             } else {
@@ -316,7 +414,11 @@
         };
 
         window.closeModal = () => { document.getElementById('data-modal').classList.add('hidden'); editingId = null; };
-        window.changePage = (page) => { currentPage = page; renderTable(); };
+        
+        window.changePage = (page) => { 
+            currentPage = page; 
+            renderTable(); 
+        };
 
         function renderTable() {
             const tbody = document.getElementById('table-body');
@@ -325,7 +427,7 @@
             const filterCol = document.getElementById('filter-college').value;
             const filterDept = document.getElementById('filter-dept').value;
 
-            let filtered = allData.filter(d => {
+            filteredCourses = allData.filter(d => {
                 const matchSearch = (d.course_name || '').toLowerCase().includes(searchTerm) || (d.course_code || '').toLowerCase().includes(searchTerm);
                 const matchSem = filterSem === 'all' || d.semester === filterSem;
                 const matchCol = filterCol === 'all' || d.college === filterCol;
@@ -334,19 +436,19 @@
             });
 
             // 依照學期降序，接著依照學系名稱與課程代號排序
-            filtered.sort((a, b) => {
+            filteredCourses.sort((a, b) => {
                 const cmpSem = (b.semester || '').localeCompare(a.semester || '');
                 if (cmpSem !== 0) return cmpSem;
                 const cmpDept = (a.department || '').localeCompare(b.department || '');
                 return cmpDept !== 0 ? cmpDept : (a.course_code || '').localeCompare(b.course_code || '');
             });
 
-            const totalItems = filtered.length;
+            const totalItems = filteredCourses.length;
             const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
-            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage > totalPages) currentPage = totalPages || 1;
 
             const startIndex = (currentPage - 1) * itemsPerPage;
-            const paginatedItems = filtered.slice(startIndex, startIndex + itemsPerPage);
+            const paginatedItems = filteredCourses.slice(startIndex, startIndex + itemsPerPage);
 
             document.getElementById('pagination-info').innerText = totalItems > 0 ? `顯示 ${startIndex + 1} 到 ${Math.min(startIndex + itemsPerPage, totalItems)} 筆，共 ${totalItems} 筆` : '尚無資料';
             
@@ -356,8 +458,13 @@
             btnHtml += `<button onclick="changePage(${currentPage + 1})" class="px-3 py-1 border border-slate-200 rounded-md text-sm font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-40 transition-colors" ${currentPage === totalPages ? 'disabled' : ''}>下一頁</button>`;
             document.getElementById('pagination-buttons').innerHTML = btnHtml;
 
+            // 動態判斷全選 Checkbox 狀態
+            const currentPaginatedIds = paginatedItems.map(d => d.id);
+            const isAllVisibleSelected = currentPaginatedIds.length > 0 && currentPaginatedIds.every(id => selectedIds.includes(id));
+            document.getElementById('selectAll').checked = isAllVisibleSelected;
+
             if (totalItems === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-16 text-center text-slate-400 font-bold bg-white">找不到符合條件的課程。</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="px-6 py-16 text-center text-slate-400 font-bold bg-white">找不到符合條件的課程。</td></tr>`;
                 return;
             }
 
@@ -372,12 +479,16 @@
 
                 let attrBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded border ${typeColor} text-[11px] font-bold whitespace-nowrap">${data.course_type}</span>`;
                 
-                // 尋找學系物件，以顯示簡稱
                 const deptObj = globalDepts.find(d => d.name === data.department);
                 const deptDispName = deptObj && deptObj.shortName ? deptObj.shortName : data.department;
 
+                const isChecked = selectedIds.includes(data.id) ? 'checked' : '';
+
                 html += `
                 <tr class="group bg-white hover:bg-blue-50/40 transition-all duration-150">
+                    <td class="px-4 py-4 align-middle text-center">
+                        <input type="checkbox" class="row-checkbox w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shadow-sm transition-all" value="${data.id}" onchange="toggleSelect('${data.id}')" ${isChecked}>
+                    </td>
                     <td class="px-4 py-4 align-middle text-center">
                         <div class="text-xs font-bold text-slate-400">${data.academic_year}-${data.term}</div>
                     </td>
@@ -435,7 +546,6 @@
             });
 
             filtered.forEach(d => {
-                // 匯出時如果需要顯示簡稱，可比照表格尋找簡稱，或保持存儲的全名。此處統一採用實際存入的資料
                 csv += [d.academic_year, d.term, d.edu_system, d.college, d.department, d.course_code, d.course_name, d.course_type, d.credits].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
             });
             const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
@@ -459,12 +569,22 @@
                     let addedCount = 0;
                     
                     for (let i = 1; i < rows.length; i++) {
-                        const cols = rows[i].split(',').map(col => col.replace(/(^"|"$)/g, '').trim());
+                        // 處理 CSV 欄位可能包含引號的問題 (套用強健解析器)
+                        let cols = [];
+                        let inQuotes = false;
+                        let currentVal = '';
+                        for (let char of rows[i]) {
+                            if (char === '"') { inQuotes = !inQuotes; }
+                            else if (char === ',' && !inQuotes) { cols.push(currentVal.trim()); currentVal = ''; }
+                            else { currentVal += char; }
+                        }
+                        cols.push(currentVal.trim());
+
                         if (cols.length >= 9) {
                             const payload = {
                                 academic_year: cols[0],
                                 term: cols[1],
-                                semester: `${cols[0]}-${cols[1]}`, 
+                                semester: `${cols[0]}-${cols[1]}`,
                                 edu_system: cols[2],
                                 college: cols[3],
                                 department: cols[4],
@@ -475,6 +595,9 @@
                                 created_at: serverTimestamp()
                             };
                             
+                            // 防呆：基本必填欄位需存在
+                            if (!payload.academic_year || !payload.term || !payload.course_code || !payload.course_name) continue;
+
                             await addDoc(dataCollection, payload);
                             addedCount++;
                         }
