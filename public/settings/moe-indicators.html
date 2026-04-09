@@ -66,10 +66,10 @@
                 <table class="w-full text-left table-fixed">
                     <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
                         <tr>
-                            <th class="px-6 py-3.5 text-left text-xs font-bold text-slate-500 w-[25%]">評鑑構面 (大指標)</th>
-                            <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 w-[15%]">指標代碼</th>
-                            <th class="px-6 py-3.5 text-left text-xs font-bold text-slate-500 w-[35%]">審查項目名稱</th>
-                            <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 w-[10%]">系統狀態</th>
+                            <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 w-[12%] whitespace-nowrap">指標代碼</th>
+                            <th class="px-6 py-3.5 text-left text-xs font-bold text-slate-500 w-[28%]">評鑑構面 (大指標)</th>
+                            <th class="px-6 py-3.5 text-left text-xs font-bold text-slate-500 w-[30%]">審查項目名稱</th>
+                            <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 w-[15%] whitespace-nowrap">系統狀態</th>
                             <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 w-[15%]">操作</th>
                         </tr>
                     </thead>
@@ -219,9 +219,6 @@
             }
         });
 
-        // =====================================
-        // 評鑑構面 (大指標) 管理邏輯
-        // =====================================
         window.openDimensionModal = () => document.getElementById('dimension-modal').classList.remove('hidden');
         window.closeDimensionModal = () => document.getElementById('dimension-modal').classList.add('hidden');
 
@@ -246,14 +243,12 @@
                 </li>
             `).join('');
 
-            // 更新篩選器
             const filterSelect = document.getElementById('filter-dimension');
             const currentFilter = filterSelect.value;
             const optionsHtml = dimensionList.map(dim => `<option value="${dim}">${dim}</option>`).join('');
             filterSelect.innerHTML = `<option value="all">評鑑構面：全部</option>` + optionsHtml;
             filterSelect.value = dimensionList.includes(currentFilter) ? currentFilter : 'all';
 
-            // 更新表單下拉選單
             const inputSelect = document.getElementById('input-dimension');
             const currentInput = inputSelect.value;
             inputSelect.innerHTML = `<option value="">請選擇評鑑構面...</option>` + optionsHtml;
@@ -301,9 +296,6 @@
             }
         };
 
-        // =====================================
-        // 指標項目 管理邏輯
-        // =====================================
         window.openModal = () => {
             if (!editingId) { 
                 document.getElementById('data-form').reset();
@@ -352,40 +344,36 @@
             paginatedItems.forEach((data, idx) => {
                 const globalIndex = startIndex + idx; 
 
-                let dimBadgeColor = "bg-indigo-50 text-indigo-700 border-indigo-200";
-                if (data.dimension && data.dimension.includes("二、")) dimBadgeColor = "bg-emerald-50 text-emerald-700 border-emerald-200";
-                if (data.dimension && data.dimension.includes("三、")) dimBadgeColor = "bg-amber-50 text-amber-700 border-amber-200";
-
-                let dimensionBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md border ${dimBadgeColor} text-xs font-bold whitespace-nowrap"><i class="fa-solid fa-layer-group mr-1.5"></i> ${data.dimension}</span>`;
-
                 html += `
                 <tr class="group bg-white hover:bg-blue-50/40 transition-all duration-150 ${!data.is_active ? 'opacity-60 grayscale-[20%] bg-slate-50/50' : ''}">
-                    <td class="px-6 py-4 align-middle">${dimensionBadge}</td>
                     <td class="px-6 py-4 align-middle text-center">
-                        <span class="inline-block bg-slate-100 border border-slate-300 text-slate-600 font-mono font-bold px-2 py-1 rounded shadow-inner text-xs">${data.code || '-'}</span>
+                        <span class="inline-block bg-slate-100 border border-slate-300 text-slate-600 font-mono font-bold px-2 py-1 rounded shadow-inner text-xs whitespace-nowrap">${data.code || '-'}</span>
+                    </td>
+                    <td class="px-6 py-4 align-middle">
+                        <span class="text-sm font-bold text-slate-700 block">${data.dimension || '-'}</span>
                     </td>
                     <td class="px-6 py-4 align-middle">
                         <span class="text-sm font-bold text-slate-800 leading-tight block">${data.item_name}</span>
                     </td>
                     <td class="px-6 py-4 align-middle text-center">
-                        <div class="flex items-center justify-center">
+                        <div class="flex items-center justify-center whitespace-nowrap">
                             <label class="relative inline-flex items-center cursor-pointer group/toggle">
                                 <input type="checkbox" class="sr-only peer" ${data.is_active ? 'checked' : ''} onchange="window.toggleStatus('${data.id}', ${data.is_active})">
                                 <div class="relative w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-[20px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner shrink-0 min-w-[44px]"></div>
-                                <span class="ml-3 text-sm font-bold ${data.is_active ? 'text-emerald-600' : 'text-slate-400'}">${data.is_active ? '啟用' : '停用'}</span>
+                                <span class="ml-3 text-sm font-bold ${data.is_active ? 'text-emerald-600' : 'text-slate-400'} whitespace-nowrap">${data.is_active ? '啟用' : '停用'}</span>
                             </label>
                         </div>
                     </td>
                     <td class="px-6 py-4 align-middle text-center">
                         <div class="flex items-center justify-center gap-2 opacity-100 transition-opacity">
-                            <button onclick="window.moveData('${data.id}', 'up')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all disabled:opacity-20" ${globalIndex === 0 ? 'disabled' : ''} title="向上移動">
+                            <button onclick="window.moveData('${data.id}', 'up')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all disabled:opacity-20 shrink-0" ${globalIndex === 0 ? 'disabled' : ''} title="向上移動">
                                 <i class="fa-solid fa-chevron-up text-xs"></i>
                             </button>
-                            <button onclick="window.moveData('${data.id}', 'down')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all disabled:opacity-20" ${globalIndex === filtered.length - 1 ? 'disabled' : ''} title="向下移動">
+                            <button onclick="window.moveData('${data.id}', 'down')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all disabled:opacity-20 shrink-0" ${globalIndex === filtered.length - 1 ? 'disabled' : ''} title="向下移動">
                                 <i class="fa-solid fa-chevron-down text-xs"></i>
                             </button>
-                            <button onclick="window.editData('${data.id}')" class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all" title="編輯"><i class="fa-solid fa-pen text-sm"></i></button>
-                            <button onclick="window.deleteData('${data.id}', '${data.item_name}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all" title="刪除"><i class="fa-solid fa-trash-can text-sm"></i></button>
+                            <button onclick="window.editData('${data.id}')" class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all shrink-0" title="編輯"><i class="fa-solid fa-pen text-sm"></i></button>
+                            <button onclick="window.deleteData('${data.id}', '${data.item_name}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all shrink-0" title="刪除"><i class="fa-solid fa-trash-can text-sm"></i></button>
                         </div>
                     </td>
                 </tr>`;
@@ -395,11 +383,11 @@
 
         window.exportToCSV = () => {
             if (allData.length === 0) { alert("沒有資料可供匯出！"); return; }
-            let csv = '\uFEFF排序,評鑑構面(大指標),指標代碼,審查項目名稱,系統狀態\n';
+            let csv = '\uFEFF排序,指標代碼,評鑑構面(大指標),審查項目名稱,系統狀態\n';
             let sorted = [...allData].sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
             sorted.forEach(d => {
                 let status = d.is_active ? '啟用' : '停用';
-                csv += [d.sortOrder, d.dimension, d.code, d.item_name, status].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+                csv += [d.sortOrder, d.code, d.dimension, d.item_name, status].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
             });
             const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
             link.download = `ISAC教育部審查指標主檔_${new Date().toISOString().split('T')[0]}.csv`; link.click();
