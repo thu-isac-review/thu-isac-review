@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系所清單管理 - 內容頁</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 50: '#f0f5fa', 500: '#2c75b3', 600: '#1a5c96', 700: '#004785' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #f8fafc; margin: 0; padding: 2rem; overflow-x: hidden; }
+        * { font-family: "SF Pro TC", "Noto Sans TC", sans-serif; -webkit-font-smoothing: antialiased; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .modal-enter { animation: modalFadeIn 0.3s ease-out forwards; }
+        @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    </style>
+</head>
+<body class="custom-scrollbar">
+
+    <div class="max-w-[1400px] mx-auto space-y-6">
+        <!-- 頂部操作列 -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/60 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <i class="ph-fill ph-buildings text-blue-600 text-2xl"></i> 系所清單管理
+                </h2>
+                <p class="text-sm text-slate-500 mt-1">設定各院系承辦窗口與系統開放狀態</p>
+            </div>
+            <button onclick="openModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all flex items-center gap-2 shadow-md shadow-blue-100">
+                <i class="ph-bold ph-plus"></i> 新增系所
+            </button>
+        </div>
+
+        <!-- 數據表格 -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50/50 border-b border-slate-100">
+                            <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">學院 / 學系</th>
+                            <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">代碼</th>
+                            <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">承辦窗口</th>
+                            <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">系統狀態</th>
+                            <th class="px-6 py-4 text-right"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="dept-table-body" class="divide-y divide-slate-50 text-sm">
+                        <tr>
+                            <td colspan="5" class="px-6 py-12 text-center text-slate-400">
+                                <i class="ph-bold ph-spinner animate-spin text-2xl mb-2"></i>
+                                <p class="font-medium">連線至資料庫中...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增系所彈窗 (Modal) -->
+    <div id="dept-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden modal-enter relative">
+            <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h3 class="font-bold text-slate-800 flex items-center gap-2"><i class="ph-bold ph-buildings text-blue-600"></i> 新增系所單位</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600"><i class="ph-bold ph-x text-xl"></i></button>
+            </div>
+            <form id="dept-form" class="p-8 space-y-5">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 px-1">所屬學院</label>
+                        <select id="input-college" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-blue-50 transition-all outline-none">
+                            <option value="">請選擇學院...</option>
+                            <option value="管理學院">管理學院</option>
+                            <option value="文學院">文學院</option>
+                            <option value="工學院">工學院</option>
+                            <option value="理學院">理學院</option>
+                            <option value="農學院">農學院</option>
+                            <option value="社會科學院">社會科學院</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 px-1">系所代碼</label>
+                        <input type="text" id="input-code" required placeholder="IM" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-blue-50 transition-all outline-none uppercase font-mono">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 px-1">學系名稱</label>
+                    <input type="text" id="input-name" required placeholder="例如：資訊管理學系" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-blue-50 transition-all outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4 pt-4 border-t border-slate-50">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 px-1">窗口姓名</label>
+                        <input type="text" id="input-contact-name" placeholder="助教姓名" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-blue-50 transition-all outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 px-1">窗口 Email</label>
+                        <input type="email" id="input-contact-email" placeholder="example@thu.edu.tw" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-blue-50 transition-all outline-none">
+                    </div>
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeModal()" class="flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-slate-50 rounded-xl transition-all">取消</button>
+                    <button type="submit" id="btn-submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-100 transition-all">儲存系所</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase 邏輯 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY",
+            authDomain: "thu-isac-review.firebaseapp.com",
+            projectId: "thu-isac-review",
+            storageBucket: "thu-isac-review.firebasestorage.app",
+            messagingSenderId: "453299876735",
+            appId: "1:453299876735:web:1d8babca3315423161a04a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const deptCollection = collection(db, "departments");
+
+        window.openModal = () => document.getElementById('dept-modal').classList.remove('hidden');
+        window.closeModal = () => {
+            document.getElementById('dept-modal').classList.add('hidden');
+            document.getElementById('dept-form').reset();
+        };
+
+        // 1. 讀取資料
+        onSnapshot(deptCollection, (snapshot) => {
+            const tbody = document.getElementById('dept-table-body');
+            if (snapshot.empty) {
+                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-slate-400 font-medium">目前尚無系所資料，請點擊新增。</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            snapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                const id = docSnap.id;
+                html += `
+                <tr class="hover:bg-slate-50/50 transition-colors ${!data.is_active ? 'opacity-40' : ''}">
+                    <td class="px-6 py-5">
+                        <div class="text-[10px] font-bold text-blue-600 mb-1 uppercase tracking-wider">${data.college}</div>
+                        <div class="font-bold text-slate-800 text-base">${data.name}</div>
+                    </td>
+                    <td class="px-6 py-5">
+                        <span class="font-mono text-xs bg-slate-100 text-slate-500 px-2.5 py-1 rounded-lg border border-slate-200 font-bold">${data.code}</span>
+                    </td>
+                    <td class="px-6 py-5">
+                        <div class="text-sm font-bold text-slate-700">${data.contactName || '-'}</div>
+                        <div class="text-[10px] text-slate-400 font-medium">${data.contactEmail || '-'}</div>
+                    </td>
+                    <td class="px-6 py-5 text-center">
+                        <button onclick="window.toggleStatus('${id}', ${data.is_active})" class="px-3 py-1 rounded-full text-[10px] font-black tracking-tight transition-all border ${data.is_active ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-100 text-slate-400 border-slate-200'}">
+                            ${data.is_active ? '已啟用' : '已停用'}
+                        </button>
+                    </td>
+                    <td class="px-6 py-5 text-right">
+                        <button onclick="window.deleteDept('${id}', '${data.name}')" class="text-slate-300 hover:text-rose-500 transition-colors p-2">
+                            <i class="ph-bold ph-trash text-lg"></i>
+                        </button>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        });
+
+        // 2. 新增系所
+        document.getElementById('dept-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i>';
+            try {
+                await addDoc(deptCollection, {
+                    college: document.getElementById('input-college').value,
+                    code: document.getElementById('input-code').value.toUpperCase(),
+                    name: document.getElementById('input-name').value,
+                    contactName: document.getElementById('input-contact-name').value,
+                    contactEmail: document.getElementById('input-contact-email').value,
+                    is_active: true,
+                    created_at: serverTimestamp()
+                });
+                closeModal();
+            } catch (err) { alert(err.message); }
+            finally { btn.disabled = false; btn.innerText = "儲存系所"; }
+        });
+
+        // 3. 更新狀態
+        window.toggleStatus = async (id, status) => {
+            await updateDoc(doc(db, "departments", id), { is_active: !status });
+        };
+
+        // 4. 刪除
+        window.deleteDept = async (id, name) => {
+            if (confirm(`確定刪除「${name}」？`)) await deleteDoc(doc(db, "departments", id));
+        };
+    </script>
+</body>
+</html>
