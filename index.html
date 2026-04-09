@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ISAC 實習文件書審查核平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f5fa',
+                            100: '#e1ebf4',
+                            500: '#2c75b3',
+                            600: '#1a5c96',
+                            700: '#004785', // 東海藍
+                            800: '#003666',
+                            900: '#002244',
+                        },
+                        sidebar: '#0f172a', // 深邃的側邊欄顏色
+                    },
+                    boxShadow: {
+                        'card': '0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.03)',
+                        'float': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05)',
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        html, body { height: 100%; margin: 0; padding: 0; background-color: #f8fafc; }
+        * {
+            font-family: "SF Pro TC", "SF Pro Display", "PingFang TC", "Noto Sans TC", sans-serif !important;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* 視圖切換動畫 */
+        .view-section { display: none; opacity: 0; }
+        .view-section.active { display: block; opacity: 1; animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 滾動條美化 */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* 側邊欄選中狀態 */
+        .sidebar-item.active { background-color: rgba(255, 255, 255, 0.1); color: #ffffff; border-left-color: #3b82f6; }
+        .sidebar-item { border-left: 3px solid transparent; transition: all 0.2s ease; }
+        .sidebar-item:hover:not(.active) { background-color: rgba(255, 255, 255, 0.05); color: #f8fafc; }
+
+        /* 查核清單卡片特效 */
+        .check-card { transition: all 0.2s ease; cursor: pointer; }
+        .check-card:hover { background-color: #f8fafc; border-color: #cbd5e1; }
+        .check-card.checked { background-color: #f0f9ff; border-color: #bae6fd; }
+    </style>
+</head>
+
+<body class="text-slate-800 flex h-full overflow-hidden">
+
+    <!-- ==========================================
+         左側深色導航欄 (Sidebar)
+         ========================================== -->
+    <aside class="w-64 bg-sidebar text-slate-300 flex-col hidden md:flex shrink-0 z-20 shadow-xl">
+        <!-- Logo 區塊 -->
+        <div class="h-16 flex items-center px-6 border-b border-slate-700/50 cursor-pointer">
+            <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center mr-3 shadow-md">
+                <i class="ph-bold ph-shield-check text-white text-lg"></i>
+            </div>
+            <span class="text-white font-bold text-lg tracking-wide">ISAC 審查中心</span>
+        </div>
+
+        <!-- 選單區塊 -->
+        <div class="flex-1 overflow-y-auto py-4 custom-scrollbar">
+            <div class="px-4 mb-2 text-xs font-bold text-slate-500 uppercase tracking-wider">主要業務</div>
+            
+            <button onclick="switchView('admin')" id="nav-admin" class="sidebar-item w-full flex items-center px-6 py-3 text-sm font-medium mb-1 active">
+                <i class="ph-fill ph-squares-four text-xl mr-3 opacity-80"></i> 總覽儀表板
+            </button>
+            
+            <button onclick="switchView('list')" id="nav-list" class="sidebar-item w-full flex items-center px-6 py-3 text-sm font-medium mb-1">
+                <i class="ph-fill ph-users-three text-xl mr-3 opacity-80"></i> 學生待查核名單
+            </button>
+
+            <div class="px-4 mt-8 mb-2 text-xs font-bold text-slate-500 uppercase tracking-wider">設定與維護</div>
+            
+            <button class="sidebar-item w-full flex items-center px-6 py-3 text-sm font-medium mb-1 text-slate-400 cursor-not-allowed">
+                <i class="ph-fill ph-file-text text-xl mr-3 opacity-80"></i> 指標與表單設定
+            </button>
+            <button class="sidebar-item w-full flex items-center px-6 py-3 text-sm font-medium mb-1 text-slate-400 cursor-not-allowed">
+                <i class="ph-fill ph-users text-xl mr-3 opacity-80"></i> 權限管理
+            </button>
+        </div>
+
+        <!-- 底部使用者區塊 -->
+        <div class="p-4 border-t border-slate-700/50">
+            <div class="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">
+                <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-400 flex items-center justify-center text-white font-bold text-sm shadow-md">
+                    Ad
+                </div>
+                <div class="flex-1 overflow-hidden">
+                    <div class="text-sm font-bold text-white truncate">系統管理員</div>
+                    <div class="text-xs text-slate-400 truncate">admin@thu.edu.tw</div>
+                </div>
+                <i class="ph-bold ph-caret-up text-slate-500"></i>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ==========================================
+         右側主要內容區
+         ========================================== -->
+    <main class="flex-1 flex flex-col h-full relative overflow-hidden bg-slate-50">
+        
+        <!-- 頂部純白操作列 (Header) -->
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0 z-10 shadow-sm">
+            <div class="flex items-center gap-4">
+                <!-- 手機版選單按鈕 -->
+                <button class="md:hidden text-slate-500 hover:text-slate-800">
+                    <i class="ph-bold ph-list text-2xl"></i>
+                </button>
+                
+                <!-- 頁面標題 (動態變更) -->
+                <h2 id="header-title" class="text-lg font-bold text-slate-800 hidden sm:block">總覽儀表板</h2>
+            </div>
+
+            <!-- 右側控制項 -->
+            <div class="flex items-center gap-4">
+                <!-- 搜尋框 -->
+                <div class="relative hidden lg:block">
+                    <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" class="pl-9 pr-4 py-1.5 bg-slate-100 border-transparent rounded-lg text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all w-64" placeholder="搜尋學號、姓名或機構...">
+                </div>
+
+                <div class="h-6 w-px bg-slate-200 mx-1"></div>
+
+                <!-- 學期切換 (極簡樣式) -->
+                <div class="relative">
+                    <select class="appearance-none bg-transparent border-none text-slate-700 font-bold text-sm py-1.5 pl-3 pr-8 cursor-pointer focus:ring-0">
+                        <option value="114-1" selected>114-1 學年度</option>
+                        <option value="113-2">113-2 學年度</option>
+                    </select>
+                    <i class="ph-bold ph-caret-down absolute right-2 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                </div>
+
+                <!-- 通知小鈴鐺 -->
+                <button class="relative w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors text-slate-500">
+                    <i class="ph-bold ph-bell text-lg"></i>
+                    <span class="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border border-white"></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- 內容捲動區 -->
+        <div class="flex-1 overflow-y-auto custom-scrollbar p-6 lg:p-8">
+            
+            <!-- ==========================================
+                 視圖 1：系統管理員後台 (Admin Dashboard - 完美還原圖片佈局)
+                 ========================================== -->
+            <div id="view-admin" class="view-section active flex flex-col gap-6 max-w-[1400px] mx-auto">
+                
+                <!-- 數據卡片列 (KPI Cards) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- KPI 1 -->
+                    <div class="bg-white rounded-xl p-5 shadow-card border border-slate-100 flex flex-col hover:shadow-float transition-shadow">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="text-sm font-bold text-slate-500">已建檔學生數</div>
+                            <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center"><i class="ph-bold ph-users text-lg"></i></div>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <h3 class="text-3xl font-black text-slate-800">120</h3>
+                            <span class="text-xs font-bold text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded flex items-center gap-0.5"><i class="ph-bold ph-trend-up"></i> 12%</span>
+                        </div>
+                    </div>
+                    <!-- KPI 2 -->
+                    <div class="bg-white rounded-xl p-5 shadow-card border border-slate-100 flex flex-col hover:shadow-float transition-shadow">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="text-sm font-bold text-slate-500">涵蓋系所</div>
+                            <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="ph-bold ph-buildings text-lg"></i></div>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <h3 class="text-3xl font-black text-slate-800">15</h3>
+                            <span class="text-xs font-medium text-slate-400">個單位</span>
+                        </div>
+                    </div>
+                    <!-- KPI 3 -->
+                    <div class="bg-white rounded-xl p-5 shadow-card border border-slate-100 flex flex-col hover:shadow-float transition-shadow">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="text-sm font-bold text-slate-500">異常與退件數</div>
+                            <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center"><i class="ph-bold ph-warning-circle text-lg"></i></div>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <h3 class="text-3xl font-black text-slate-800">8</h3>
+                            <span class="text-xs font-medium text-slate-400">待系所補件</span>
+                        </div>
+                    </div>
+                    <!-- KPI 4 -->
+                    <div class="bg-white rounded-xl p-5 shadow-card border border-slate-100 flex flex-col hover:shadow-float transition-shadow relative overflow-hidden">
+                        <div class="absolute bottom-0 left-0 w-full h-1 bg-slate-100"><div class="h-full bg-indigo-500" style="width: 24%"></div></div>
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="text-sm font-bold text-slate-500">儲存空間使用率</div>
+                            <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center"><i class="ph-bold ph-hard-drives text-lg"></i></div>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <h3 class="text-3xl font-black text-slate-800">24%</h3>
+                            <span class="text-xs font-medium text-slate-400">1.2GB / 5.0GB</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 動作卡片列 (Action Cards) -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- 左側：匯入區塊 (佔 1/3) -->
+                    <div class="bg-white rounded-xl shadow-card border border-slate-100 p-6 flex flex-col">
+                        <h3 class="text-base font-bold text-slate-800 mb-1">建立查核底稿</h3>
+                        <p class="text-sm text-slate-500 mb-5">上傳教務處 Excel 建立學生實習清單</p>
+                        
+                        <div class="flex-1 border-2 border-dashed border-slate-200 rounded-lg bg-slate-50 flex flex-col items-center justify-center p-6 text-center hover:bg-blue-50 hover:border-blue-300 transition-colors cursor-pointer group">
+                            <div class="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                <i class="ph-bold ph-upload-simple text-xl text-blue-500"></i>
+                            </div>
+                            <div class="text-sm font-bold text-slate-700">點擊上傳名單檔案</div>
+                            <div class="text-xs text-slate-400 mt-1">支援 .xlsx, .csv 格式</div>
+                        </div>
+                    </div>
+
+                    <!-- 右側：空間與專案管理 (佔 2/3) -->
+                    <div class="bg-white rounded-xl shadow-card border border-slate-100 p-6 lg:col-span-2 flex flex-col">
+                        <h3 class="text-base font-bold text-slate-800 mb-1 flex items-center gap-2">
+                            專案完結與空間釋放 <span class="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded uppercase">重要操作</span>
+                        </h3>
+                        <p class="text-sm text-slate-500 mb-5">查核作業結束後，請依序執行打包與清空，以維持 Firebase 免費額度。</p>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
+                            <button class="bg-white border border-slate-200 hover:border-blue-300 hover:shadow-md rounded-xl p-5 text-left transition-all flex flex-col justify-between group">
+                                <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                    <i class="ph-bold ph-file-zip text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800 mb-1">1. 打包實體審查包</h4>
+                                    <p class="text-xs text-slate-500">依學院/學系自動分類並下載成 ZIP 檔，供教育部實地訪評用。</p>
+                                </div>
+                            </button>
+                            
+                            <button class="bg-white border border-slate-200 hover:border-rose-300 hover:shadow-md rounded-xl p-5 text-left transition-all flex flex-col justify-between group">
+                                <div class="w-10 h-10 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center mb-4 group-hover:bg-rose-600 group-hover:text-white transition-colors">
+                                    <i class="ph-bold ph-trash text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800 mb-1">2. 一鍵清空雲端檔案</h4>
+                                    <p class="text-xs text-rose-500 font-medium">徹底刪除本學期的所有實體檔案。此操作無法復原，請謹慎使用。</p>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 底部表格：異常追蹤名單 -->
+                <div class="bg-white rounded-xl shadow-card border border-slate-100 overflow-hidden flex flex-col">
+                    <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center">
+                        <div>
+                            <h3 class="text-base font-bold text-slate-800">異常退件追蹤名單</h3>
+                            <p class="text-xs text-slate-500 mt-1">需通知系所進行補件或修正之項目</p>
+                        </div>
+                        <button class="text-sm font-bold text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 border border-blue-200">
+                            <i class="ph-bold ph-download-simple"></i> 匯出報表
+                        </button>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr>
+                                    <th class="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50">學系</th>
+                                    <th class="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50">學生資訊</th>
+                                    <th class="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50">異常文件</th>
+                                    <th class="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50">退件備註</th>
+                                    <th class="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50 text-right">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 text-sm">
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4 font-medium text-slate-700">歷史學系</td>
+                                    <td class="px-6 py-4">
+                                        <div class="font-bold text-slate-800">李大華</div>
+                                        <div class="text-xs text-slate-400">S0813006</div>
+                                    </td>
+                                    <td class="px-6 py-4"><span class="px-2.5 py-1 bg-rose-50 text-rose-700 text-xs font-bold rounded-md border border-rose-100">實習合約書</span></td>
+                                    <td class="px-6 py-4 text-slate-500">甲乙丙三方未完全蓋章 (缺學校用印)</td>
+                                    <td class="px-6 py-4 text-right">
+                                        <button class="text-blue-600 hover:underline font-medium text-xs">發送通知</button>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4 font-medium text-slate-700">社會工作學系</td>
+                                    <td class="px-6 py-4">
+                                        <div class="font-bold text-slate-800">張雅婷</div>
+                                        <div class="text-xs text-slate-400">S0924011</div>
+                                    </td>
+                                    <td class="px-6 py-4"><span class="px-2.5 py-1 bg-amber-50 text-amber-700 text-xs font-bold rounded-md border border-amber-100">保險證明</span></td>
+                                    <td class="px-6 py-4 text-slate-500">未上傳勞保或意外險投保證明</td>
+                                    <td class="px-6 py-4 text-right">
+                                        <button class="text-blue-600 hover:underline font-medium text-xs">發送通知</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==========================================
+                 視圖 2：待查核名單 (List View)
+                 ========================================== -->
+            <div id="view-list" class="view-section flex flex-col gap-6 max-w-[1400px] mx-auto">
+                
+                <!-- 工具列 -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 rounded-xl shadow-card border border-slate-100">
+                    <div class="flex flex-wrap gap-3">
+                        <select class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-3 py-2 outline-none">
+                            <option>全部學院</option>
+                            <option>管理學院</option>
+                        </select>
+                        <select class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-3 py-2 outline-none">
+                            <option>全部學系</option>
+                            <option>資訊管理學系</option>
+                        </select>
+                        <select class="bg-white border border-slate-300 text-blue-700 font-bold text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-3 py-2 outline-none">
+                            <option>狀態：待查核 (未收齊)</option>
+                            <option>狀態：異常退件</option>
+                            <option>狀態：已通過</option>
+                            <option>全部狀態</option>
+                        </select>
+                    </div>
+                    <div class="relative w-full md:w-64">
+                        <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none" placeholder="搜尋學號、姓名...">
+                    </div>
+                </div>
+
+                <!-- 無框線極簡表格 -->
+                <div class="bg-white rounded-xl shadow-card border border-slate-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50 w-28">狀態</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50">學生資訊</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50">實習機構 / 課程</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50 w-48">文件進度</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50 text-right">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 text-sm">
+                                
+                                <!-- Row 1 -->
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <div class="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-amber-50 text-amber-600 text-xs font-bold border border-amber-100">
+                                            <i class="ph-fill ph-hourglass-high"></i> 待查核
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm">王</div>
+                                            <div>
+                                                <div class="font-bold text-slate-800">王小明</div>
+                                                <div class="text-xs text-slate-400">S1101234 · 資管系</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="font-bold text-slate-700">台灣積體電路製造</div>
+                                        <div class="text-xs text-slate-400">資訊系統實務(一)</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center justify-between mb-1.5">
+                                            <span class="text-xs font-bold text-slate-500">收齊率</span>
+                                            <span class="text-xs font-bold text-blue-600">1 / 5</span>
+                                        </div>
+                                        <div class="w-full bg-slate-100 rounded-full h-1.5">
+                                            <div class="bg-blue-500 h-1.5 rounded-full" style="width: 20%"></div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <button onclick="switchView('audit')" class="bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 text-slate-600 font-bold py-1.5 px-4 rounded-lg shadow-sm transition-all text-xs inline-flex items-center gap-1.5">
+                                            進入查核 <i class="ph-bold ph-arrow-right"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Row 2 -->
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <div class="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-rose-50 text-rose-600 text-xs font-bold border border-rose-100">
+                                            <i class="ph-fill ph-warning-circle"></i> 已退件
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-sm">李</div>
+                                            <div>
+                                                <div class="font-bold text-slate-800">李大華</div>
+                                                <div class="text-xs text-slate-400">S0813006 · 歷史系</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="font-bold text-slate-700">國立故宮博物院</div>
+                                        <div class="text-xs text-slate-400">文創實習(113)</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center justify-between mb-1.5">
+                                            <span class="text-xs font-bold text-slate-500">收齊率</span>
+                                            <span class="text-xs font-bold text-rose-500">4 / 5</span>
+                                        </div>
+                                        <div class="w-full bg-slate-100 rounded-full h-1.5">
+                                            <div class="bg-rose-400 h-1.5 rounded-full" style="width: 80%"></div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <button class="bg-white border border-rose-200 hover:bg-rose-50 text-rose-600 font-bold py-1.5 px-4 rounded-lg shadow-sm transition-all text-xs inline-flex items-center gap-1.5">
+                                            <i class="ph-bold ph-pencil-simple"></i> 處理異常
+                                        </button>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==========================================
+                 視圖 3：單一學生審查工作站 (Audit View)
+                 ========================================== -->
+            <div id="view-audit" class="view-section flex flex-col gap-6 h-full max-w-[1600px] mx-auto">
+                
+                <!-- 頂部返回與學生資訊 -->
+                <div class="bg-white px-6 py-4 rounded-xl shadow-card border border-slate-100 flex justify-between items-center">
+                    <div class="flex items-center gap-4">
+                        <button onclick="switchView('list')" class="w-8 h-8 rounded hover:bg-slate-100 text-slate-500 flex items-center justify-center transition-colors">
+                            <i class="ph-bold ph-arrow-left text-lg"></i>
+                        </button>
+                        <div class="h-6 w-px bg-slate-200"></div>
+                        <div class="flex items-center gap-3">
+                            <h2 class="text-lg font-black text-slate-800">王小明</h2>
+                            <span class="bg-slate-100 text-slate-500 text-xs font-bold px-2 py-0.5 rounded font-mono border border-slate-200">S1101234</span>
+                            <span class="text-sm text-slate-400 hidden sm:inline-block">· 台灣積體電路製造</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-3">
+                        <div class="text-xs font-bold text-slate-400">文件進度</div>
+                        <div class="bg-blue-50 text-blue-700 font-bold px-3 py-1 rounded border border-blue-100 text-sm">
+                            1 / 5
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 審查主工作區 -->
+                <div class="flex flex-col lg:flex-row gap-6 flex-1 min-h-[600px]">
+                    
+                    <!-- 左側：文件目錄 -->
+                    <div class="w-full lg:w-72 flex flex-col gap-3">
+                        <div class="bg-white p-5 rounded-xl shadow-card border border-slate-100 flex-1 flex flex-col">
+                            <h3 class="text-sm font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100 flex items-center gap-2">
+                                <i class="ph-fill ph-files text-slate-400"></i> 應繳交文件目錄
+                            </h3>
+                            
+                            <div class="space-y-2 flex-1">
+                                <!-- 已完成 -->
+                                <div class="p-3 rounded-lg bg-white border border-slate-100 flex items-center gap-3 hover:bg-slate-50 cursor-pointer transition-colors">
+                                    <i class="ph-fill ph-check-circle text-emerald-500 text-lg"></i>
+                                    <div class="text-sm font-bold text-slate-700">01. 機構評估表</div>
+                                </div>
+                                
+                                <!-- 處理中 (Active) -->
+                                <div class="p-3 rounded-lg bg-blue-50 border border-blue-200 flex items-center gap-3 shadow-sm relative cursor-pointer">
+                                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-l-lg"></div>
+                                    <i class="ph-fill ph-warning-circle text-amber-500 text-lg ml-1"></i>
+                                    <div class="flex-1">
+                                        <div class="text-sm font-bold text-blue-800">02. 計畫書暨合約書</div>
+                                    </div>
+                                    <i class="ph-bold ph-caret-right text-blue-500"></i>
+                                </div>
+                                
+                                <!-- 未處理 -->
+                                <div class="p-3 rounded-lg bg-white border border-dashed border-slate-200 flex items-center gap-3 opacity-60">
+                                    <span class="text-[10px] font-black text-slate-400 bg-slate-100 w-5 h-5 flex items-center justify-center rounded">03</span>
+                                    <div class="text-sm font-bold text-slate-500">輔導老師考評紀錄</div>
+                                </div>
+                                <div class="p-3 rounded-lg bg-white border border-dashed border-slate-200 flex items-center gap-3 opacity-60">
+                                    <span class="text-[10px] font-black text-slate-400 bg-slate-100 w-5 h-5 flex items-center justify-center rounded">04</span>
+                                    <div class="text-sm font-bold text-slate-500">學生實習問卷</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 右側：預覽與查核區 -->
+                    <div class="w-full lg:flex-1 bg-white rounded-xl shadow-card border border-slate-100 flex flex-col overflow-hidden">
+                        
+                        <!-- 標題與上傳控制 -->
+                        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white z-10">
+                            <h3 class="font-bold text-slate-800 text-base">上傳：實習計畫書 ＋ 合約書</h3>
+                            
+                            <div class="flex items-center gap-4">
+                                <label class="hidden sm:flex relative items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer">
+                                    <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
+                                    <span class="ml-2 text-xs font-bold text-slate-500">啟用合併</span>
+                                </label>
+                                
+                                <button onclick="document.getElementById('fileUpload').click()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-1.5 px-4 rounded-lg text-sm transition-all flex items-center gap-2 shadow-sm">
+                                    <i class="ph-bold ph-upload-simple"></i> 上傳 PDF
+                                </button>
+                                <input type="file" id="fileUpload" class="hidden" accept=".pdf" onchange="showAuditProcess()">
+                            </div>
+                        </div>
+
+                        <!-- 雙欄工作區 -->
+                        <div class="flex flex-col xl:flex-row flex-1 overflow-hidden relative bg-slate-50">
+                            
+                            <!-- 遮罩層 -->
+                            <div id="upload-overlay" class="absolute inset-0 bg-white/90 backdrop-blur-sm z-20 flex flex-col items-center justify-center text-center">
+                                <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-4 border border-blue-100 shadow-sm">
+                                    <i class="ph-fill ph-file-pdf text-blue-500 text-3xl"></i>
+                                </div>
+                                <h4 class="text-lg font-bold text-slate-800 mb-2">等待檔案上傳</h4>
+                                <p class="text-slate-500 text-sm mb-6 max-w-sm">請選擇系所上傳的 PDF。查核完成後，系統將自動重命名並歸檔。</p>
+                                <button onclick="document.getElementById('fileUpload').click()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-sm transition-all flex items-center gap-2">
+                                    選擇檔案
+                                </button>
+                            </div>
+
+                            <!-- PDF 預覽窗格 -->
+                            <div class="w-full xl:w-7/12 flex flex-col border-r border-slate-200 bg-slate-800/5">
+                                <div class="flex-1 flex items-center justify-center p-6">
+                                    <div class="bg-white w-full max-w-md aspect-[1/1.4] shadow-md rounded border border-slate-200 flex flex-col items-center justify-center text-slate-300">
+                                        <i class="ph-fill ph-file-text text-[60px] text-slate-200 mb-4"></i>
+                                        <div class="text-xs font-bold text-slate-400">PDF 預覽畫面</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 查核表單窗格 -->
+                            <div class="w-full xl:w-5/12 bg-white p-6 overflow-y-auto custom-scrollbar flex flex-col">
+                                <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+                                    <i class="ph-fill ph-list-checks text-blue-500 text-lg"></i>
+                                    <h4 class="font-bold text-slate-800 text-sm">指標查核表</h4>
+                                </div>
+
+                                <div class="space-y-3 flex-1">
+                                    <!-- Check Card 1 -->
+                                    <label class="check-card border border-slate-200 rounded-lg p-3.5 flex items-start gap-3 bg-white">
+                                        <div class="mt-0.5"><input type="checkbox" class="form-checkbox w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer" onchange="validateChecklist(this)"></div>
+                                        <span class="text-sm font-bold text-slate-700 leading-snug">合約與計畫書的實習 <span class="text-blue-600 border-b border-blue-200">起訖日期</span> 是否相符？</span>
+                                    </label>
+                                    <!-- Check Card 2 -->
+                                    <label class="check-card border border-slate-200 rounded-lg p-3.5 flex items-start gap-3 bg-white">
+                                        <div class="mt-0.5"><input type="checkbox" class="form-checkbox w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer" onchange="validateChecklist(this)"></div>
+                                        <span class="text-sm font-bold text-slate-700 leading-snug">實習內容與時數是否符合課程規定？</span>
+                                    </label>
+                                    <!-- Check Card 3 -->
+                                    <label class="check-card border border-slate-200 rounded-lg p-3.5 flex items-start gap-3 bg-white">
+                                        <div class="mt-0.5"><input type="checkbox" class="form-checkbox w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer" onchange="validateChecklist(this)"></div>
+                                        <span class="text-sm font-bold text-slate-700 leading-snug">合約是否勾選 <span class="text-blue-600 border-b border-blue-200">薪資待遇</span> 與 <span class="text-blue-600 border-b border-blue-200">保險規範</span>？</span>
+                                    </label>
+                                    <!-- Check Card 4 -->
+                                    <label class="check-card border border-rose-200 rounded-lg p-3.5 flex items-start gap-3 bg-rose-50/50">
+                                        <div class="mt-0.5"><input type="checkbox" class="form-checkbox w-4 h-4 text-rose-600 rounded border-rose-300 focus:ring-rose-500 cursor-pointer" onchange="validateChecklist(this)"></div>
+                                        <span class="text-sm font-black text-rose-700 leading-snug">甲乙丙三方（學/機/校）皆已用印簽章？</span>
+                                    </label>
+                                </div>
+
+                                <!-- 動作區塊 -->
+                                <div class="mt-6 pt-5 border-t border-slate-100">
+                                    <div class="mb-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                        <div class="text-[10px] font-bold text-slate-500 mb-1 flex items-center gap-1"><i class="ph-bold ph-magic-wand"></i> 自動更名預覽</div>
+                                        <div class="text-xs font-mono font-bold text-slate-700 break-all">114-1_資管系_S1101234_王小明_02-計畫書暨合約書.pdf</div>
+                                    </div>
+
+                                    <div class="flex flex-col gap-2">
+                                        <button id="btn-submit" disabled onclick="processArchive()" class="w-full bg-slate-800 disabled:bg-slate-100 disabled:text-slate-400 disabled:border-slate-200 border border-slate-800 text-white font-bold py-2.5 px-4 rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 text-sm">
+                                            <i class="ph-bold ph-cloud-arrow-up"></i> 確認無誤並歸檔
+                                        </button>
+                                        <button class="w-full bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 border border-transparent hover:border-rose-200 font-bold py-2 px-4 rounded-lg transition-all text-sm flex items-center justify-center gap-2">
+                                            標記異常並退件
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Javascript 互動邏輯 -->
+    <script>
+        // 頁面標題對應表
+        const pageTitles = {
+            'admin': '總覽儀表板',
+            'list': '學生待查核名單',
+            'audit': '文件查核工作站'
+        };
+
+        // 確保初始顯示 Admin 視圖 (展示儀表板風格)
+        document.addEventListener('DOMContentLoaded', () => {
+            switchView('admin');
+        });
+
+        // 1. 視圖切換 (Sidebar 邏輯)
+        function switchView(viewId) {
+            // 隱藏所有視圖
+            document.querySelectorAll('.view-section').forEach(el => {
+                el.classList.remove('active');
+            });
+            // 顯示目標
+            const target = document.getElementById('view-' + viewId);
+            if(target) target.classList.add('active');
+
+            // 更新 Sidebar Active 狀態
+            document.querySelectorAll('.sidebar-item').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            const activeBtn = document.getElementById('nav-' + viewId);
+            if(activeBtn) {
+                activeBtn.classList.add('active');
+            }
+
+            // 更新頂部標題
+            document.getElementById('header-title').innerText = pageTitles[viewId] || 'ISAC 審查中心';
+        }
+
+        // 2. 審查：檔案上傳預覽
+        function showAuditProcess() {
+            const fileInput = document.getElementById('fileUpload');
+            if(fileInput.files.length > 0) {
+                document.getElementById('upload-overlay').style.display = 'none';
+            }
+        }
+
+        // 3. 審查：自訂 Checkbox 卡片驗證
+        function validateChecklist(checkboxElement) {
+            const card = checkboxElement.closest('.check-card');
+            if(checkboxElement.checked) {
+                card.classList.add('checked');
+            } else {
+                card.classList.remove('checked');
+            }
+
+            const checkboxes = document.querySelectorAll('.form-checkbox');
+            const btnSubmit = document.getElementById('btn-submit');
+            let allChecked = Array.from(checkboxes).every(c => c.checked);
+            
+            btnSubmit.disabled = !allChecked;
+            
+            if(allChecked) {
+                btnSubmit.classList.replace('bg-slate-800', 'bg-blue-600');
+                btnSubmit.classList.replace('border-slate-800', 'border-blue-700');
+            } else {
+                btnSubmit.classList.replace('bg-blue-600', 'bg-slate-800');
+                btnSubmit.classList.replace('border-blue-700', 'border-slate-800');
+            }
+        }
+
+        // 4. 審查：模擬送出歸檔
+        function processArchive() {
+            const btn = document.getElementById('btn-submit');
+            const originalText = btn.innerHTML;
+            
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> 處理中...';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                alert('歸檔成功！\n\n系統已依據規範自動更名，並將檔案儲存至雲端。');
+                
+                // 重置狀態
+                btn.innerHTML = originalText;
+                btn.classList.replace('bg-blue-600', 'bg-slate-800');
+                btn.classList.replace('border-blue-700', 'border-slate-800');
+                
+                document.querySelectorAll('.form-checkbox').forEach(c => {
+                    c.checked = false;
+                    c.closest('.check-card').classList.remove('checked');
+                });
+                
+                document.getElementById('upload-overlay').style.display = 'flex';
+                document.getElementById('fileUpload').value = '';
+                
+                switchView('list');
+            }, 800);
+        }
+    </script>
+</body>
+</html>
