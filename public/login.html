@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登入 - ISAC 審查中心</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 50: '#f0f5fa', 500: '#2c75b3', 600: '#1a5c96' }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        html, body { height: 100%; margin: 0; background-color: #f8fafc; font-family: "SF Pro TC", sans-serif; }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 border border-slate-100">
+        <div class="flex flex-col items-center mb-8">
+            <div class="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center mb-4 shadow-md">
+                <i class="ph-bold ph-shield-check text-white text-2xl"></i>
+            </div>
+            <h1 class="text-2xl font-black text-slate-800">ISAC 審查中心</h1>
+            <p class="text-slate-500 text-sm mt-1">請登入您的管理員或審查員帳號</p>
+        </div>
+
+        <form id="login-form" class="flex flex-col gap-4">
+            <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1">電子郵件 (Email)</label>
+                <input type="email" id="email" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1">密碼 (Password)</label>
+                <input type="password" id="password" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all">
+            </div>
+            <button type="submit" id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg mt-2 transition-colors flex items-center justify-center gap-2 shadow-sm">
+                登入系統 <i class="ph-bold ph-arrow-right"></i>
+            </button>
+        </form>
+    </div>
+
+    <!-- Firebase 登入邏輯 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+        // 您專案的 Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY",
+            authDomain: "thu-isac-review.firebaseapp.com",
+            projectId: "thu-isac-review",
+            storageBucket: "thu-isac-review.firebasestorage.app",
+            messagingSenderId: "453299876735",
+            appId: "1:453299876735:web:1d8babca3315423161a04a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // 門神機制：如果已經登入過了，直接幫他跳轉到後台，不用再登入一次
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                window.location.href = '/manage/departments'; 
+            }
+        });
+
+        // 處理登入按鈕點擊事件
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('login-btn');
+            
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> 登入中...';
+            btn.disabled = true;
+
+            // 向 Firebase 發送登入請求
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    // 登入成功，會觸發上面的 onAuthStateChanged 跳轉
+                })
+                .catch((error) => {
+                    alert("登入失敗，請檢查帳號密碼！\n" + error.message);
+                    btn.innerHTML = '登入系統 <i class="ph-bold ph-arrow-right"></i>';
+                    btn.disabled = false;
+                });
+        });
+    </script>
+</body>
+</html>
