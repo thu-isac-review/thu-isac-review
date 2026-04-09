@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ISAC 實習文件書審查核平台</title>
+    <title>實習課程書面審查作業系統 - 東海大學實習中心</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="importmap">
@@ -42,7 +42,6 @@
             -webkit-font-smoothing: antialiased; 
         }
 
-        /* 完美還原：移除了 hover 的底色與陰影螢光 */
         .sidebar-item.active { background-color: rgba(255, 255, 255, 0.1); color: #ffffff; border-left: 3px solid #3b82f6; font-weight: bold;}
         .sidebar-item { border-left: 3px solid transparent; transition: all 0.2s ease; cursor: pointer; }
         .sidebar-item:hover:not(.active) { background-color: rgba(255, 255, 255, 0.05); color: #f8fafc; }
@@ -102,14 +101,13 @@
                                     level1Unit: '系統管理中心',
                                     level2Unit: '核心維運組',
                                     jobTitle: '管理員',
-                                    name: 'ISAC',
+                                    name: '預設管理者',
                                     isFirstLogin: false
                                 });
                             }
                         } catch (err) {
                             console.error("無法載入使用者資料", err);
                         }
-
                         setLoading(false);
                     } else {
                         setUser(null);
@@ -129,10 +127,8 @@
                     }
                     setCurrentHash(hash);
                 };
-                
                 window.addEventListener('hashchange', handleHashChange);
                 handleHashChange(); 
-                
                 return () => window.removeEventListener('hashchange', handleHashChange);
             }, []);
 
@@ -162,67 +158,64 @@
             }
 
             const getPageTitle = () => {
-                if (currentHash.includes('dashboard')) return '總覽儀表板';
-                if (currentHash.includes('moe-indicators')) return '教育部審查指標設定';
-                if (currentHash.includes('administrative_files')) return '行政文件審查設定';
-                if (currentHash.includes('departments')) return '系所清單管理';
-                if (currentHash.includes('roles')) return '用戶權限管理';
-                return 'ISAC 審查中心';
+                if (currentHash.includes('dashboard')) return '首頁';
+                if (currentHash.includes('list')) return '審查作業 / 學生待查核名單';
+                if (currentHash.includes('intern_view/course')) return '實習資料瀏覽 / 實習課程清單';
+                if (currentHash.includes('intern_view/students')) return '實習資料瀏覽 / 實習學生清單';
+                if (currentHash.includes('intern_view/institution')) return '實習資料瀏覽 / 實習機構清單';
+                if (currentHash.includes('intern_view/intern')) return '實習資料瀏覽 / 實習記錄清單';
+                if (currentHash.includes('intern_manage/course')) return '實習資料管理 / 實習課程管理';
+                if (currentHash.includes('intern_manage/students')) return '實習資料管理 / 實習學生管理';
+                if (currentHash.includes('intern_manage/institution')) return '實習資料管理 / 實習機構管理';
+                if (currentHash.includes('intern_manage/intern')) return '實習資料管理 / 實習記錄管理';
+                if (currentHash.includes('moe-indicators')) return '審查項目設定 / 教育部審查指標設定';
+                if (currentHash.includes('administrative_files')) return '審查項目設定 / 行政文件審查設定';
+                if (currentHash.includes('students_files')) return '審查項目設定 / 學生文件審查設定';
+                if (currentHash.includes('institution_files')) return '審查項目設定 / 機構文件審查設定';
+                if (currentHash.includes('other_files')) return '審查項目設定 / 其他文件審查設定';
+                if (currentHash.includes('departments')) return '系統設定 / 系所清單管理';
+                if (currentHash.includes('roles')) return '系統設定 / 用戶權限管理';
+                return '實習課程書面審查作業系統';
             };
 
             return (
                 <div className="flex h-full overflow-hidden text-slate-800">
-                    <aside className="w-64 bg-sidebar text-slate-300 flex flex-col shrink-0 z-20 shadow-xl">
-                        <div className="h-16 flex items-center px-6 border-b border-slate-700/50 cursor-pointer">
-                            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center mr-3 shadow-md">
-                                <i className="fa-solid fa-shield-halved text-white text-lg"></i>
+                    <aside className="w-72 bg-sidebar text-slate-300 flex flex-col shrink-0 z-20 shadow-xl">
+                        <div className="h-auto py-4 flex items-center px-6 border-b border-slate-700/50 cursor-pointer shrink-0">
+                            <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center mr-3 shadow-md shrink-0">
+                                <i className="fa-solid fa-shield-halved text-white text-xl"></i>
                             </div>
-                            <span className="text-white font-bold text-lg tracking-wide">ISAC 審查中心</span>
+                            <div className="flex flex-col">
+                                <span className="text-blue-300 font-bold text-[10px] tracking-widest mb-0.5">東海大學 實習與學生成就中心</span>
+                                <span className="text-white font-bold text-sm tracking-wide leading-tight">實習課程書面審查作業系統</span>
+                            </div>
                         </div>
 
                         <div className="flex-1 overflow-y-auto py-4 custom-scrollbar">
-                            <div className="px-6 mb-2 mt-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">主要業務</div>
-                            <MenuBtn 
-                                active={currentHash === '/dashboard-content.html'} 
-                                label="總覽儀表板" 
-                                icon="fa-solid fa-table-cells-large" 
-                                onClick={() => navigate('/dashboard-content.html')} 
-                            />
-
-                            <div className="px-6 mt-8 mb-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">審查項目設定</div>
-                            <MenuBtn 
-                                active={currentHash === '/settings/moe-indicators.html'} 
-                                label="教育部審查指標設定" 
-                                icon="fa-solid fa-list-check" 
-                                onClick={() => navigate('/settings/moe-indicators.html')} 
-                            />
-                            <MenuBtn 
-                                active={currentHash === '/settings/administrative_files.html'} 
-                                label="行政文件審查設定" 
-                                icon="fa-regular fa-folder-open" 
-                                onClick={() => navigate('/settings/administrative_files.html')} 
-                            />
-
-                            <div className="px-6 mt-8 mb-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">系統設定</div>
-                            <MenuBtn 
-                                active={currentHash === '/manage/departments.html'} 
-                                label="系所清單管理" 
-                                icon="fa-solid fa-graduation-cap" 
-                                onClick={() => navigate('/manage/departments.html')} 
-                            />
-                            <MenuBtn 
-                                active={currentHash === '/manage/roles.html'} 
-                                label="用戶權限管理" 
-                                icon="fa-solid fa-user-shield" 
-                                onClick={() => navigate('/manage/roles.html')} 
-                            />
-                            
-                            <div className="sidebar-item w-full flex items-center px-6 py-3.5 text-sm font-medium mb-1 text-slate-500 opacity-50 cursor-not-allowed">
-                                <i className="fa-solid fa-file-contract text-lg mr-3 opacity-80 w-5 text-center"></i> 指標與表單設定
-                            </div>
+                            <MenuBtn active={currentHash === '/dashboard-content.html'} label="首頁" icon="fa-solid fa-house" onClick={() => navigate('/dashboard-content.html')} />
+                            <div className="px-6 mt-6 mb-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">審查作業</div>
+                            <MenuBtn active={currentHash === '/list.html'} label="學生待查核名單" icon="fa-solid fa-user-check" onClick={() => navigate('/list.html')} />
+                            <div className="px-6 mt-6 mb-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">實習資料瀏覽</div>
+                            <MenuBtn active={currentHash === '/intern_view/course.html'} label="實習課程清單" icon="fa-solid fa-book" onClick={() => navigate('/intern_view/course.html')} />
+                            <MenuBtn active={currentHash === '/intern_view/students.html'} label="實習學生清單" icon="fa-solid fa-address-book" onClick={() => navigate('/intern_view/students.html')} />
+                            <MenuBtn active={currentHash === '/intern_view/institution.html'} label="實習機構清單" icon="fa-solid fa-building" onClick={() => navigate('/intern_view/institution.html')} />
+                            <MenuBtn active={currentHash === '/intern_view/intern.html'} label="實習記錄清單" icon="fa-solid fa-clipboard-list" onClick={() => navigate('/intern_view/intern.html')} />
+                            <div className="px-6 mt-6 mb-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">實習資料管理</div>
+                            <MenuBtn active={currentHash === '/intern_manage/course.html'} label="實習課程管理" icon="fa-solid fa-book" onClick={() => navigate('/intern_manage/course.html')} />
+                            <MenuBtn active={currentHash === '/intern_manage/students.html'} label="實習學生管理" icon="fa-solid fa-user-gear" onClick={() => navigate('/intern_manage/students.html')} />
+                            <MenuBtn active={currentHash === '/intern_manage/institution.html'} label="實習機構管理" icon="fa-solid fa-building" onClick={() => navigate('/intern_manage/institution.html')} />
+                            <MenuBtn active={currentHash === '/intern_manage/intern.html'} label="實習記錄管理" icon="fa-solid fa-clipboard-check" onClick={() => navigate('/intern_manage/intern.html')} />
+                            <div className="px-6 mt-6 mb-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">審查項目設定</div>
+                            <MenuBtn active={currentHash === '/settings/moe-indicators.html'} label="教育部審查指標設定" icon="fa-solid fa-list-check" onClick={() => navigate('/settings/moe-indicators.html')} />
+                            <MenuBtn active={currentHash === '/settings/administrative_files.html'} label="行政文件審查設定" icon="fa-solid fa-folder-closed" onClick={() => navigate('/settings/administrative_files.html')} />
+                            <MenuBtn active={currentHash === '/settings/students_files.html'} label="學生文件審查設定" icon="fa-solid fa-file-lines" onClick={() => navigate('/settings/students_files.html')} />
+                            <MenuBtn active={currentHash === '/settings/institution_files.html'} label="機構文件審查設定" icon="fa-solid fa-file-pen" onClick={() => navigate('/settings/institution_files.html')} />
+                            <MenuBtn active={currentHash === '/settings/other_files.html'} label="其他文件審查設定" icon="fa-solid fa-file-circle-plus" onClick={() => navigate('/settings/other_files.html')} />
+                            <div className="px-6 mt-6 mb-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">系統設定</div>
+                            <MenuBtn active={currentHash === '/manage/departments.html'} label="系所清單管理" icon="fa-solid fa-graduation-cap" onClick={() => navigate('/manage/departments.html')} />
+                            <MenuBtn active={currentHash === '/manage/roles.html'} label="用戶權限管理" icon="fa-solid fa-user-shield" onClick={() => navigate('/manage/roles.html')} />
                         </div>
 
-                        {/* 完美還原：移除了反白效果與 cursor-pointer，純粹顯示資訊 */}
                         <div className="p-4 border-t border-slate-700/50">
                             <div className="flex items-center gap-3 p-2 rounded-xl">
                                 <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-400 flex items-center justify-center text-white font-bold text-sm shadow-md shrink-0">
@@ -245,39 +238,22 @@
                             <div className="flex items-center gap-4">
                                 <h2 className="text-lg font-black text-slate-800">{getPageTitle()}</h2>
                             </div>
-                            <div className="flex items-center gap-6">
-                                <div className="relative hidden lg:block">
-                                    <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                                    <input type="text" className="pl-9 pr-4 py-2 bg-slate-100 border-transparent rounded-xl text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all w-64 outline-none font-medium" placeholder="搜尋系統內容..." />
-                                </div>
+                            <div className="flex items-center gap-5">
+                                <i className="fa-solid fa-bell text-slate-400 text-lg cursor-pointer hover:text-blue-500 transition-colors"></i>
                                 <div className="h-6 w-px bg-slate-200"></div>
-                                {/* 完美還原：將登出按鈕移至鈴鐺右側 */}
-                                <div className="text-sm font-bold text-slate-700 flex items-center gap-3">
-                                    <span className="cursor-pointer">114-1 學年度</span>
-                                    <i className="fa-solid fa-bell text-slate-400 text-base cursor-pointer hover:text-blue-500 transition-colors"></i>
-                                    <button onClick={handleLogout} className="text-slate-400 hover:text-rose-500 transition-colors flex items-center ml-1" title="登出">
-                                        <i className="fa-solid fa-arrow-right-from-bracket text-lg"></i>
-                                    </button>
-                                </div>
+                                <button onClick={handleLogout} className="bg-rose-500 hover:bg-rose-600 text-white border border-rose-600 px-4 py-1.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2 shadow-sm active:scale-95" title="登出系統">
+                                    <i className="fa-solid fa-arrow-right-from-bracket"></i> 登出
+                                </button>
                             </div>
                         </header>
-
                         <div className="flex-1 overflow-hidden relative">
-                            {currentHash && (
-                                <iframe 
-                                    src={getCacheBustedUrl(currentHash)} 
-                                    key={currentHash}
-                                    className="animate-fade w-full h-full"
-                                    title="Content View"
-                                />
-                            )}
+                            {currentHash && <iframe src={getCacheBustedUrl(currentHash)} key={currentHash} className="animate-fade w-full h-full" title="Content View" />}
                         </div>
                     </main>
                 </div>
             );
         }
 
-        // 完美還原：選單按鈕不帶陰影螢光
         function MenuBtn({ active, label, icon, onClick }) {
             return (
                 <div onClick={onClick} className={`sidebar-item w-full flex items-center px-6 py-3.5 text-sm mb-1 ${active ? 'active' : 'font-medium'}`}>
@@ -289,12 +265,13 @@
 
         function FirstTimeSetupView({ user, onComplete }) {
             const [isUpdating, setIsUpdating] = useState(false);
+            const [showPwd, setShowPwd] = useState(false);
+            const [showConfirmPwd, setShowConfirmPwd] = useState(false);
 
             const handleUpdate = async (e) => {
                 e.preventDefault();
                 const pwd = e.target.password.value;
                 const confirmPwd = e.target.confirmPassword.value;
-
                 const pwdRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,20}$/;
                 if (!pwdRegex.test(pwd)) {
                     alert("密碼不符合安全規則！\n請輸入 8~20 個字元，並包含至少一個「大寫字母」、一個「小寫字母」及「數字」。");
@@ -304,21 +281,17 @@
                     alert("兩次輸入的密碼不相符，請重新確認！");
                     return;
                 }
-
                 setIsUpdating(true);
                 try {
                     await updatePassword(user, pwd);
                     await updateDoc(doc(db, "users", user.uid), { isFirstLogin: false });
-                    
                     alert("✅ 專屬密碼設定成功！即將為您導向系統。");
                     onComplete();
                 } catch (err) {
                     if (err.code === 'auth/requires-recent-login') {
                         alert("基於安全考量，請重新登入後再進行密碼設定。");
                         signOut(auth);
-                    } else {
-                        alert("密碼設定失敗：" + err.message);
-                    }
+                    } else { alert("密碼設定失敗：" + err.message); }
                 } finally { setIsUpdating(false); }
             };
 
@@ -331,15 +304,25 @@
                             </div>
                             <h1 className="text-xl font-black text-slate-800 tracking-tight">初次啟用帳號</h1>
                             <p className="text-slate-500 text-sm mt-2 font-medium leading-relaxed">
-                                歡迎加入 ISAC 審查平台！<br/>基於安全規範，請設定您的專屬登入密碼。
+                                歡迎加入實習書審平台！<br/>基於安全規範，請設定您的專屬登入密碼。
                             </p>
                         </div>
                         <div className="space-y-4">
                             <div>
-                                <input name="password" type="password" placeholder="設定新密碼" className="w-full bg-slate-50 border border-slate-200 px-4 py-3.5 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-mono" required />
+                                <div className="relative">
+                                    <input name="password" type={showPwd ? "text" : "password"} placeholder="設定新密碼" className="w-full bg-slate-50 border border-slate-200 px-4 py-3.5 pr-12 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-mono" required />
+                                    <button type="button" onClick={() => setShowPwd(!showPwd)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+                                        <i className={`fa-solid ${showPwd ? 'fa-eye-slash' : 'fa-eye'} text-lg`}></i>
+                                    </button>
+                                </div>
                                 <p className="text-[11px] text-slate-400 mt-2 ml-1"><i className="fa-solid fa-circle-info text-blue-500 mr-1"></i> 需為 8~20 碼，並包含大小寫字母與數字。</p>
                             </div>
-                            <input name="confirmPassword" type="password" placeholder="再次確認新密碼" className="w-full bg-slate-50 border border-slate-200 px-4 py-3.5 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-mono" required />
+                            <div className="relative">
+                                <input name="confirmPassword" type={showConfirmPwd ? "text" : "password"} placeholder="再次確認新密碼" className="w-full bg-slate-50 border border-slate-200 px-4 py-3.5 pr-12 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-mono" required />
+                                <button type="button" onClick={() => setShowConfirmPwd(!showConfirmPwd)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+                                    <i className={`fa-solid ${showConfirmPwd ? 'fa-eye-slash' : 'fa-eye'} text-lg`}></i>
+                                </button>
+                            </div>
                         </div>
                         <button disabled={isUpdating} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-xl font-bold shadow-xl transition-all mt-8 active:scale-[0.98] disabled:opacity-50 flex justify-center items-center gap-2">
                             {isUpdating ? <><i className="fa-solid fa-circle-notch fa-spin"></i> 設定中...</> : "確認設定並進入系統"}
@@ -351,15 +334,24 @@
 
         function LoginView() {
             const [isLoggingIn, setIsLoggingIn] = useState(false);
+            const [email, setEmail] = useState('');
+            const [password, setPassword] = useState('');
+            const [showPassword, setShowPassword] = useState(false);
 
             const handleLogin = async (e) => {
                 e.preventDefault();
                 setIsLoggingIn(true);
-                const email = e.target.email.value.trim();
-                const pw = e.target.password.value;
+                let emailInput = email.trim();
+
+                // 💡 故意補上並顯示給用戶看
+                if (emailInput && !emailInput.includes('@')) {
+                    const fullEmail = emailInput + '@thu.edu.tw';
+                    setEmail(fullEmail); // 立即更新輸入框文字
+                    emailInput = fullEmail;
+                }
 
                 try {
-                    await signInWithEmailAndPassword(auth, email, pw);
+                    await signInWithEmailAndPassword(auth, emailInput, password);
                 } catch (err) {
                     alert("登入失敗：請確認帳號或密碼是否正確。\n(若為初次啟用，請使用管理員配發之初始密碼)");
                 } finally { setIsLoggingIn(false); }
@@ -372,12 +364,37 @@
                             <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center mb-4 text-white shadow-lg shadow-blue-500/20">
                                 <i className="fa-solid fa-shield-halved text-3xl"></i>
                             </div>
-                            <h1 className="text-2xl font-black text-slate-800 tracking-tight">ISAC 審查管理系統</h1>
-                            <p className="text-slate-400 text-sm mt-2 font-medium">請登入帳號以開始作業</p>
+                            <h1 className="text-xl font-black text-slate-800 tracking-tight">東海大學 實習與學生成就中心</h1>
+                            <p className="text-slate-500 text-sm mt-2 font-medium">實習課程書面審查作業系統</p>
                         </div>
                         <div className="space-y-4">
-                            <input name="email" type="email" placeholder="電子信箱 (@thu.edu.tw)" className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-medium" required />
-                            <input name="password" type="password" placeholder="登入密碼" className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-medium" required />
+                            <input 
+                                name="email" 
+                                type="text" 
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="請輸入帳號或電子郵件(@thu.edu.tw)" 
+                                className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-medium" 
+                                required 
+                            />
+                            <div className="relative">
+                                <input 
+                                    name="password" 
+                                    type={showPassword ? "text" : "password"} 
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="請輸入密碼" 
+                                    className="w-full bg-slate-50 border border-slate-200 p-4 pr-12 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-medium" 
+                                    required 
+                                />
+                                <button 
+                                    type="button" 
+                                    onClick={() => setShowPassword(!showPassword)} 
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                                >
+                                    <i className={`fa-solid ${showPassword ? 'fa-eye-slash' : 'fa-eye'} text-lg`}></i>
+                                </button>
+                            </div>
                         </div>
                         <button disabled={isLoggingIn} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold shadow-xl transition-all mt-8 active:scale-[0.98] disabled:opacity-50 flex justify-center items-center gap-2">
                             {isLoggingIn ? <><i className="fa-solid fa-circle-notch fa-spin"></i> 連線中...</> : "進入系統"}
