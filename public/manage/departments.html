@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>系所清單管理</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         tailwind.config = {
             theme: {
@@ -36,14 +36,13 @@
 </head>
 <body>
 
-    <!-- 頂部固定區塊 (不參與滾動) -->
     <div class="shrink-0 px-6 pt-6 pb-4 space-y-4">
         
         <!-- 區塊 1：頂部標題與動作按鈕 -->
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shrink-0">
-                    <i class="ph-fill ph-buildings text-2xl"></i>
+                    <i class="fa-solid fa-university text-xl"></i>
                 </div>
                 <div>
                     <h2 class="text-xl font-bold text-slate-800 tracking-tight">系所清單管理</h2>
@@ -53,25 +52,25 @@
             
             <div class="flex flex-wrap gap-2">
                 <button onclick="exportToCSV()" class="h-9 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-3 rounded-lg text-sm transition-all flex items-center gap-1.5 shadow-sm">
-                    <i class="ph-bold ph-export text-lg text-emerald-600"></i> 匯出
+                    <i class="fa-solid fa-file-export text-emerald-600"></i> 匯出
                 </button>
                 <button id="btn-import" onclick="document.getElementById('import-file').click()" class="h-9 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-3 rounded-lg text-sm transition-all flex items-center gap-1.5 shadow-sm">
-                    <i class="ph-bold ph-file-arrow-up text-lg text-blue-600"></i> 批次匯入
+                    <i class="fa-solid fa-file-import text-blue-600"></i> 批次匯入
                 </button>
                 <input type="file" id="import-file" accept=".csv" class="hidden" onchange="handleImport(event)">
                 
                 <div class="w-px h-6 bg-slate-200 self-center mx-1"></div>
                 
                 <button onclick="openCollegeModal()" class="h-9 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-3 rounded-lg text-sm transition-all flex items-center gap-1.5 shadow-sm">
-                    <i class="ph-bold ph-list-dashes text-lg text-slate-500"></i> 學院設定
+                    <i class="fa-solid fa-bars-staggered text-slate-500"></i> 學院設定
                 </button>
                 <button onclick="openDeptModal()" class="h-9 bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 rounded-lg text-sm transition-all flex items-center gap-1.5 shadow-sm shadow-blue-500/20">
-                    <i class="ph-bold ph-plus text-lg"></i> 新增系所
+                    <i class="fa-solid fa-plus"></i> 新增系所
                 </button>
             </div>
         </div>
 
-        <!-- 區塊 2：篩選與搜尋列 (已移除白色底卡) -->
+        <!-- 區塊 2：篩選與搜尋列 -->
         <div class="flex flex-col md:flex-row justify-between items-center gap-4 w-full">
             <div class="flex gap-2 w-full md:w-auto">
                 <select id="filter-college" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 h-10 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
@@ -84,7 +83,7 @@
                 </select>
             </div>
             <div class="relative w-full md:w-72 shadow-sm rounded-lg">
-                <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
                 <input type="text" id="search-input" placeholder="搜尋學系或代碼..." class="w-full bg-white border border-slate-200 rounded-lg pl-9 pr-3 h-10 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all">
             </div>
         </div>
@@ -106,40 +105,50 @@
                         </tr>
                     </thead>
                     <tbody id="dept-table-body" class="divide-y divide-slate-100 text-sm">
-                        <tr><td colspan="6" class="px-6 py-16 text-center text-slate-400"><i class="ph-bold ph-spinner animate-spin text-3xl mb-3 text-blue-500"></i><p class="font-bold">資料載入中...</p></td></tr>
+                        <tr><td colspan="6" class="px-6 py-16 text-center text-slate-400"><i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-blue-500"></i><p class="font-bold">資料載入中...</p></td></tr>
                     </tbody>
                 </table>
             </div>
             
             <div class="bg-slate-50 border-t border-slate-200 px-6 py-3 flex justify-between items-center shrink-0">
                 <div id="pagination-info" class="text-xs font-bold text-slate-500">顯示 0 到 0 筆，共 0 筆</div>
-                <div id="pagination-buttons" class="flex gap-1">
-                    <!-- 動態生成按鈕 -->
-                </div>
+                <div id="pagination-buttons" class="flex gap-1"></div>
             </div>
         </div>
     </div>
 
     <!-- ==========================================
-         彈跳視窗 1：設定學院管理
+         彈跳視窗 1：設定學院管理 (全新高質感設計)
          ========================================== -->
     <div id="college-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeCollegeModal()"></div>
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden modal-enter relative flex flex-col max-h-[80vh]">
-            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
-                    <i class="ph-bold ph-list-dashes text-blue-600"></i> 學院選單設定
+        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden modal-enter relative flex flex-col max-h-[85vh]">
+            <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-white shrink-0">
+                <h3 class="font-black text-slate-800 text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-university text-blue-600"></i> 學院設定管理
                 </h3>
-                <button onclick="closeCollegeModal()" class="w-8 h-8 rounded-md flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition-colors"><i class="ph-bold ph-x text-lg"></i></button>
+                <button onclick="closeCollegeModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 bg-white shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             
-            <div class="p-6 overflow-y-auto custom-scrollbar flex-1">
-                <div class="flex gap-2 mb-6">
-                    <input type="text" id="new-college-input" placeholder="輸入新學院名稱" class="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                    <button onclick="addCollege()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors whitespace-nowrap shadow-sm">新增</button>
+            <div class="p-8 overflow-y-auto custom-scrollbar flex-1 bg-white">
+                <!-- 新增學院專區 (視覺強調) -->
+                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 mb-8 shadow-sm">
+                    <label class="block text-xs font-bold text-slate-600 mb-3"><i class="fa-solid fa-plus text-blue-500 mr-1"></i> 新增學院</label>
+                    <div class="flex gap-3">
+                        <div class="relative flex-1">
+                            <i class="fa-solid fa-university absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                            <input type="text" id="new-college-input" placeholder="輸入新學院名稱..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all shadow-sm font-bold text-slate-700">
+                        </div>
+                        <button onclick="addCollege()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md shadow-blue-500/20 whitespace-nowrap">新增</button>
+                    </div>
                 </div>
-                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">現有學院清單 (可排序與編輯)</div>
-                <ul id="college-list-container" class="space-y-2"></ul>
+
+                <!-- 學院清單 -->
+                <div class="flex items-center justify-between mb-4">
+                    <div class="text-xs font-bold text-slate-500 uppercase tracking-widest">現有學院清單</div>
+                    <div class="text-[10px] text-slate-400 font-medium">支援拖曳排序與名稱編輯</div>
+                </div>
+                <ul id="college-list-container" class="space-y-3"></ul>
             </div>
         </div>
     </div>
@@ -152,9 +161,9 @@
         <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden modal-enter relative max-h-[90vh] flex flex-col">
             <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center shrink-0 bg-slate-50">
                 <h3 id="modal-title" class="font-black text-slate-800 text-lg flex items-center gap-2">
-                    <i class="ph-bold ph-buildings text-blue-600"></i> 新增系所單位
+                    <i class="fa-solid fa-university text-blue-600"></i> 新增系所單位
                 </h3>
-                <button onclick="closeDeptModal()" class="w-8 h-8 rounded-md flex items-center justify-center text-slate-400 hover:text-slate-600 bg-white shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors"><i class="ph-bold ph-x text-lg"></i></button>
+                <button onclick="closeDeptModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 bg-white shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             
             <form id="dept-form" class="p-8 space-y-5 overflow-y-auto custom-scrollbar flex-1">
@@ -185,7 +194,7 @@
                     <div class="flex justify-between items-center mb-3">
                         <label class="block text-xs font-bold text-slate-600">承辦窗口 (可多位)</label>
                         <button type="button" onclick="addContactField()" class="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors border border-blue-100">
-                            <i class="ph-bold ph-plus"></i> 新增窗口
+                            <i class="fa-solid fa-plus"></i> 新增窗口
                         </button>
                     </div>
                     <div id="contacts-container" class="space-y-3">
@@ -227,12 +236,11 @@
         let collegeList = [];
         let editingId = null;
         
-        // 分頁參數
         let currentPage = 1;
         const itemsPerPage = 10;
 
         // =====================================
-        // 學院設定邏輯
+        // 學院設定邏輯 (高質感渲染)
         // =====================================
         onSnapshot(collegeDocRef, (docSnap) => {
             if (docSnap.exists()) {
@@ -251,19 +259,20 @@
         function renderCollegeUI() {
             const listContainer = document.getElementById('college-list-container');
             listContainer.innerHTML = collegeList.map((c, index) => `
-                <li class="flex justify-between items-center bg-white border border-slate-200 shadow-sm rounded-lg p-2 text-sm group">
-                    <div class="flex items-center gap-2 flex-1 overflow-hidden">
-                        <div class="flex flex-col opacity-30 group-hover:opacity-100 transition-opacity">
-                            <button onclick="moveCollege(${index}, -1)" class="w-6 h-6 rounded-md flex items-center justify-center hover:bg-slate-100 text-slate-400 hover:text-blue-600 disabled:opacity-0 transition-colors" ${index === 0 ? 'disabled' : ''}><i class="ph-fill ph-caret-up text-xs"></i></button>
-                            <button onclick="moveCollege(${index}, 1)" class="w-6 h-6 rounded-md flex items-center justify-center hover:bg-slate-100 text-slate-400 hover:text-blue-600 disabled:opacity-0 transition-colors" ${index === collegeList.length - 1 ? 'disabled' : ''}><i class="ph-fill ph-caret-down text-xs"></i></button>
+                <li class="flex justify-between items-center bg-white border border-slate-200 shadow-sm rounded-xl p-3 text-sm group hover:border-blue-300 transition-all">
+                    <div class="flex items-center gap-3 flex-1 overflow-hidden">
+                        <div class="flex flex-col opacity-20 group-hover:opacity-100 transition-opacity">
+                            <button onclick="moveCollege(${index}, -1)" class="w-6 h-5 rounded hover:bg-slate-100 text-slate-400 hover:text-blue-600 disabled:opacity-0 transition-colors flex items-center justify-center" ${index === 0 ? 'disabled' : ''}><i class="fa-solid fa-chevron-up text-[10px]"></i></button>
+                            <button onclick="moveCollege(${index}, 1)" class="w-6 h-5 rounded hover:bg-slate-100 text-slate-400 hover:text-blue-600 disabled:opacity-0 transition-colors flex items-center justify-center" ${index === collegeList.length - 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-down text-[10px]"></i></button>
                         </div>
-                        <span id="col-text-${index}" class="font-bold text-slate-700 truncate pl-1">${c}</span>
-                        <input type="text" id="col-input-${index}" value="${c}" class="hidden flex-1 border border-blue-300 rounded px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-blue-100">
+                        <span id="col-text-${index}" class="font-bold text-slate-700 truncate">${c}</span>
+                        <input type="text" id="col-input-${index}" value="${c}" class="hidden flex-1 border border-blue-400 bg-blue-50 rounded-lg px-3 py-1.5 text-sm font-bold text-blue-900 outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-inner">
                     </div>
-                    <div class="flex items-center ml-2 gap-1">
-                        <button id="col-edit-btn-${index}" onclick="editCollege(${index})" class="w-8 h-8 rounded-md flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"><i class="ph-bold ph-pencil-simple text-base"></i></button>
-                        <button id="col-save-btn-${index}" onclick="saveCollege(${index})" class="hidden w-8 h-8 rounded-md flex items-center justify-center text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"><i class="ph-bold ph-check text-lg"></i></button>
-                        <button onclick="removeCollege(${index})" class="w-8 h-8 rounded-md flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors"><i class="ph-bold ph-trash text-base"></i></button>
+                    <div class="flex items-center ml-3 gap-1.5 shrink-0">
+                        <button id="col-edit-btn-${index}" onclick="editCollege(${index})" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors border border-transparent hover:border-blue-100"><i class="fa-solid fa-pen text-sm"></i></button>
+                        <button id="col-save-btn-${index}" onclick="saveCollege(${index})" class="hidden w-8 h-8 rounded-lg flex items-center justify-center text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors shadow-sm"><i class="fa-solid fa-check text-base"></i></button>
+                        <div class="w-px h-4 bg-slate-200 mx-0.5"></div>
+                        <button onclick="removeCollege(${index})" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors border border-transparent hover:border-rose-100"><i class="fa-solid fa-trash-can text-sm"></i></button>
                     </div>
                 </li>
             `).join('');
@@ -330,7 +339,7 @@
                 document.getElementById('dept-form').reset();
                 document.getElementById('contacts-container').innerHTML = '';
                 addContactField();
-                document.getElementById('modal-title').innerHTML = '<i class="ph-bold ph-buildings text-blue-600"></i> 新增系所單位';
+                document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-university text-blue-600"></i> 新增系所單位';
             }
             document.getElementById('dept-modal').classList.remove('hidden');
         };
@@ -356,8 +365,8 @@
                         <input type="email" placeholder="example@thu.edu.tw" value="${email}" class="contact-email w-full bg-transparent text-sm focus:outline-none text-slate-500 font-mono">
                     </div>
                 </div>
-                <button type="button" onclick="this.parentElement.remove()" class="w-8 h-8 rounded-md flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-all mt-1">
-                    <i class="ph-bold ph-trash text-lg"></i>
+                <button type="button" onclick="this.parentElement.remove()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-all mt-1">
+                    <i class="fa-solid fa-trash-can text-sm"></i>
                 </button>
             `;
             container.appendChild(div);
@@ -419,7 +428,6 @@
             paginatedItems.forEach((data, idx) => {
                 const globalIndex = startIndex + idx; 
                 
-                // 移除 icon 且靠左對齊
                 let contactsHtml = '';
                 if (data.contacts && data.contacts.length > 0) {
                     contactsHtml = data.contacts.map(c => `
@@ -438,7 +446,7 @@
                     <td class="px-6 py-4 align-middle text-center">
                         <span class="text-slate-700 font-bold text-sm">${data.college}</span>
                     </td>
-                    <!-- 簡稱 (若無簡稱則顯示全名)，統一 text-sm -->
+                    <!-- 簡稱 (若無簡稱則顯示全名) -->
                     <td class="px-6 py-4 align-middle text-center">
                         <div class="text-sm font-bold text-slate-800 break-words leading-tight">${data.shortName || data.name}</div>
                     </td>
@@ -448,37 +456,37 @@
                             ${data.code}
                         </div>
                     </td>
-                    <!-- 承辦窗口 (純文字靠左) -->
+                    <!-- 承辦窗口 -->
                     <td class="px-6 py-4 align-middle">
                         <div class="flex flex-col items-start pl-4">
                             ${contactsHtml}
                         </div>
                     </td>
-                    <!-- 修復破圖的 Switch 開關 -->
+                    <!-- 系統狀態 -->
                     <td class="px-6 py-4 align-middle text-center">
                         <div class="flex items-center justify-center">
                             <label class="relative inline-flex items-center cursor-pointer group/toggle">
                                 <input type="checkbox" class="sr-only peer" ${data.is_active ? 'checked' : ''} onchange="window.toggleStatus('${data.id}', ${data.is_active})">
-                                <!-- 加上 shrink-0 和 min-w-[44px] 確保永遠不變形 -->
+                                <!-- 絕對防止變形的關鍵 -->
                                 <div class="relative w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-[20px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner shrink-0 min-w-[44px]"></div>
                                 <span class="ml-3 text-sm font-bold ${data.is_active ? 'text-emerald-600' : 'text-slate-400'}">${data.is_active ? '啟用' : '停用'}</span>
                             </label>
                         </div>
                     </td>
-                    <!-- 正方形精緻操作區 -->
+                    <!-- 完美正方形操作按鈕群 -->
                     <td class="px-6 py-4 align-middle text-center">
                         <div class="flex items-center justify-center gap-2 opacity-100 transition-opacity">
                             <button onclick="window.moveOrder('${data.id}', 'up')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all disabled:opacity-20" ${globalIndex === 0 ? 'disabled' : ''} title="向上移動">
-                                <i class="ph-bold ph-caret-up text-lg"></i>
+                                <i class="fa-solid fa-chevron-up text-xs"></i>
                             </button>
                             <button onclick="window.moveOrder('${data.id}', 'down')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all disabled:opacity-20" ${globalIndex === filtered.length - 1 ? 'disabled' : ''} title="向下移動">
-                                <i class="ph-bold ph-caret-down text-lg"></i>
+                                <i class="fa-solid fa-chevron-down text-xs"></i>
                             </button>
-                            <button onclick="window.editDept('${data.id}')" class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 text-blue-500 hover:bg-blue-100 hover:text-blue-600 transition-all" title="編輯">
-                                <i class="ph-bold ph-pencil-simple text-lg"></i>
+                            <button onclick="window.editDept('${data.id}')" class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all" title="編輯">
+                                <i class="fa-solid fa-pen text-sm"></i>
                             </button>
-                            <button onclick="window.deleteDept('${data.id}', '${data.name}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-all" title="刪除">
-                                <i class="ph-bold ph-trash text-lg"></i>
+                            <button onclick="window.deleteDept('${data.id}', '${data.name}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all" title="刪除">
+                                <i class="fa-solid fa-trash-can text-sm"></i>
                             </button>
                         </div>
                     </td>
@@ -522,7 +530,7 @@
 
             const btn = document.getElementById('btn-import');
             const originalHtml = btn.innerHTML;
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-base"></i> 匯入中...';
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-base text-blue-600"></i> 匯入中...';
             btn.disabled = true;
 
             const reader = new FileReader();
@@ -591,7 +599,7 @@
             }
 
             btn.disabled = true;
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> 儲存中...';
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> 儲存中...';
 
             try {
                 if (editingId) {
@@ -622,7 +630,7 @@
                 addContactField();
             }
 
-            document.getElementById('modal-title').innerHTML = '<i class="ph-bold ph-pencil-simple text-blue-600"></i> 編輯系所單位';
+            document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-pen text-blue-600"></i> 編輯系所單位';
             document.getElementById('dept-modal').classList.remove('hidden');
         };
 
