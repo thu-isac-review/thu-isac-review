@@ -28,7 +28,7 @@
                 </div>
                 <div>
                     <h2 class="text-xl font-bold text-slate-800 tracking-tight">教育部審查指標設定</h2>
-                    <p class="text-xs text-slate-500 mt-1">建置教育部實習查核之「指標代碼」與「審查項目」主檔，供後續文件綁定使用。</p>
+                    <p class="text-xs text-slate-500 mt-1">建置教育部實習查核之「指標代碼」與「審查項目」主檔 (全系統通用)。</p>
                 </div>
             </div>
             
@@ -50,6 +50,11 @@
             <div class="flex gap-2 w-full md:w-auto">
                 <select id="filter-dimension" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 h-10 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
                     <option value="all">評鑑構面：全部</option>
+                </select>
+                <select id="filter-status" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 h-10 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
+                    <option value="all">狀態：全部</option>
+                    <option value="active">狀態：啟用中</option>
+                    <option value="inactive">狀態：已停用</option>
                 </select>
             </div>
             <div class="relative w-full md:w-72 shadow-sm rounded-lg">
@@ -86,9 +91,7 @@
         </div>
     </div>
 
-    <!-- ==========================================
-         彈跳視窗 1：新增/編輯指標
-         ========================================== -->
+    <!-- 彈跳視窗 1：新增/編輯指標 -->
     <div id="data-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeModal()"></div>
         <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-xl overflow-hidden modal-enter relative max-h-[90vh] flex flex-col">
@@ -96,7 +99,7 @@
                 <h3 id="modal-title" class="font-black text-slate-800 text-lg flex items-center gap-2">
                     <i class="fa-solid fa-square-check text-blue-600"></i> 新增審查指標主檔
                 </h3>
-                <button onclick="closeModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 bg-white shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <button onclick="closeModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 bg-white shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors shrink-0"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             
             <form id="data-form" class="p-8 space-y-6 overflow-y-auto custom-scrollbar flex-1 bg-white">
@@ -136,9 +139,7 @@
         </div>
     </div>
 
-    <!-- ==========================================
-         彈跳視窗 2：評鑑構面設定 (大指標管理)
-         ========================================== -->
+    <!-- 彈跳視窗 2：評鑑構面設定 -->
     <div id="dimension-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeDimensionModal()"></div>
         <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden modal-enter relative flex flex-col max-h-[85vh]">
@@ -146,7 +147,7 @@
                 <h3 class="font-black text-slate-800 text-lg flex items-center gap-2">
                     <i class="fa-solid fa-layer-group text-blue-600"></i> 評鑑構面設定管理
                 </h3>
-                <button onclick="closeDimensionModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 bg-white shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <button onclick="closeDimensionModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 bg-white shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors shrink-0"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             
             <div class="p-8 space-y-6 overflow-y-auto custom-scrollbar flex-1 bg-white">
@@ -175,7 +176,6 @@
         </div>
     </div>
 
-    <!-- Firebase 邏輯 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -185,7 +185,8 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app); 
         const db = getFirestore(app);
-        
+
+        // 💡 移除學期綁定：設定主檔為全域共用
         const dataCollection = collection(db, "moe_indicators_master");
         const dimensionDocRef = doc(db, "settings", "moe_dimensions");
 
@@ -197,6 +198,7 @@
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
+                // 載入評鑑構面 (大指標) 全域主檔
                 onSnapshot(dimensionDocRef, (docSnap) => {
                     if (docSnap.exists()) {
                         dimensionList = docSnap.data().list || [];
@@ -208,6 +210,7 @@
                     renderTable();
                 });
 
+                // 💡 直接載入全域指標資料 (不再加上 where 過濾學期)
                 onSnapshot(dataCollection, (snapshot) => {
                     allData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     renderTable();
@@ -219,6 +222,7 @@
             }
         });
 
+        // 評鑑構面 (大指標) 管理邏輯
         window.openDimensionModal = () => document.getElementById('dimension-modal').classList.remove('hidden');
         window.closeDimensionModal = () => document.getElementById('dimension-modal').classList.add('hidden');
 
@@ -228,17 +232,17 @@
                 <li class="flex justify-between items-center bg-white border border-slate-200 shadow-sm rounded-xl p-3 text-sm group hover:border-blue-300 transition-all">
                     <div class="flex items-center gap-3 flex-1 overflow-hidden">
                         <div class="flex flex-col opacity-20 group-hover:opacity-100 transition-opacity">
-                            <button onclick="moveDimension(${index}, -1)" class="w-6 h-5 rounded hover:bg-slate-100 text-slate-400 hover:text-blue-600 disabled:opacity-0 transition-colors flex items-center justify-center" ${index === 0 ? 'disabled' : ''}><i class="fa-solid fa-chevron-up text-[10px]"></i></button>
-                            <button onclick="moveDimension(${index}, 1)" class="w-6 h-5 rounded hover:bg-slate-100 text-slate-400 hover:text-blue-600 disabled:opacity-0 transition-colors flex items-center justify-center" ${index === dimensionList.length - 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-down text-[10px]"></i></button>
+                            <button onclick="moveDimension(${index}, -1)" class="w-6 h-5 rounded hover:bg-slate-100 text-slate-400 hover:text-blue-600 disabled:opacity-0 transition-colors flex items-center justify-center shrink-0" ${index === 0 ? 'disabled' : ''}><i class="fa-solid fa-chevron-up text-[10px]"></i></button>
+                            <button onclick="moveDimension(${index}, 1)" class="w-6 h-5 rounded hover:bg-slate-100 text-slate-400 hover:text-blue-600 disabled:opacity-0 transition-colors flex items-center justify-center shrink-0" ${index === dimensionList.length - 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-down text-[10px]"></i></button>
                         </div>
                         <span id="dim-text-${index}" class="font-bold text-slate-700 truncate">${dim}</span>
                         <input type="text" id="dim-input-${index}" value="${dim}" class="hidden flex-1 border border-blue-400 bg-blue-50 rounded-lg px-3 py-1.5 text-sm font-bold text-blue-900 outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-inner">
                     </div>
                     <div class="flex items-center ml-3 gap-1.5 shrink-0">
-                        <button id="dim-edit-btn-${index}" onclick="editDimension(${index})" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors border border-transparent hover:border-blue-100"><i class="fa-solid fa-pen text-sm"></i></button>
-                        <button id="dim-save-btn-${index}" onclick="saveDimension(${index})" class="hidden w-8 h-8 rounded-lg flex items-center justify-center text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors shadow-sm"><i class="fa-solid fa-check text-base"></i></button>
+                        <button id="dim-edit-btn-${index}" onclick="editDimension(${index})" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors border border-transparent hover:border-blue-100 shrink-0"><i class="fa-solid fa-pen text-sm"></i></button>
+                        <button id="dim-save-btn-${index}" onclick="saveDimension(${index})" class="hidden w-8 h-8 rounded-lg flex items-center justify-center text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors shadow-sm shrink-0"><i class="fa-solid fa-check text-base"></i></button>
                         <div class="w-px h-4 bg-slate-200 mx-0.5"></div>
-                        <button onclick="removeDimension(${index})" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors border border-transparent hover:border-rose-100"><i class="fa-solid fa-trash-can text-sm"></i></button>
+                        <button onclick="removeDimension(${index})" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors border border-transparent hover:border-rose-100 shrink-0"><i class="fa-solid fa-trash-can text-sm"></i></button>
                     </div>
                 </li>
             `).join('');
@@ -263,7 +267,6 @@
             await updateDoc(dimensionDocRef, { list: [...dimensionList, val] });
             input.value = '';
         };
-
         window.editDimension = (index) => {
             document.getElementById(`dim-text-${index}`).classList.add('hidden');
             document.getElementById(`dim-input-${index}`).classList.remove('hidden');
@@ -271,24 +274,18 @@
             document.getElementById(`dim-edit-btn-${index}`).classList.add('hidden');
             document.getElementById(`dim-save-btn-${index}`).classList.remove('hidden');
         };
-
         window.saveDimension = async (index) => {
             const newVal = document.getElementById(`dim-input-${index}`).value.trim();
             if (!newVal) return;
-            const newList = [...dimensionList];
-            newList[index] = newVal;
+            const newList = [...dimensionList]; newList[index] = newVal;
             await updateDoc(dimensionDocRef, { list: newList });
         };
-
         window.moveDimension = async (index, dir) => {
             if (index + dir < 0 || index + dir >= dimensionList.length) return;
             const newList = [...dimensionList];
-            const temp = newList[index];
-            newList[index] = newList[index + dir];
-            newList[index + dir] = temp;
+            const temp = newList[index]; newList[index] = newList[index + dir]; newList[index + dir] = temp;
             await updateDoc(dimensionDocRef, { list: newList });
         };
-
         window.removeDimension = async (index) => {
             if (confirm(`確定移除「${dimensionList[index]}」嗎？\n(注意：不會刪除已套用此構面的指標項目)`)) {
                 const newList = dimensionList.filter((_, i) => i !== index);
@@ -311,11 +308,13 @@
             const tbody = document.getElementById('table-body');
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
             const filterDimension = document.getElementById('filter-dimension').value;
+            const filterStatus = document.getElementById('filter-status').value;
 
             let filtered = allData.filter(d => {
                 const matchSearch = (d.item_name || '').toLowerCase().includes(searchTerm) || (d.code || '').toLowerCase().includes(searchTerm);
                 const matchDimension = filterDimension === 'all' || d.dimension === filterDimension;
-                return matchSearch && matchDimension;
+                const matchStatus = filterStatus === 'all' || (filterStatus === 'active' ? d.is_active : !d.is_active);
+                return matchSearch && matchDimension && matchStatus;
             });
 
             filtered.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
@@ -355,9 +354,9 @@
                     <td class="px-6 py-4 align-middle">
                         <span class="text-sm font-bold text-slate-800 leading-tight block">${data.item_name}</span>
                     </td>
-                    <td class="px-6 py-4 align-middle text-center">
-                        <div class="flex items-center justify-center whitespace-nowrap">
-                            <label class="relative inline-flex items-center cursor-pointer group/toggle">
+                    <td class="px-6 py-4 align-middle text-center whitespace-nowrap">
+                        <div class="flex items-center justify-center">
+                            <label class="relative inline-flex items-center cursor-pointer group/toggle whitespace-nowrap">
                                 <input type="checkbox" class="sr-only peer" ${data.is_active ? 'checked' : ''} onchange="window.toggleStatus('${data.id}', ${data.is_active})">
                                 <div class="relative w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-[20px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner shrink-0 min-w-[44px]"></div>
                                 <span class="ml-3 text-sm font-bold ${data.is_active ? 'text-emerald-600' : 'text-slate-400'} whitespace-nowrap">${data.is_active ? '啟用' : '停用'}</span>
@@ -390,7 +389,7 @@
                 csv += [d.sortOrder, d.code, d.dimension, d.item_name, status].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
             });
             const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-            link.download = `ISAC教育部審查指標主檔_${new Date().toISOString().split('T')[0]}.csv`; link.click();
+            link.download = `ISAC教育部審查指標_${new Date().toISOString().split('T')[0]}.csv`; link.click();
         };
 
         window.submitForm = async () => {
@@ -400,6 +399,7 @@
                 dimension: document.getElementById('input-dimension').value.trim(),
                 code: document.getElementById('input-code').value.trim(),
                 item_name: document.getElementById('input-item-name').value.trim()
+                // 💡 移除了學期綁定
             };
 
             if(!payload.dimension || !payload.code || !payload.item_name) { 
@@ -445,7 +445,6 @@
         window.moveData = async (id, direction) => {
             let sorted = [...allData].sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
             const currentIndex = sorted.findIndex(d => d.id === id);
-            
             if (direction === 'up' && currentIndex > 0) {
                 await updateDoc(doc(db, "moe_indicators_master", sorted[currentIndex].id), { sortOrder: sorted[currentIndex - 1].sortOrder || (currentIndex-1)*10 });
                 await updateDoc(doc(db, "moe_indicators_master", sorted[currentIndex - 1].id), { sortOrder: sorted[currentIndex].sortOrder || currentIndex*10 });
@@ -457,6 +456,7 @@
 
         document.getElementById('search-input').addEventListener('input', renderTable);
         document.getElementById('filter-dimension').addEventListener('change', renderTable);
+        document.getElementById('filter-status').addEventListener('change', renderTable);
     </script>
 </body>
 </html>
