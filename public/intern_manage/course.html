@@ -16,32 +16,35 @@
         .modal-enter { animation: modalFadeIn 0.2s ease-out forwards; }
         @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.97) translateY(-5px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         table { table-layout: fixed; width: 100%; } td { word-break: break-word; }
+        /* 💡 增加表格列的最小高度與呼吸感 */
+        tr { transition: background-color 0.2s; }
+        th, td { padding-top: 1rem !important; padding-bottom: 1rem !important; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden">
 
     <div class="shrink-0 px-6 pt-6 pb-4 space-y-4 animate-fade">
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shrink-0">
-                    <i class="fa-solid fa-book text-xl"></i>
+                <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shrink-0">
+                    <i class="fa-solid fa-book text-2xl"></i>
                 </div>
                 <div>
                     <h2 class="text-xl font-bold text-slate-800 tracking-tight" id="page-title">實習課程管理</h2>
-                    <p class="text-xs text-slate-500 mt-1">管理各系所歷年開設之實習課程資訊，作為學生綁定實習紀錄之基礎主檔。</p>
+                    <p class="text-xs text-slate-500 mt-1">管理各系所歷年開設之實習課程資訊。標題與內容皆已統一為標準黑體並置中顯示。</p>
                 </div>
             </div>
             
             <div class="flex flex-wrap gap-2">
-                <button onclick="exportToCSV()" class="h-9 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-3 rounded-lg text-sm transition-all flex items-center gap-1.5 shadow-sm">
+                <button onclick="exportToCSV()" class="h-10 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-4 rounded-xl text-sm transition-all flex items-center gap-1.5 shadow-sm">
                     <i class="fa-solid fa-file-export text-emerald-600"></i> 匯出清單
                 </button>
-                <button id="btn-import" onclick="document.getElementById('import-file').click()" class="h-9 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-3 rounded-lg text-sm transition-all flex items-center gap-1.5 shadow-sm">
+                <button id="btn-import" onclick="document.getElementById('import-file').click()" class="h-10 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-4 rounded-xl text-sm transition-all flex items-center gap-1.5 shadow-sm">
                     <i class="fa-solid fa-file-import text-blue-600"></i> 批次匯入
                 </button>
                 <input type="file" id="import-file" accept=".csv" class="hidden" onchange="handleImport(event)">
                 <div class="w-px h-6 bg-slate-200 self-center mx-1"></div>
-                <button onclick="openModal()" class="h-9 bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 rounded-lg text-sm transition-all flex items-center gap-1.5 shadow-sm shadow-blue-500/20">
+                <button onclick="openModal()" class="h-10 bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 rounded-xl text-sm transition-all flex items-center gap-1.5 shadow-md shadow-blue-500/20 active:scale-95">
                     <i class="fa-solid fa-plus text-base"></i> 新增課程
                 </button>
             </div>
@@ -49,13 +52,13 @@
 
         <div class="flex flex-col md:flex-row justify-between items-center gap-4 w-full relative">
             <div class="flex gap-2 w-full md:w-auto">
-                <select id="filter-semester" onchange="renderTable()" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 h-10 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
+                <select id="filter-semester" onchange="window.renderTable()" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl px-4 h-11 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
                     <option value="all">學年/期：全部</option>
                 </select>
-                <select id="filter-college" onchange="updateFilterDepts(); renderTable();" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 h-10 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
+                <select id="filter-college" onchange="window.updateFilterDepts(); window.renderTable();" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl px-4 h-11 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
                     <option value="all">開課學院：全部</option>
                 </select>
-                <select id="filter-dept" onchange="renderTable()" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 h-10 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
+                <select id="filter-dept" onchange="window.renderTable()" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl px-4 h-11 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
                     <option value="all">開課學系：全部</option>
                 </select>
             </div>
@@ -63,49 +66,50 @@
             <!-- 批次操作懸浮列 -->
             <div id="batch-action-bar" class="hidden absolute -inset-3 bg-slate-50 px-3 flex items-center justify-between z-20 animate-fade">
                 <div class="flex items-center text-blue-700">
-                    <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                    <div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center mr-3">
                         <i class="fa-solid fa-check-double text-blue-600"></i>
                     </div>
                     <span class="text-sm font-bold">已選擇 <span id="selected-count" class="text-lg mx-1 font-black text-blue-600">0</span> 筆課程</span>
                     
-                    <button id="btn-select-all-filtered" onclick="selectAllFiltered()" class="hidden ml-4 text-xs font-bold text-blue-600 hover:text-white bg-blue-50 hover:bg-blue-600 border border-blue-200 hover:border-blue-600 px-3 py-1.5 rounded-lg transition-all shadow-sm">
+                    <button id="btn-select-all-filtered" onclick="selectAllFiltered()" class="hidden ml-4 text-xs font-bold text-blue-600 hover:text-white bg-blue-50 hover:bg-blue-600 border border-blue-200 hover:border-blue-600 px-3 py-2 rounded-lg transition-all shadow-sm">
                         選取全部符合條件的 <span id="filtered-total-count">0</span> 筆
                     </button>
-                    <button id="btn-clear-selection" onclick="clearSelection()" class="ml-2 text-xs font-bold text-slate-500 hover:text-white bg-slate-100 hover:bg-slate-500 border border-slate-200 hover:border-slate-500 px-3 py-1.5 rounded-lg transition-all shadow-sm">
+                    <button id="btn-clear-selection" onclick="clearSelection()" class="ml-2 text-xs font-bold text-slate-500 hover:text-white bg-slate-100 hover:bg-slate-500 border border-slate-200 hover:border-slate-500 px-3 py-2 rounded-lg transition-all shadow-sm">
                         取消選取
                     </button>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="batchDelete()" class="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"><i class="fa-solid fa-trash-can"></i> 批次刪除</button>
+                    <button onclick="batchDelete()" class="bg-rose-500 hover:bg-rose-600 text-white px-5 py-2 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"><i class="fa-solid fa-trash-can"></i> 批次刪除選取</button>
                 </div>
             </div>
 
-            <div class="relative w-full md:w-72 shadow-sm rounded-lg">
-                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                <input type="text" id="search-input" oninput="renderTable()" placeholder="搜尋選課代號或課程名稱..." class="w-full bg-white border border-slate-200 rounded-lg pl-9 pr-3 h-10 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+            <div class="relative w-full md:w-80 shadow-sm rounded-xl overflow-hidden border border-slate-200 bg-white">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                <input type="text" id="search-input" oninput="window.renderTable()" placeholder="搜尋選課代號或課程名稱..." class="w-full pl-11 pr-4 h-11 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all">
             </div>
         </div>
     </div>
 
     <!-- 表格滾動區 -->
     <div class="flex-1 overflow-hidden px-6 pb-6 flex flex-col animate-fade">
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col flex-1 overflow-hidden">
+        <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-200 flex flex-col flex-1 overflow-hidden">
             <div class="flex-1 overflow-auto custom-scrollbar relative">
                 <table class="w-full text-left table-fixed">
                     <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10 shadow-sm">
                         <tr>
-                            <th class="px-2 py-3.5 text-center w-[4%]">
+                            <!-- 💡 優化：重新校準寬度比例，給予課程名稱最大空間 -->
+                            <th class="px-2 py-4 text-center w-[40px]">
                                 <input type="checkbox" id="selectAll" onchange="toggleSelectPage(event)" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shadow-sm transition-all">
                             </th>
-                            <th class="px-2 py-3.5 text-center text-xs font-bold text-slate-500 w-[9%] whitespace-nowrap">學年-學期</th>
-                            <th class="px-2 py-3.5 text-center text-xs font-bold text-slate-500 w-[10%] whitespace-nowrap">開課學制</th>
-                            <th class="px-2 py-3.5 text-center text-xs font-bold text-slate-500 w-[11%]">開課學院</th>
-                            <th class="px-2 py-3.5 text-center text-xs font-bold text-slate-500 w-[12%]">開課學系</th>
-                            <th class="px-2 py-3.5 text-center text-xs font-bold text-slate-500 w-[9%]">選課代號</th>
-                            <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[18%]">課程名稱</th>
-                            <th class="px-2 py-3.5 text-center text-xs font-bold text-slate-500 w-[10%]">實習課程屬性</th>
-                            <th class="px-2 py-3.5 text-center text-xs font-bold text-slate-500 w-[7%]">實習學分數</th>
-                            <th class="px-2 py-3.5 text-center text-xs font-bold text-slate-500 w-[10%]">操作</th>
+                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[65px]">學年-學期</th>
+                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[85px]">開課學制</th>
+                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[75px]">開課學院</th>
+                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[85px]">開課學系</th>
+                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[75px]">選課代號</th>
+                            <th class="px-4 py-4 text-center text-xs font-bold text-slate-500 w-[auto]">課程名稱</th>
+                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[95px]">實習課程屬性</th>
+                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[80px]">實習學分數</th>
+                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[125px]">操作</th>
                         </tr>
                     </thead>
                     <tbody id="table-body" class="divide-y divide-slate-100 text-sm">
@@ -114,9 +118,9 @@
                 </table>
             </div>
             
-            <div class="bg-slate-50 border-t border-slate-200 px-6 py-3 flex justify-between items-center shrink-0">
+            <div class="bg-slate-50 border-t border-slate-200 px-6 py-4 flex justify-between items-center shrink-0">
                 <div id="pagination-info" class="text-xs font-bold text-slate-500">顯示 0 到 0 筆，共 0 筆</div>
-                <div id="pagination-buttons" class="flex gap-1"></div>
+                <div id="pagination-buttons" class="flex gap-1.5"></div>
             </div>
         </div>
     </div>
@@ -124,56 +128,56 @@
     <!-- 彈跳視窗：新增/編輯課程 -->
     <div id="data-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeModal()"></div>
-        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden modal-enter relative max-h-[90vh] flex flex-col">
-            <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center shrink-0 bg-slate-50">
-                <h3 id="modal-title" class="font-black text-slate-800 text-lg flex items-center gap-2">
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden modal-enter relative max-h-[90vh] flex flex-col">
+            <div class="px-10 py-7 border-b border-slate-100 flex justify-between items-center shrink-0 bg-slate-50">
+                <h3 id="modal-title" class="font-black text-slate-800 text-xl flex items-center gap-3">
                     <i class="fa-solid fa-book-medical text-blue-600"></i> 新增實習課程
                 </h3>
-                <button onclick="closeModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 bg-white shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors shrink-0"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <button onclick="closeModal()" class="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-600 bg-white shadow-sm border border-slate-200 hover:bg-slate-50 transition-all"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             
-            <form id="data-form" class="p-8 space-y-6 overflow-y-auto custom-scrollbar flex-1 bg-white">
-                <div class="grid grid-cols-2 gap-5">
+            <form id="data-form" class="p-10 space-y-7 overflow-y-auto custom-scrollbar flex-1 bg-white">
+                <div class="grid grid-cols-2 gap-6">
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-2">學年度 <span class="text-rose-500">*</span></label>
-                        <input type="text" id="input-academic-year" required placeholder="例如：114" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm text-center focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all">
+                        <input type="text" id="input-academic-year" required placeholder="例如：114" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-sm font-bold text-slate-700 shadow-sm text-center focus:ring-4 focus:ring-blue-100 focus:bg-white outline-none transition-all">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-2">學期 <span class="text-rose-500">*</span></label>
-                        <input type="text" id="input-term" required placeholder="如: 1, 2, 暑期" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm text-center focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all">
+                        <input type="text" id="input-term" required placeholder="如: 1, 2, 暑期" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-sm font-bold text-slate-700 shadow-sm text-center focus:ring-4 focus:ring-blue-100 focus:bg-white outline-none transition-all">
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-5 border-t border-slate-100 pt-5">
+                <div class="grid grid-cols-2 gap-6 border-t border-slate-100 pt-7">
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-2">開課學院 <span class="text-rose-500">*</span></label>
-                        <select id="input-college" required onchange="updateFormDepts()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
+                        <select id="input-college" required onchange="updateFormDepts()" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-sm focus:ring-4 focus:ring-blue-100 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
                             <option value="">請選擇學院...</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-2">開課學系 <span class="text-rose-500">*</span></label>
-                        <select id="input-department" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
+                        <select id="input-department" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-sm focus:ring-4 focus:ring-blue-100 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
                             <option value="">請先選擇學院...</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-3 gap-5">
+                <div class="grid grid-cols-3 gap-6">
                     <div class="col-span-1">
                         <label class="block text-xs font-bold text-slate-600 mb-2">選課代號 <span class="text-rose-500">*</span></label>
-                        <input type="text" id="input-course-code" required placeholder="如: 1234" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-mono font-bold text-slate-700 shadow-sm text-center">
+                        <input type="text" id="input-course-code" required placeholder="如: 1234" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-sm focus:ring-4 focus:ring-blue-100 focus:bg-white transition-all outline-none font-mono font-bold text-slate-700 shadow-sm text-center">
                     </div>
                     <div class="col-span-2">
                         <label class="block text-xs font-bold text-slate-600 mb-2">課程名稱 <span class="text-rose-500">*</span></label>
-                        <input type="text" id="input-course-name" required placeholder="例如：企業實習(一)" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm">
+                        <input type="text" id="input-course-name" required placeholder="例如：企業實習(一)" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-sm focus:ring-4 focus:ring-blue-100 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm">
                     </div>
                 </div>
 
-                <div class="grid grid-cols-3 gap-5">
+                <div class="grid grid-cols-3 gap-6">
                     <div class="col-span-1">
                         <label class="block text-xs font-bold text-slate-600 mb-2">開課學制 <span class="text-rose-500">*</span></label>
-                        <select id="input-edu-system" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
+                        <select id="input-edu-system" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-sm focus:ring-4 focus:ring-blue-100 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
                             <option value="日間學士班" selected>日間學士班</option>
                             <option value="研究所">研究所</option>
                             <option value="進修學士班">進修學士班</option>
@@ -181,7 +185,7 @@
                     </div>
                     <div class="col-span-1">
                         <label class="block text-xs font-bold text-slate-600 mb-2">實習課程屬性 <span class="text-rose-500">*</span></label>
-                        <select id="input-course-type" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
+                        <select id="input-course-type" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-sm focus:ring-4 focus:ring-blue-100 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
                             <option value="必修" selected>必修</option>
                             <option value="選修">選修</option>
                             <option value="必選">必選</option>
@@ -190,15 +194,15 @@
                     </div>
                     <div class="col-span-1">
                         <label class="block text-xs font-bold text-slate-600 mb-2">實習學分數 <span class="text-rose-500">*</span></label>
-                        <input type="number" id="input-credits" min="0" step="0.5" required placeholder="如: 3" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-mono font-bold text-slate-700 shadow-sm text-center">
+                        <input type="number" id="input-credits" min="0" step="0.5" required placeholder="如: 3" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-sm focus:ring-4 focus:ring-blue-100 focus:bg-white transition-all outline-none font-mono font-bold text-slate-700 shadow-sm text-center">
                     </div>
                 </div>
             </form>
             
-            <div class="p-6 border-t border-slate-100 shrink-0 flex gap-4 bg-slate-50">
-                <button type="button" onclick="closeModal()" class="flex-1 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-all shadow-sm">取消</button>
-                <button type="button" id="btn-submit" onclick="submitForm()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2">
-                    儲存課程
+            <div class="p-8 border-t border-slate-100 shrink-0 flex gap-4 bg-slate-50">
+                <button type="button" onclick="closeModal()" class="flex-1 py-4 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 rounded-2xl transition-all shadow-sm">取消返回</button>
+                <button type="button" id="btn-submit" onclick="submitForm()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2 active:scale-[0.98]">
+                    儲存課程主檔資料
                 </button>
             </div>
         </div>
@@ -246,10 +250,9 @@
                 onSnapshot(dataCollection, (snapshot) => {
                     allData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     populateSemesterFilter(); 
-                    
                     selectedIds = [];
                     updateBatchActionBar();
-                    renderTable();
+                    window.renderTable();
                 }, (error) => {
                     document.getElementById('table-body').innerHTML = `<tr><td colspan="10" class="px-6 py-16 text-center text-rose-500 font-bold"><i class="fa-solid fa-lock text-3xl mb-3"></i><p>資料讀取失敗，權限不足。</p></td></tr>`;
                 });
@@ -268,7 +271,7 @@
                 selectedIds = selectedIds.filter(id => !currentPaginatedIds.includes(id));
             }
             updateBatchActionBar();
-            renderTable();
+            window.renderTable();
         };
 
         window.toggleSelect = (id) => {
@@ -276,19 +279,19 @@
             if (index === -1) selectedIds.push(id);
             else selectedIds.splice(index, 1);
             updateBatchActionBar();
-            renderTable();
+            window.renderTable();
         };
 
         window.selectAllFiltered = () => {
             selectedIds = filteredCourses.map(d => d.id);
             updateBatchActionBar();
-            renderTable();
+            window.renderTable();
         };
 
         window.clearSelection = () => {
             selectedIds = [];
             updateBatchActionBar();
-            renderTable();
+            window.renderTable();
         };
 
         function updateBatchActionBar() {
@@ -313,6 +316,8 @@
             if (!confirm(`警告：確定要刪除選取的 ${selectedIds.length} 筆課程嗎？\n此操作無法復原！`)) return;
             try {
                 for (let id of selectedIds) { await deleteDoc(doc(db, "internship_courses", id)); }
+                selectedIds = [];
+                updateBatchActionBar();
             } catch (e) { alert("批次刪除發生錯誤: " + e.message); }
         };
 
@@ -436,7 +441,7 @@
             document.getElementById('selectAll').checked = isAllVisibleSelected;
 
             if (totalItems === 0) {
-                tbody.innerHTML = `<tr><td colspan="10" class="px-6 py-16 text-center text-slate-400 font-bold bg-white">找不到符合條件的課程。</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" class="px-6 py-16 text-center text-slate-400 font-bold bg-white">找不到符合條件的課程資料。</td></tr>`;
                 return;
             }
 
@@ -458,16 +463,18 @@
                     <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight">${data.edu_system}</td>
                     <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight">${colDispName}</td>
                     <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight">${deptDispName}</td>
-                    <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight uppercase">${data.course_code}</td>
-                    <td class="px-4 py-3 align-middle text-sm font-bold text-slate-800 leading-tight">${data.course_name}</td>
+                    <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight uppercase font-mono">${data.course_code}</td>
+                    <td class="px-4 py-3 align-middle text-sm font-bold text-slate-800 leading-tight text-center">
+                        <div class="inline-block text-left w-full max-w-full truncate" title="${data.course_name}">${data.course_name}</div>
+                    </td>
                     <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight">${data.course_type}</td>
                     <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight">${data.credits}</td>
                     <td class="px-2 py-3 align-middle">
-                        <div class="flex items-center justify-center gap-1.5 opacity-100 transition-opacity">
-                            <button onclick="window.moveOrder('${data.id}', 'up')" class="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all disabled:opacity-20 shrink-0" ${globalIndex === 0 ? 'disabled' : ''}><i class="fa-solid fa-chevron-up text-[10px]"></i></button>
-                            <button onclick="window.moveOrder('${data.id}', 'down')" class="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all disabled:opacity-20 shrink-0" ${globalIndex === filteredCourses.length - 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-down text-[10px]"></i></button>
-                            <button onclick="window.editData('${data.id}')" class="w-7 h-7 rounded-md flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all shrink-0" title="編輯"><i class="fa-solid fa-pen text-xs"></i></button>
-                            <button onclick="window.deleteData('${data.id}', '${data.course_name}')" class="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all shrink-0" title="刪除"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        <div class="flex items-center justify-center gap-1 opacity-100">
+                            <button onclick="window.moveOrder('${data.id}', 'up')" class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-300 hover:text-blue-600 hover:bg-blue-50 transition-all disabled:opacity-0" ${globalIndex === 0 ? 'disabled' : ''}><i class="fa-solid fa-chevron-up text-[10px]"></i></button>
+                            <button onclick="window.moveOrder('${data.id}', 'down')" class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-300 hover:text-blue-600 hover:bg-blue-50 transition-all disabled:opacity-0" ${globalIndex === filteredCourses.length - 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-down text-[10px]"></i></button>
+                            <button onclick="window.editData('${data.id}')" class="w-7 h-7 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all shrink-0" title="編輯"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                            <button onclick="window.deleteData('${data.id}', '${data.course_name}')" class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-all shrink-0" title="刪除"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
                         </div>
                     </td>
                 </tr>`;
@@ -568,7 +575,7 @@
                 }
                 closeModal();
             } catch (err) { alert("儲存發生錯誤：" + err.message); } 
-            finally { btn.disabled = false; btn.innerText = '儲存課程'; }
+            finally { btn.disabled = false; btn.innerText = '儲存課程主檔資料'; }
         };
 
         window.editData = (id) => {
@@ -577,7 +584,7 @@
             document.getElementById('input-academic-year').value = docData.academic_year || '';
             document.getElementById('input-term').value = docData.term || '';
             document.getElementById('input-college').value = docData.college || '';
-            updateFormDepts(docData.department); 
+            window.updateFormDepts(docData.department); 
             document.getElementById('input-course-code').value = docData.course_code || '';
             document.getElementById('input-course-name').value = docData.course_name || ''; 
             document.getElementById('input-edu-system').value = docData.edu_system || '日間學士班'; 
@@ -590,7 +597,7 @@
         window.deleteData = async (id, name) => {
             if (confirm(`警告：確定要刪除課程「${name}」嗎？`)) {
                 await deleteDoc(doc(db, "internship_courses", id));
-                renderTable();
+                window.renderTable();
             }
         };
 
