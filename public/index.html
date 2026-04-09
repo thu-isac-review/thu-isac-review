@@ -1,709 +1,451 @@
-<!DOCTYPE html>
-<html lang="zh-TW" class="h-full">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ISAC 實習文件書審查核平台</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            50: '#f0f5fa',
-                            100: '#e1ebf4',
-                            500: '#2c75b3',
-                            600: '#1a5c96',
-                            700: '#004785', // 東海藍
-                            800: '#003666',
-                            900: '#002244',
-                        },
-                        sidebar: '#0f172a', // 深邃的側邊欄顏色
-                    },
-                    boxShadow: {
-                        'card': '0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.03)',
-                        'float': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05)',
-                    }
-                }
-            }
-        }
-    </script>
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <style>
-        html, body { height: 100%; margin: 0; padding: 0; background-color: #f8fafc; }
-        * {
-            font-family: "SF Pro TC", "SF Pro Display", "PingFang TC", "Noto Sans TC", sans-serif !important;
-            -webkit-font-smoothing: antialiased;
-        }
-        
-        /* 視圖切換動畫 */
-        .view-section { display: none; opacity: 0; }
-        .view-section.active { display: block; opacity: 1; animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+import React, { useState, useEffect } from 'react';
+import { initializeApp } from "firebase/app";
+import { 
+  getAuth, 
+  onAuthStateChanged, 
+  signInWithEmailAndPassword, 
+  signOut 
+} from "firebase/auth";
+import { 
+  getFirestore, 
+  collection, 
+  onSnapshot, 
+  query, 
+  where, 
+  addDoc, 
+  doc, 
+  updateDoc, 
+  deleteDoc, 
+  serverTimestamp 
+} from "firebase/firestore";
+import { 
+  LayoutDashboard, 
+  Building2, 
+  Users, 
+  FileText, 
+  UserCircle, 
+  ShieldCheck, 
+  LogOut, 
+  Plus, 
+  Trash2, 
+  Search, 
+  Bell, 
+  ChevronDown,
+  Loader2,
+  AlertCircle
+} from 'lucide-react';
 
-        /* 滾動條美化 */
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+// --- Firebase 設定 (已帶入您的專案資訊) ---
+const firebaseConfig = {
+  apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY",
+  authDomain: "thu-isac-review.firebaseapp.com",
+  projectId: "thu-isac-review",
+  storageBucket: "thu-isac-review.firebasestorage.app",
+  messagingSenderId: "453299876735",
+  appId: "1:453299876735:web:1d8babca3315423161a04a"
+};
 
-        /* 側邊欄選中狀態 */
-        .sidebar-item.active { background-color: rgba(255, 255, 255, 0.1); color: #ffffff; border-left-color: #3b82f6; }
-        .sidebar-item { border-left: 3px solid transparent; transition: all 0.2s ease; }
-        .sidebar-item:hover:not(.active) { background-color: rgba(255, 255, 255, 0.05); color: #f8fafc; }
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-        /* 查核清單卡片特效 */
-        .check-card { transition: all 0.2s ease; cursor: pointer; }
-        .check-card:hover { background-color: #f8fafc; border-color: #cbd5e1; }
-        .check-card.checked { background-color: #f0f9ff; border-color: #bae6fd; }
-    </style>
-</head>
+export default function App() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [currentView, setCurrentView] = useState('dashboard'); // 控制切換頁面
+  const [depts, setDepts] = useState([]);
+  const [activeDeptCount, setActiveDeptCount] = useState(0);
 
-<body class="text-slate-800 flex h-full overflow-hidden">
+  // 1. 監聽登入狀態 (門神)
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
 
-    <!-- ==========================================
-         左側深色導航欄 (Sidebar)
-         ========================================== -->
-    <aside class="w-64 bg-sidebar text-slate-300 flex-col hidden md:flex shrink-0 z-20 shadow-xl">
-        <!-- Logo 區塊 -->
-        <div class="h-16 flex items-center px-6 border-b border-slate-700/50 cursor-pointer">
-            <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center mr-3 shadow-md">
-                <i class="ph-bold ph-shield-check text-white text-lg"></i>
-            </div>
-            <span class="text-white font-bold text-lg tracking-wide">ISAC 審查中心</span>
+  // 2. 監聽系所資料庫
+  useEffect(() => {
+    if (!user) return;
+    const q = query(collection(db, "departments"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const deptList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setDepts(deptList);
+      setActiveDeptCount(deptList.filter(d => d.is_active).length);
+    }, (error) => {
+      console.error("Firestore 存取失敗，請確認是否已建立資料庫：", error);
+    });
+    return () => unsubscribe();
+  }, [user]);
+
+  if (loading) {
+    return (
+      <div className="h-full w-full flex items-center justify-center bg-slate-50">
+        <Loader2 className="animate-spin text-blue-600 w-10 h-10" />
+      </div>
+    );
+  }
+
+  // 如果未登入，顯示登入頁面
+  if (!user) {
+    return <LoginView />;
+  }
+
+  return (
+    <div className="flex h-full overflow-hidden bg-slate-50 text-slate-800">
+      {/* 側邊欄 (共享設計) */}
+      <Sidebar currentView={currentView} setView={setCurrentView} userEmail={user.email} />
+
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* 導覽列 (共享設計) */}
+        <Navbar currentView={currentView} />
+
+        {/* 內容切換區 */}
+        <main className="flex-1 overflow-y-auto p-6 lg:p-8 custom-scrollbar">
+          {currentView === 'dashboard' && <DashboardView activeDeptCount={activeDeptCount} />}
+          {currentView === 'departments' && <DepartmentView depts={depts} />}
+        </main>
+      </div>
+    </div>
+  );
+}
+
+// --- 子元件：登入畫面 ---
+function LoginView() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setIsLoggingIn(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (err) {
+      alert("登入失敗：" + err.message);
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
+
+  return (
+    <div className="h-full flex items-center justify-center p-4 bg-slate-50">
+      <div className="bg-white rounded-3xl shadow-xl w-full max-w-md p-10 border border-slate-100">
+        <div className="flex flex-col items-center mb-8 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center mb-4 shadow-lg shadow-blue-200">
+            <ShieldCheck className="text-white w-8 h-8" />
+          </div>
+          <h1 className="text-2xl font-black text-slate-800 tracking-tight">ISAC 審查中心</h1>
+          <p className="text-slate-500 text-sm mt-2 font-medium">請登入您的管理帳號以進入系統</p>
         </div>
 
-        <!-- 選單區塊 -->
-        <div class="flex-1 overflow-y-auto py-4 custom-scrollbar">
-            <div class="px-4 mb-2 text-xs font-bold text-slate-500 uppercase tracking-wider">主要業務</div>
-            
-            <button onclick="switchView('admin')" id="nav-admin" class="sidebar-item w-full flex items-center px-6 py-3 text-sm font-medium mb-1 active">
-                <i class="ph-fill ph-squares-four text-xl mr-3 opacity-80"></i> 總覽儀表板
-            </button>
-            
-            <button onclick="switchView('list')" id="nav-list" class="sidebar-item w-full flex items-center px-6 py-3 text-sm font-medium mb-1">
-                <i class="ph-fill ph-users-three text-xl mr-3 opacity-80"></i> 學生待查核名單
-            </button>
+        <form onSubmit={handleLogin} className="space-y-5">
+          <div>
+            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Email</label>
+            <input 
+              type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-sm focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Password</label>
+            <input 
+              type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-sm focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all"
+            />
+          </div>
+          <button 
+            type="submit" disabled={isLoggingIn}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl mt-4 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-100 disabled:opacity-50"
+          >
+            {isLoggingIn ? <Loader2 className="animate-spin w-5 h-5" /> : "登入系統"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
 
-            <div class="px-4 mt-8 mb-2 text-xs font-bold text-slate-500 uppercase tracking-wider">設定與維護</div>
-            
-            <button class="sidebar-item w-full flex items-center px-6 py-3 text-sm font-medium mb-1 text-slate-400 cursor-not-allowed">
-                <i class="ph-fill ph-file-text text-xl mr-3 opacity-80"></i> 指標與表單設定
+// --- 子元件：側邊欄 ---
+function Sidebar({ currentView, setView, userEmail }) {
+  const handleLogout = () => {
+    if (confirm("確定要登出嗎？")) signOut(auth);
+  };
+
+  const navItems = [
+    { id: 'dashboard', label: '總覽儀表板', icon: LayoutDashboard },
+    { id: 'list', label: '學生待查核名單', icon: Users, disabled: true },
+  ];
+
+  const adminItems = [
+    { id: 'departments', label: '系所清單管理', icon: Building2 },
+    { id: 'forms', label: '指標與表單設定', icon: FileText, disabled: true },
+  ];
+
+  return (
+    <aside className="w-72 bg-[#0f172a] text-slate-400 flex flex-col shrink-0 z-20 shadow-2xl">
+      <div className="h-20 flex items-center px-8 border-b border-slate-800/50">
+        <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center mr-3 shadow-lg shadow-blue-500/20">
+          <ShieldCheck className="text-white w-6 h-6" />
+        </div>
+        <span className="text-white font-black text-xl tracking-tight">ISAC 審查</span>
+      </div>
+
+      <nav className="flex-1 px-4 py-8 space-y-8 overflow-y-auto">
+        <div>
+          <div className="px-4 mb-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">業務主檔</div>
+          {navItems.map(item => (
+            <button 
+              key={item.id} disabled={item.disabled}
+              onClick={() => setView(item.id)}
+              className={`w-full flex items-center px-4 py-3.5 rounded-2xl text-sm font-bold transition-all mb-1 ${currentView === item.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'hover:bg-slate-800/50 hover:text-slate-200 opacity-60'}`}
+            >
+              <item.icon className={`w-5 h-5 mr-3 ${currentView === item.id ? 'text-white' : ''}`} /> {item.label}
             </button>
-            <button class="sidebar-item w-full flex items-center px-6 py-3 text-sm font-medium mb-1 text-slate-400 cursor-not-allowed">
-                <i class="ph-fill ph-users text-xl mr-3 opacity-80"></i> 權限管理
-            </button>
+          ))}
         </div>
 
-        <!-- 底部使用者區塊 -->
-        <div class="p-4 border-t border-slate-700/50">
-            <div class="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">
-                <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-400 flex items-center justify-center text-white font-bold text-sm shadow-md">
-                    Ad
-                </div>
-                <div class="flex-1 overflow-hidden">
-                    <div class="text-sm font-bold text-white truncate">系統管理員</div>
-                    <div class="text-xs text-slate-400 truncate">admin@thu.edu.tw</div>
-                </div>
-                <i class="ph-bold ph-caret-up text-slate-500"></i>
-            </div>
+        <div>
+          <div className="px-4 mb-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">系統管理</div>
+          {adminItems.map(item => (
+            <button 
+              key={item.id} disabled={item.disabled}
+              onClick={() => setView(item.id)}
+              className={`w-full flex items-center px-4 py-3.5 rounded-2xl text-sm font-bold transition-all mb-1 ${currentView === item.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'hover:bg-slate-800/50 hover:text-slate-200 opacity-60'}`}
+            >
+              <item.icon className={`w-5 h-5 mr-3 ${currentView === item.id ? 'text-white' : ''}`} /> {item.label}
+            </button>
+          ))}
         </div>
+      </nav>
+
+      <div className="p-6 border-t border-slate-800/50">
+        <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-800/30 border border-slate-700/30">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center text-white font-black text-xs">AD</div>
+          <div className="flex-1 overflow-hidden">
+            <div className="text-xs font-black text-white truncate">管理者</div>
+            <div className="text-[10px] text-slate-500 truncate font-mono">{userEmail}</div>
+          </div>
+          <button onClick={handleLogout} className="text-slate-500 hover:text-rose-400 transition-colors">
+            <LogOut className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
     </aside>
+  );
+}
 
-    <!-- ==========================================
-         右側主要內容區
-         ========================================== -->
-    <main class="flex-1 flex flex-col h-full relative overflow-hidden bg-slate-50">
-        
-        <!-- 頂部純白操作列 (Header) -->
-        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0 z-10 shadow-sm">
-            <div class="flex items-center gap-4">
-                <!-- 手機版選單按鈕 -->
-                <button class="md:hidden text-slate-500 hover:text-slate-800">
-                    <i class="ph-bold ph-list text-2xl"></i>
-                </button>
-                
-                <!-- 頁面標題 (動態變更) -->
-                <h2 id="header-title" class="text-lg font-bold text-slate-800 hidden sm:block">總覽儀表板</h2>
-            </div>
-
-            <!-- 右側控制項 -->
-            <div class="flex items-center gap-4">
-                <!-- 搜尋框 -->
-                <div class="relative hidden lg:block">
-                    <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" class="pl-9 pr-4 py-1.5 bg-slate-100 border-transparent rounded-lg text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all w-64" placeholder="搜尋學號、姓名或機構...">
-                </div>
-
-                <div class="h-6 w-px bg-slate-200 mx-1"></div>
-
-                <!-- 學期切換 (極簡樣式) -->
-                <div class="relative">
-                    <select class="appearance-none bg-transparent border-none text-slate-700 font-bold text-sm py-1.5 pl-3 pr-8 cursor-pointer focus:ring-0">
-                        <option value="114-1" selected>114-1 學年度</option>
-                        <option value="113-2">113-2 學年度</option>
-                    </select>
-                    <i class="ph-bold ph-caret-down absolute right-2 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
-                </div>
-
-                <!-- 通知小鈴鐺 -->
-                <button class="relative w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors text-slate-500">
-                    <i class="ph-bold ph-bell text-lg"></i>
-                    <span class="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border border-white"></span>
-                </button>
-            </div>
-        </header>
-
-        <!-- 內容捲動區 -->
-        <div class="flex-1 overflow-y-auto custom-scrollbar p-6 lg:p-8">
-            
-            <!-- ==========================================
-                 視圖 1：系統管理員後台 (Admin Dashboard - 完美還原圖片佈局)
-                 ========================================== -->
-            <div id="view-admin" class="view-section active flex flex-col gap-6 max-w-[1400px] mx-auto">
-                
-                <!-- 數據卡片列 (KPI Cards) -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <!-- KPI 1 -->
-                    <div class="bg-white rounded-xl p-5 shadow-card border border-slate-100 flex flex-col hover:shadow-float transition-shadow">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="text-sm font-bold text-slate-500">已建檔學生數</div>
-                            <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center"><i class="ph-bold ph-users text-lg"></i></div>
-                        </div>
-                        <div class="flex items-baseline gap-2">
-                            <h3 class="text-3xl font-black text-slate-800">120</h3>
-                            <span class="text-xs font-bold text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded flex items-center gap-0.5"><i class="ph-bold ph-trend-up"></i> 12%</span>
-                        </div>
-                    </div>
-                    <!-- KPI 2 -->
-                    <div class="bg-white rounded-xl p-5 shadow-card border border-slate-100 flex flex-col hover:shadow-float transition-shadow">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="text-sm font-bold text-slate-500">涵蓋系所</div>
-                            <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="ph-bold ph-buildings text-lg"></i></div>
-                        </div>
-                        <div class="flex items-baseline gap-2">
-                            <h3 class="text-3xl font-black text-slate-800">15</h3>
-                            <span class="text-xs font-medium text-slate-400">個單位</span>
-                        </div>
-                    </div>
-                    <!-- KPI 3 -->
-                    <div class="bg-white rounded-xl p-5 shadow-card border border-slate-100 flex flex-col hover:shadow-float transition-shadow">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="text-sm font-bold text-slate-500">異常與退件數</div>
-                            <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center"><i class="ph-bold ph-warning-circle text-lg"></i></div>
-                        </div>
-                        <div class="flex items-baseline gap-2">
-                            <h3 class="text-3xl font-black text-slate-800">8</h3>
-                            <span class="text-xs font-medium text-slate-400">待系所補件</span>
-                        </div>
-                    </div>
-                    <!-- KPI 4 -->
-                    <div class="bg-white rounded-xl p-5 shadow-card border border-slate-100 flex flex-col hover:shadow-float transition-shadow relative overflow-hidden">
-                        <div class="absolute bottom-0 left-0 w-full h-1 bg-slate-100"><div class="h-full bg-indigo-500" style="width: 24%"></div></div>
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="text-sm font-bold text-slate-500">儲存空間使用率</div>
-                            <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center"><i class="ph-bold ph-hard-drives text-lg"></i></div>
-                        </div>
-                        <div class="flex items-baseline gap-2">
-                            <h3 class="text-3xl font-black text-slate-800">24%</h3>
-                            <span class="text-xs font-medium text-slate-400">1.2GB / 5.0GB</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 動作卡片列 (Action Cards) -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    
-                    <!-- 左側：匯入區塊 (佔 1/3) -->
-                    <div class="bg-white rounded-xl shadow-card border border-slate-100 p-6 flex flex-col">
-                        <h3 class="text-base font-bold text-slate-800 mb-1">建立查核底稿</h3>
-                        <p class="text-sm text-slate-500 mb-5">上傳教務處 Excel 建立學生實習清單</p>
-                        
-                        <div class="flex-1 border-2 border-dashed border-slate-200 rounded-lg bg-slate-50 flex flex-col items-center justify-center p-6 text-center hover:bg-blue-50 hover:border-blue-300 transition-colors cursor-pointer group">
-                            <div class="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                                <i class="ph-bold ph-upload-simple text-xl text-blue-500"></i>
-                            </div>
-                            <div class="text-sm font-bold text-slate-700">點擊上傳名單檔案</div>
-                            <div class="text-xs text-slate-400 mt-1">支援 .xlsx, .csv 格式</div>
-                        </div>
-                    </div>
-
-                    <!-- 右側：空間與專案管理 (佔 2/3) -->
-                    <div class="bg-white rounded-xl shadow-card border border-slate-100 p-6 lg:col-span-2 flex flex-col">
-                        <h3 class="text-base font-bold text-slate-800 mb-1 flex items-center gap-2">
-                            專案完結與空間釋放 <span class="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded uppercase">重要操作</span>
-                        </h3>
-                        <p class="text-sm text-slate-500 mb-5">查核作業結束後，請依序執行打包與清空，以維持 Firebase 免費額度。</p>
-                        
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
-                            <button class="bg-white border border-slate-200 hover:border-blue-300 hover:shadow-md rounded-xl p-5 text-left transition-all flex flex-col justify-between group">
-                                <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                                    <i class="ph-bold ph-file-zip text-xl"></i>
-                                </div>
-                                <div>
-                                    <h4 class="font-bold text-slate-800 mb-1">1. 打包實體審查包</h4>
-                                    <p class="text-xs text-slate-500">依學院/學系自動分類並下載成 ZIP 檔，供教育部實地訪評用。</p>
-                                </div>
-                            </button>
-                            
-                            <button class="bg-white border border-slate-200 hover:border-rose-300 hover:shadow-md rounded-xl p-5 text-left transition-all flex flex-col justify-between group">
-                                <div class="w-10 h-10 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center mb-4 group-hover:bg-rose-600 group-hover:text-white transition-colors">
-                                    <i class="ph-bold ph-trash text-xl"></i>
-                                </div>
-                                <div>
-                                    <h4 class="font-bold text-slate-800 mb-1">2. 一鍵清空雲端檔案</h4>
-                                    <p class="text-xs text-rose-500 font-medium">徹底刪除本學期的所有實體檔案。此操作無法復原，請謹慎使用。</p>
-                                </div>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 底部表格：異常追蹤名單 -->
-                <div class="bg-white rounded-xl shadow-card border border-slate-100 overflow-hidden flex flex-col">
-                    <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center">
-                        <div>
-                            <h3 class="text-base font-bold text-slate-800">異常退件追蹤名單</h3>
-                            <p class="text-xs text-slate-500 mt-1">需通知系所進行補件或修正之項目</p>
-                        </div>
-                        <button class="text-sm font-bold text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 border border-blue-200">
-                            <i class="ph-bold ph-download-simple"></i> 匯出報表
-                        </button>
-                    </div>
-                    
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr>
-                                    <th class="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50">學系</th>
-                                    <th class="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50">學生資訊</th>
-                                    <th class="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50">異常文件</th>
-                                    <th class="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50">退件備註</th>
-                                    <th class="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50 text-right">操作</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-100 text-sm">
-                                <tr class="hover:bg-slate-50 transition-colors">
-                                    <td class="px-6 py-4 font-medium text-slate-700">歷史學系</td>
-                                    <td class="px-6 py-4">
-                                        <div class="font-bold text-slate-800">李大華</div>
-                                        <div class="text-xs text-slate-400">S0813006</div>
-                                    </td>
-                                    <td class="px-6 py-4"><span class="px-2.5 py-1 bg-rose-50 text-rose-700 text-xs font-bold rounded-md border border-rose-100">實習合約書</span></td>
-                                    <td class="px-6 py-4 text-slate-500">甲乙丙三方未完全蓋章 (缺學校用印)</td>
-                                    <td class="px-6 py-4 text-right">
-                                        <button class="text-blue-600 hover:underline font-medium text-xs">發送通知</button>
-                                    </td>
-                                </tr>
-                                <tr class="hover:bg-slate-50 transition-colors">
-                                    <td class="px-6 py-4 font-medium text-slate-700">社會工作學系</td>
-                                    <td class="px-6 py-4">
-                                        <div class="font-bold text-slate-800">張雅婷</div>
-                                        <div class="text-xs text-slate-400">S0924011</div>
-                                    </td>
-                                    <td class="px-6 py-4"><span class="px-2.5 py-1 bg-amber-50 text-amber-700 text-xs font-bold rounded-md border border-amber-100">保險證明</span></td>
-                                    <td class="px-6 py-4 text-slate-500">未上傳勞保或意外險投保證明</td>
-                                    <td class="px-6 py-4 text-right">
-                                        <button class="text-blue-600 hover:underline font-medium text-xs">發送通知</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ==========================================
-                 視圖 2：待查核名單 (List View)
-                 ========================================== -->
-            <div id="view-list" class="view-section flex flex-col gap-6 max-w-[1400px] mx-auto">
-                
-                <!-- 工具列 -->
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 rounded-xl shadow-card border border-slate-100">
-                    <div class="flex flex-wrap gap-3">
-                        <select class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-3 py-2 outline-none">
-                            <option>全部學院</option>
-                            <option>管理學院</option>
-                        </select>
-                        <select class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-3 py-2 outline-none">
-                            <option>全部學系</option>
-                            <option>資訊管理學系</option>
-                        </select>
-                        <select class="bg-white border border-slate-300 text-blue-700 font-bold text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-3 py-2 outline-none">
-                            <option>狀態：待查核 (未收齊)</option>
-                            <option>狀態：異常退件</option>
-                            <option>狀態：已通過</option>
-                            <option>全部狀態</option>
-                        </select>
-                    </div>
-                    <div class="relative w-full md:w-64">
-                        <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none" placeholder="搜尋學號、姓名...">
-                    </div>
-                </div>
-
-                <!-- 無框線極簡表格 -->
-                <div class="bg-white rounded-xl shadow-card border border-slate-100 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr>
-                                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50 w-28">狀態</th>
-                                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50">學生資訊</th>
-                                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50">實習機構 / 課程</th>
-                                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50 w-48">文件進度</th>
-                                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50 text-right">操作</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-100 text-sm">
-                                
-                                <!-- Row 1 -->
-                                <tr class="hover:bg-slate-50 transition-colors">
-                                    <td class="px-6 py-4">
-                                        <div class="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-amber-50 text-amber-600 text-xs font-bold border border-amber-100">
-                                            <i class="ph-fill ph-hourglass-high"></i> 待查核
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center gap-3">
-                                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm">王</div>
-                                            <div>
-                                                <div class="font-bold text-slate-800">王小明</div>
-                                                <div class="text-xs text-slate-400">S1101234 · 資管系</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="font-bold text-slate-700">台灣積體電路製造</div>
-                                        <div class="text-xs text-slate-400">資訊系統實務(一)</div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center justify-between mb-1.5">
-                                            <span class="text-xs font-bold text-slate-500">收齊率</span>
-                                            <span class="text-xs font-bold text-blue-600">1 / 5</span>
-                                        </div>
-                                        <div class="w-full bg-slate-100 rounded-full h-1.5">
-                                            <div class="bg-blue-500 h-1.5 rounded-full" style="width: 20%"></div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 text-right">
-                                        <button onclick="switchView('audit')" class="bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 text-slate-600 font-bold py-1.5 px-4 rounded-lg shadow-sm transition-all text-xs inline-flex items-center gap-1.5">
-                                            進入查核 <i class="ph-bold ph-arrow-right"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                
-                                <!-- Row 2 -->
-                                <tr class="hover:bg-slate-50 transition-colors">
-                                    <td class="px-6 py-4">
-                                        <div class="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-rose-50 text-rose-600 text-xs font-bold border border-rose-100">
-                                            <i class="ph-fill ph-warning-circle"></i> 已退件
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center gap-3">
-                                            <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-sm">李</div>
-                                            <div>
-                                                <div class="font-bold text-slate-800">李大華</div>
-                                                <div class="text-xs text-slate-400">S0813006 · 歷史系</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="font-bold text-slate-700">國立故宮博物院</div>
-                                        <div class="text-xs text-slate-400">文創實習(113)</div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center justify-between mb-1.5">
-                                            <span class="text-xs font-bold text-slate-500">收齊率</span>
-                                            <span class="text-xs font-bold text-rose-500">4 / 5</span>
-                                        </div>
-                                        <div class="w-full bg-slate-100 rounded-full h-1.5">
-                                            <div class="bg-rose-400 h-1.5 rounded-full" style="width: 80%"></div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 text-right">
-                                        <button class="bg-white border border-rose-200 hover:bg-rose-50 text-rose-600 font-bold py-1.5 px-4 rounded-lg shadow-sm transition-all text-xs inline-flex items-center gap-1.5">
-                                            <i class="ph-bold ph-pencil-simple"></i> 處理異常
-                                        </button>
-                                    </td>
-                                </tr>
-
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ==========================================
-                 視圖 3：單一學生審查工作站 (Audit View)
-                 ========================================== -->
-            <div id="view-audit" class="view-section flex flex-col gap-6 h-full max-w-[1600px] mx-auto">
-                
-                <!-- 頂部返回與學生資訊 -->
-                <div class="bg-white px-6 py-4 rounded-xl shadow-card border border-slate-100 flex justify-between items-center">
-                    <div class="flex items-center gap-4">
-                        <button onclick="switchView('list')" class="w-8 h-8 rounded hover:bg-slate-100 text-slate-500 flex items-center justify-center transition-colors">
-                            <i class="ph-bold ph-arrow-left text-lg"></i>
-                        </button>
-                        <div class="h-6 w-px bg-slate-200"></div>
-                        <div class="flex items-center gap-3">
-                            <h2 class="text-lg font-black text-slate-800">王小明</h2>
-                            <span class="bg-slate-100 text-slate-500 text-xs font-bold px-2 py-0.5 rounded font-mono border border-slate-200">S1101234</span>
-                            <span class="text-sm text-slate-400 hidden sm:inline-block">· 台灣積體電路製造</span>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center gap-3">
-                        <div class="text-xs font-bold text-slate-400">文件進度</div>
-                        <div class="bg-blue-50 text-blue-700 font-bold px-3 py-1 rounded border border-blue-100 text-sm">
-                            1 / 5
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 審查主工作區 -->
-                <div class="flex flex-col lg:flex-row gap-6 flex-1 min-h-[600px]">
-                    
-                    <!-- 左側：文件目錄 -->
-                    <div class="w-full lg:w-72 flex flex-col gap-3">
-                        <div class="bg-white p-5 rounded-xl shadow-card border border-slate-100 flex-1 flex flex-col">
-                            <h3 class="text-sm font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100 flex items-center gap-2">
-                                <i class="ph-fill ph-files text-slate-400"></i> 應繳交文件目錄
-                            </h3>
-                            
-                            <div class="space-y-2 flex-1">
-                                <!-- 已完成 -->
-                                <div class="p-3 rounded-lg bg-white border border-slate-100 flex items-center gap-3 hover:bg-slate-50 cursor-pointer transition-colors">
-                                    <i class="ph-fill ph-check-circle text-emerald-500 text-lg"></i>
-                                    <div class="text-sm font-bold text-slate-700">01. 機構評估表</div>
-                                </div>
-                                
-                                <!-- 處理中 (Active) -->
-                                <div class="p-3 rounded-lg bg-blue-50 border border-blue-200 flex items-center gap-3 shadow-sm relative cursor-pointer">
-                                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-l-lg"></div>
-                                    <i class="ph-fill ph-warning-circle text-amber-500 text-lg ml-1"></i>
-                                    <div class="flex-1">
-                                        <div class="text-sm font-bold text-blue-800">02. 計畫書暨合約書</div>
-                                    </div>
-                                    <i class="ph-bold ph-caret-right text-blue-500"></i>
-                                </div>
-                                
-                                <!-- 未處理 -->
-                                <div class="p-3 rounded-lg bg-white border border-dashed border-slate-200 flex items-center gap-3 opacity-60">
-                                    <span class="text-[10px] font-black text-slate-400 bg-slate-100 w-5 h-5 flex items-center justify-center rounded">03</span>
-                                    <div class="text-sm font-bold text-slate-500">輔導老師考評紀錄</div>
-                                </div>
-                                <div class="p-3 rounded-lg bg-white border border-dashed border-slate-200 flex items-center gap-3 opacity-60">
-                                    <span class="text-[10px] font-black text-slate-400 bg-slate-100 w-5 h-5 flex items-center justify-center rounded">04</span>
-                                    <div class="text-sm font-bold text-slate-500">學生實習問卷</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 右側：預覽與查核區 -->
-                    <div class="w-full lg:flex-1 bg-white rounded-xl shadow-card border border-slate-100 flex flex-col overflow-hidden">
-                        
-                        <!-- 標題與上傳控制 -->
-                        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white z-10">
-                            <h3 class="font-bold text-slate-800 text-base">上傳：實習計畫書 ＋ 合約書</h3>
-                            
-                            <div class="flex items-center gap-4">
-                                <label class="hidden sm:flex relative items-center cursor-pointer">
-                                    <input type="checkbox" class="sr-only peer">
-                                    <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
-                                    <span class="ml-2 text-xs font-bold text-slate-500">啟用合併</span>
-                                </label>
-                                
-                                <button onclick="document.getElementById('fileUpload').click()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-1.5 px-4 rounded-lg text-sm transition-all flex items-center gap-2 shadow-sm">
-                                    <i class="ph-bold ph-upload-simple"></i> 上傳 PDF
-                                </button>
-                                <input type="file" id="fileUpload" class="hidden" accept=".pdf" onchange="showAuditProcess()">
-                            </div>
-                        </div>
-
-                        <!-- 雙欄工作區 -->
-                        <div class="flex flex-col xl:flex-row flex-1 overflow-hidden relative bg-slate-50">
-                            
-                            <!-- 遮罩層 -->
-                            <div id="upload-overlay" class="absolute inset-0 bg-white/90 backdrop-blur-sm z-20 flex flex-col items-center justify-center text-center">
-                                <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-4 border border-blue-100 shadow-sm">
-                                    <i class="ph-fill ph-file-pdf text-blue-500 text-3xl"></i>
-                                </div>
-                                <h4 class="text-lg font-bold text-slate-800 mb-2">等待檔案上傳</h4>
-                                <p class="text-slate-500 text-sm mb-6 max-w-sm">請選擇系所上傳的 PDF。查核完成後，系統將自動重命名並歸檔。</p>
-                                <button onclick="document.getElementById('fileUpload').click()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-sm transition-all flex items-center gap-2">
-                                    選擇檔案
-                                </button>
-                            </div>
-
-                            <!-- PDF 預覽窗格 -->
-                            <div class="w-full xl:w-7/12 flex flex-col border-r border-slate-200 bg-slate-800/5">
-                                <div class="flex-1 flex items-center justify-center p-6">
-                                    <div class="bg-white w-full max-w-md aspect-[1/1.4] shadow-md rounded border border-slate-200 flex flex-col items-center justify-center text-slate-300">
-                                        <i class="ph-fill ph-file-text text-[60px] text-slate-200 mb-4"></i>
-                                        <div class="text-xs font-bold text-slate-400">PDF 預覽畫面</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 查核表單窗格 -->
-                            <div class="w-full xl:w-5/12 bg-white p-6 overflow-y-auto custom-scrollbar flex flex-col">
-                                <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
-                                    <i class="ph-fill ph-list-checks text-blue-500 text-lg"></i>
-                                    <h4 class="font-bold text-slate-800 text-sm">指標查核表</h4>
-                                </div>
-
-                                <div class="space-y-3 flex-1">
-                                    <!-- Check Card 1 -->
-                                    <label class="check-card border border-slate-200 rounded-lg p-3.5 flex items-start gap-3 bg-white">
-                                        <div class="mt-0.5"><input type="checkbox" class="form-checkbox w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer" onchange="validateChecklist(this)"></div>
-                                        <span class="text-sm font-bold text-slate-700 leading-snug">合約與計畫書的實習 <span class="text-blue-600 border-b border-blue-200">起訖日期</span> 是否相符？</span>
-                                    </label>
-                                    <!-- Check Card 2 -->
-                                    <label class="check-card border border-slate-200 rounded-lg p-3.5 flex items-start gap-3 bg-white">
-                                        <div class="mt-0.5"><input type="checkbox" class="form-checkbox w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer" onchange="validateChecklist(this)"></div>
-                                        <span class="text-sm font-bold text-slate-700 leading-snug">實習內容與時數是否符合課程規定？</span>
-                                    </label>
-                                    <!-- Check Card 3 -->
-                                    <label class="check-card border border-slate-200 rounded-lg p-3.5 flex items-start gap-3 bg-white">
-                                        <div class="mt-0.5"><input type="checkbox" class="form-checkbox w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer" onchange="validateChecklist(this)"></div>
-                                        <span class="text-sm font-bold text-slate-700 leading-snug">合約是否勾選 <span class="text-blue-600 border-b border-blue-200">薪資待遇</span> 與 <span class="text-blue-600 border-b border-blue-200">保險規範</span>？</span>
-                                    </label>
-                                    <!-- Check Card 4 -->
-                                    <label class="check-card border border-rose-200 rounded-lg p-3.5 flex items-start gap-3 bg-rose-50/50">
-                                        <div class="mt-0.5"><input type="checkbox" class="form-checkbox w-4 h-4 text-rose-600 rounded border-rose-300 focus:ring-rose-500 cursor-pointer" onchange="validateChecklist(this)"></div>
-                                        <span class="text-sm font-black text-rose-700 leading-snug">甲乙丙三方（學/機/校）皆已用印簽章？</span>
-                                    </label>
-                                </div>
-
-                                <!-- 動作區塊 -->
-                                <div class="mt-6 pt-5 border-t border-slate-100">
-                                    <div class="mb-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                                        <div class="text-[10px] font-bold text-slate-500 mb-1 flex items-center gap-1"><i class="ph-bold ph-magic-wand"></i> 自動更名預覽</div>
-                                        <div class="text-xs font-mono font-bold text-slate-700 break-all">114-1_資管系_S1101234_王小明_02-計畫書暨合約書.pdf</div>
-                                    </div>
-
-                                    <div class="flex flex-col gap-2">
-                                        <button id="btn-submit" disabled onclick="processArchive()" class="w-full bg-slate-800 disabled:bg-slate-100 disabled:text-slate-400 disabled:border-slate-200 border border-slate-800 text-white font-bold py-2.5 px-4 rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 text-sm">
-                                            <i class="ph-bold ph-cloud-arrow-up"></i> 確認無誤並歸檔
-                                        </button>
-                                        <button class="w-full bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 border border-transparent hover:border-rose-200 font-bold py-2 px-4 rounded-lg transition-all text-sm flex items-center justify-center gap-2">
-                                            標記異常並退件
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+// --- 子元件：導覽列 ---
+function Navbar({ currentView }) {
+  const titles = { dashboard: '總覽儀表板', departments: '系所清單管理' };
+  return (
+    <header className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 z-10 sticky top-0">
+      <h2 className="text-lg font-black text-slate-800 tracking-tight">{titles[currentView]}</h2>
+      <div className="flex items-center gap-6">
+        <div className="relative group hidden lg:block">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+          <input className="pl-11 pr-6 py-2.5 bg-slate-100 border-transparent rounded-2xl text-sm w-72 focus:bg-white focus:ring-4 focus:ring-blue-100 transition-all outline-none font-medium" placeholder="搜尋學號、姓名或系所..." />
         </div>
-    </main>
+        <button className="relative p-2.5 bg-slate-100 rounded-xl text-slate-500 hover:bg-slate-200 transition-colors">
+          <Bell className="w-5 h-5" />
+          <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
+        </button>
+      </div>
+    </header>
+  );
+}
 
-    <!-- Javascript 互動邏輯 -->
-    <script>
-        // 頁面標題對應表
-        const pageTitles = {
-            'admin': '總覽儀表板',
-            'list': '學生待查核名單',
-            'audit': '文件查核工作站'
-        };
+// --- 視圖：首頁儀表板 ---
+function DashboardView({ activeDeptCount }) {
+  return (
+    <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard title="已建檔學生數" value="120" color="blue" icon={Users} trend="+12%" />
+        <StatCard title="系統涵蓋系所" value={activeDeptCount} color="emerald" icon={Building2} />
+        <StatCard title="異常與退件數" value="8" color="rose" icon={AlertCircle} />
+        <StatCard title="空間使用率" value="24%" color="indigo" icon={ShieldCheck} subtitle="1.2GB / 5.0GB" />
+      </div>
 
-        // 確保初始顯示 Admin 視圖 (展示儀表板風格)
-        document.addEventListener('DOMContentLoaded', () => {
-            switchView('admin');
-        });
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 flex flex-col h-72">
+          <h3 className="text-lg font-black text-slate-800 mb-2">建立查核底稿</h3>
+          <p className="text-sm text-slate-500 mb-8">上傳教務處 Excel 自動建立本學期清單</p>
+          <div className="flex-1 border-4 border-dashed border-slate-50 rounded-3xl flex flex-col items-center justify-center hover:bg-blue-50/50 hover:border-blue-100 transition-all group cursor-pointer">
+            <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <Plus className="text-blue-600 w-7 h-7" />
+            </div>
+            <span className="text-sm font-black text-slate-700 tracking-tight">選擇名單檔案</span>
+          </div>
+        </div>
 
-        // 1. 視圖切換 (Sidebar 邏輯)
-        function switchView(viewId) {
-            // 隱藏所有視圖
-            document.querySelectorAll('.view-section').forEach(el => {
-                el.classList.remove('active');
-            });
-            // 顯示目標
-            const target = document.getElementById('view-' + viewId);
-            if(target) target.classList.add('active');
+        <div className="lg:col-span-2 bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+          <div className="flex justify-between items-start mb-8">
+            <div>
+              <h3 className="text-lg font-black text-slate-800">專案完結與空間管理</h3>
+              <p className="text-sm text-slate-500 mt-1">維持 Firebase 免費額度的關鍵操作</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <button className="flex flex-col items-start p-6 rounded-3xl border-2 border-slate-50 hover:border-blue-100 hover:bg-blue-50/30 transition-all text-left group">
+              <FileText className="text-blue-600 w-8 h-8 mb-4 group-hover:scale-110 transition-transform" />
+              <h4 className="font-black text-slate-800 mb-1">打包審查包 (ZIP)</h4>
+              <p className="text-xs text-slate-400 leading-relaxed font-medium">依學院系自動分類並歸檔下載。</p>
+            </button>
+            <button className="flex flex-col items-start p-6 rounded-3xl border-2 border-slate-50 hover:border-rose-100 hover:bg-rose-50/30 transition-all text-left group">
+              <Trash2 className="text-rose-600 w-8 h-8 mb-4 group-hover:scale-110 transition-transform" />
+              <h4 className="font-black text-slate-800 mb-1 text-rose-600">一鍵清空雲端</h4>
+              <p className="text-xs text-slate-400 leading-relaxed font-medium">徹底刪除所有實體檔案以釋放空間。</p>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
-            // 更新 Sidebar Active 狀態
-            document.querySelectorAll('.sidebar-item').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            const activeBtn = document.getElementById('nav-' + viewId);
-            if(activeBtn) {
-                activeBtn.classList.add('active');
-            }
+// --- 視圖：系所管理 ---
+function DepartmentView({ depts }) {
+  const [showModal, setShowModal] = useState(false);
+  const [formData, setFormData] = useState({ college: '', name: '', code: '', contactName: '', contactEmail: '' });
 
-            // 更新頂部標題
-            document.getElementById('header-title').innerText = pageTitles[viewId] || 'ISAC 審查中心';
-        }
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    try {
+      await addDoc(collection(db, "departments"), {
+        ...formData,
+        is_active: true,
+        created_at: serverTimestamp()
+      });
+      setShowModal(false);
+      setFormData({ college: '', name: '', code: '', contactName: '', contactEmail: '' });
+    } catch (err) { alert(err.message); }
+  };
 
-        // 2. 審查：檔案上傳預覽
-        function showAuditProcess() {
-            const fileInput = document.getElementById('fileUpload');
-            if(fileInput.files.length > 0) {
-                document.getElementById('upload-overlay').style.display = 'none';
-            }
-        }
+  const handleToggle = async (id, status) => {
+    await updateDoc(doc(db, "departments", id), { is_active: !status });
+  };
 
-        // 3. 審查：自訂 Checkbox 卡片驗證
-        function validateChecklist(checkboxElement) {
-            const card = checkboxElement.closest('.check-card');
-            if(checkboxElement.checked) {
-                card.classList.add('checked');
-            } else {
-                card.classList.remove('checked');
-            }
+  const handleDelete = async (id, name) => {
+    if (confirm(`確定刪除「${name}」？`)) await deleteDoc(doc(db, "departments", id));
+  };
 
-            const checkboxes = document.querySelectorAll('.form-checkbox');
-            const btnSubmit = document.getElementById('btn-submit');
-            let allChecked = Array.from(checkboxes).every(c => c.checked);
-            
-            btnSubmit.disabled = !allChecked;
-            
-            if(allChecked) {
-                btnSubmit.classList.replace('bg-slate-800', 'bg-blue-600');
-                btnSubmit.classList.replace('border-slate-800', 'border-blue-700');
-            } else {
-                btnSubmit.classList.replace('bg-blue-600', 'bg-slate-800');
-                btnSubmit.classList.replace('border-blue-700', 'border-slate-800');
-            }
-        }
+  return (
+    <div className="max-w-7xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 flex justify-between items-center">
+        <div>
+          <h3 className="text-xl font-black text-slate-800 flex items-center gap-3">
+            <Building2 className="text-blue-600 w-7 h-7" /> 系所清單管理
+          </h3>
+          <p className="text-sm text-slate-400 mt-2 font-medium">設定參與審查的單位窗口與啟動狀態</p>
+        </div>
+        <button onClick={() => setShowModal(true)} className="bg-blue-600 hover:bg-blue-700 text-white font-black py-3 px-6 rounded-2xl flex items-center gap-2 shadow-lg shadow-blue-100 transition-all active:scale-95">
+          <Plus className="w-5 h-5" /> 新增系所
+        </button>
+      </div>
 
-        // 4. 審查：模擬送出歸檔
-        function processArchive() {
-            const btn = document.getElementById('btn-submit');
-            const originalText = btn.innerHTML;
-            
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> 處理中...';
-            btn.disabled = true;
-            
-            setTimeout(() => {
-                alert('歸檔成功！\n\n系統已依據規範自動更名，並將檔案儲存至雲端。');
-                
-                // 重置狀態
-                btn.innerHTML = originalText;
-                btn.classList.replace('bg-blue-600', 'bg-slate-800');
-                btn.classList.replace('border-blue-700', 'border-slate-800');
-                
-                document.querySelectorAll('.form-checkbox').forEach(c => {
-                    c.checked = false;
-                    c.closest('.check-card').classList.remove('checked');
-                });
-                
-                document.getElementById('upload-overlay').style.display = 'flex';
-                document.getElementById('fileUpload').value = '';
-                
-                switchView('list');
-            }, 800);
-        }
-    </script>
-</body>
-</html>
+      <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
+        <table className="w-full text-left">
+          <thead className="bg-slate-50/50 border-b border-slate-100">
+            <tr>
+              <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">學院 / 學系</th>
+              <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">系所代碼</th>
+              <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">承辦窗口</th>
+              <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">狀態</th>
+              <th className="px-8 py-5 text-right"></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-50">
+            {depts.map(dept => (
+              <tr key={dept.id} className={`hover:bg-slate-50/50 transition-colors ${!dept.is_active ? 'opacity-40' : ''}`}>
+                <td className="px-8 py-6">
+                  <div className="text-[10px] font-bold text-blue-600 uppercase mb-1 tracking-wider">{dept.college}</div>
+                  <div className="text-base font-black text-slate-800">{dept.name}</div>
+                </td>
+                <td className="px-8 py-6">
+                  <span className="font-mono text-xs font-bold bg-slate-100 text-slate-500 px-3 py-1.5 rounded-xl border border-slate-200">{dept.code}</span>
+                </td>
+                <td className="px-8 py-6">
+                  <div className="text-sm font-bold text-slate-700">{dept.contactName || '-'}</div>
+                  <div className="text-[11px] text-slate-400 mt-1 font-medium">{dept.contactEmail || '-'}</div>
+                </td>
+                <td className="px-8 py-6">
+                  <button onClick={() => handleToggle(dept.id, dept.is_active)} className={`px-4 py-1.5 rounded-full text-[11px] font-black tracking-tight transition-all ${dept.is_active ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-slate-100 text-slate-500 border border-slate-200'}`}>
+                    {dept.is_active ? '啟用中' : '已停用'}
+                  </button>
+                </td>
+                <td className="px-8 py-6 text-right">
+                  <button onClick={() => handleDelete(dept.id, dept.name)} className="p-2 text-slate-300 hover:text-rose-500 transition-colors">
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setShowModal(false)} />
+          <div className="relative bg-white rounded-[2.5rem] w-full max-w-xl p-10 shadow-2xl animate-in zoom-in duration-300">
+            <h4 className="text-2xl font-black text-slate-800 mb-8">新增系所單位</h4>
+            <form onSubmit={handleAdd} className="space-y-6">
+              <div className="grid grid-cols-2 gap-6">
+                <Input label="所屬學院" value={formData.college} onChange={val => setFormData({...formData, college: val})} required />
+                <Input label="系所代碼" value={formData.code} onChange={val => setFormData({...formData, code: val})} required placeholder="例如: IM" />
+              </div>
+              <Input label="學系名稱" value={formData.name} onChange={val => setFormData({...formData, name: val})} required placeholder="例如: 資訊管理學系" />
+              <div className="grid grid-cols-2 gap-6 pt-4 border-t border-slate-50">
+                <Input label="窗口姓名" value={formData.contactName} onChange={val => setFormData({...formData, contactName: val})} />
+                <Input label="窗口 Email" value={formData.contactEmail} onChange={val => setFormData({...formData, contactEmail: val})} type="email" />
+              </div>
+              <div className="flex gap-4 pt-6">
+                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-4 font-bold text-slate-400 hover:text-slate-600 transition-colors">取消離開</button>
+                <button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-3xl shadow-lg shadow-blue-100 transition-all">儲存單位</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// --- 通用組件 ---
+function StatCard({ title, value, color, icon: Icon, trend, subtitle }) {
+  const colors = {
+    blue: 'bg-blue-50 text-blue-600',
+    emerald: 'bg-emerald-50 text-emerald-600',
+    rose: 'bg-rose-50 text-rose-600',
+    indigo: 'bg-indigo-50 text-indigo-600'
+  };
+  return (
+    <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-slate-200/40 transition-all group">
+      <div className="flex justify-between items-start mb-6">
+        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{title}</div>
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 ${colors[color]}`}>
+          <Icon className="w-5 h-5" />
+        </div>
+      </div>
+      <div className="flex items-end gap-2">
+        <div className="text-4xl font-black text-slate-800 tracking-tighter">{value}</div>
+        {trend && <div className="text-xs font-black text-emerald-500 bg-emerald-50 px-2 py-1 rounded-lg mb-1">{trend}</div>}
+        {subtitle && <div className="text-[10px] font-bold text-slate-400 mb-1 ml-auto">{subtitle}</div>}
+      </div>
+    </div>
+  );
+}
+
+function Input({ label, value, onChange, ...props }) {
+  return (
+    <div>
+      <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">{label}</label>
+      <input 
+        value={value} onChange={e => onChange(e.target.value)}
+        className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-sm focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all font-medium"
+        {...props}
+      />
+    </div>
+  );
+}
