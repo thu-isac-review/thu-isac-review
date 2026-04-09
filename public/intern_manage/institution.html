@@ -103,12 +103,11 @@
                             <th class="px-2 py-4 text-center w-[45px]">
                                 <input type="checkbox" id="selectAll" onchange="toggleSelectPage(event)" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shadow-sm transition-all">
                             </th>
-                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[80px] whitespace-nowrap">國別</th>
-                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[100px] whitespace-nowrap">統一編號</th>
-                            <!-- 💡 給予機構名稱與地址彈性的 min-width，確保文字不被過度擠壓 -->
                             <th class="px-4 py-4 text-center text-xs font-bold text-slate-500 min-w-[200px]">實習機構名稱</th>
                             <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[120px] whitespace-nowrap">實習場所</th>
                             <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[160px] whitespace-nowrap">行業別</th>
+                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[100px] whitespace-nowrap">統一編號</th>
+                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[80px] whitespace-nowrap">實習場所國別</th>
                             <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[90px] whitespace-nowrap">縣市別</th>
                             <th class="px-4 py-4 text-center text-xs font-bold text-slate-500 min-w-[200px]">實習場所地址</th>
                             <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[100px] whitespace-nowrap">操作</th>
@@ -434,13 +433,13 @@
                     <td class="px-2 py-3 align-middle">
                         <input type="checkbox" class="row-checkbox w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shadow-sm transition-all" value="${data.id}" onchange="toggleSelect('${data.id}')" ${isChecked}>
                     </td>
-                    <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight whitespace-nowrap">${data.country}</td>
-                    <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight whitespace-nowrap">${dispTaxId}</td>
                     <td class="px-4 py-3 align-middle text-sm font-bold text-slate-800 leading-tight text-left">
                         <div class="inline-block w-full max-w-full" title="${data.name}">${data.name}</div>
                     </td>
                     <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight whitespace-nowrap">${data.type}</td>
                     <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight whitespace-nowrap truncate max-w-[160px]" title="${data.industry}">${data.industry}</td>
+                    <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight whitespace-nowrap">${dispTaxId}</td>
+                    <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight whitespace-nowrap">${data.country}</td>
                     <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight whitespace-nowrap">${dispCity}</td>
                     <td class="px-4 py-3 align-middle text-sm font-bold text-slate-800 leading-tight text-left">
                         <div class="inline-block w-full max-w-full" title="${data.address}">${data.address}</div>
@@ -458,14 +457,14 @@
 
         window.exportToCSV = () => {
             if (filteredInstitutions.length === 0) { alert("沒有資料可供匯出！"); return; }
-            let csv = '\uFEFF實習場所國別,統一編號,實習機構名稱,實習場所,行業別,縣市別,實習場所地址\n';
+            let csv = '\uFEFF實習機構名稱,實習場所,行業別,統一編號,實習場所國別,縣市別,實習場所地址\n';
             
             filteredInstitutions.forEach(d => {
                 const isDomestic = d.country === '中華民國';
                 const exportTaxId = isDomestic ? (d.tax_id || '') : '-';
                 const exportCity = isDomestic ? (d.city || '') : '-';
                 
-                csv += [d.country, exportTaxId, d.name, d.type, d.industry, exportCity, d.address].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+                csv += [d.name, d.type, d.industry, exportTaxId, d.country, exportCity, d.address].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
             });
             const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
             link.download = `實習機構清單_${new Date().toISOString().split('T')[0]}.csv`; link.click();
@@ -494,13 +493,13 @@
                         
                         if (cols.length >= 7) {
                             const payload = {
-                                country: cols[0] || '中華民國',
-                                tax_id: cols[1],
-                                name: cols[2],
-                                type: cols[3],
-                                industry: cols[4],
-                                city: cols[5],
-                                address: cols[6],
+                                name: cols[0],
+                                type: cols[1],
+                                industry: cols[2],
+                                tax_id: cols[3] || '',
+                                country: cols[4] || '中華民國',
+                                city: cols[5] || '',
+                                address: cols[6] || '',
                                 created_at: serverTimestamp()
                             };
                             
