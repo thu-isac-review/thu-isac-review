@@ -16,8 +16,8 @@
       }
     </script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- 全面導入 Font Awesome 6.4.0 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 全面導入 Font Awesome 6.5.1 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <script>
         tailwind.config = {
@@ -35,8 +35,14 @@
     </script>
 
     <style>
-        html, body, #root { height: 100%; margin: 0; padding: 0; background-color: #f8fafc; overflow: hidden; }
-        * { font-family: "SF Pro TC", "SF Pro Display", "PingFang TC", "Noto Sans TC", sans-serif !important; -webkit-font-smoothing: antialiased; }
+        html, #root { height: 100%; margin: 0; padding: 0; background-color: #f8fafc; overflow: hidden; }
+        
+        /* 💡 修正破圖關鍵：移除 * 的字體綁定，改綁定在 body 且不用 !important */
+        body { 
+            height: 100%; margin: 0; padding: 0; background-color: #f8fafc; overflow: hidden;
+            font-family: "SF Pro TC", "SF Pro Display", "PingFang TC", "Noto Sans TC", sans-serif; 
+            -webkit-font-smoothing: antialiased; 
+        }
 
         .sidebar-item.active { background-color: rgba(255, 255, 255, 0.1); color: #ffffff; border-left: 3px solid #3b82f6; }
         .sidebar-item { border-left: 3px solid transparent; transition: all 0.2s ease; cursor: pointer; }
@@ -76,7 +82,7 @@
             const [loading, setLoading] = useState(true);
             const [contentUrl, setContentUrl] = useState('/manage/departments'); 
             
-            // 透過時間戳記產生防快取網址
+            // 透過時間戳記產生防快取網址，確保 iframe 每次都能拉取最新版
             const getCacheBustedUrl = (url) => {
                 return `${url}?v=${new Date().getTime()}`;
             };
@@ -134,7 +140,7 @@
                             <MenuBtn 
                                 active={contentUrl === '/list'} 
                                 label="學生待查核名單" 
-                                icon="fa-solid fa-graduation-cap" 
+                                icon="fa-solid fa-users" 
                                 onClick={() => setContentUrl('/list')} 
                             />
 
@@ -143,7 +149,7 @@
                             <MenuBtn 
                                 active={contentUrl === '/manage/departments'} 
                                 label="系所清單管理" 
-                                icon="fa-solid fa-university" 
+                                icon="fa-solid fa-graduation-cap" 
                                 onClick={() => setContentUrl('/manage/departments')} 
                             />
                             
@@ -175,7 +181,7 @@
                             </div>
                             <div className="flex items-center gap-6">
                                 <div className="relative hidden lg:block">
-                                    <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-sm"></i>
+                                    <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
                                     <input type="text" className="pl-9 pr-4 py-1.5 bg-slate-100 border-transparent rounded-lg text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all w-64 outline-none" placeholder="搜尋系統內容..." />
                                 </div>
                                 <div className="h-6 w-px bg-slate-200"></div>
@@ -186,7 +192,7 @@
                         </header>
 
                         <div className="flex-1 overflow-hidden relative">
-                            {/* 💡 加上時間戳記防快取 */}
+                            {/* 加入防快取時間戳 */}
                             <iframe 
                                 src={getCacheBustedUrl(contentUrl)} 
                                 key={contentUrl}
