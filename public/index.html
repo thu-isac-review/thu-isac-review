@@ -37,7 +37,6 @@
     <style>
         html, #root { height: 100%; margin: 0; padding: 0; background-color: #f8fafc; overflow: hidden; }
         
-        /* 💡 修正破圖關鍵：移除 * 的字體綁定，改綁定在 body 且不用 !important */
         body { 
             height: 100%; margin: 0; padding: 0; background-color: #f8fafc; overflow: hidden;
             font-family: "SF Pro TC", "SF Pro Display", "PingFang TC", "Noto Sans TC", sans-serif; 
@@ -62,8 +61,9 @@
         import React, { useState, useEffect } from 'react';
         import ReactDOM from 'react-dom/client';
         
+        // 匯入 Firebase Auth 的必要套件 (包含註冊用的 createUserWithEmailAndPassword)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY",
@@ -82,7 +82,6 @@
             const [loading, setLoading] = useState(true);
             const [contentUrl, setContentUrl] = useState('/manage/departments'); 
             
-            // 透過時間戳記產生防快取網址，確保 iframe 每次都能拉取最新版
             const getCacheBustedUrl = (url) => {
                 return `${url}?v=${new Date().getTime()}`;
             };
@@ -116,6 +115,7 @@
                 if (contentUrl.includes('dashboard')) return '總覽儀表板';
                 if (contentUrl.includes('list')) return '學生待查核名單';
                 if (contentUrl.includes('departments')) return '系所清單管理';
+                if (contentUrl.includes('roles')) return '用戶權限管理';
                 return 'ISAC 審查中心';
             };
 
@@ -151,6 +151,14 @@
                                 label="系所清單管理" 
                                 icon="fa-solid fa-graduation-cap" 
                                 onClick={() => setContentUrl('/manage/departments')} 
+                            />
+                            
+                            {/* 新增用戶權限管理選單 */}
+                            <MenuBtn 
+                                active={contentUrl === '/manage/roles'} 
+                                label="用戶權限管理" 
+                                icon="fa-solid fa-user-shield" 
+                                onClick={() => setContentUrl('/manage/roles')} 
                             />
                             
                             <div className="sidebar-item w-full flex items-center px-6 py-3 text-sm font-medium mb-1 text-slate-500 opacity-50 cursor-not-allowed">
@@ -192,7 +200,6 @@
                         </header>
 
                         <div className="flex-1 overflow-hidden relative">
-                            {/* 加入防快取時間戳 */}
                             <iframe 
                                 src={getCacheBustedUrl(contentUrl)} 
                                 key={contentUrl}
@@ -216,37 +223,77 @@
 
         function LoginView() {
             const [isLoggingIn, setIsLoggingIn] = useState(false);
-            const handleLogin = async (e) => {
+            const [isRegisterMode, setIsRegisterMode] = useState(false); // 控制登入/註冊模式
+
+            const handleSubmit = async (e) => {
                 e.preventDefault();
                 setIsLoggingIn(true);
-                const email = e.target.email.value;
+                const email = e.target.email.value.trim();
                 const pw = e.target.password.value;
-                try {
-                    await signInWithEmailAndPassword(auth, email, pw);
-                } catch (err) {
-                    alert("登入失敗：請確認帳號密碼。");
-                } finally {
-                    setIsLoggingIn(false);
+
+                if (isRegisterMode) {
+                    // 註冊邏輯與信箱攔截規則
+                    const isValidDomain = email === 'thu.isac.review@gmail.com' || email.endsWith('@thu.edu.tw');
+                    
+                    if (!isValidDomain) {
+                        alert("註冊失敗：\n基於系統安全，僅限使用東海大學信箱 (@thu.edu.tw) 進行註冊！");
+                        setIsLoggingIn(false);
+                        return;
+                    }
+
+                    try {
+                        await createUserWithEmailAndPassword(auth, email, pw);
+                        // 註冊成功後，Firebase 會自動判定為已登入狀態，畫面會自動跳轉進系統
+                    } catch (err) {
+                        let errorMsg = err.message;
+                        if (err.code === 'auth/email-already-in-use') errorMsg = "此信箱已經註冊過了！";
+                        if (err.code === 'auth/weak-password') errorMsg = "密碼長度太弱，請至少輸入 6 個字元。";
+                        alert("註冊發生錯誤：" + errorMsg);
+                    } finally {
+                        setIsLoggingIn(false);
+                    }
+
+                } else {
+                    // 一般登入邏輯
+                    try {
+                        await signInWithEmailAndPassword(auth, email, pw);
+                    } catch (err) {
+                        alert("登入失敗：請確認帳號密碼是否正確。");
+                    } finally {
+                        setIsLoggingIn(false);
+                    }
                 }
             };
 
             return (
                 <div className="h-full flex items-center justify-center bg-slate-50 p-4">
-                    <form onSubmit={handleLogin} className="bg-white p-10 rounded-[2rem] shadow-2xl w-full max-w-md border border-slate-100 animate-fade">
-                        <div className="flex flex-col items-center mb-8">
-                            <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center mb-4 text-white shadow-lg shadow-blue-500/20">
-                                <i className="fa-solid fa-shield-halved text-3xl"></i>
+                    <form onSubmit={handleSubmit} className="bg-white p-10 rounded-[2rem] shadow-2xl w-full max-w-md border border-slate-100 animate-fade">
+                        <div className="flex flex-col items-center mb-8 text-center">
+                            <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center mb-4 text-white shadow-lg shadow-blue-500/20 transition-all">
+                                <i className={isRegisterMode ? "fa-solid fa-user-plus text-3xl" : "fa-solid fa-shield-halved text-3xl"}></i>
                             </div>
                             <h1 className="text-2xl font-black text-slate-800 tracking-tight">ISAC 審查管理系統</h1>
-                            <p className="text-slate-400 text-sm mt-2 font-medium">請登入帳號以開始作業</p>
+                            <p className="text-slate-400 text-sm mt-2 font-medium">
+                                {isRegisterMode ? "建立新的系統用戶帳號" : "請登入帳號以開始作業"}
+                            </p>
                         </div>
                         <div className="space-y-4">
-                            <input name="email" type="email" placeholder="Email" className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-medium" required />
-                            <input name="password" type="password" placeholder="Password" className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-medium" required />
+                            <input name="email" type="email" placeholder="Email (@thu.edu.tw)" className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-medium" required />
+                            <input name="password" type="password" placeholder="Password (至少6碼)" className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-medium" required />
                         </div>
                         <button disabled={isLoggingIn} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold shadow-xl transition-all mt-6 active:scale-[0.98] disabled:opacity-50 flex justify-center items-center gap-2">
-                            {isLoggingIn ? <><i className="fa-solid fa-circle-notch fa-spin"></i> 連線中...</> : "進入系統"}
+                            {isLoggingIn ? (
+                                <><i className="fa-solid fa-circle-notch fa-spin"></i> 處理中...</>
+                            ) : (
+                                isRegisterMode ? "確認註冊並登入" : "進入系統"
+                            )}
                         </button>
+
+                        <div className="mt-6 text-center">
+                            <button type="button" onClick={() => setIsRegisterMode(!isRegisterMode)} className="text-sm font-bold text-slate-500 hover:text-blue-600 transition-colors">
+                                {isRegisterMode ? "已經有帳號了？點此登入" : "還沒有帳號？註冊系統帳號"}
+                            </button>
+                        </div>
                     </form>
                 </div>
             );
