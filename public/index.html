@@ -1,451 +1,254 @@
-import React, { useState, useEffect } from 'react';
-import { initializeApp } from "firebase/app";
-import { 
-  getAuth, 
-  onAuthStateChanged, 
-  signInWithEmailAndPassword, 
-  signOut 
-} from "firebase/auth";
-import { 
-  getFirestore, 
-  collection, 
-  onSnapshot, 
-  query, 
-  where, 
-  addDoc, 
-  doc, 
-  updateDoc, 
-  deleteDoc, 
-  serverTimestamp 
-} from "firebase/firestore";
-import { 
-  LayoutDashboard, 
-  Building2, 
-  Users, 
-  FileText, 
-  UserCircle, 
-  ShieldCheck, 
-  LogOut, 
-  Plus, 
-  Trash2, 
-  Search, 
-  Bell, 
-  ChevronDown,
-  Loader2,
-  AlertCircle
-} from 'lucide-react';
+<!DOCTYPE html>
+<html lang="zh-TW" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISAC 實習文件書審查核系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 使用 Import Map 定義模組路徑，解決 Failed to resolve module specifier "react" 錯誤 -->
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@18.2.0",
+          "react-dom": "https://esm.sh/react-dom@18.2.0",
+          "react-dom/client": "https://esm.sh/react-dom@18.2.0/client"
+        }
+      }
+    </script>
+    
+    <!-- 載入 Babel 翻譯機 -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <style>
+        html, body, #root { height: 100%; margin: 0; background-color: #f8fafc; overflow: hidden; }
+        * { font-family: "SF Pro TC", "PingFang TC", "Noto Sans TC", sans-serif !important; }
+        iframe { border: none; width: 100%; height: 100%; }
+        
+        /* 自定義滾動條 */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
 
-// --- Firebase 設定 (已帶入您的專案資訊) ---
-const firebaseConfig = {
-  apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY",
-  authDomain: "thu-isac-review.firebaseapp.com",
-  projectId: "thu-isac-review",
-  storageBucket: "thu-isac-review.firebasestorage.app",
-  messagingSenderId: "453299876735",
-  appId: "1:453299876735:web:1d8babca3315423161a04a"
-};
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect } from 'react';
+        import ReactDOM from 'react-dom/client';
+        import { 
+            LayoutDashboard, 
+            Building2, 
+            Users, 
+            ShieldCheck, 
+            LogOut, 
+            Loader2 
+        } from 'https://esm.sh/lucide-react@0.344.0?external=react';
+        
+        // 載入 Firebase 核心套件
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            onAuthStateChanged, 
+            signOut, 
+            signInWithEmailAndPassword 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+        // Firebase 設定資訊
+        const firebaseConfig = {
+            apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY",
+            authDomain: "thu-isac-review.firebaseapp.com",
+            projectId: "thu-isac-review",
+            storageBucket: "thu-isac-review.firebasestorage.app",
+            messagingSenderId: "453299876735",
+            appId: "1:453299876735:web:1d8babca3315423161a04a"
+        };
 
-export default function App() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [currentView, setCurrentView] = useState('dashboard'); // 控制切換頁面
-  const [depts, setDepts] = useState([]);
-  const [activeDeptCount, setActiveDeptCount] = useState(0);
+        // 初始化 Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
 
-  // 1. 監聽登入狀態 (門神)
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
+        function App() {
+            const [user, setUser] = useState(null);
+            const [loading, setLoading] = useState(true);
+            // 預設內容網址
+            const [contentUrl, setContentUrl] = useState('/dashboard-content.html'); 
 
-  // 2. 監聽系所資料庫
-  useEffect(() => {
-    if (!user) return;
-    const q = query(collection(db, "departments"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const deptList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setDepts(deptList);
-      setActiveDeptCount(deptList.filter(d => d.is_active).length);
-    }, (error) => {
-      console.error("Firestore 存取失敗，請確認是否已建立資料庫：", error);
-    });
-    return () => unsubscribe();
-  }, [user]);
+            // 監聽登入狀態
+            useEffect(() => {
+                const unsubscribe = onAuthStateChanged(auth, (u) => {
+                    setUser(u);
+                    setLoading(false);
+                });
+                return () => unsubscribe();
+            }, []);
 
-  if (loading) {
-    return (
-      <div className="h-full w-full flex items-center justify-center bg-slate-50">
-        <Loader2 className="animate-spin text-blue-600 w-10 h-10" />
-      </div>
-    );
-  }
+            // 登出處理
+            const handleLogout = () => {
+                if (window.confirm("確定要登出系統嗎？")) {
+                    signOut(auth);
+                }
+            };
 
-  // 如果未登入，顯示登入頁面
-  if (!user) {
-    return <LoginView />;
-  }
+            if (loading) {
+                return (
+                    <div className="h-full flex flex-col items-center justify-center bg-slate-50 gap-4">
+                        <Loader2 className="animate-spin text-blue-600 w-10 h-10" />
+                        <p className="text-slate-400 font-bold">系統安全載入中...</p>
+                    </div>
+                );
+            }
 
-  return (
-    <div className="flex h-full overflow-hidden bg-slate-50 text-slate-800">
-      {/* 側邊欄 (共享設計) */}
-      <Sidebar currentView={currentView} setView={setCurrentView} userEmail={user.email} />
+            if (!user) return <LoginView />;
 
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* 導覽列 (共享設計) */}
-        <Navbar currentView={currentView} />
+            return (
+                <div className="flex h-full overflow-hidden">
+                    {/* 統一的側邊導航欄 */}
+                    <aside className="w-64 bg-[#0f172a] text-slate-400 flex flex-col shrink-0 shadow-2xl z-20">
+                        <div className="h-20 flex items-center px-8 border-b border-slate-800/50">
+                            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center mr-3 shadow-lg shadow-blue-500/20">
+                                <ShieldCheck className="text-white" size={20} />
+                            </div>
+                            <span className="text-white font-black text-lg tracking-tight">ISAC 審查中心</span>
+                        </div>
+                        
+                        <nav className="flex-1 p-4 space-y-2 mt-4">
+                            <div className="px-4 mb-2 text-[10px] font-black text-slate-600 uppercase tracking-widest">業務主檔</div>
+                            <MenuBtn 
+                                active={contentUrl === '/dashboard-content.html'} 
+                                label="總覽儀表板" 
+                                icon={<LayoutDashboard size={18}/>} 
+                                onClick={() => setContentUrl('/dashboard-content.html')} 
+                            />
+                            <MenuBtn 
+                                active={contentUrl === '/list.html'} 
+                                label="待查核名單" 
+                                icon={<Users size={18}/>} 
+                                onClick={() => setContentUrl('/list.html')} 
+                            />
+                            
+                            <div className="px-4 mt-8 mb-2 text-[10px] font-black text-slate-600 uppercase tracking-widest">系統設定</div>
+                            <MenuBtn 
+                                active={contentUrl === '/manage/departments.html'} 
+                                label="系所管理" 
+                                icon={<Building2 size={18}/>} 
+                                onClick={() => setContentUrl('/manage/departments.html')} 
+                            />
+                        </nav>
 
-        {/* 內容切換區 */}
-        <main className="flex-1 overflow-y-auto p-6 lg:p-8 custom-scrollbar">
-          {currentView === 'dashboard' && <DashboardView activeDeptCount={activeDeptCount} />}
-          {currentView === 'departments' && <DepartmentView depts={depts} />}
-        </main>
-      </div>
-    </div>
-  );
-}
+                        {/* 使用者資訊與登出 */}
+                        <div className="p-4 border-t border-slate-800/50">
+                            <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-800/30 border border-slate-700/30">
+                                <div className="w-9 h-9 rounded-full bg-blue-500 flex items-center justify-center text-white font-black text-[10px]">AD</div>
+                                <div className="flex-1 overflow-hidden">
+                                    <div className="text-[11px] font-bold text-white truncate">管理者</div>
+                                    <div className="text-[9px] text-slate-500 truncate font-mono">{user.email}</div>
+                                </div>
+                                <button onClick={handleLogout} className="text-slate-500 hover:text-rose-400 transition-colors">
+                                    <LogOut size={16} />
+                                </button>
+                            </div>
+                        </div>
+                    </aside>
 
-// --- 子元件：登入畫面 ---
-function LoginView() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
+                    {/* 主要內容顯示區 (Iframe 模式) */}
+                    <div className="flex-1 flex flex-col min-w-0">
+                        <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 z-10">
+                            <h2 className="font-black text-slate-800 text-lg">
+                                {contentUrl === '/dashboard-content.html' ? '總覽儀表板' : 
+                                 contentUrl === '/list.html' ? '學生待查核名單' : '系所清單管理'}
+                            </h2>
+                            <div className="flex items-center gap-4 text-slate-400">
+                                <span className="text-xs font-bold bg-slate-100 px-3 py-1 rounded-full border border-slate-200">114-1 學年度</span>
+                            </div>
+                        </header>
+                        
+                        <div className="flex-1 bg-slate-50 relative">
+                            {/* 根據選單切換 src，使用 key 強制重新渲染以確保頁面載入狀態 */}
+                            <iframe 
+                                src={contentUrl} 
+                                key={contentUrl} 
+                                className="w-full h-full"
+                                title="Content View"
+                            />
+                        </div>
+                    </div>
+                </div>
+            );
+        }
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setIsLoggingIn(true);
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-    } catch (err) {
-      alert("登入失敗：" + err.message);
-    } finally {
-      setIsLoggingIn(false);
-    }
-  };
+        // 側邊欄按鈕元件
+        function MenuBtn({ active, label, icon, onClick }) {
+            return (
+                <button 
+                    onClick={onClick} 
+                    className={`w-full flex items-center px-4 py-3 rounded-2xl text-sm font-bold transition-all duration-200 ${
+                        active 
+                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' 
+                        : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                    }`}
+                >
+                    <span className="mr-3 opacity-80">{icon}</span>
+                    <span className="tracking-tight">{label}</span>
+                </button>
+            );
+        }
 
-  return (
-    <div className="h-full flex items-center justify-center p-4 bg-slate-50">
-      <div className="bg-white rounded-3xl shadow-xl w-full max-w-md p-10 border border-slate-100">
-        <div className="flex flex-col items-center mb-8 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center mb-4 shadow-lg shadow-blue-200">
-            <ShieldCheck className="text-white w-8 h-8" />
-          </div>
-          <h1 className="text-2xl font-black text-slate-800 tracking-tight">ISAC 審查中心</h1>
-          <p className="text-slate-500 text-sm mt-2 font-medium">請登入您的管理帳號以進入系統</p>
-        </div>
+        // 登入介面元件
+        function LoginView() {
+            const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-        <form onSubmit={handleLogin} className="space-y-5">
-          <div>
-            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Email</label>
-            <input 
-              type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-sm focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Password</label>
-            <input 
-              type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-sm focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all"
-            />
-          </div>
-          <button 
-            type="submit" disabled={isLoggingIn}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl mt-4 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-100 disabled:opacity-50"
-          >
-            {isLoggingIn ? <Loader2 className="animate-spin w-5 h-5" /> : "登入系統"}
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-}
+            const handleLogin = async (e) => {
+                e.preventDefault();
+                setIsLoggingIn(true);
+                const email = e.target.email.value;
+                const pw = e.target.password.value;
+                
+                try {
+                    await signInWithEmailAndPassword(auth, email, pw);
+                } catch (err) {
+                    alert("登入失敗：帳號或密碼錯誤。");
+                } finally {
+                    setIsLoggingIn(false);
+                }
+            };
 
-// --- 子元件：側邊欄 ---
-function Sidebar({ currentView, setView, userEmail }) {
-  const handleLogout = () => {
-    if (confirm("確定要登出嗎？")) signOut(auth);
-  };
+            return (
+                <div className="h-full flex items-center justify-center bg-slate-50 p-4">
+                    <form onSubmit={handleLogin} className="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-slate-100 space-y-6">
+                        <div className="flex flex-col items-center mb-8">
+                            <div className="w-16 h-16 rounded-[1.5rem] bg-blue-600 flex items-center justify-center mb-4 text-white shadow-xl shadow-blue-200">
+                                <ShieldCheck size={32} />
+                            </div>
+                            <h1 className="text-2xl font-black text-slate-800">ISAC 審查管理系統</h1>
+                            <p className="text-slate-400 text-sm mt-2 font-medium">請登入帳號以開始作業</p>
+                        </div>
+                        
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Email</label>
+                                <input name="email" type="email" placeholder="admin@example.com" className="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none focus:ring-4 focus:ring-blue-100 focus:bg-white transition-all text-sm" required />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Password</label>
+                                <input name="password" type="password" placeholder="••••••••" className="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none focus:ring-4 focus:ring-blue-100 focus:bg-white transition-all text-sm" required />
+                            </div>
+                        </div>
 
-  const navItems = [
-    { id: 'dashboard', label: '總覽儀表板', icon: LayoutDashboard },
-    { id: 'list', label: '學生待查核名單', icon: Users, disabled: true },
-  ];
+                        <button 
+                            disabled={isLoggingIn}
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black shadow-xl shadow-blue-100 transition-all active:scale-[0.98] disabled:opacity-50"
+                        >
+                            {isLoggingIn ? "身分驗證中..." : "進入系統"}
+                        </button>
+                    </form>
+                </div>
+            );
+        }
 
-  const adminItems = [
-    { id: 'departments', label: '系所清單管理', icon: Building2 },
-    { id: 'forms', label: '指標與表單設定', icon: FileText, disabled: true },
-  ];
-
-  return (
-    <aside className="w-72 bg-[#0f172a] text-slate-400 flex flex-col shrink-0 z-20 shadow-2xl">
-      <div className="h-20 flex items-center px-8 border-b border-slate-800/50">
-        <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center mr-3 shadow-lg shadow-blue-500/20">
-          <ShieldCheck className="text-white w-6 h-6" />
-        </div>
-        <span className="text-white font-black text-xl tracking-tight">ISAC 審查</span>
-      </div>
-
-      <nav className="flex-1 px-4 py-8 space-y-8 overflow-y-auto">
-        <div>
-          <div className="px-4 mb-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">業務主檔</div>
-          {navItems.map(item => (
-            <button 
-              key={item.id} disabled={item.disabled}
-              onClick={() => setView(item.id)}
-              className={`w-full flex items-center px-4 py-3.5 rounded-2xl text-sm font-bold transition-all mb-1 ${currentView === item.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'hover:bg-slate-800/50 hover:text-slate-200 opacity-60'}`}
-            >
-              <item.icon className={`w-5 h-5 mr-3 ${currentView === item.id ? 'text-white' : ''}`} /> {item.label}
-            </button>
-          ))}
-        </div>
-
-        <div>
-          <div className="px-4 mb-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">系統管理</div>
-          {adminItems.map(item => (
-            <button 
-              key={item.id} disabled={item.disabled}
-              onClick={() => setView(item.id)}
-              className={`w-full flex items-center px-4 py-3.5 rounded-2xl text-sm font-bold transition-all mb-1 ${currentView === item.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'hover:bg-slate-800/50 hover:text-slate-200 opacity-60'}`}
-            >
-              <item.icon className={`w-5 h-5 mr-3 ${currentView === item.id ? 'text-white' : ''}`} /> {item.label}
-            </button>
-          ))}
-        </div>
-      </nav>
-
-      <div className="p-6 border-t border-slate-800/50">
-        <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-800/30 border border-slate-700/30">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center text-white font-black text-xs">AD</div>
-          <div className="flex-1 overflow-hidden">
-            <div className="text-xs font-black text-white truncate">管理者</div>
-            <div className="text-[10px] text-slate-500 truncate font-mono">{userEmail}</div>
-          </div>
-          <button onClick={handleLogout} className="text-slate-500 hover:text-rose-400 transition-colors">
-            <LogOut className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-    </aside>
-  );
-}
-
-// --- 子元件：導覽列 ---
-function Navbar({ currentView }) {
-  const titles = { dashboard: '總覽儀表板', departments: '系所清單管理' };
-  return (
-    <header className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 z-10 sticky top-0">
-      <h2 className="text-lg font-black text-slate-800 tracking-tight">{titles[currentView]}</h2>
-      <div className="flex items-center gap-6">
-        <div className="relative group hidden lg:block">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-          <input className="pl-11 pr-6 py-2.5 bg-slate-100 border-transparent rounded-2xl text-sm w-72 focus:bg-white focus:ring-4 focus:ring-blue-100 transition-all outline-none font-medium" placeholder="搜尋學號、姓名或系所..." />
-        </div>
-        <button className="relative p-2.5 bg-slate-100 rounded-xl text-slate-500 hover:bg-slate-200 transition-colors">
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
-        </button>
-      </div>
-    </header>
-  );
-}
-
-// --- 視圖：首頁儀表板 ---
-function DashboardView({ activeDeptCount }) {
-  return (
-    <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard title="已建檔學生數" value="120" color="blue" icon={Users} trend="+12%" />
-        <StatCard title="系統涵蓋系所" value={activeDeptCount} color="emerald" icon={Building2} />
-        <StatCard title="異常與退件數" value="8" color="rose" icon={AlertCircle} />
-        <StatCard title="空間使用率" value="24%" color="indigo" icon={ShieldCheck} subtitle="1.2GB / 5.0GB" />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 flex flex-col h-72">
-          <h3 className="text-lg font-black text-slate-800 mb-2">建立查核底稿</h3>
-          <p className="text-sm text-slate-500 mb-8">上傳教務處 Excel 自動建立本學期清單</p>
-          <div className="flex-1 border-4 border-dashed border-slate-50 rounded-3xl flex flex-col items-center justify-center hover:bg-blue-50/50 hover:border-blue-100 transition-all group cursor-pointer">
-            <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <Plus className="text-blue-600 w-7 h-7" />
-            </div>
-            <span className="text-sm font-black text-slate-700 tracking-tight">選擇名單檔案</span>
-          </div>
-        </div>
-
-        <div className="lg:col-span-2 bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
-          <div className="flex justify-between items-start mb-8">
-            <div>
-              <h3 className="text-lg font-black text-slate-800">專案完結與空間管理</h3>
-              <p className="text-sm text-slate-500 mt-1">維持 Firebase 免費額度的關鍵操作</p>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <button className="flex flex-col items-start p-6 rounded-3xl border-2 border-slate-50 hover:border-blue-100 hover:bg-blue-50/30 transition-all text-left group">
-              <FileText className="text-blue-600 w-8 h-8 mb-4 group-hover:scale-110 transition-transform" />
-              <h4 className="font-black text-slate-800 mb-1">打包審查包 (ZIP)</h4>
-              <p className="text-xs text-slate-400 leading-relaxed font-medium">依學院系自動分類並歸檔下載。</p>
-            </button>
-            <button className="flex flex-col items-start p-6 rounded-3xl border-2 border-slate-50 hover:border-rose-100 hover:bg-rose-50/30 transition-all text-left group">
-              <Trash2 className="text-rose-600 w-8 h-8 mb-4 group-hover:scale-110 transition-transform" />
-              <h4 className="font-black text-slate-800 mb-1 text-rose-600">一鍵清空雲端</h4>
-              <p className="text-xs text-slate-400 leading-relaxed font-medium">徹底刪除所有實體檔案以釋放空間。</p>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// --- 視圖：系所管理 ---
-function DepartmentView({ depts }) {
-  const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({ college: '', name: '', code: '', contactName: '', contactEmail: '' });
-
-  const handleAdd = async (e) => {
-    e.preventDefault();
-    try {
-      await addDoc(collection(db, "departments"), {
-        ...formData,
-        is_active: true,
-        created_at: serverTimestamp()
-      });
-      setShowModal(false);
-      setFormData({ college: '', name: '', code: '', contactName: '', contactEmail: '' });
-    } catch (err) { alert(err.message); }
-  };
-
-  const handleToggle = async (id, status) => {
-    await updateDoc(doc(db, "departments", id), { is_active: !status });
-  };
-
-  const handleDelete = async (id, name) => {
-    if (confirm(`確定刪除「${name}」？`)) await deleteDoc(doc(db, "departments", id));
-  };
-
-  return (
-    <div className="max-w-7xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 flex justify-between items-center">
-        <div>
-          <h3 className="text-xl font-black text-slate-800 flex items-center gap-3">
-            <Building2 className="text-blue-600 w-7 h-7" /> 系所清單管理
-          </h3>
-          <p className="text-sm text-slate-400 mt-2 font-medium">設定參與審查的單位窗口與啟動狀態</p>
-        </div>
-        <button onClick={() => setShowModal(true)} className="bg-blue-600 hover:bg-blue-700 text-white font-black py-3 px-6 rounded-2xl flex items-center gap-2 shadow-lg shadow-blue-100 transition-all active:scale-95">
-          <Plus className="w-5 h-5" /> 新增系所
-        </button>
-      </div>
-
-      <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-slate-50/50 border-b border-slate-100">
-            <tr>
-              <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">學院 / 學系</th>
-              <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">系所代碼</th>
-              <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">承辦窗口</th>
-              <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">狀態</th>
-              <th className="px-8 py-5 text-right"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-50">
-            {depts.map(dept => (
-              <tr key={dept.id} className={`hover:bg-slate-50/50 transition-colors ${!dept.is_active ? 'opacity-40' : ''}`}>
-                <td className="px-8 py-6">
-                  <div className="text-[10px] font-bold text-blue-600 uppercase mb-1 tracking-wider">{dept.college}</div>
-                  <div className="text-base font-black text-slate-800">{dept.name}</div>
-                </td>
-                <td className="px-8 py-6">
-                  <span className="font-mono text-xs font-bold bg-slate-100 text-slate-500 px-3 py-1.5 rounded-xl border border-slate-200">{dept.code}</span>
-                </td>
-                <td className="px-8 py-6">
-                  <div className="text-sm font-bold text-slate-700">{dept.contactName || '-'}</div>
-                  <div className="text-[11px] text-slate-400 mt-1 font-medium">{dept.contactEmail || '-'}</div>
-                </td>
-                <td className="px-8 py-6">
-                  <button onClick={() => handleToggle(dept.id, dept.is_active)} className={`px-4 py-1.5 rounded-full text-[11px] font-black tracking-tight transition-all ${dept.is_active ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-slate-100 text-slate-500 border border-slate-200'}`}>
-                    {dept.is_active ? '啟用中' : '已停用'}
-                  </button>
-                </td>
-                <td className="px-8 py-6 text-right">
-                  <button onClick={() => handleDelete(dept.id, dept.name)} className="p-2 text-slate-300 hover:text-rose-500 transition-colors">
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setShowModal(false)} />
-          <div className="relative bg-white rounded-[2.5rem] w-full max-w-xl p-10 shadow-2xl animate-in zoom-in duration-300">
-            <h4 className="text-2xl font-black text-slate-800 mb-8">新增系所單位</h4>
-            <form onSubmit={handleAdd} className="space-y-6">
-              <div className="grid grid-cols-2 gap-6">
-                <Input label="所屬學院" value={formData.college} onChange={val => setFormData({...formData, college: val})} required />
-                <Input label="系所代碼" value={formData.code} onChange={val => setFormData({...formData, code: val})} required placeholder="例如: IM" />
-              </div>
-              <Input label="學系名稱" value={formData.name} onChange={val => setFormData({...formData, name: val})} required placeholder="例如: 資訊管理學系" />
-              <div className="grid grid-cols-2 gap-6 pt-4 border-t border-slate-50">
-                <Input label="窗口姓名" value={formData.contactName} onChange={val => setFormData({...formData, contactName: val})} />
-                <Input label="窗口 Email" value={formData.contactEmail} onChange={val => setFormData({...formData, contactEmail: val})} type="email" />
-              </div>
-              <div className="flex gap-4 pt-6">
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-4 font-bold text-slate-400 hover:text-slate-600 transition-colors">取消離開</button>
-                <button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-3xl shadow-lg shadow-blue-100 transition-all">儲存單位</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// --- 通用組件 ---
-function StatCard({ title, value, color, icon: Icon, trend, subtitle }) {
-  const colors = {
-    blue: 'bg-blue-50 text-blue-600',
-    emerald: 'bg-emerald-50 text-emerald-600',
-    rose: 'bg-rose-50 text-rose-600',
-    indigo: 'bg-indigo-50 text-indigo-600'
-  };
-  return (
-    <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-slate-200/40 transition-all group">
-      <div className="flex justify-between items-start mb-6">
-        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{title}</div>
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 ${colors[color]}`}>
-          <Icon className="w-5 h-5" />
-        </div>
-      </div>
-      <div className="flex items-end gap-2">
-        <div className="text-4xl font-black text-slate-800 tracking-tighter">{value}</div>
-        {trend && <div className="text-xs font-black text-emerald-500 bg-emerald-50 px-2 py-1 rounded-lg mb-1">{trend}</div>}
-        {subtitle && <div className="text-[10px] font-bold text-slate-400 mb-1 ml-auto">{subtitle}</div>}
-      </div>
-    </div>
-  );
-}
-
-function Input({ label, value, onChange, ...props }) {
-  return (
-    <div>
-      <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">{label}</label>
-      <input 
-        value={value} onChange={e => onChange(e.target.value)}
-        className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-sm focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all font-medium"
-        {...props}
-      />
-    </div>
-  );
-}
+        // 初始化渲染
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
