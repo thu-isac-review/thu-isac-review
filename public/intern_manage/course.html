@@ -602,11 +602,33 @@
                         }
                     }
 
+                    // 💡 依照：學年(降序) -> 學期(降序) -> 學院(後台排序) -> 學系(後台排序) -> 選課代號(升序) 進行排序
                     parsedRows.sort((a, b) => {
-                        const colCmp = (a.college || '').localeCompare(b.college || '');
-                        if (colCmp !== 0) return colCmp;
-                        const deptCmp = (a.department || '').localeCompare(b.department || '');
-                        if (deptCmp !== 0) return deptCmp;
+                        // 1. 學年 (降序：新的學年排在前面)
+                        const yearA = parseInt(a.academic_year) || 0;
+                        const yearB = parseInt(b.academic_year) || 0;
+                        if (yearA !== yearB) return yearB - yearA;
+
+                        // 2. 學期 (降序)
+                        const termA = parseInt(a.term) || 0;
+                        const termB = parseInt(b.term) || 0;
+                        if (termA !== termB) return termB - termA;
+
+                        // 3. 開課學院 (依據系統設定檔中的陣列順序)
+                        const colIdxA = orderedColleges.findIndex(c => c.name === a.college);
+                        const colIdxB = orderedColleges.findIndex(c => c.name === b.college);
+                        const orderColA = colIdxA !== -1 ? colIdxA : 999;
+                        const orderColB = colIdxB !== -1 ? colIdxB : 999;
+                        if (orderColA !== orderColB) return orderColA - orderColB;
+
+                        // 4. 開課學系 (依據系統系所清單中的 sortOrder)
+                        const deptA = globalDepts.find(d => d.name === a.department);
+                        const deptB = globalDepts.find(d => d.name === b.department);
+                        const orderDeptA = deptA ? (deptA.sortOrder || 999) : 999;
+                        const orderDeptB = deptB ? (deptB.sortOrder || 999) : 999;
+                        if (orderDeptA !== orderDeptB) return orderDeptA - orderDeptB;
+
+                        // 5. 選課代號 (字串升序)
                         return (a.course_code || '').localeCompare(b.course_code || '');
                     });
 
