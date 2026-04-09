@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>行政文件審查設定</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        tailwind.config = { theme: { extend: { colors: { brand: { 50: '#f0f5fa', 500: '#2c75b3', 600: '#1a5c96', 700: '#004785' } } } } }
+    </script>
+    <style>
+        body { background-color: transparent; margin: 0; padding: 0; font-family: "SF Pro TC", "Noto Sans TC", sans-serif; -webkit-font-smoothing: antialiased; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .modal-enter { animation: modalFadeIn 0.2s ease-out forwards; }
+        @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.97) translateY(-5px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        table { table-layout: fixed; width: 100%; } td { word-break: break-word; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <div class="shrink-0 px-6 pt-6 pb-4 space-y-4 animate-fade">
+        <!-- 區塊 1：頂部標題與動作按鈕 -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shrink-0">
+                    <i class="fa-regular fa-folder-open text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800 tracking-tight">行政文件審查設定</h2>
+                    <p class="text-xs text-slate-500 mt-1">設定全校性或各系所應上傳備查的行政會議與規範文件項目。</p>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap gap-2">
+                <button onclick="exportToCSV()" class="h-9 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-3 rounded-lg text-sm transition-all flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-file-export text-emerald-600"></i> 匯出清單
+                </button>
+                <div class="w-px h-6 bg-slate-200 self-center mx-1"></div>
+                <button onclick="openDocModal()" class="h-9 bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 rounded-lg text-sm transition-all flex items-center gap-1.5 shadow-sm shadow-blue-500/20">
+                    <i class="fa-solid fa-plus text-base"></i> 新增行政文件
+                </button>
+            </div>
+        </div>
+
+        <!-- 區塊 2：篩選與搜尋列 -->
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4 w-full">
+            <div class="flex gap-2 w-full md:w-auto">
+                <select id="filter-level" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 h-10 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
+                    <option value="all">適用層級：全部</option>
+                    <option value="school">全校統一文件</option>
+                    <option value="department">各系所獨立文件</option>
+                </select>
+                <select id="filter-status" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 h-10 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
+                    <option value="all">狀態：全部</option>
+                    <option value="active">狀態：啟用中</option>
+                    <option value="inactive">狀態：已停用</option>
+                </select>
+            </div>
+            <div class="relative w-full md:w-72 shadow-sm rounded-lg">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                <input type="text" id="search-input" placeholder="搜尋文件名稱或說明..." class="w-full bg-white border border-slate-200 rounded-lg pl-9 pr-3 h-10 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+            </div>
+        </div>
+    </div>
+
+    <!-- 表格滾動區 -->
+    <div class="flex-1 overflow-hidden px-6 pb-6 flex flex-col animate-fade">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col flex-1 overflow-hidden">
+            <div class="flex-1 overflow-auto custom-scrollbar relative">
+                <table class="w-full text-left table-fixed">
+                    <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
+                        <tr>
+                            <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 w-[15%]">適用層級</th>
+                            <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 w-[30%]">文件名稱與屬性</th>
+                            <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 w-[20%]">說明與備註</th>
+                            <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 w-[15%]">系統狀態</th>
+                            <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 w-[20%]">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="doc-table-body" class="divide-y divide-slate-100 text-sm">
+                        <tr><td colspan="5" class="px-6 py-16 text-center text-slate-400"><i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-blue-500"></i><p class="font-bold">資料載入與驗證中...</p></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="bg-slate-50 border-t border-slate-200 px-6 py-3 flex justify-between items-center shrink-0">
+                <div id="pagination-info" class="text-xs font-bold text-slate-500">顯示 0 到 0 筆，共 0 筆</div>
+                <div id="pagination-buttons" class="flex gap-1"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         彈跳視窗：新增/編輯文件
+         ========================================== -->
+    <div id="doc-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeDocModal()"></div>
+        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden modal-enter relative max-h-[90vh] flex flex-col">
+            <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center shrink-0 bg-slate-50">
+                <h3 id="modal-title" class="font-black text-slate-800 text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-file-circle-plus text-blue-600"></i> 新增行政文件
+                </h3>
+                <button onclick="closeDocModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 bg-white shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <form id="doc-form" class="p-8 space-y-6 overflow-y-auto custom-scrollbar flex-1 bg-white">
+                <div class="grid grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-2">適用層級 <span class="text-rose-500">*</span></label>
+                        <select id="input-level" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
+                            <option value="school">全校統一文件 (僅一份)</option>
+                            <option value="department" selected>各系所獨立文件 (每系一份)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-2">繳交屬性 <span class="text-rose-500">*</span></label>
+                        <select id="input-required" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
+                            <option value="true" selected>必繳項目</option>
+                            <option value="false">選繳 / 補充項目</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-2">文件名稱 <span class="text-rose-500">*</span></label>
+                    <div class="relative">
+                        <i class="fa-solid fa-file-lines absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="input-name" required placeholder="例如：實習委員會設置要點 / 會議紀錄" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-2">說明與備註 (提示上傳者) <span class="text-rose-500">*</span></label>
+                    <textarea id="input-description" required rows="3" placeholder="例如：請上傳本學年度最新通過之委員會設置要點，需包含會議紀錄與簽到表。" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-medium text-slate-700 shadow-sm resize-none"></textarea>
+                </div>
+            </form>
+            
+            <div class="p-6 border-t border-slate-100 shrink-0 flex gap-4 bg-slate-50">
+                <button type="button" onclick="closeDocModal()" class="flex-1 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-all shadow-sm">取消</button>
+                <button type="button" id="btn-submit" onclick="submitDocForm()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2">
+                    儲存設定
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase 邏輯 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY", authDomain: "thu-isac-review.firebaseapp.com", projectId: "thu-isac-review", storageBucket: "thu-isac-review.firebasestorage.app", messagingSenderId: "453299876735", appId: "1:453299876735:web:1d8babca3315423161a04a" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app); 
+        const db = getFirestore(app);
+        
+        // 沿用之前的設定儲存集合，以保留已建資料
+        const docsCollection = collection(db, "admin_files_settings");
+
+        let allDocs = []; let editingId = null; let currentPage = 1; const itemsPerPage = 10;
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                onSnapshot(docsCollection, (snapshot) => {
+                    allDocs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderTable();
+                }, (error) => {
+                    document.getElementById('doc-table-body').innerHTML = `<tr><td colspan="5" class="px-6 py-16 text-center text-rose-500 font-bold"><i class="fa-solid fa-lock text-3xl mb-3"></i><p>資料讀取失敗，權限不足。</p></td></tr>`;
+                });
+            } else {
+                document.getElementById('doc-table-body').innerHTML = `<tr><td colspan="5" class="px-6 py-16 text-center text-slate-400 font-bold"><i class="fa-solid fa-shield-halved text-3xl mb-3 text-slate-300"></i><p>請先登入系統以存取資料。</p></td></tr>`;
+            }
+        });
+
+        window.openDocModal = () => {
+            if (!editingId) { 
+                document.getElementById('doc-form').reset();
+                document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-file-circle-plus text-blue-600"></i> 新增行政文件';
+            }
+            document.getElementById('doc-modal').classList.remove('hidden');
+        };
+
+        window.closeDocModal = () => { document.getElementById('doc-modal').classList.add('hidden'); editingId = null; };
+        window.changePage = (page) => { currentPage = page; renderTable(); };
+
+        function renderTable() {
+            const tbody = document.getElementById('doc-table-body');
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const filterLevel = document.getElementById('filter-level').value;
+            const filterStatus = document.getElementById('filter-status').value;
+
+            let filtered = allDocs.filter(d => {
+                const matchSearch = (d.name || '').toLowerCase().includes(searchTerm) || (d.description || '').toLowerCase().includes(searchTerm);
+                const matchLevel = filterLevel === 'all' || d.level === filterLevel;
+                const matchStatus = filterStatus === 'all' || (filterStatus === 'active' ? d.is_active : !d.is_active);
+                return matchSearch && matchLevel && matchStatus;
+            });
+
+            filtered.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
+
+            const totalItems = filtered.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const paginatedItems = filtered.slice(startIndex, startIndex + itemsPerPage);
+
+            document.getElementById('pagination-info').innerText = totalItems > 0 ? `顯示 ${startIndex + 1} 到 ${Math.min(startIndex + itemsPerPage, totalItems)} 筆，共 ${totalItems} 筆` : '尚無資料';
+            
+            let btnHtml = '';
+            btnHtml += `<button onclick="changePage(${currentPage - 1})" class="px-3 py-1 border border-slate-200 rounded-md text-sm font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-40 transition-colors" ${currentPage === 1 ? 'disabled' : ''}>上一頁</button>`;
+            btnHtml += `<span class="px-4 py-1 text-sm font-bold text-blue-600 bg-blue-50 rounded-md mx-1">${currentPage} / ${totalPages}</span>`;
+            btnHtml += `<button onclick="changePage(${currentPage + 1})" class="px-3 py-1 border border-slate-200 rounded-md text-sm font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-40 transition-colors" ${currentPage === totalPages ? 'disabled' : ''}>下一頁</button>`;
+            document.getElementById('pagination-buttons').innerHTML = btnHtml;
+
+            if (totalItems === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-16 text-center text-slate-400 font-bold bg-white">找不到符合條件的文件項目。</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            paginatedItems.forEach((data, idx) => {
+                const globalIndex = startIndex + idx; 
+
+                let levelBadge = data.level === 'school' 
+                    ? `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold"><i class="fa-solid fa-building-columns"></i> 全校</span>` 
+                    : `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold"><i class="fa-solid fa-graduation-cap"></i> 系所</span>`;
+
+                let reqBadge = data.is_required === 'true'
+                    ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-100 ml-2">必繳</span>`
+                    : `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200 ml-2">選繳</span>`;
+
+                html += `
+                <tr class="group bg-white hover:bg-blue-50/40 transition-all duration-150 ${!data.is_active ? 'opacity-60 grayscale-[20%] bg-slate-50/50' : ''}">
+                    <td class="px-6 py-4 align-middle text-center">${levelBadge}</td>
+                    <td class="px-6 py-4 align-middle">
+                        <div class="flex items-center">
+                            <span class="text-sm font-bold text-slate-800 break-words leading-tight">${data.name}</span>
+                            ${reqBadge}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 align-middle">
+                        <div class="text-xs text-slate-500 line-clamp-2 leading-relaxed" title="${data.description}">${data.description}</div>
+                    </td>
+                    <td class="px-6 py-4 align-middle text-center">
+                        <div class="flex items-center justify-center">
+                            <label class="relative inline-flex items-center cursor-pointer group/toggle">
+                                <input type="checkbox" class="sr-only peer" ${data.is_active ? 'checked' : ''} onchange="window.toggleStatus('${data.id}', ${data.is_active})">
+                                <div class="relative w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-[20px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner shrink-0 min-w-[44px]"></div>
+                                <span class="ml-3 text-sm font-bold ${data.is_active ? 'text-emerald-600' : 'text-slate-400'}">${data.is_active ? '啟用' : '停用'}</span>
+                            </label>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 align-middle text-center">
+                        <div class="flex items-center justify-center gap-2 opacity-100 transition-opacity">
+                            <button onclick="window.moveDoc('${data.id}', 'up')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all disabled:opacity-20" ${globalIndex === 0 ? 'disabled' : ''} title="向上移動">
+                                <i class="fa-solid fa-chevron-up text-xs"></i>
+                            </button>
+                            <button onclick="window.moveDoc('${data.id}', 'down')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all disabled:opacity-20" ${globalIndex === filtered.length - 1 ? 'disabled' : ''} title="向下移動">
+                                <i class="fa-solid fa-chevron-down text-xs"></i>
+                            </button>
+                            <button onclick="window.editDoc('${data.id}')" class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all" title="編輯文件"><i class="fa-solid fa-pen text-sm"></i></button>
+                            <button onclick="window.deleteDoc('${data.id}', '${data.name}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all" title="刪除文件"><i class="fa-solid fa-trash-can text-sm"></i></button>
+                        </div>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+
+        window.exportToCSV = () => {
+            if (allDocs.length === 0) { alert("沒有資料可供匯出！"); return; }
+            let csv = '\uFEFF排序,適用層級,文件名稱,是否必繳,說明與備註,系統狀態\n';
+            let sorted = [...allDocs].sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
+            sorted.forEach(d => {
+                let status = d.is_active ? '啟用' : '停用';
+                let level = d.level === 'school' ? '全校統一文件' : '各系所獨立文件';
+                let req = d.is_required === 'true' ? '必繳' : '選繳';
+                csv += [d.sortOrder, level, d.name, req, d.description, status].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+            });
+            const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+            link.download = `ISAC行政文件設定_${new Date().toISOString().split('T')[0]}.csv`; link.click();
+        };
+
+        window.submitDocForm = async () => {
+            const btn = document.getElementById('btn-submit');
+            
+            const payload = { 
+                level: document.getElementById('input-level').value,
+                is_required: document.getElementById('input-required').value,
+                name: document.getElementById('input-name').value.trim(), 
+                description: document.getElementById('input-description').value.trim(), 
+            };
+
+            if(!payload.name || !payload.description) { 
+                alert("請填寫所有必填欄位！"); return; 
+            }
+
+            btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> 儲存中...';
+            try {
+                if (editingId) { 
+                    await updateDoc(doc(db, "admin_files_settings", editingId), { ...payload, updated_at: serverTimestamp() }); 
+                } else {
+                    let maxOrder = allDocs.length > 0 ? Math.max(...allDocs.map(d => d.sortOrder || 0)) : 0;
+                    await addDoc(docsCollection, { ...payload, sortOrder: maxOrder + 10, is_active: true, created_at: serverTimestamp() });
+                }
+                closeDocModal();
+            } catch (err) { alert("儲存發生錯誤：" + err.message); } 
+            finally { btn.disabled = false; btn.innerText = '儲存設定'; }
+        };
+
+        window.editDoc = (id) => {
+            const docData = allDocs.find(d => d.id === id);
+            if (!docData) return;
+            
+            editingId = id;
+            document.getElementById('input-level').value = docData.level || 'department';
+            document.getElementById('input-required').value = docData.is_required || 'true';
+            document.getElementById('input-name').value = docData.name || ''; 
+            document.getElementById('input-description').value = docData.description || ''; 
+
+            document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-pen text-blue-600"></i> 編輯行政文件';
+            document.getElementById('doc-modal').classList.remove('hidden');
+        };
+
+        window.toggleStatus = async (id, status) => { await updateDoc(doc(db, "admin_files_settings", id), { is_active: !status }); };
+        
+        window.deleteDoc = async (id, name) => {
+            if (confirm(`警告：確定要刪除「${name}」嗎？\n此操作無法復原。`)) {
+                await deleteDoc(doc(db, "admin_files_settings", id));
+                if (currentPage > Math.ceil((allDocs.length - 1) / itemsPerPage) || 1) currentPage = Math.ceil((allDocs.length - 1) / itemsPerPage) || 1;
+                renderTable();
+            }
+        };
+
+        window.moveDoc = async (id, direction) => {
+            let sorted = [...allDocs].sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
+            const currentIndex = sorted.findIndex(d => d.id === id);
+            
+            if (direction === 'up' && currentIndex > 0) {
+                await updateDoc(doc(db, "admin_files_settings", sorted[currentIndex].id), { sortOrder: sorted[currentIndex - 1].sortOrder || (currentIndex-1)*10 });
+                await updateDoc(doc(db, "admin_files_settings", sorted[currentIndex - 1].id), { sortOrder: sorted[currentIndex].sortOrder || currentIndex*10 });
+            } else if (direction === 'down' && currentIndex < sorted.length - 1) {
+                await updateDoc(doc(db, "admin_files_settings", sorted[currentIndex].id), { sortOrder: sorted[currentIndex + 1].sortOrder || (currentIndex+1)*10 });
+                await updateDoc(doc(db, "admin_files_settings", sorted[currentIndex + 1].id), { sortOrder: sorted[currentIndex].sortOrder || currentIndex*10 });
+            }
+        };
+
+        document.getElementById('search-input').addEventListener('input', renderTable);
+        document.getElementById('filter-level').addEventListener('change', renderTable);
+        document.getElementById('filter-status').addEventListener('change', renderTable);
+    </script>
+</body>
+</html>
