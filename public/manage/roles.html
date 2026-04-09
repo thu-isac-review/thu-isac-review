@@ -226,12 +226,14 @@
                         return { id: doc.id, ...data, createdDate };
                     });
                     
-                    if(allUsers.length === 0) {
-                        allUsers = [{ 
+                    // 💡 修正：不僅在長度為 0 時加入，只要裡面沒有預設管理員，就強制將它加入列表最前方
+                    const hasDefaultAdmin = allUsers.some(u => u.email === 'thu.isac.review@gmail.com');
+                    if (!hasDefaultAdmin) {
+                        allUsers.unshift({ 
                             id: 'default_admin', name: '系統預設管理員', email: 'thu.isac.review@gmail.com', 
                             role: '系統管理員 (Admin)', level1Unit: '系統管理中心', level2Unit: '核心維運組', jobTitle: '管理員',
                             is_active: true, createdDate: '系統預設' 
-                        }];
+                        });
                     }
                     renderTable();
                 }, (error) => {
@@ -449,7 +451,6 @@
                         alert("此電子郵件已經存在於系統中！"); btn.disabled = false; btn.innerHTML = '儲存設定'; return; 
                     }
                     
-                    // 💡 建立帳號時，自動賦予新的預設密碼 52004800
                     const defaultPassword = "52004800";
                     const userCredential = await createUserWithEmailAndPassword(adminAuth, payload.email, defaultPassword);
                     const newUid = userCredential.user.uid;
