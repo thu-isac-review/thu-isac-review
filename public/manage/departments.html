@@ -86,15 +86,17 @@
         <!-- 區塊 3：固定欄寬資料表格 -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
             <table class="w-full text-left">
-                <thead>
-                    <tr class="border-b border-slate-100 bg-white">
+                <!-- 將 thead 背景改為 bg-slate-50 微灰色 -->
+                <thead class="bg-slate-50">
+                    <tr class="border-b border-slate-100">
                         <th class="px-4 py-5 text-sm font-bold text-slate-500 w-12 text-center"></th> <!-- 排序 -->
                         <th class="px-6 py-5 text-sm font-bold text-slate-500 w-[15%]">學院</th>
                         <th class="px-6 py-5 text-sm font-bold text-slate-500 w-[20%]">學系名稱</th>
-                        <th class="px-6 py-5 text-sm font-bold text-slate-500 w-[12%]">系所代碼</th>
+                        <th class="px-6 py-5 text-sm font-bold text-slate-500 w-[12%] text-center">系所代碼</th>
                         <th class="px-6 py-5 text-sm font-bold text-slate-500 w-[25%]">承辦窗口</th>
-                        <th class="px-6 py-5 text-sm font-bold text-slate-500 w-[15%]">系統狀態</th>
-                        <th class="px-6 py-5 text-sm font-bold text-slate-500 w-[13%] text-right">操作</th>
+                        <!-- 置中系統狀態與操作 -->
+                        <th class="px-6 py-5 text-sm font-bold text-slate-500 w-[15%] text-center">系統狀態</th>
+                        <th class="px-6 py-5 text-sm font-bold text-slate-500 w-[13%] text-center">操作</th>
                     </tr>
                 </thead>
                 <tbody id="dept-table-body" class="divide-y divide-slate-50 text-sm">
@@ -381,7 +383,7 @@
                     <td class="px-6 py-4 align-middle">
                         <span class="text-base font-bold text-slate-800 break-words">${data.name}</span>
                     </td>
-                    <td class="px-6 py-4 align-middle">
+                    <td class="px-6 py-4 align-middle text-center">
                         <!-- 還原截圖的代碼 Badge 設計 (淡灰邊框) -->
                         <div class="inline-flex items-center justify-center px-3 py-1.5 rounded bg-slate-50 border border-slate-200 font-mono text-xs font-bold text-slate-500 tracking-wider">
                             ${data.code}
@@ -393,15 +395,17 @@
                         </div>
                     </td>
                     <td class="px-6 py-4 align-middle text-center">
-                        <!-- iOS 風格 Toggle 開關 -->
-                        <label class="relative inline-flex items-center justify-center cursor-pointer group/toggle">
-                            <input type="checkbox" class="sr-only peer" ${data.is_active ? 'checked' : ''} onchange="window.toggleStatus('${data.id}', ${data.is_active})">
-                            <div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
-                            <span class="ml-2 text-sm font-bold ${data.is_active ? 'text-emerald-600' : 'text-slate-400'}">${data.is_active ? '啟用' : '停用'}</span>
-                        </label>
+                        <!-- 修正破圖的 iOS 風格 Toggle 開關並置中 -->
+                        <div class="flex items-center justify-center">
+                            <label class="relative inline-flex items-center cursor-pointer group/toggle">
+                                <input type="checkbox" class="sr-only peer" ${data.is_active ? 'checked' : ''} onchange="window.toggleStatus('${data.id}', ${data.is_active})">
+                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                                <span class="ml-3 text-sm font-bold ${data.is_active ? 'text-emerald-600' : 'text-slate-400'}">${data.is_active ? '啟用' : '停用'}</span>
+                            </label>
+                        </div>
                     </td>
-                    <td class="px-6 py-4 align-middle text-right">
-                        <div class="flex items-center justify-end gap-1">
+                    <td class="px-6 py-4 align-middle text-center">
+                        <div class="flex items-center justify-center gap-1">
                             <button onclick="window.editDept('${data.id}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors" title="編輯">
                                 <i class="ph-bold ph-pencil-simple text-lg"></i>
                             </button>
