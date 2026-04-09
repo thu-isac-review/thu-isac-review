@@ -42,7 +42,7 @@
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shrink-0">
-                    <i class="fa-solid fa-university text-xl"></i>
+                    <i class="fa-solid fa-graduation-cap text-xl"></i>
                 </div>
                 <div>
                     <h2 class="text-xl font-bold text-slate-800 tracking-tight">系所清單管理</h2>
@@ -62,7 +62,7 @@
                 <div class="w-px h-6 bg-slate-200 self-center mx-1"></div>
                 
                 <button onclick="openCollegeModal()" class="h-9 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-3 rounded-lg text-sm transition-all flex items-center gap-1.5 shadow-sm">
-                    <i class="fa-solid fa-bars-staggered text-slate-500"></i> 學院設定
+                    <i class="fa-solid fa-university text-slate-500"></i> 學院設定
                 </button>
                 <button onclick="openDeptModal()" class="h-9 bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 rounded-lg text-sm transition-all flex items-center gap-1.5 shadow-sm shadow-blue-500/20">
                     <i class="fa-solid fa-plus"></i> 新增系所
@@ -122,33 +122,36 @@
          ========================================== -->
     <div id="college-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeCollegeModal()"></div>
-        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden modal-enter relative flex flex-col max-h-[85vh]">
-            <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-white shrink-0">
+        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden modal-enter relative flex flex-col max-h-[90vh]">
+            <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center shrink-0 bg-slate-50">
                 <h3 class="font-black text-slate-800 text-lg flex items-center gap-2">
                     <i class="fa-solid fa-university text-blue-600"></i> 學院設定管理
                 </h3>
                 <button onclick="closeCollegeModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 bg-white shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             
-            <div class="p-8 overflow-y-auto custom-scrollbar flex-1 bg-white">
-                <!-- 新增學院專區 (視覺強調) -->
-                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 mb-8 shadow-sm">
-                    <label class="block text-xs font-bold text-slate-600 mb-3"><i class="fa-solid fa-plus text-blue-500 mr-1"></i> 新增學院</label>
+            <div class="p-8 space-y-5 overflow-y-auto custom-scrollbar flex-1 bg-white">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-2">新增學院</label>
                     <div class="flex gap-3">
                         <div class="relative flex-1">
                             <i class="fa-solid fa-university absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                            <input type="text" id="new-college-input" placeholder="輸入新學院名稱..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all shadow-sm font-bold text-slate-700">
+                            <input type="text" id="new-college-input" placeholder="輸入新學院名稱..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all shadow-sm font-bold text-slate-700">
                         </div>
-                        <button onclick="addCollege()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md shadow-blue-500/20 whitespace-nowrap">新增</button>
+                        <button onclick="addCollege()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md shadow-blue-500/20 whitespace-nowrap"><i class="fa-solid fa-plus mr-1"></i> 新增</button>
                     </div>
                 </div>
 
-                <!-- 學院清單 -->
-                <div class="flex items-center justify-between mb-4">
-                    <div class="text-xs font-bold text-slate-500 uppercase tracking-widest">現有學院清單</div>
-                    <div class="text-[10px] text-slate-400 font-medium">支援拖曳排序與名稱編輯</div>
+                <div class="pt-5 border-t border-slate-100">
+                    <div class="flex items-center justify-between mb-3">
+                        <label class="block text-xs font-bold text-slate-600">現有學院清單 (可排序與編輯)</label>
+                    </div>
+                    <ul id="college-list-container" class="space-y-3"></ul>
                 </div>
-                <ul id="college-list-container" class="space-y-3"></ul>
+            </div>
+            
+            <div class="p-6 border-t border-slate-100 shrink-0 flex gap-4 bg-slate-50">
+                <button type="button" onclick="closeCollegeModal()" class="w-full py-3 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-all shadow-sm">關閉設定</button>
             </div>
         </div>
     </div>
@@ -161,7 +164,7 @@
         <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden modal-enter relative max-h-[90vh] flex flex-col">
             <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center shrink-0 bg-slate-50">
                 <h3 id="modal-title" class="font-black text-slate-800 text-lg flex items-center gap-2">
-                    <i class="fa-solid fa-university text-blue-600"></i> 新增系所單位
+                    <i class="fa-solid fa-graduation-cap text-blue-600"></i> 新增系所單位
                 </h3>
                 <button onclick="closeDeptModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 bg-white shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
@@ -259,13 +262,13 @@
         function renderCollegeUI() {
             const listContainer = document.getElementById('college-list-container');
             listContainer.innerHTML = collegeList.map((c, index) => `
-                <li class="flex justify-between items-center bg-white border border-slate-200 shadow-sm rounded-xl p-3 text-sm group hover:border-blue-300 transition-all">
+                <li class="flex justify-between items-center bg-slate-50 border border-slate-200 shadow-sm rounded-xl p-3 text-sm group hover:bg-white hover:border-blue-300 transition-all">
                     <div class="flex items-center gap-3 flex-1 overflow-hidden">
                         <div class="flex flex-col opacity-20 group-hover:opacity-100 transition-opacity">
                             <button onclick="moveCollege(${index}, -1)" class="w-6 h-5 rounded hover:bg-slate-100 text-slate-400 hover:text-blue-600 disabled:opacity-0 transition-colors flex items-center justify-center" ${index === 0 ? 'disabled' : ''}><i class="fa-solid fa-chevron-up text-[10px]"></i></button>
                             <button onclick="moveCollege(${index}, 1)" class="w-6 h-5 rounded hover:bg-slate-100 text-slate-400 hover:text-blue-600 disabled:opacity-0 transition-colors flex items-center justify-center" ${index === collegeList.length - 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-down text-[10px]"></i></button>
                         </div>
-                        <span id="col-text-${index}" class="font-bold text-slate-700 truncate">${c}</span>
+                        <span id="col-text-${index}" class="font-bold text-slate-700 truncate pl-1">${c}</span>
                         <input type="text" id="col-input-${index}" value="${c}" class="hidden flex-1 border border-blue-400 bg-blue-50 rounded-lg px-3 py-1.5 text-sm font-bold text-blue-900 outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-inner">
                     </div>
                     <div class="flex items-center ml-3 gap-1.5 shrink-0">
@@ -339,7 +342,7 @@
                 document.getElementById('dept-form').reset();
                 document.getElementById('contacts-container').innerHTML = '';
                 addContactField();
-                document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-university text-blue-600"></i> 新增系所單位';
+                document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-graduation-cap text-blue-600"></i> 新增系所單位';
             }
             document.getElementById('dept-modal').classList.remove('hidden');
         };
