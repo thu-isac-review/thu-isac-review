@@ -16,7 +16,6 @@
       }
     </script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- 全面導入 Font Awesome 6.5.1 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <script>
@@ -43,7 +42,7 @@
             -webkit-font-smoothing: antialiased; 
         }
 
-        .sidebar-item.active { background-color: rgba(255, 255, 255, 0.1); color: #ffffff; border-left: 3px solid #3b82f6; }
+        .sidebar-item.active { background-color: rgba(255, 255, 255, 0.1); color: #ffffff; border-left: 3px solid #3b82f6; font-weight: bold;}
         .sidebar-item { border-left: 3px solid transparent; transition: all 0.2s ease; cursor: pointer; }
         .sidebar-item:hover:not(.active) { background-color: rgba(255, 255, 255, 0.05); color: #f8fafc; }
 
@@ -61,7 +60,6 @@
         import React, { useState, useEffect } from 'react';
         import ReactDOM from 'react-dom/client';
         
-        // 匯入 Firebase Auth 的必要套件 (包含註冊用的 createUserWithEmailAndPassword)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
@@ -80,9 +78,10 @@
         function App() {
             const [user, setUser] = useState(null);
             const [loading, setLoading] = useState(true);
-            const [contentUrl, setContentUrl] = useState('/manage/departments'); 
+            const [currentHash, setCurrentHash] = useState(''); // 改用 Hash 路由紀錄
             
             const getCacheBustedUrl = (url) => {
+                if (!url) return '';
                 return `${url}?v=${new Date().getTime()}`;
             };
 
@@ -93,6 +92,29 @@
                 });
                 return () => unsubscribe();
             }, []);
+
+            // 💡 監聽網址的 # 變動 (Hash Routing 機制)
+            useEffect(() => {
+                const handleHashChange = () => {
+                    let hash = window.location.hash.replace('#', '');
+                    if (!hash) {
+                        // 預設頁面
+                        hash = '/manage/departments.html';
+                        window.history.replaceState(null, null, '#' + hash);
+                    }
+                    setCurrentHash(hash);
+                };
+                
+                window.addEventListener('hashchange', handleHashChange);
+                handleHashChange(); // 初始載入時觸發
+                
+                return () => window.removeEventListener('hashchange', handleHashChange);
+            }, []);
+
+            // 觸發網址變更
+            const navigate = (path) => {
+                window.location.hash = path;
+            };
 
             const handleLogout = () => {
                 if (window.confirm("確定要登出系統嗎？")) {
@@ -112,17 +134,18 @@
             if (!user) return <LoginView />;
 
             const getPageTitle = () => {
-                if (contentUrl.includes('dashboard')) return '總覽儀表板';
-                if (contentUrl.includes('list')) return '學生待查核名單';
-                if (contentUrl.includes('departments')) return '系所清單管理';
-                if (contentUrl.includes('roles')) return '用戶權限管理';
+                if (currentHash.includes('dashboard')) return '總覽儀表板';
+                if (currentHash.includes('list')) return '學生待查核名單';
+                if (currentHash.includes('departments')) return '系所清單管理';
+                if (currentHash.includes('roles')) return '用戶權限管理';
                 return 'ISAC 審查中心';
             };
 
             return (
                 <div className="flex h-full overflow-hidden text-slate-800">
+                    {/* 側邊導航列：修改這裡，全系統都會同步！ */}
                     <aside className="w-64 bg-sidebar text-slate-300 flex flex-col shrink-0 z-20 shadow-xl">
-                        <div className="h-16 flex items-center px-6 border-b border-slate-700/50">
+                        <div className="h-16 flex items-center px-6 border-b border-slate-700/50 cursor-pointer">
                             <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center mr-3 shadow-md">
                                 <i className="fa-solid fa-shield-halved text-white text-lg"></i>
                             </div>
@@ -130,35 +153,32 @@
                         </div>
 
                         <div className="flex-1 overflow-y-auto py-4 custom-scrollbar">
-                            <div className="px-6 mb-2 text-xs font-bold text-slate-500 uppercase tracking-widest">主要業務</div>
+                            <div className="px-6 mb-2 mt-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">主要業務</div>
                             <MenuBtn 
-                                active={contentUrl === '/dashboard-content'} 
+                                active={currentHash === '/dashboard-content.html'} 
                                 label="總覽儀表板" 
                                 icon="fa-solid fa-table-cells-large" 
-                                onClick={() => setContentUrl('/dashboard-content')} 
+                                onClick={() => navigate('/dashboard-content.html')} 
                             />
                             <MenuBtn 
-                                active={contentUrl === '/list'} 
+                                active={currentHash === '/list.html'} 
                                 label="學生待查核名單" 
                                 icon="fa-solid fa-users" 
-                                onClick={() => setContentUrl('/list')} 
+                                onClick={() => navigate('/list.html')} 
                             />
 
-                            <div className="px-6 mt-8 mb-2 text-xs font-bold text-slate-500 uppercase tracking-widest">設定與維護</div>
-                            
+                            <div className="px-6 mt-8 mb-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">設定與維護</div>
                             <MenuBtn 
-                                active={contentUrl === '/manage/departments'} 
+                                active={currentHash === '/manage/departments.html'} 
                                 label="系所清單管理" 
                                 icon="fa-solid fa-graduation-cap" 
-                                onClick={() => setContentUrl('/manage/departments')} 
+                                onClick={() => navigate('/manage/departments.html')} 
                             />
-                            
-                            {/* 新增用戶權限管理選單 */}
                             <MenuBtn 
-                                active={contentUrl === '/manage/roles'} 
+                                active={currentHash === '/manage/roles.html'} 
                                 label="用戶權限管理" 
                                 icon="fa-solid fa-user-shield" 
-                                onClick={() => setContentUrl('/manage/roles')} 
+                                onClick={() => navigate('/manage/roles.html')} 
                             />
                             
                             <div className="sidebar-item w-full flex items-center px-6 py-3 text-sm font-medium mb-1 text-slate-500 opacity-50 cursor-not-allowed">
@@ -167,7 +187,7 @@
                         </div>
 
                         <div className="p-4 border-t border-slate-700/50">
-                            <div className="flex items-center gap-3 px-2 py-2">
+                            <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-800 transition-colors">
                                 <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-400 flex items-center justify-center text-white font-bold text-sm shadow-md">
                                     Ad
                                 </div>
@@ -182,30 +202,35 @@
                         </div>
                     </aside>
 
+                    {/* 主要內容區 */}
                     <main className="flex-1 flex flex-col h-full relative overflow-hidden bg-slate-50">
-                        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 z-10 shadow-sm">
+                        {/* 頂部頁首：修改這裡，全系統都會同步！ */}
+                        <header className="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 shrink-0 z-10 sticky top-0 shadow-sm">
                             <div className="flex items-center gap-4">
-                                <h2 className="text-lg font-bold text-slate-800">{getPageTitle()}</h2>
+                                <h2 className="text-lg font-black text-slate-800">{getPageTitle()}</h2>
                             </div>
                             <div className="flex items-center gap-6">
                                 <div className="relative hidden lg:block">
                                     <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                                    <input type="text" className="pl-9 pr-4 py-1.5 bg-slate-100 border-transparent rounded-lg text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all w-64 outline-none" placeholder="搜尋系統內容..." />
+                                    <input type="text" className="pl-9 pr-4 py-2 bg-slate-100 border-transparent rounded-xl text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all w-64 outline-none font-medium" placeholder="搜尋系統內容..." />
                                 </div>
                                 <div className="h-6 w-px bg-slate-200"></div>
                                 <div className="text-sm font-bold text-slate-700 flex items-center gap-2 cursor-pointer">
-                                    114-1 學年度 <i className="fa-solid fa-bell text-slate-400 text-base"></i>
+                                    114-1 學年度 <i className="fa-solid fa-bell text-slate-400 text-base ml-1"></i>
                                 </div>
                             </div>
                         </header>
 
                         <div className="flex-1 overflow-hidden relative">
-                            <iframe 
-                                src={getCacheBustedUrl(contentUrl)} 
-                                key={contentUrl}
-                                className="animate-fade w-full h-full"
-                                title="Content View"
-                            />
+                            {/* 中間顯示純內容的 iframe */}
+                            {currentHash && (
+                                <iframe 
+                                    src={getCacheBustedUrl(currentHash)} 
+                                    key={currentHash}
+                                    className="animate-fade w-full h-full"
+                                    title="Content View"
+                                />
+                            )}
                         </div>
                     </main>
                 </div>
@@ -214,8 +239,8 @@
 
         function MenuBtn({ active, label, icon, onClick }) {
             return (
-                <div onClick={onClick} className={`sidebar-item w-full flex items-center px-6 py-3 text-sm font-medium mb-1 ${active ? 'active' : ''}`}>
-                    <i className={`${icon} text-lg mr-3 ${active ? 'opacity-100' : 'opacity-80'} w-5 text-center`}></i>
+                <div onClick={onClick} className={`sidebar-item w-full flex items-center px-6 py-3.5 text-sm mb-1 ${active ? 'active shadow-lg shadow-blue-500/10' : 'font-medium'}`}>
+                    <i className={`${icon} text-lg mr-3 ${active ? 'text-blue-400 opacity-100' : 'opacity-80'} w-5 text-center`}></i>
                     <span className="tracking-tight">{label}</span>
                 </div>
             );
@@ -223,7 +248,7 @@
 
         function LoginView() {
             const [isLoggingIn, setIsLoggingIn] = useState(false);
-            const [isRegisterMode, setIsRegisterMode] = useState(false); // 控制登入/註冊模式
+            const [isRegisterMode, setIsRegisterMode] = useState(false);
 
             const handleSubmit = async (e) => {
                 e.preventDefault();
@@ -232,36 +257,26 @@
                 const pw = e.target.password.value;
 
                 if (isRegisterMode) {
-                    // 註冊邏輯與信箱攔截規則
                     const isValidDomain = email === 'thu.isac.review@gmail.com' || email.endsWith('@thu.edu.tw');
-                    
                     if (!isValidDomain) {
                         alert("註冊失敗：\n基於系統安全，僅限使用東海大學信箱 (@thu.edu.tw) 進行註冊！");
                         setIsLoggingIn(false);
                         return;
                     }
-
                     try {
                         await createUserWithEmailAndPassword(auth, email, pw);
-                        // 註冊成功後，Firebase 會自動判定為已登入狀態，畫面會自動跳轉進系統
                     } catch (err) {
                         let errorMsg = err.message;
                         if (err.code === 'auth/email-already-in-use') errorMsg = "此信箱已經註冊過了！";
                         if (err.code === 'auth/weak-password') errorMsg = "密碼長度太弱，請至少輸入 6 個字元。";
                         alert("註冊發生錯誤：" + errorMsg);
-                    } finally {
-                        setIsLoggingIn(false);
-                    }
-
+                    } finally { setIsLoggingIn(false); }
                 } else {
-                    // 一般登入邏輯
                     try {
                         await signInWithEmailAndPassword(auth, email, pw);
                     } catch (err) {
                         alert("登入失敗：請確認帳號密碼是否正確。");
-                    } finally {
-                        setIsLoggingIn(false);
-                    }
+                    } finally { setIsLoggingIn(false); }
                 }
             };
 
@@ -288,7 +303,6 @@
                                 isRegisterMode ? "確認註冊並登入" : "進入系統"
                             )}
                         </button>
-
                         <div className="mt-6 text-center">
                             <button type="button" onClick={() => setIsRegisterMode(!isRegisterMode)} className="text-sm font-bold text-slate-500 hover:text-blue-600 transition-colors">
                                 {isRegisterMode ? "已經有帳號了？點此登入" : "還沒有帳號？註冊系統帳號"}
