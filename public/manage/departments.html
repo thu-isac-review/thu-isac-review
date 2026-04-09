@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>系所清單管理</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 使用穩定的 Font Awesome 6.5.1 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script>
         tailwind.config = {
             theme: {
@@ -18,8 +19,11 @@
         }
     </script>
     <style>
-        body { background-color: #f8fafc; margin: 0; padding: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
-        * { font-family: "SF Pro TC", "Noto Sans TC", sans-serif; -webkit-font-smoothing: antialiased; }
+        /* 💡 修正破圖關鍵：將字體設定綁定在 body 而非全域 *，避免覆蓋 Font Awesome */
+        body { 
+            background-color: #f8fafc; margin: 0; padding: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; 
+            font-family: "SF Pro TC", "Noto Sans TC", sans-serif; -webkit-font-smoothing: antialiased; 
+        }
         
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -34,8 +38,9 @@
         td { word-break: break-word; }
     </style>
 </head>
-<body>
+<body class="custom-scrollbar">
 
+    <!-- 頂部固定區塊 (不參與滾動) -->
     <div class="shrink-0 px-6 pt-6 pb-4 space-y-4">
         
         <!-- 區塊 1：頂部標題與動作按鈕 -->
@@ -118,7 +123,7 @@
     </div>
 
     <!-- ==========================================
-         彈跳視窗 1：設定學院管理 (全新高質感設計)
+         彈跳視窗 1：設定學院管理 (升級至與新增系所同級別的佈局)
          ========================================== -->
     <div id="college-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeCollegeModal()"></div>
@@ -130,7 +135,8 @@
                 <button onclick="closeCollegeModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 bg-white shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             
-            <div class="p-8 space-y-5 overflow-y-auto custom-scrollbar flex-1 bg-white">
+            <!-- 內部表單結構比照新增系所 -->
+            <div class="p-8 space-y-6 overflow-y-auto custom-scrollbar flex-1 bg-white">
                 <div>
                     <label class="block text-xs font-bold text-slate-600 mb-2">新增學院</label>
                     <div class="flex gap-3">
@@ -142,8 +148,8 @@
                     </div>
                 </div>
 
-                <div class="pt-5 border-t border-slate-100">
-                    <div class="flex items-center justify-between mb-3">
+                <div class="pt-6 border-t border-slate-100">
+                    <div class="flex items-center justify-between mb-4">
                         <label class="block text-xs font-bold text-slate-600">現有學院清單 (可排序與編輯)</label>
                     </div>
                     <ul id="college-list-container" class="space-y-3"></ul>
@@ -151,7 +157,7 @@
             </div>
             
             <div class="p-6 border-t border-slate-100 shrink-0 flex gap-4 bg-slate-50">
-                <button type="button" onclick="closeCollegeModal()" class="w-full py-3 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-all shadow-sm">關閉設定</button>
+                <button type="button" onclick="closeCollegeModal()" class="w-full py-3 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-all shadow-sm">完成並關閉</button>
             </div>
         </div>
     </div>
@@ -169,7 +175,7 @@
                 <button onclick="closeDeptModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 bg-white shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             
-            <form id="dept-form" class="p-8 space-y-5 overflow-y-auto custom-scrollbar flex-1">
+            <form id="dept-form" class="p-8 space-y-6 overflow-y-auto custom-scrollbar flex-1 bg-white">
                 <div class="grid grid-cols-2 gap-5">
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-2">所屬學院 <span class="text-rose-500">*</span></label>
@@ -193,8 +199,8 @@
                     </div>
                 </div>
                 
-                <div class="pt-5 border-t border-slate-100">
-                    <div class="flex justify-between items-center mb-3">
+                <div class="pt-6 border-t border-slate-100">
+                    <div class="flex justify-between items-center mb-4">
                         <label class="block text-xs font-bold text-slate-600">承辦窗口 (可多位)</label>
                         <button type="button" onclick="addContactField()" class="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors border border-blue-100">
                             <i class="fa-solid fa-plus"></i> 新增窗口
@@ -243,7 +249,7 @@
         const itemsPerPage = 10;
 
         // =====================================
-        // 學院設定邏輯 (高質感渲染)
+        // 學院設定邏輯
         // =====================================
         onSnapshot(collegeDocRef, (docSnap) => {
             if (docSnap.exists()) {
@@ -262,7 +268,7 @@
         function renderCollegeUI() {
             const listContainer = document.getElementById('college-list-container');
             listContainer.innerHTML = collegeList.map((c, index) => `
-                <li class="flex justify-between items-center bg-slate-50 border border-slate-200 shadow-sm rounded-xl p-3 text-sm group hover:bg-white hover:border-blue-300 transition-all">
+                <li class="flex justify-between items-center bg-white border border-slate-200 shadow-sm rounded-xl p-3 text-sm group hover:border-blue-300 transition-all">
                     <div class="flex items-center gap-3 flex-1 overflow-hidden">
                         <div class="flex flex-col opacity-20 group-hover:opacity-100 transition-opacity">
                             <button onclick="moveCollege(${index}, -1)" class="w-6 h-5 rounded hover:bg-slate-100 text-slate-400 hover:text-blue-600 disabled:opacity-0 transition-colors flex items-center justify-center" ${index === 0 ? 'disabled' : ''}><i class="fa-solid fa-chevron-up text-[10px]"></i></button>
@@ -328,7 +334,7 @@
         };
 
         window.removeCollege = async (index) => {
-            if (confirm(`確定移除「${collegeList[index]}」嗎？`)) {
+            if (confirm(`確定移除「${collegeList[index]}」嗎？\n(注意：不會刪除已套用此學院的系所)`)) {
                 const newList = collegeList.filter((_, i) => i !== index);
                 await updateDoc(collegeDocRef, { list: newList });
             }
@@ -357,12 +363,12 @@
             const div = document.createElement('div');
             div.className = 'contact-entry flex gap-3 items-start animate-[fadeIn_0.3s_ease-out]';
             div.innerHTML = `
-                <div class="flex-1 space-y-2 bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
+                <div class="flex-1 space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-sm">
                     <div class="flex items-center gap-2">
                         <span class="text-xs font-bold text-slate-400 w-12 shrink-0">姓名：</span>
                         <input type="text" placeholder="例如：陳助教" value="${name}" class="contact-name w-full bg-transparent text-sm focus:outline-none font-bold text-slate-700">
                     </div>
-                    <div class="h-px bg-slate-100"></div>
+                    <div class="h-px bg-slate-200"></div>
                     <div class="flex items-center gap-2">
                         <span class="text-xs font-bold text-slate-400 w-12 shrink-0">Email：</span>
                         <input type="email" placeholder="example@thu.edu.tw" value="${email}" class="contact-email w-full bg-transparent text-sm focus:outline-none text-slate-500 font-mono">
@@ -445,38 +451,31 @@
 
                 html += `
                 <tr class="group bg-white hover:bg-blue-50/40 transition-all duration-150 ${!data.is_active ? 'opacity-60 grayscale-[20%] bg-slate-50/50' : ''}">
-                    <!-- 學院純文字 -->
                     <td class="px-6 py-4 align-middle text-center">
                         <span class="text-slate-700 font-bold text-sm">${data.college}</span>
                     </td>
-                    <!-- 簡稱 (若無簡稱則顯示全名) -->
                     <td class="px-6 py-4 align-middle text-center">
                         <div class="text-sm font-bold text-slate-800 break-words leading-tight">${data.shortName || data.name}</div>
                     </td>
-                    <!-- 質感代碼標籤 -->
                     <td class="px-6 py-4 align-middle text-center">
                         <div class="inline-block px-2.5 py-1 rounded-md bg-slate-100 border border-slate-300 font-mono text-xs font-bold text-slate-600 tracking-widest shadow-inner">
                             ${data.code}
                         </div>
                     </td>
-                    <!-- 承辦窗口 -->
                     <td class="px-6 py-4 align-middle">
                         <div class="flex flex-col items-start pl-4">
                             ${contactsHtml}
                         </div>
                     </td>
-                    <!-- 系統狀態 -->
                     <td class="px-6 py-4 align-middle text-center">
                         <div class="flex items-center justify-center">
                             <label class="relative inline-flex items-center cursor-pointer group/toggle">
                                 <input type="checkbox" class="sr-only peer" ${data.is_active ? 'checked' : ''} onchange="window.toggleStatus('${data.id}', ${data.is_active})">
-                                <!-- 絕對防止變形的關鍵 -->
                                 <div class="relative w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-[20px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner shrink-0 min-w-[44px]"></div>
                                 <span class="ml-3 text-sm font-bold ${data.is_active ? 'text-emerald-600' : 'text-slate-400'}">${data.is_active ? '啟用' : '停用'}</span>
                             </label>
                         </div>
                     </td>
-                    <!-- 完美正方形操作按鈕群 -->
                     <td class="px-6 py-4 align-middle text-center">
                         <div class="flex items-center justify-center gap-2 opacity-100 transition-opacity">
                             <button onclick="window.moveOrder('${data.id}', 'up')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all disabled:opacity-20" ${globalIndex === 0 ? 'disabled' : ''} title="向上移動">
@@ -668,10 +667,6 @@
                 renderTable();
             }
         };
-        
-        document.getElementById('search-input').addEventListener('input', renderTable);
-        document.getElementById('filter-college').addEventListener('change', renderTable);
-        document.getElementById('filter-status').addEventListener('change', renderTable);
     </script>
 </body>
 </html>
