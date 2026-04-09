@@ -183,14 +183,12 @@
 
     <!-- Firebase 邏輯 -->
     <script type="module">
-        // 💡 確保引入完整的 Firebase 套件 (包含 getApps 與 addDoc)
         import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, setDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY", authDomain: "thu-isac-review.firebaseapp.com", projectId: "thu-isac-review", storageBucket: "thu-isac-review.firebasestorage.app", messagingSenderId: "453299876735", appId: "1:453299876735:web:1d8babca3315423161a04a" };
         
-        // 💡 防呆機制：防止 iframe 重複載入時拋出 "Duplicate App" 錯誤導致畫面死機
         const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
         const auth = getAuth(app); 
         const db = getFirestore(app);
@@ -244,7 +242,6 @@
             }
         });
 
-        // 角色設定 UI
         window.openRoleModal = () => document.getElementById('role-modal').classList.remove('hidden');
         window.closeRoleModal = () => document.getElementById('role-modal').classList.add('hidden');
 
@@ -310,7 +307,6 @@
             }
         };
 
-        // 用戶表單與表格邏輯
         window.openUserModal = () => {
             if (!editingId) { 
                 document.getElementById('user-form').reset();
@@ -453,7 +449,8 @@
                         alert("此電子郵件已經存在於系統中！"); btn.disabled = false; btn.innerHTML = '儲存設定'; return; 
                     }
                     
-                    const defaultPassword = "Isac@2026";
+                    // 💡 建立帳號時，自動賦予新的預設密碼 52004800
+                    const defaultPassword = "52004800";
                     const userCredential = await createUserWithEmailAndPassword(adminAuth, payload.email, defaultPassword);
                     const newUid = userCredential.user.uid;
                     await signOut(adminAuth);
