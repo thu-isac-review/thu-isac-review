@@ -233,17 +233,14 @@
         import { getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, serverTimestamp } 
         from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // 👇👇👇 第一步：請將這裡換成您專案的 Firebase Config 👇👇👇
-        // 取得路徑：Firebase 控制台 -> 專案設定(齒輪) -> 您的應用程式 -> SDK 設定與配置
         const firebaseConfig = {
-            apiKey: "您的_API_KEY",
-            authDomain: "thu-isac-audit.firebaseapp.com", // 您的專案ID.firebaseapp.com
-            projectId: "thu-isac-audit",                  // 您的專案ID
-            storageBucket: "thu-isac-audit.appspot.com",
-            messagingSenderId: "您的_SENDER_ID",
-            appId: "您的_APP_ID"
+        apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY",
+        authDomain: "thu-isac-review.firebaseapp.com",
+        projectId: "thu-isac-review",
+        storageBucket: "thu-isac-review.firebasestorage.app",
+        messagingSenderId: "453299876735",
+        appId: "1:453299876735:web:1d8babca3315423161a04a"
         };
-        // 👆👆👆 替換結束 👆👆👆
 
         // 啟動資料庫連線
         const app = initializeApp(firebaseConfig);
@@ -281,8 +278,8 @@
                     <td class="px-6 py-4 font-bold ${data.is_active ? 'text-slate-800' : 'text-slate-500'}">${data.name}</td>
                     <td class="px-6 py-4 font-mono text-slate-500 text-xs bg-slate-50 px-2 py-1 rounded inline-block mt-3 border border-slate-200">${data.code}</td>
                     <td class="px-6 py-4">
-                        <div class="font-medium ${data.is_active ? 'text-slate-800' : 'text-slate-500'}">${data.contact.name || '-'}</div>
-                        <div class="text-xs text-slate-400 mt-0.5">${data.contact.email || '-'}</div>
+                        <div class="font-medium ${data.is_active ? 'text-slate-800' : 'text-slate-500'}">${data.contact?.name || '-'}</div>
+                        <div class="text-xs text-slate-400 mt-0.5">${data.contact?.email || '-'}</div>
                     </td>
                     <td class="px-6 py-4">
                         <label class="relative inline-flex items-center cursor-pointer">
