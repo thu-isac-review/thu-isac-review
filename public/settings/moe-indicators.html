@@ -29,7 +29,7 @@
                 </div>
                 <div>
                     <h2 class="text-xl font-bold text-slate-800 tracking-tight">教育部審查指標設定</h2>
-                    <p class="text-xs text-slate-500 mt-1">自訂審查員在檢核學生實習文件時，必須逐項確認的教育部規定指標。</p>
+                    <p class="text-xs text-slate-500 mt-1">建置教育部實習查核之「評鑑構面」與「審查項目」主檔，供後續各類應繳文件綁定檢核點使用。</p>
                 </div>
             </div>
             
@@ -39,7 +39,7 @@
                 </button>
                 <div class="w-px h-6 bg-slate-200 self-center mx-1"></div>
                 <button onclick="openModal()" class="h-9 bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 rounded-lg text-sm transition-all flex items-center gap-1.5 shadow-sm shadow-blue-500/20">
-                    <i class="fa-solid fa-plus text-base"></i> 新增審查指標
+                    <i class="fa-solid fa-plus text-base"></i> 新增指標項目
                 </button>
             </div>
         </div>
@@ -47,12 +47,11 @@
         <!-- 區塊 2：篩選與搜尋列 -->
         <div class="flex flex-col md:flex-row justify-between items-center gap-4 w-full">
             <div class="flex gap-2 w-full md:w-auto">
-                <select id="filter-target" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 h-10 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
-                    <option value="all">目標文件：全部</option>
-                    <option value="實習合約書">實習合約書</option>
-                    <option value="機構評估表">機構評估表</option>
-                    <option value="學生實習心得">學生實習心得</option>
-                    <option value="考評紀錄表">考評紀錄表</option>
+                <select id="filter-dimension" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 h-10 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
+                    <option value="all">評鑑構面：全部</option>
+                    <option value="一、學校推動實習課程相關機制">一、學校推動實習課程相關機制</option>
+                    <option value="二、學校辦理學生實習課程現況與成效">二、學校辦理學生實習課程現況與成效</option>
+                    <option value="三、持續改善機制">三、持續改善機制</option>
                 </select>
                 <select id="filter-status" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 h-10 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
                     <option value="all">狀態：全部</option>
@@ -62,7 +61,7 @@
             </div>
             <div class="relative w-full md:w-72 shadow-sm rounded-lg">
                 <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                <input type="text" id="search-input" placeholder="搜尋指標名稱或說明..." class="w-full bg-white border border-slate-200 rounded-lg pl-9 pr-3 h-10 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                <input type="text" id="search-input" placeholder="搜尋項目名稱或說明..." class="w-full bg-white border border-slate-200 rounded-lg pl-9 pr-3 h-10 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all">
             </div>
         </div>
     </div>
@@ -74,11 +73,11 @@
                 <table class="w-full text-left table-fixed">
                     <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
                         <tr>
-                            <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 w-[15%]">目標文件</th>
-                            <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 w-[30%]">指標名稱與屬性</th>
-                            <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 w-[20%]">檢核說明</th>
-                            <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 w-[15%]">系統狀態</th>
-                            <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 w-[20%]">操作</th>
+                            <th class="px-6 py-3.5 text-left text-xs font-bold text-slate-500 w-[20%]">評鑑構面 (大指標)</th>
+                            <th class="px-6 py-3.5 text-left text-xs font-bold text-slate-500 w-[25%]">審查項目</th>
+                            <th class="px-6 py-3.5 text-left text-xs font-bold text-slate-500 w-[30%]">內涵與參考作法</th>
+                            <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 w-[12%]">系統狀態</th>
+                            <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 w-[13%]">操作</th>
                         </tr>
                     </thead>
                     <tbody id="table-body" class="divide-y divide-slate-100 text-sm">
@@ -99,46 +98,36 @@
          ========================================== -->
     <div id="data-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeModal()"></div>
-        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden modal-enter relative max-h-[90vh] flex flex-col">
+        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden modal-enter relative max-h-[90vh] flex flex-col">
             <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center shrink-0 bg-slate-50">
                 <h3 id="modal-title" class="font-black text-slate-800 text-lg flex items-center gap-2">
-                    <i class="fa-solid fa-square-check text-blue-600"></i> 新增審查指標
+                    <i class="fa-solid fa-square-check text-blue-600"></i> 新增審查指標主檔
                 </h3>
                 <button onclick="closeModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 bg-white shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             
             <form id="data-form" class="p-8 space-y-6 overflow-y-auto custom-scrollbar flex-1 bg-white">
-                <div class="grid grid-cols-2 gap-5">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-2">檢核目標文件 <span class="text-rose-500">*</span></label>
-                        <select id="input-target" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
-                            <option value="實習合約書" selected>實習合約書</option>
-                            <option value="機構評估表">機構評估表</option>
-                            <option value="學生實習心得">學生實習心得</option>
-                            <option value="考評紀錄表">考評紀錄表</option>
-                            <option value="通用 (所有文件)">通用 (所有文件)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-2">是否為重大缺失 <span class="text-rose-500">*</span></label>
-                        <select id="input-critical" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
-                            <option value="true" selected>是 (未通過直接退件)</option>
-                            <option value="false">否 (僅標記提醒)</option>
-                        </select>
-                    </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-2">評鑑構面 (大指標) <span class="text-rose-500">*</span></label>
+                    <select id="input-dimension" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
+                        <option value="一、學校推動實習課程相關機制" selected>一、學校推動實習課程相關機制</option>
+                        <option value="二、學校辦理學生實習課程現況與成效">二、學校辦理學生實習課程現況與成效</option>
+                        <option value="三、持續改善機制">三、持續改善機制</option>
+                    </select>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-2">指標名稱 (顯示於核取方塊) <span class="text-rose-500">*</span></label>
+                    <label class="block text-xs font-bold text-slate-600 mb-2">審查項目 <span class="text-rose-500">*</span></label>
                     <div class="relative">
                         <i class="fa-solid fa-tag absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="input-name" required placeholder="例如：甲乙丙三方簽章確認" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm">
+                        <input type="text" id="input-item-name" required placeholder="例如：(一)實習委員會組成及運作" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-2">詳細檢核說明 (指導審查員) <span class="text-rose-500">*</span></label>
-                    <textarea id="input-description" required rows="3" placeholder="例如：請確認合約最後一頁，是否具備學生、實習機構、以及學校三方之大小章與簽名。" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-medium text-slate-700 shadow-sm resize-none"></textarea>
+                    <label class="block text-xs font-bold text-slate-600 mb-2">內涵與學校參考作法 <span class="text-rose-500">*</span></label>
+                    <textarea id="input-description" required rows="5" placeholder="例如：▶ 依「專科以上學校產學合作實施辦法」設立校級及院、系、所學位學程實習委員會..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-medium text-slate-700 shadow-sm resize-none leading-relaxed"></textarea>
+                    <p class="text-[11px] text-slate-400 mt-2 font-medium">請輸入教育部指標文件中的「內涵」與「學校參考作法」，作為審查員未來核對時的依據。</p>
                 </div>
             </form>
             
@@ -162,7 +151,8 @@
         const auth = getAuth(app); 
         const db = getFirestore(app);
         
-        const dataCollection = collection(db, "moe_indicators");
+        // 建立獨立的集合存放教育部指標主檔
+        const dataCollection = collection(db, "moe_indicators_master");
 
         let allData = []; let editingId = null; let currentPage = 1; const itemsPerPage = 10;
 
@@ -182,7 +172,7 @@
         window.openModal = () => {
             if (!editingId) { 
                 document.getElementById('data-form').reset();
-                document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-square-check text-blue-600"></i> 新增審查指標';
+                document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-square-check text-blue-600"></i> 新增審查指標主檔';
             }
             document.getElementById('data-modal').classList.remove('hidden');
         };
@@ -193,14 +183,14 @@
         function renderTable() {
             const tbody = document.getElementById('table-body');
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
-            const filterTarget = document.getElementById('filter-target').value;
+            const filterDimension = document.getElementById('filter-dimension').value;
             const filterStatus = document.getElementById('filter-status').value;
 
             let filtered = allData.filter(d => {
-                const matchSearch = (d.name || '').toLowerCase().includes(searchTerm) || (d.description || '').toLowerCase().includes(searchTerm);
-                const matchTarget = filterTarget === 'all' || d.target === filterTarget;
+                const matchSearch = (d.item_name || '').toLowerCase().includes(searchTerm) || (d.description || '').toLowerCase().includes(searchTerm);
+                const matchDimension = filterDimension === 'all' || d.dimension === filterDimension;
                 const matchStatus = filterStatus === 'all' || (filterStatus === 'active' ? d.is_active : !d.is_active);
-                return matchSearch && matchTarget && matchStatus;
+                return matchSearch && matchDimension && matchStatus;
             });
 
             filtered.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
@@ -229,23 +219,20 @@
             paginatedItems.forEach((data, idx) => {
                 const globalIndex = startIndex + idx; 
 
-                let targetBadge = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold"><i class="fa-regular fa-file-pdf"></i> ${data.target || '未設定'}</span>`;
+                let dimBadgeColor = "bg-indigo-50 text-indigo-700 border-indigo-200";
+                if (data.dimension.includes("二、")) dimBadgeColor = "bg-emerald-50 text-emerald-700 border-emerald-200";
+                if (data.dimension.includes("三、")) dimBadgeColor = "bg-amber-50 text-amber-700 border-amber-200";
 
-                let reqBadge = data.is_critical === 'true'
-                    ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-100 ml-2">重大缺失</span>`
-                    : `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200 ml-2">一般提醒</span>`;
+                let dimensionBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md border ${dimBadgeColor} text-xs font-bold whitespace-nowrap"><i class="fa-solid fa-layer-group mr-1.5"></i> ${data.dimension}</span>`;
 
                 html += `
                 <tr class="group bg-white hover:bg-blue-50/40 transition-all duration-150 ${!data.is_active ? 'opacity-60 grayscale-[20%] bg-slate-50/50' : ''}">
-                    <td class="px-6 py-4 align-middle text-center">${targetBadge}</td>
+                    <td class="px-6 py-4 align-middle">${dimensionBadge}</td>
                     <td class="px-6 py-4 align-middle">
-                        <div class="flex items-center">
-                            <span class="text-sm font-bold text-slate-800 break-words leading-tight">${data.name}</span>
-                            ${reqBadge}
-                        </div>
+                        <span class="text-sm font-bold text-slate-800 leading-tight block">${data.item_name}</span>
                     </td>
                     <td class="px-6 py-4 align-middle">
-                        <div class="text-xs text-slate-500 line-clamp-2 leading-relaxed" title="${data.description}">${data.description}</div>
+                        <div class="text-xs text-slate-500 line-clamp-3 leading-relaxed whitespace-pre-wrap" title="${data.description}">${data.description}</div>
                     </td>
                     <td class="px-6 py-4 align-middle text-center">
                         <div class="flex items-center justify-center">
@@ -265,7 +252,7 @@
                                 <i class="fa-solid fa-chevron-down text-xs"></i>
                             </button>
                             <button onclick="window.editData('${data.id}')" class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all" title="編輯"><i class="fa-solid fa-pen text-sm"></i></button>
-                            <button onclick="window.deleteData('${data.id}', '${data.name}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all" title="刪除"><i class="fa-solid fa-trash-can text-sm"></i></button>
+                            <button onclick="window.deleteData('${data.id}', '${data.item_name}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all" title="刪除"><i class="fa-solid fa-trash-can text-sm"></i></button>
                         </div>
                     </td>
                 </tr>`;
@@ -275,42 +262,40 @@
 
         window.exportToCSV = () => {
             if (allData.length === 0) { alert("沒有資料可供匯出！"); return; }
-            let csv = '\uFEFF排序,目標文件,指標名稱,重大缺失,檢核說明,系統狀態\n';
+            let csv = '\uFEFF排序,評鑑構面(大指標),審查項目,內涵與參考作法,系統狀態\n';
             let sorted = [...allData].sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
             sorted.forEach(d => {
                 let status = d.is_active ? '啟用' : '停用';
-                let req = d.is_critical === 'true' ? '重大缺失(退件)' : '一般提醒';
-                csv += [d.sortOrder, d.target, d.name, req, d.description, status].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+                csv += [d.sortOrder, d.dimension, d.item_name, d.description, status].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
             });
             const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-            link.download = `ISAC教育部指標設定_${new Date().toISOString().split('T')[0]}.csv`; link.click();
+            link.download = `ISAC教育部審查指標主檔_${new Date().toISOString().split('T')[0]}.csv`; link.click();
         };
 
         window.submitForm = async () => {
             const btn = document.getElementById('btn-submit');
             
             const payload = { 
-                target: document.getElementById('input-target').value,
-                is_critical: document.getElementById('input-critical').value,
-                name: document.getElementById('input-name').value.trim(), 
+                dimension: document.getElementById('input-dimension').value,
+                item_name: document.getElementById('input-item-name').value.trim(), 
                 description: document.getElementById('input-description').value.trim(), 
             };
 
-            if(!payload.name || !payload.description) { 
+            if(!payload.item_name || !payload.description) { 
                 alert("請填寫所有必填欄位！"); return; 
             }
 
             btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> 儲存中...';
             try {
                 if (editingId) { 
-                    await updateDoc(doc(db, "moe_indicators", editingId), { ...payload, updated_at: serverTimestamp() }); 
+                    await updateDoc(doc(db, "moe_indicators_master", editingId), { ...payload, updated_at: serverTimestamp() }); 
                 } else {
                     let maxOrder = allData.length > 0 ? Math.max(...allData.map(d => d.sortOrder || 0)) : 0;
                     await addDoc(dataCollection, { ...payload, sortOrder: maxOrder + 10, is_active: true, created_at: serverTimestamp() });
                 }
                 closeModal();
             } catch (err) { alert("儲存發生錯誤：" + err.message); } 
-            finally { btn.disabled = false; btn.innerText = '儲存設定'; }
+            finally { btn.disabled = false; btn.innerText = '儲存指標'; }
         };
 
         window.editData = (id) => {
@@ -318,20 +303,19 @@
             if (!docData) return;
             
             editingId = id;
-            document.getElementById('input-target').value = docData.target || '實習合約書';
-            document.getElementById('input-critical').value = docData.is_critical || 'true';
-            document.getElementById('input-name').value = docData.name || ''; 
+            document.getElementById('input-dimension').value = docData.dimension || '一、學校推動實習課程相關機制';
+            document.getElementById('input-item-name').value = docData.item_name || ''; 
             document.getElementById('input-description').value = docData.description || ''; 
 
-            document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-pen text-blue-600"></i> 編輯審查指標';
+            document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-pen text-blue-600"></i> 編輯審查指標主檔';
             document.getElementById('data-modal').classList.remove('hidden');
         };
 
-        window.toggleStatus = async (id, status) => { await updateDoc(doc(db, "moe_indicators", id), { is_active: !status }); };
+        window.toggleStatus = async (id, status) => { await updateDoc(doc(db, "moe_indicators_master", id), { is_active: !status }); };
         
         window.deleteData = async (id, name) => {
-            if (confirm(`警告：確定要刪除「${name}」嗎？\n此操作無法復原。`)) {
-                await deleteDoc(doc(db, "moe_indicators", id));
+            if (confirm(`警告：確定要刪除指標「${name}」嗎？\n此操作無法復原。`)) {
+                await deleteDoc(doc(db, "moe_indicators_master", id));
                 if (currentPage > Math.ceil((allData.length - 1) / itemsPerPage) || 1) currentPage = Math.ceil((allData.length - 1) / itemsPerPage) || 1;
                 renderTable();
             }
@@ -342,16 +326,16 @@
             const currentIndex = sorted.findIndex(d => d.id === id);
             
             if (direction === 'up' && currentIndex > 0) {
-                await updateDoc(doc(db, "moe_indicators", sorted[currentIndex].id), { sortOrder: sorted[currentIndex - 1].sortOrder || (currentIndex-1)*10 });
-                await updateDoc(doc(db, "moe_indicators", sorted[currentIndex - 1].id), { sortOrder: sorted[currentIndex].sortOrder || currentIndex*10 });
+                await updateDoc(doc(db, "moe_indicators_master", sorted[currentIndex].id), { sortOrder: sorted[currentIndex - 1].sortOrder || (currentIndex-1)*10 });
+                await updateDoc(doc(db, "moe_indicators_master", sorted[currentIndex - 1].id), { sortOrder: sorted[currentIndex].sortOrder || currentIndex*10 });
             } else if (direction === 'down' && currentIndex < sorted.length - 1) {
-                await updateDoc(doc(db, "moe_indicators", sorted[currentIndex].id), { sortOrder: sorted[currentIndex + 1].sortOrder || (currentIndex+1)*10 });
-                await updateDoc(doc(db, "moe_indicators", sorted[currentIndex + 1].id), { sortOrder: sorted[currentIndex].sortOrder || currentIndex*10 });
+                await updateDoc(doc(db, "moe_indicators_master", sorted[currentIndex].id), { sortOrder: sorted[currentIndex + 1].sortOrder || (currentIndex+1)*10 });
+                await updateDoc(doc(db, "moe_indicators_master", sorted[currentIndex + 1].id), { sortOrder: sorted[currentIndex].sortOrder || currentIndex*10 });
             }
         };
 
         document.getElementById('search-input').addEventListener('input', renderTable);
-        document.getElementById('filter-target').addEventListener('change', renderTable);
+        document.getElementById('filter-dimension').addEventListener('change', renderTable);
         document.getElementById('filter-status').addEventListener('change', renderTable);
     </script>
 </body>
