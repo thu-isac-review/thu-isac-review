@@ -95,24 +95,23 @@
                 <table class="w-full text-left table-fixed">
                     <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10 shadow-sm">
                         <tr>
-                            <!-- 💡 更新欄位比例與順序、標題完整不簡寫 -->
+                            <!-- 💡 標題全部不簡寫，並依指定順序排列 -->
                             <th class="px-2 py-3.5 text-center w-[4%]">
                                 <input type="checkbox" id="selectAll" onchange="toggleSelectPage(event)" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shadow-sm transition-all">
                             </th>
-                            <th class="px-2 py-3.5 text-center text-xs font-bold text-slate-500 w-[6%] whitespace-nowrap">學年</th>
-                            <th class="px-2 py-3.5 text-center text-xs font-bold text-slate-500 w-[5%] whitespace-nowrap">學期</th>
+                            <th class="px-2 py-3.5 text-center text-xs font-bold text-slate-500 w-[8%] whitespace-nowrap">學年/期</th>
                             <th class="px-2 py-3.5 text-center text-xs font-bold text-slate-500 w-[9%] whitespace-nowrap">開課學制</th>
-                            <th class="px-2 py-3.5 text-center text-xs font-bold text-slate-500 w-[12%]">開課學院</th>
-                            <th class="px-2 py-3.5 text-center text-xs font-bold text-slate-500 w-[12%]">開課學系</th>
+                            <th class="px-2 py-3.5 text-center text-xs font-bold text-slate-500 w-[11%]">開課學院</th>
+                            <th class="px-2 py-3.5 text-center text-xs font-bold text-slate-500 w-[11%]">開課學系</th>
                             <th class="px-2 py-3.5 text-center text-xs font-bold text-slate-500 w-[8%]">選課代號</th>
-                            <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[20%]">課程名稱</th>
-                            <th class="px-2 py-3.5 text-center text-xs font-bold text-slate-500 w-[10%]">實習課程屬性</th>
+                            <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[18%]">課程名稱</th>
+                            <th class="px-2 py-3.5 text-center text-xs font-bold text-slate-500 w-[9%]">實習課程屬性</th>
                             <th class="px-2 py-3.5 text-center text-xs font-bold text-slate-500 w-[7%]">實習學分數</th>
-                            <th class="px-2 py-3.5 text-center text-xs font-bold text-slate-500 w-[7%]">操作</th>
+                            <th class="px-2 py-3.5 text-center text-xs font-bold text-slate-500 w-[15%]">操作</th>
                         </tr>
                     </thead>
                     <tbody id="table-body" class="divide-y divide-slate-100 text-sm">
-                        <tr><td colspan="11" class="px-6 py-16 text-center text-slate-400"><i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-blue-500"></i><p class="font-bold">資料載入與驗證中...</p></td></tr>
+                        <tr><td colspan="10" class="px-6 py-16 text-center text-slate-400"><i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-blue-500"></i><p class="font-bold">資料載入與驗證中...</p></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -239,7 +238,8 @@
             if (user) {
                 const collegeSnap = await getDoc(doc(db, "settings", "colleges"));
                 if (collegeSnap.exists()) {
-                    orderedColleges = collegeSnap.data().list || [];
+                    const rawList = collegeSnap.data().list || [];
+                    orderedColleges = rawList.map(c => typeof c === 'string' ? { name: c, shortName: c } : c);
                 }
 
                 const deptSnap = await getDocs(collection(db, "departments"));
@@ -255,10 +255,10 @@
                     updateBatchActionBar();
                     renderTable();
                 }, (error) => {
-                    document.getElementById('table-body').innerHTML = `<tr><td colspan="11" class="px-6 py-16 text-center text-rose-500 font-bold"><i class="fa-solid fa-lock text-3xl mb-3"></i><p>資料讀取失敗，權限不足。</p></td></tr>`;
+                    document.getElementById('table-body').innerHTML = `<tr><td colspan="10" class="px-6 py-16 text-center text-rose-500 font-bold"><i class="fa-solid fa-lock text-3xl mb-3"></i><p>資料讀取失敗，權限不足。</p></td></tr>`;
                 });
             } else {
-                document.getElementById('table-body').innerHTML = `<tr><td colspan="11" class="px-6 py-16 text-center text-slate-400 font-bold"><i class="fa-solid fa-shield-halved text-3xl mb-3 text-slate-300"></i><p>請先登入系統以存取資料。</p></td></tr>`;
+                document.getElementById('table-body').innerHTML = `<tr><td colspan="10" class="px-6 py-16 text-center text-slate-400 font-bold"><i class="fa-solid fa-shield-halved text-3xl mb-3 text-slate-300"></i><p>請先登入系統以存取資料。</p></td></tr>`;
             }
         });
 
@@ -330,7 +330,7 @@
         function populateColleges() {
             const colleges = orderedColleges.length > 0 
                 ? orderedColleges 
-                : [...new Set(globalDepts.map(d => d.college))].filter(Boolean);
+                : [...new Set(globalDepts.map(d => d.college))].filter(Boolean).map(c => ({name: c, shortName: c}));
             
             const filterCol = document.getElementById('filter-college');
             const inputCol = document.getElementById('input-college');
@@ -338,8 +338,8 @@
             let html = '<option value="all">開課學院：全部</option>';
             let inputHtml = '<option value="">請選擇學院...</option>';
             colleges.forEach(c => {
-                html += `<option value="${c}">${c}</option>`;
-                inputHtml += `<option value="${c}">${c}</option>`;
+                html += `<option value="${c.name}">${c.shortName || c.name}</option>`;
+                inputHtml += `<option value="${c.name}">${c.shortName || c.name}</option>`;
             });
             filterCol.innerHTML = html;
             inputCol.innerHTML = inputHtml;
@@ -412,6 +412,25 @@
             renderTable(); 
         };
 
+        window.moveOrder = async (id, direction) => {
+            let sortedVis = [...filteredCourses].sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
+            const currentIndex = sortedVis.findIndex(d => d.id === id);
+            
+            if (direction === 'up' && currentIndex > 0) {
+                let currentOrder = sortedVis[currentIndex].sortOrder || currentIndex * 10;
+                let prevOrder = sortedVis[currentIndex - 1].sortOrder || (currentIndex - 1) * 10;
+                if (currentOrder === prevOrder) { currentOrder += 1; prevOrder -= 1; }
+                await updateDoc(doc(db, "internship_courses", sortedVis[currentIndex].id), { sortOrder: prevOrder });
+                await updateDoc(doc(db, "internship_courses", sortedVis[currentIndex - 1].id), { sortOrder: currentOrder });
+            } else if (direction === 'down' && currentIndex < sortedVis.length - 1) {
+                let currentOrder = sortedVis[currentIndex].sortOrder || currentIndex * 10;
+                let nextOrder = sortedVis[currentIndex + 1].sortOrder || (currentIndex + 1) * 10;
+                if (currentOrder === nextOrder) { currentOrder -= 1; nextOrder += 1; }
+                await updateDoc(doc(db, "internship_courses", sortedVis[currentIndex].id), { sortOrder: nextOrder });
+                await updateDoc(doc(db, "internship_courses", sortedVis[currentIndex + 1].id), { sortOrder: currentOrder });
+            }
+        };
+
         function renderTable() {
             const tbody = document.getElementById('table-body');
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
@@ -427,12 +446,7 @@
                 return matchSearch && matchSem && matchCol && matchDept;
             });
 
-            filteredCourses.sort((a, b) => {
-                const cmpSem = (b.semester || '').localeCompare(a.semester || '');
-                if (cmpSem !== 0) return cmpSem;
-                const cmpDept = (a.department || '').localeCompare(b.department || '');
-                return cmpDept !== 0 ? cmpDept : (a.course_code || '').localeCompare(b.course_code || '');
-            });
+            filteredCourses.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
 
             const totalItems = filteredCourses.length;
             const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
@@ -454,60 +468,59 @@
             document.getElementById('selectAll').checked = isAllVisibleSelected;
 
             if (totalItems === 0) {
-                tbody.innerHTML = `<tr><td colspan="11" class="px-6 py-16 text-center text-slate-400 font-bold bg-white">找不到符合條件的課程。</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" class="px-6 py-16 text-center text-slate-400 font-bold bg-white">找不到符合條件的課程。</td></tr>`;
                 return;
             }
 
             let html = '';
-            paginatedItems.forEach((data) => {
-                
-                let typeColor = "bg-slate-100 text-slate-600 border-slate-200";
-                if(data.course_type === '必修') typeColor = "bg-rose-50 text-rose-600 border-rose-200";
-                if(data.course_type === '選修') typeColor = "bg-emerald-50 text-emerald-600 border-emerald-200";
-                if(data.course_type === '必選') typeColor = "bg-indigo-50 text-indigo-600 border-indigo-200";
-                if(data.course_type === '畢業條件') typeColor = "bg-amber-50 text-amber-600 border-amber-200";
+            paginatedItems.forEach((data, idx) => {
+                const globalIndex = startIndex + idx; 
 
-                let attrBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded border ${typeColor} text-[11px] font-bold whitespace-nowrap">${data.course_type}</span>`;
-                
+                // 💡 取得學院簡稱與學系簡稱
+                const colObj = orderedColleges.find(c => c.name === data.college);
+                const colDispName = colObj && colObj.shortName ? colObj.shortName : data.college;
+
                 const deptObj = globalDepts.find(d => d.name === data.department);
                 const deptDispName = deptObj && deptObj.shortName ? deptObj.shortName : data.department;
 
                 const isChecked = selectedIds.includes(data.id) ? 'checked' : '';
 
+                // 💡 字體統一為與課程名稱相同的 text-sm font-bold text-slate-800 leading-tight，並完全移除標籤樣式
                 html += `
                 <tr class="group bg-white hover:bg-blue-50/40 transition-all duration-150">
                     <td class="px-2 py-3 align-middle text-center">
                         <input type="checkbox" class="row-checkbox w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shadow-sm transition-all" value="${data.id}" onchange="toggleSelect('${data.id}')" ${isChecked}>
                     </td>
                     <td class="px-2 py-3 align-middle text-center">
-                        <span class="text-sm font-normal text-slate-600">${data.academic_year}</span>
+                        <span class="text-sm font-bold text-slate-800 leading-tight">${data.academic_year}-${data.term}</span>
                     </td>
                     <td class="px-2 py-3 align-middle text-center">
-                        <span class="text-sm font-normal text-slate-600">${data.term}</span>
+                        <span class="text-sm font-bold text-slate-800 leading-tight">${data.edu_system}</span>
                     </td>
                     <td class="px-2 py-3 align-middle text-center">
-                        <span class="text-xs text-slate-500 font-bold">${data.edu_system}</span>
+                        <span class="text-sm font-bold text-slate-800 leading-tight">${colDispName}</span>
                     </td>
                     <td class="px-2 py-3 align-middle text-center">
-                        <span class="text-xs font-bold text-slate-500">${data.college}</span>
+                        <span class="text-sm font-bold text-slate-800 leading-tight">${deptDispName}</span>
                     </td>
                     <td class="px-2 py-3 align-middle text-center">
-                        <span class="text-sm font-bold text-slate-700">${deptDispName}</span>
-                    </td>
-                    <td class="px-2 py-3 align-middle text-center">
-                        <span class="inline-block bg-slate-100 border border-slate-300 text-slate-600 font-mono font-bold px-1.5 py-0.5 rounded shadow-inner text-xs whitespace-nowrap">${data.course_code}</span>
+                        <span class="text-sm font-bold text-slate-800 leading-tight">${data.course_code}</span>
                     </td>
                     <td class="px-4 py-3 align-middle text-left">
-                        <span class="text-sm font-bold text-slate-800 leading-tight block">${data.course_name}</span>
-                    </td>
-                    <td class="px-2 py-3 align-middle text-center">${attrBadge}</td>
-                    <td class="px-2 py-3 align-middle text-center">
-                        <span class="font-bold text-slate-700">${data.credits}</span>
+                        <span class="text-sm font-bold text-slate-800 leading-tight">${data.course_name}</span>
                     </td>
                     <td class="px-2 py-3 align-middle text-center">
-                        <div class="flex items-center justify-center gap-2 opacity-100 transition-opacity">
-                            <button onclick="window.editData('${data.id}')" class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all shrink-0" title="編輯"><i class="fa-solid fa-pen text-sm"></i></button>
-                            <button onclick="window.deleteData('${data.id}', '${data.course_name}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all shrink-0" title="刪除"><i class="fa-solid fa-trash-can text-sm"></i></button>
+                        <span class="text-sm font-bold text-slate-800 leading-tight">${data.course_type}</span>
+                    </td>
+                    <td class="px-2 py-3 align-middle text-center">
+                        <span class="text-sm font-bold text-slate-800 leading-tight">${data.credits}</span>
+                    </td>
+                    <td class="px-2 py-3 align-middle text-center">
+                        <div class="flex items-center justify-center gap-1.5 opacity-100 transition-opacity">
+                            <button onclick="window.moveOrder('${data.id}', 'up')" class="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all disabled:opacity-20 shrink-0" ${globalIndex === 0 ? 'disabled' : ''}><i class="fa-solid fa-chevron-up text-[10px]"></i></button>
+                            <button onclick="window.moveOrder('${data.id}', 'down')" class="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all disabled:opacity-20 shrink-0" ${globalIndex === filteredCourses.length - 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-down text-[10px]"></i></button>
+                            <button onclick="window.editData('${data.id}')" class="w-7 h-7 rounded-md flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all shrink-0" title="編輯"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button onclick="window.deleteData('${data.id}', '${data.course_name}')" class="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all shrink-0" title="刪除"><i class="fa-solid fa-trash-can text-xs"></i></button>
                         </div>
                     </td>
                 </tr>`;
@@ -533,12 +546,7 @@
             
             let csv = '\uFEFF學年,學期,開課學制,開課學院,開課學系,選課代號,課程名稱,實習課程屬性,實習學分數\n';
             
-            filtered.sort((a, b) => {
-                const cmpSem = (b.semester || '').localeCompare(a.semester || '');
-                if (cmpSem !== 0) return cmpSem;
-                const cmpDept = (a.department || '').localeCompare(b.department || '');
-                return cmpDept !== 0 ? cmpDept : (a.course_code || '').localeCompare(b.course_code || '');
-            });
+            filtered.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
 
             filtered.forEach(d => {
                 csv += [d.academic_year, d.term, d.edu_system, d.college, d.department, d.course_code, d.course_name, d.course_type, d.credits].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
@@ -561,7 +569,7 @@
             reader.onload = async (event) => {
                 try {
                     const rows = event.target.result.split('\n').map(row => row.trim()).filter(row => row);
-                    let addedCount = 0;
+                    let parsedRows = [];
                     
                     for (let i = 1; i < rows.length; i++) {
                         let cols = [];
@@ -590,11 +598,28 @@
                             };
                             
                             if (!payload.academic_year || !payload.term || !payload.course_code || !payload.course_name) continue;
-
-                            await addDoc(dataCollection, payload);
-                            addedCount++;
+                            parsedRows.push(payload);
                         }
                     }
+
+                    parsedRows.sort((a, b) => {
+                        const colCmp = (a.college || '').localeCompare(b.college || '');
+                        if (colCmp !== 0) return colCmp;
+                        const deptCmp = (a.department || '').localeCompare(b.department || '');
+                        if (deptCmp !== 0) return deptCmp;
+                        return (a.course_code || '').localeCompare(b.course_code || '');
+                    });
+
+                    let maxOrder = allData.length > 0 ? Math.max(...allData.map(d => d.sortOrder || 0)) : 0;
+                    let addedCount = 0;
+
+                    for (let payload of parsedRows) {
+                        maxOrder += 10;
+                        payload.sortOrder = maxOrder;
+                        await addDoc(dataCollection, payload);
+                        addedCount++;
+                    }
+
                     alert(`✅ 成功匯入 ${addedCount} 筆課程資料！`);
                 } catch (error) { alert("匯入失敗，請確認 CSV 檔案格式是否正確。\n" + error.message); } 
                 finally { btn.innerHTML = originalHtml; btn.disabled = false; e.target.value = ''; }
@@ -630,7 +655,8 @@
                 if (editingId) { 
                     await updateDoc(doc(db, "internship_courses", editingId), { ...payload, updated_at: serverTimestamp() }); 
                 } else {
-                    await addDoc(dataCollection, { ...payload, created_at: serverTimestamp() });
+                    let maxOrder = allData.length > 0 ? Math.max(...allData.map(d => d.sortOrder || 0)) : 0;
+                    await addDoc(dataCollection, { ...payload, sortOrder: maxOrder + 10, created_at: serverTimestamp() });
                 }
                 closeModal();
             } catch (err) { alert("儲存發生錯誤：" + err.message); } 
