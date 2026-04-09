@@ -62,7 +62,7 @@
         
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, updatePassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY",
@@ -83,13 +83,11 @@
             const [loading, setLoading] = useState(true);
             const [currentHash, setCurrentHash] = useState(''); 
             
-            const [selectedSemester, setSelectedSemester] = useState('114-1');
-            const [semestersList, setSemestersList] = useState(['114-1', '113-2']);
-
+            // 💡 解除網址參數強制綁定：只附加快取清除參數
             const getCacheBustedUrl = (url) => {
                 if (!url) return '';
                 const [path, queryStr] = url.split('?');
-                let finalUrl = `${path}?v=${new Date().getTime()}&semester=${selectedSemester}`;
+                let finalUrl = `${path}?v=${new Date().getTime()}`;
                 if (queryStr) finalUrl += `&${queryStr}`;
                 return finalUrl;
             };
@@ -111,20 +109,6 @@
                                     isFirstLogin: false
                                 });
                             }
-
-                            const configDoc = await getDoc(doc(db, "system_settings", "global_config"));
-                            if (configDoc.exists()) {
-                                const configData = configDoc.data();
-                                setSemestersList(configData.available_semesters || ['114-1', '113-2']);
-                                setSelectedSemester(configData.current_semester || '114-1');
-                            } else {
-                                await setDoc(doc(db, "system_settings", "global_config"), {
-                                    available_semesters: ['114-1', '113-2'],
-                                    current_semester: '114-1',
-                                    is_upload_locked: false
-                                });
-                            }
-
                         } catch (err) {
                             console.error("載入資料失敗", err);
                         }
@@ -219,21 +203,7 @@
                             </div>
                         </div>
 
-                        {/* 💡 修改：全域學年度切換器 (改為白色設計) */}
-                        <div className="px-6 py-4 border-b border-slate-700/50 shrink-0">
-                            <div className="relative bg-white rounded-xl border border-slate-200 hover:border-blue-500 transition-colors group cursor-pointer shadow-sm">
-                                <select 
-                                    value={selectedSemester}
-                                    onChange={(e) => setSelectedSemester(e.target.value)}
-                                    className="w-full appearance-none bg-transparent text-slate-800 font-bold text-sm py-2.5 pl-4 pr-10 cursor-pointer outline-none"
-                                >
-                                    {semestersList.map(s => (
-                                        <option key={s} value={s} className="bg-white text-slate-800">學年度：{s}</option>
-                                    ))}
-                                </select>
-                                <i className="fa-solid fa-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-blue-500 transition-colors pointer-events-none"></i>
-                            </div>
-                        </div>
+                        {/* 💡 已移除原先的全域學期切換區塊 */}
 
                         <div className="flex-1 overflow-y-auto py-4 custom-scrollbar">
                             <MenuBtn active={currentHash === '/dashboard-content.html'} label="首頁" icon="fa-solid fa-house" onClick={() => navigate('/dashboard-content.html')} />
@@ -289,7 +259,6 @@
                             </div>
                             
                             <div className="flex items-center gap-5">
-                                {/* 💡 移除頁首學年度下拉選單，僅保留鈴鐺與登出 */}
                                 <i className="fa-solid fa-bell text-slate-400 text-lg cursor-pointer hover:text-blue-500 transition-colors ml-1"></i>
                                 <div className="h-6 w-px bg-slate-200"></div>
                                 <button onClick={handleLogout} className="bg-rose-500 hover:bg-rose-600 text-white border border-rose-600 px-4 py-1.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2 shadow-sm active:scale-95" title="登出系統">
