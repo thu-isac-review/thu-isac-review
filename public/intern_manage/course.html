@@ -78,7 +78,7 @@
                             <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[12%]">開課單位</th>
                             <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[10%]">選課代號</th>
                             <th class="px-4 py-3.5 text-left text-xs font-bold text-slate-500 w-[25%]">課程名稱</th>
-                            <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[12%]">實習屬性</th>
+                            <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[12%]">實習課程屬性</th>
                             <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[8%]">學分數</th>
                             <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[10%]">學制</th>
                             <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[15%]">操作</th>
@@ -152,20 +152,17 @@
                         <label class="block text-xs font-bold text-slate-600 mb-2">開課學制 <span class="text-rose-500">*</span></label>
                         <select id="input-edu-system" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
                             <option value="學士班" selected>學士班</option>
-                            <option value="碩士班">碩士班</option>
-                            <option value="博士班">博士班</option>
+                            <option value="研究所">研究所</option>
                             <option value="進修學士班">進修學士班</option>
-                            <option value="碩士在職專班">碩士在職專班</option>
                         </select>
                     </div>
                     <div class="col-span-1">
-                        <label class="block text-xs font-bold text-slate-600 mb-2">實習屬性 <span class="text-rose-500">*</span></label>
+                        <label class="block text-xs font-bold text-slate-600 mb-2">實習課程屬性 <span class="text-rose-500">*</span></label>
                         <select id="input-course-type" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
-                            <option value="暑期實習">暑期實習</option>
-                            <option value="學期實習" selected>學期實習</option>
-                            <option value="全學年實習">全學年實習</option>
-                            <option value="專案實習">專案實習</option>
-                            <option value="海外實習">海外實習</option>
+                            <option value="必修" selected>必修</option>
+                            <option value="選修">選修</option>
+                            <option value="必選">必選</option>
+                            <option value="畢業條件">畢業條件</option>
                         </select>
                     </div>
                     <div class="col-span-1">
@@ -189,34 +186,40 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc, serverTimestamp, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY", authDomain: "thu-isac-review.firebaseapp.com", projectId: "thu-isac-review", storageBucket: "thu-isac-review.firebasestorage.app", messagingSenderId: "453299876735", appId: "1:453299876735:web:1d8babca3315423161a04a" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app); 
         const db = getFirestore(app);
         
-        // 💡 獲取外殼目前的學期，僅作為新增時的預設值，不再作為過濾條件
         const urlParams = new URLSearchParams(window.location.search);
         const shellSemester = urlParams.get('semester') || '114-1';
-        const [parsedYear, parsedTerm] = shellSemester.split('-');
 
         const dataCollection = collection(db, "internship_courses");
         
         let allData = []; 
         let globalDepts = []; // 存儲全域系所清單
+        let orderedColleges = []; // 存儲系統設定好的學院順序
         let editingId = null; 
         let currentPage = 1; 
         const itemsPerPage = 10;
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // 1. 載入全域系所資料 (供下拉連動)
+                // 1. 載入學院順序設定 (依據系統設定)
+                const collegeSnap = await getDoc(doc(db, "settings", "colleges"));
+                if (collegeSnap.exists()) {
+                    orderedColleges = collegeSnap.data().list || [];
+                }
+
+                // 2. 載入全域系所資料，並以系統的 sortOrder 排序
                 const deptSnap = await getDocs(collection(db, "departments"));
                 globalDepts = deptSnap.docs.map(d => d.data());
+                globalDepts.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
                 populateColleges();
 
-                // 2. 💡 載入「全部歷年」課程，不再套用 where("semester", "==", currentSemester)
+                // 3. 載入「全部歷年」課程
                 onSnapshot(dataCollection, (snapshot) => {
                     allData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     populateSemesterFilter(); // 動態萃取所有學期選項
@@ -229,9 +232,12 @@
             }
         });
 
-        // 載入學院選項
+        // 載入學院選項 (使用設定檔中的排序)
         function populateColleges() {
-            const colleges = [...new Set(globalDepts.map(d => d.college))].filter(Boolean);
+            const colleges = orderedColleges.length > 0 
+                ? orderedColleges 
+                : [...new Set(globalDepts.map(d => d.college))].filter(Boolean);
+            
             const filterCol = document.getElementById('filter-college');
             const inputCol = document.getElementById('input-college');
             
@@ -270,8 +276,11 @@
             let html = '<option value="all">開課學系：全部</option>';
             
             if (selectedCol !== 'all') {
-                const depts = globalDepts.filter(d => d.college === selectedCol).map(d => d.name);
-                depts.forEach(d => html += `<option value="${d}">${d}</option>`);
+                const depts = globalDepts.filter(d => d.college === selectedCol);
+                depts.forEach(d => {
+                    const dispName = d.shortName || d.name; // 優先使用簡稱
+                    html += `<option value="${d.name}">${dispName}</option>`;
+                });
             }
             filterDept.innerHTML = html;
         };
@@ -283,8 +292,11 @@
             let html = '<option value="">請選擇學系...</option>';
             
             if (selectedCol) {
-                const depts = globalDepts.filter(d => d.college === selectedCol).map(d => d.name);
-                depts.forEach(d => html += `<option value="${d}">${d}</option>`);
+                const depts = globalDepts.filter(d => d.college === selectedCol);
+                depts.forEach(d => {
+                    const dispName = d.shortName || d.name; // 優先使用簡稱
+                    html += `<option value="${d.name}">${dispName}</option>`;
+                });
             } else {
                 html = '<option value="">請先選擇學院...</option>';
             }
@@ -295,8 +307,8 @@
         window.openModal = () => {
             if (!editingId) { 
                 document.getElementById('data-form').reset();
-                document.getElementById('input-academic-year').value = parsedYear || '';
-                document.getElementById('input-term').value = parsedTerm || '';
+                document.getElementById('input-academic-year').value = '';
+                document.getElementById('input-term').value = '';
                 document.getElementById('input-department').innerHTML = '<option value="">請先選擇學院...</option>';
                 document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-book-medical text-blue-600"></i> 新增實習課程';
             }
@@ -353,11 +365,16 @@
             paginatedItems.forEach((data) => {
                 
                 let typeColor = "bg-slate-100 text-slate-600 border-slate-200";
-                if(data.course_type === '暑期實習') typeColor = "bg-orange-50 text-orange-600 border-orange-200";
-                if(data.course_type === '學期實習') typeColor = "bg-emerald-50 text-emerald-600 border-emerald-200";
-                if(data.course_type === '全學年實習') typeColor = "bg-indigo-50 text-indigo-600 border-indigo-200";
+                if(data.course_type === '必修') typeColor = "bg-rose-50 text-rose-600 border-rose-200";
+                if(data.course_type === '選修') typeColor = "bg-emerald-50 text-emerald-600 border-emerald-200";
+                if(data.course_type === '必選') typeColor = "bg-indigo-50 text-indigo-600 border-indigo-200";
+                if(data.course_type === '畢業條件') typeColor = "bg-amber-50 text-amber-600 border-amber-200";
 
                 let attrBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded border ${typeColor} text-[11px] font-bold whitespace-nowrap">${data.course_type}</span>`;
+                
+                // 尋找學系物件，以顯示簡稱
+                const deptObj = globalDepts.find(d => d.name === data.department);
+                const deptDispName = deptObj && deptObj.shortName ? deptObj.shortName : data.department;
 
                 html += `
                 <tr class="group bg-white hover:bg-blue-50/40 transition-all duration-150">
@@ -366,7 +383,7 @@
                     </td>
                     <td class="px-4 py-4 align-middle text-center">
                         <div class="text-[10px] font-bold text-slate-400 mb-0.5">${data.college}</div>
-                        <div class="text-sm font-bold text-slate-700">${data.department}</div>
+                        <div class="text-sm font-bold text-slate-700">${deptDispName}</div>
                     </td>
                     <td class="px-4 py-4 align-middle text-center">
                         <span class="inline-block bg-slate-100 border border-slate-300 text-slate-600 font-mono font-bold px-2 py-1 rounded shadow-inner text-xs whitespace-nowrap">${data.course_code}</span>
@@ -393,7 +410,6 @@
         }
 
         window.exportToCSV = () => {
-            // 💡 匯出依據當前畫面的篩選結果
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
             const filterSem = document.getElementById('filter-semester').value;
             const filterCol = document.getElementById('filter-college').value;
@@ -419,6 +435,7 @@
             });
 
             filtered.forEach(d => {
+                // 匯出時如果需要顯示簡稱，可比照表格尋找簡稱，或保持存儲的全名。此處統一採用實際存入的資料
                 csv += [d.academic_year, d.term, d.edu_system, d.college, d.department, d.course_code, d.course_name, d.course_type, d.credits].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
             });
             const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
@@ -427,7 +444,6 @@
             link.download = `實習課程清單_${filenameSem}_${new Date().toISOString().split('T')[0]}.csv`; link.click();
         };
 
-        // 💡 批次匯入邏輯：解除學期限制，完全依照 Excel 欄位寫入
         window.handleImport = async (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -448,7 +464,7 @@
                             const payload = {
                                 academic_year: cols[0],
                                 term: cols[1],
-                                semester: `${cols[0]}-${cols[1]}`, // 自動組合出 semester 以供過濾
+                                semester: `${cols[0]}-${cols[1]}`, 
                                 edu_system: cols[2],
                                 college: cols[3],
                                 department: cols[4],
@@ -479,7 +495,7 @@
             const payload = { 
                 academic_year: year,
                 term: term,
-                semester: `${year}-${term}`, // 💡 動態組合學年期
+                semester: `${year}-${term}`,
                 college: document.getElementById('input-college').value,
                 department: document.getElementById('input-department').value,
                 course_code: document.getElementById('input-course-code').value.trim(),
@@ -514,12 +530,12 @@
             document.getElementById('input-term').value = docData.term || '';
 
             document.getElementById('input-college').value = docData.college || '';
-            updateFormDepts(docData.department); // 連動並預選學系
+            updateFormDepts(docData.department); 
             
             document.getElementById('input-course-code').value = docData.course_code || '';
             document.getElementById('input-course-name').value = docData.course_name || ''; 
             document.getElementById('input-edu-system').value = docData.edu_system || '學士班'; 
-            document.getElementById('input-course-type').value = docData.course_type || '學期實習'; 
+            document.getElementById('input-course-type').value = docData.course_type || '必修'; 
             document.getElementById('input-credits').value = docData.credits || 0; 
 
             document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-pen text-blue-600"></i> 編輯實習課程';
