@@ -55,14 +55,6 @@
                     <option value="all">國別：全部</option>
                     <!-- JavaScript 動態生成 -->
                 </select>
-                <select id="filter-type" onchange="window.renderTable()" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl px-4 h-11 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
-                    <option value="all">實習場所：全部</option>
-                    <!-- JavaScript 動態生成 -->
-                </select>
-                <select id="filter-industry" onchange="window.renderTable()" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl px-4 h-11 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
-                    <option value="all">行業別：全部</option>
-                    <!-- JavaScript 動態生成 -->
-                </select>
             </div>
 
             <!-- 批次操作懸浮列 -->
@@ -96,25 +88,22 @@
     <div class="flex-1 overflow-hidden px-6 pb-6 flex flex-col animate-fade">
         <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-200 flex flex-col flex-1 overflow-hidden">
             <div class="flex-1 overflow-auto custom-scrollbar relative">
-                <!-- 💡 取消 table-fixed，加上 min-w-[1200px] 讓表格在必要時可以左右滾動 -->
-                <table class="w-full text-left border-collapse min-w-[1200px]">
+                <table class="w-full text-left border-collapse min-w-[1000px]">
                     <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10 shadow-sm">
                         <tr>
                             <th class="px-2 py-4 text-center w-[45px]">
                                 <input type="checkbox" id="selectAll" onchange="toggleSelectPage(event)" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shadow-sm transition-all">
                             </th>
-                            <th class="px-4 py-4 text-center text-xs font-bold text-slate-500 min-w-[200px]">實習機構名稱</th>
-                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[120px] whitespace-nowrap">實習場所</th>
-                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[160px] whitespace-nowrap">行業別</th>
-                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[100px] whitespace-nowrap">統一編號</th>
-                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[80px] whitespace-nowrap">實習場所國別</th>
-                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[90px] whitespace-nowrap">縣市別</th>
-                            <th class="px-4 py-4 text-center text-xs font-bold text-slate-500 min-w-[200px]">實習場所地址</th>
+                            <th class="px-4 py-4 text-center text-xs font-bold text-slate-500 min-w-[220px]">實習機構名稱</th>
+                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[120px] whitespace-nowrap">統一編號</th>
+                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[100px] whitespace-nowrap">國別</th>
+                            <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[100px] whitespace-nowrap">縣市別</th>
+                            <th class="px-4 py-4 text-center text-xs font-bold text-slate-500 min-w-[250px]">實習場所地址</th>
                             <th class="px-2 py-4 text-center text-xs font-bold text-slate-500 w-[100px] whitespace-nowrap">操作</th>
                         </tr>
                     </thead>
                     <tbody id="table-body" class="divide-y divide-slate-100 text-sm">
-                        <tr><td colspan="9" class="px-6 py-16 text-center text-slate-400"><i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-blue-500"></i><p class="font-bold">資料載入與驗證中...</p></td></tr>
+                        <tr><td colspan="7" class="px-6 py-16 text-center text-slate-400"><i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-blue-500"></i><p class="font-bold">資料載入與驗證中...</p></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -129,7 +118,7 @@
     <!-- 彈跳視窗：新增/編輯機構 -->
     <div id="data-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeModal()"></div>
-        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-3xl overflow-hidden modal-enter relative max-h-[90vh] flex flex-col">
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden modal-enter relative max-h-[90vh] flex flex-col">
             <div class="px-10 py-7 border-b border-slate-100 flex justify-between items-center shrink-0 bg-slate-50">
                 <h3 id="modal-title" class="font-black text-slate-800 text-xl flex items-center gap-3">
                     <i class="fa-solid fa-building text-blue-600"></i> 新增實習機構
@@ -154,35 +143,21 @@
 
                 <div class="grid grid-cols-2 gap-6 border-t border-slate-100 pt-7">
                     <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-2">實習場所 <span class="text-rose-500">*</span></label>
-                        <select id="input-type" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-sm focus:ring-4 focus:ring-blue-100 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
-                            <!-- JS 動態產生 -->
-                        </select>
+                        <label class="block text-xs font-bold text-slate-600 mb-2">統一編號 <span id="req-tax" class="text-rose-500">*</span></label>
+                        <input type="text" id="input-tax-id" required placeholder="如: 12345678" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-sm focus:ring-4 focus:ring-blue-100 focus:bg-white transition-all outline-none font-mono font-bold text-slate-700 shadow-sm">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-2">行業別 <span class="text-rose-500">*</span></label>
-                        <select id="input-industry" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-sm focus:ring-4 focus:ring-blue-100 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
-                            <!-- JS 動態產生 -->
-                        </select>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-4 gap-6 pt-2">
-                    <div class="col-span-1">
-                        <label class="block text-xs font-bold text-slate-600 mb-2">統一編號 <span id="req-tax" class="text-rose-500">*</span></label>
-                        <input type="text" id="input-tax-id" required placeholder="如: 12345678" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-sm focus:ring-4 focus:ring-blue-100 focus:bg-white transition-all outline-none font-mono font-bold text-slate-700 shadow-sm text-center">
-                    </div>
-                    <div class="col-span-1">
                         <label class="block text-xs font-bold text-slate-600 mb-2">縣市別 <span id="req-city" class="text-rose-500">*</span></label>
                         <select id="input-city" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-sm focus:ring-4 focus:ring-blue-100 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
                             <option value="">請選擇</option>
                             <!-- JS 動態產生 -->
                         </select>
                     </div>
-                    <div class="col-span-2">
-                        <label class="block text-xs font-bold text-slate-600 mb-2">完整實習地址 <span class="text-rose-500">*</span></label>
-                        <input type="text" id="input-address" required placeholder="如: 臺灣大道四段1727號" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-sm focus:ring-4 focus:ring-blue-100 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm">
-                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-2">完整實習地址 <span class="text-rose-500">*</span></label>
+                    <input type="text" id="input-address" required placeholder="如: 臺灣大道四段1727號" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-sm focus:ring-4 focus:ring-blue-100 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm">
                 </div>
             </form>
             
@@ -218,8 +193,6 @@
 
         // --- 選項清單 ---
         const LIST_COUNTRIES = ["中華民國","大陸地區","日本","美國","越南","泰國","澳大利亞","香港","澳門","馬來西亞","菲律賓","印尼","印度","孟加拉","緬甸","柬埔寨","黎巴嫩","蒙古","巴西","巴拉圭","秘魯"];
-        const LIST_TYPES = ["政府機構","企業機構","其他機構","就讀學校附屬機構"];
-        const LIST_INDUSTRIES = ["農、林、漁、牧業","礦業及土石採取業","製造業","電力及燃氣供應業","用水供應及污染整治業","營建工程業","批發及零售業","運輸及倉儲業","住宿及餐飲業","出版及影音等內容傳播業","電信及資訊服務業","金融及保險業","不動產業","專業、科學及技術服務業","支援服務業","公共行政及國防；強制性社會安全","教育業","醫療保健及社會工作服務業","藝術、運動及休閒服務業","其他服務業"];
         const LIST_CITIES = ["臺北市","新北市","基隆市","桃園市","新竹縣","新竹市","苗栗縣","臺中市","彰化縣","南投縣","雲林縣","嘉義縣","嘉義市","臺南市","高雄市","屏東縣","宜蘭縣","花蓮縣","臺東縣","澎湖縣","金門縣","連江縣"];
 
         // 初始化下拉選單
@@ -236,13 +209,8 @@
             };
 
             renderOptions(LIST_COUNTRIES, 'input-country');
-            renderOptions(LIST_TYPES, 'input-type');
-            renderOptions(LIST_INDUSTRIES, 'input-industry');
             renderOptions(LIST_CITIES, 'input-city', "請選擇");
-
             renderFilterOptions(LIST_COUNTRIES, 'filter-country', '國別：');
-            renderFilterOptions(LIST_TYPES, 'filter-type', '實習場所：');
-            renderFilterOptions(LIST_INDUSTRIES, 'filter-industry', '行業別：');
         }
 
         onAuthStateChanged(auth, async (user) => {
@@ -254,10 +222,10 @@
                     updateBatchActionBar();
                     window.renderTable();
                 }, (error) => {
-                    document.getElementById('table-body').innerHTML = `<tr><td colspan="9" class="px-6 py-16 text-center text-rose-500 font-bold"><i class="fa-solid fa-lock text-3xl mb-3"></i><p>資料讀取失敗，權限不足。</p></td></tr>`;
+                    document.getElementById('table-body').innerHTML = `<tr><td colspan="7" class="px-6 py-16 text-center text-rose-500 font-bold"><i class="fa-solid fa-lock text-3xl mb-3"></i><p>資料讀取失敗，權限不足。</p></td></tr>`;
                 });
             } else {
-                document.getElementById('table-body').innerHTML = `<tr><td colspan="9" class="px-6 py-16 text-center text-slate-400 font-bold"><i class="fa-solid fa-shield-halved text-3xl mb-3 text-slate-300"></i><p>請先登入系統以存取資料。</p></td></tr>`;
+                document.getElementById('table-body').innerHTML = `<tr><td colspan="7" class="px-6 py-16 text-center text-slate-400 font-bold"><i class="fa-solid fa-shield-halved text-3xl mb-3 text-slate-300"></i><p>請先登入系統以存取資料。</p></td></tr>`;
             }
         });
 
@@ -372,18 +340,14 @@
             const tbody = document.getElementById('table-body');
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
             const filterCountry = document.getElementById('filter-country').value;
-            const filterType = document.getElementById('filter-type').value;
-            const filterInd = document.getElementById('filter-industry').value;
 
             filteredInstitutions = allData.filter(d => {
                 const matchSearch = (d.name || '').toLowerCase().includes(searchTerm) || (d.tax_id || '').toLowerCase().includes(searchTerm);
                 const matchCountry = filterCountry === 'all' || d.country === filterCountry;
-                const matchType = filterType === 'all' || d.type === filterType;
-                const matchInd = filterInd === 'all' || d.industry === filterInd;
-                return matchSearch && matchCountry && matchType && matchInd;
+                return matchSearch && matchCountry;
             });
 
-            // 排序：先排國別(中華民國優先)，再依機構名稱
+            // 排序：國別(中華民國優先) ➡️ 縣市別(依列表排序) ➡️ 機構名稱
             filteredInstitutions.sort((a, b) => {
                 const aIsDomestic = a.country === '中華民國' ? 0 : 1;
                 const bIsDomestic = b.country === '中華民國' ? 0 : 1;
@@ -392,6 +356,12 @@
                 const cCmp = (a.country || '').localeCompare(b.country || '');
                 if (cCmp !== 0) return cCmp;
                 
+                const cityIdxA = LIST_CITIES.indexOf(a.city);
+                const cityIdxB = LIST_CITIES.indexOf(b.city);
+                const orderCityA = cityIdxA !== -1 ? cityIdxA : 999;
+                const orderCityB = cityIdxB !== -1 ? cityIdxB : 999;
+                if (orderCityA !== orderCityB) return orderCityA - orderCityB;
+
                 return (a.name || '').localeCompare(b.name || '');
             });
 
@@ -415,7 +385,7 @@
             document.getElementById('selectAll').checked = isAllVisibleSelected;
 
             if (totalItems === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" class="px-6 py-16 text-center text-slate-400 font-bold bg-white">找不到符合條件的機構資料。</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-16 text-center text-slate-400 font-bold bg-white">找不到符合條件的機構資料。</td></tr>`;
                 return;
             }
 
@@ -436,9 +406,7 @@
                     <td class="px-4 py-3 align-middle text-sm font-bold text-slate-800 leading-tight text-left">
                         <div class="inline-block w-full max-w-full" title="${data.name}">${data.name}</div>
                     </td>
-                    <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight whitespace-nowrap">${data.type}</td>
-                    <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight whitespace-nowrap truncate max-w-[160px]" title="${data.industry}">${data.industry}</td>
-                    <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight whitespace-nowrap">${dispTaxId}</td>
+                    <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight whitespace-nowrap font-mono uppercase">${dispTaxId}</td>
                     <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight whitespace-nowrap">${data.country}</td>
                     <td class="px-2 py-3 align-middle text-sm font-bold text-slate-800 leading-tight whitespace-nowrap">${dispCity}</td>
                     <td class="px-4 py-3 align-middle text-sm font-bold text-slate-800 leading-tight text-left">
@@ -457,14 +425,33 @@
 
         window.exportToCSV = () => {
             if (filteredInstitutions.length === 0) { alert("沒有資料可供匯出！"); return; }
-            let csv = '\uFEFF實習機構名稱,實習場所,行業別,統一編號,實習場所國別,縣市別,實習場所地址\n';
+            // 💡 更新 CSV 表頭
+            let csv = '\uFEFF實習機構名稱,統一編號,實習場所國別,縣市別,實習場所地址\n';
             
+            filteredInstitutions.sort((a, b) => {
+                const aIsDomestic = a.country === '中華民國' ? 0 : 1;
+                const bIsDomestic = b.country === '中華民國' ? 0 : 1;
+                if (aIsDomestic !== bIsDomestic) return aIsDomestic - bIsDomestic;
+                
+                const cCmp = (a.country || '').localeCompare(b.country || '');
+                if (cCmp !== 0) return cCmp;
+                
+                const cityIdxA = LIST_CITIES.indexOf(a.city);
+                const cityIdxB = LIST_CITIES.indexOf(b.city);
+                const orderCityA = cityIdxA !== -1 ? cityIdxA : 999;
+                const orderCityB = cityIdxB !== -1 ? cityIdxB : 999;
+                if (orderCityA !== orderCityB) return orderCityA - orderCityB;
+
+                return (a.name || '').localeCompare(b.name || '');
+            });
+
             filteredInstitutions.forEach(d => {
                 const isDomestic = d.country === '中華民國';
                 const exportTaxId = isDomestic ? (d.tax_id || '') : '-';
                 const exportCity = isDomestic ? (d.city || '') : '-';
                 
-                csv += [d.name, d.type, d.industry, exportTaxId, d.country, exportCity, d.address].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+                // 💡 對應新的 CSV 順序
+                csv += [d.name, exportTaxId, d.country, exportCity, d.address].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
             });
             const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
             link.download = `實習機構清單_${new Date().toISOString().split('T')[0]}.csv`; link.click();
@@ -491,19 +478,18 @@
                         }
                         cols.push(currentVal.trim());
                         
-                        if (cols.length >= 7) {
+                        // 💡 更新 CSV 欄位讀取邏輯
+                        if (cols.length >= 5) {
                             const payload = {
                                 name: cols[0],
-                                type: cols[1],
-                                industry: cols[2],
-                                tax_id: cols[3] || '',
-                                country: cols[4] || '中華民國',
-                                city: cols[5] || '',
-                                address: cols[6] || '',
+                                tax_id: cols[1] || '',
+                                country: cols[2] || '中華民國',
+                                city: cols[3] || '',
+                                address: cols[4] || '',
                                 created_at: serverTimestamp()
                             };
                             
-                            if (!payload.name || !payload.type || !payload.industry) continue;
+                            if (!payload.name) continue;
                             
                             // 海外防呆邏輯
                             if (payload.country !== '中華民國') {
@@ -521,7 +507,7 @@
                         addedCount++; 
                     }
                     alert(`✅ 成功匯入 ${addedCount} 筆機構資料！`);
-                } catch (error) { alert("匯入失敗，請確認 CSV 檔案格式是否正確。\n" + error.message); } 
+                } catch (error) { alert("匯入失敗，請確認 CSV 檔案格式是否與匯出範本相符。\n" + error.message); } 
                 finally { btn.innerHTML = originalHtml; btn.disabled = false; e.target.value = ''; }
             };
             reader.readAsText(file);
@@ -534,14 +520,12 @@
             const payload = { 
                 country: document.getElementById('input-country').value,
                 name: document.getElementById('input-name').value.trim(),
-                type: document.getElementById('input-type').value,
-                industry: document.getElementById('input-industry').value,
                 tax_id: isDomestic ? document.getElementById('input-tax-id').value.trim() : '',
                 city: isDomestic ? document.getElementById('input-city').value : '',
                 address: document.getElementById('input-address').value.trim()
             };
 
-            if(!payload.country || !payload.name || !payload.type || !payload.industry || !payload.address) { 
+            if(!payload.country || !payload.name || !payload.address) { 
                 alert("請填寫所有必填欄位！"); return; 
             }
             if (isDomestic && (!payload.tax_id || !payload.city)) {
@@ -563,8 +547,6 @@
             
             document.getElementById('input-country').value = docData.country || '中華民國';
             document.getElementById('input-name').value = docData.name || '';
-            document.getElementById('input-type').value = docData.type || '';
-            document.getElementById('input-industry').value = docData.industry || '';
             document.getElementById('input-tax-id').value = docData.tax_id || '';
             document.getElementById('input-city').value = docData.city || '';
             document.getElementById('input-address').value = docData.address || '';
@@ -584,8 +566,6 @@
 
         document.getElementById('search-input').addEventListener('input', () => { currentPage = 1; window.renderTable(); });
         document.getElementById('filter-country').addEventListener('change', () => { currentPage = 1; window.renderTable(); });
-        document.getElementById('filter-type').addEventListener('change', () => { currentPage = 1; window.renderTable(); });
-        document.getElementById('filter-industry').addEventListener('change', () => { currentPage = 1; window.renderTable(); });
 
     </script>
 </body>
