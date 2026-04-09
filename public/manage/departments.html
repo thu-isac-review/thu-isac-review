@@ -18,106 +18,120 @@
         }
     </script>
     <style>
-        body { background-color: #f8fafc; margin: 0; padding: 2rem; overflow-x: hidden; }
+        /* 改為 h-full 隱藏全域滾動，讓內部區塊各自滾動 */
+        body { background-color: #f8fafc; margin: 0; padding: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
         * { font-family: "SF Pro TC", "Noto Sans TC", sans-serif; -webkit-font-smoothing: antialiased; }
         
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         
-        /* 彈窗動畫 */
-        .modal-enter { animation: modalFadeIn 0.3s ease-out forwards; }
+        .modal-enter { animation: modalFadeIn 0.2s ease-out forwards; }
         @keyframes modalFadeIn { 
-            from { opacity: 0; transform: scale(0.95) translateY(-10px); } 
+            from { opacity: 0; transform: scale(0.97) translateY(-5px); } 
             to { opacity: 1; transform: scale(1) translateY(0); } 
         }
 
-        /* 讓表格欄寬嚴格固定 */
         table { table-layout: fixed; width: 100%; }
         td { word-break: break-word; }
     </style>
 </head>
-<body class="custom-scrollbar">
+<body>
 
-    <div class="max-w-[1200px] mx-auto space-y-6">
+    <!-- 頂部固定區塊 (不參與滾動) -->
+    <div class="shrink-0 px-6 pt-6 pb-2 space-y-4">
         
-        <!-- 區塊 1：頂部標題與動作按鈕 -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div class="flex items-center gap-4">
-                <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+        <!-- 區塊 1：頂部標題與精緻動作按鈕 -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shrink-0">
                     <i class="ph-fill ph-buildings text-2xl"></i>
                 </div>
                 <div>
                     <h2 class="text-xl font-bold text-slate-800 tracking-tight">系所清單管理</h2>
-                    <p class="text-sm text-slate-500 mt-1">管理參與實習查核的學院與學系清單，並設定各系所的承辦窗口與開放狀態。</p>
+                    <p class="text-xs text-slate-500 mt-1">管理參與查核的學系清單與承辦窗口。</p>
                 </div>
             </div>
-            <div class="flex gap-3">
-                <button class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold py-2.5 px-4 rounded-xl text-sm transition-all flex items-center gap-2 shadow-sm">
-                    <i class="ph-bold ph-file-arrow-down text-lg"></i> 批次匯入
+            
+            <div class="flex flex-wrap gap-2">
+                <button onclick="exportToCSV()" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold py-1.5 px-3 rounded-lg text-sm transition-all flex items-center gap-1.5 shadow-sm">
+                    <i class="ph-bold ph-export text-base text-emerald-600"></i> 匯出
                 </button>
-                <button onclick="openCollegeModal()" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold py-2.5 px-4 rounded-xl text-sm transition-all flex items-center gap-2 shadow-sm">
-                    <i class="ph-bold ph-list-dashes text-lg"></i> 學院設定
+                <button id="btn-import" onclick="document.getElementById('import-file').click()" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold py-1.5 px-3 rounded-lg text-sm transition-all flex items-center gap-1.5 shadow-sm">
+                    <i class="ph-bold ph-import text-base text-blue-600"></i> 批次匯入
                 </button>
-                <button onclick="openDeptModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all flex items-center gap-2 shadow-md shadow-blue-500/20">
-                    <i class="ph-bold ph-plus text-lg"></i> 新增系所
+                <input type="file" id="import-file" accept=".csv" class="hidden" onchange="handleImport(event)">
+                
+                <div class="w-px h-6 bg-slate-200 self-center mx-1"></div>
+                
+                <button onclick="openCollegeModal()" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold py-1.5 px-3 rounded-lg text-sm transition-all flex items-center gap-1.5 shadow-sm">
+                    <i class="ph-bold ph-list-dashes text-base text-slate-500"></i> 學院設定
+                </button>
+                <button onclick="openDeptModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-4 rounded-lg text-sm transition-all flex items-center gap-1.5 shadow-sm shadow-blue-500/20">
+                    <i class="ph-bold ph-plus text-base"></i> 新增系所
                 </button>
             </div>
         </div>
 
         <!-- 區塊 2：篩選與搜尋列 -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex gap-3 w-full md:w-auto">
-                <select id="filter-college" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer">
+        <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex gap-2 w-full md:w-auto">
+                <select id="filter-college" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
                     <option value="all">全部學院</option>
-                    <!-- 動態生成 -->
                 </select>
-                <select id="filter-status" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer">
+                <select id="filter-status" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
                     <option value="all">狀態：全部</option>
                     <option value="active">狀態：啟用中</option>
                     <option value="inactive">狀態：已停用</option>
                 </select>
             </div>
-            <div class="relative w-full md:w-72">
-                <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                <input type="text" id="search-input" placeholder="搜尋學系或代碼..." class="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+            <div class="relative w-full md:w-72 shadow-sm rounded-lg">
+                <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <input type="text" id="search-input" placeholder="搜尋學系或代碼..." class="w-full bg-white border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all">
             </div>
         </div>
+    </div>
 
-        <!-- 區塊 3：固定欄寬資料表格 -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <table class="w-full text-left">
-                <!-- 將 thead 背景改為 bg-slate-50 微灰色 -->
-                <thead class="bg-slate-50">
-                    <tr class="border-b border-slate-100">
-                        <th class="px-4 py-5 text-sm font-bold text-slate-500 w-12 text-center"></th> <!-- 排序 -->
-                        <th class="px-6 py-5 text-sm font-bold text-slate-500 w-[15%]">學院</th>
-                        <th class="px-6 py-5 text-sm font-bold text-slate-500 w-[20%]">學系名稱</th>
-                        <th class="px-6 py-5 text-sm font-bold text-slate-500 w-[12%] text-center">系所代碼</th>
-                        <th class="px-6 py-5 text-sm font-bold text-slate-500 w-[25%]">承辦窗口</th>
-                        <!-- 置中系統狀態與操作 -->
-                        <th class="px-6 py-5 text-sm font-bold text-slate-500 w-[15%] text-center">系統狀態</th>
-                        <th class="px-6 py-5 text-sm font-bold text-slate-500 w-[13%] text-center">操作</th>
-                    </tr>
-                </thead>
-                <tbody id="dept-table-body" class="divide-y divide-slate-50 text-sm">
-                    <tr>
-                        <td colspan="7" class="px-6 py-16 text-center text-slate-400">
-                            <i class="ph-bold ph-spinner animate-spin text-3xl mb-3 text-blue-500"></i>
-                            <p class="font-bold">連線至資料庫中...</p>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+    <!-- 表格滾動區 (Flex-1 填滿剩餘高度) -->
+    <div class="flex-1 overflow-hidden px-6 pb-6 flex flex-col">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col flex-1 overflow-hidden">
+            <!-- 內部滾動 -->
+            <div class="flex-1 overflow-auto custom-scrollbar relative">
+                <table class="w-full text-left table-fixed">
+                    <!-- 表頭置頂 sticky -->
+                    <thead class="bg-slate-50 sticky top-0 z-10 shadow-sm border-b border-slate-200">
+                        <tr>
+                            <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 w-[5%]"></th>
+                            <th class="px-6 py-3 text-center text-xs font-bold text-slate-500 w-[15%]">學院</th>
+                            <th class="px-6 py-3 text-center text-xs font-bold text-slate-500 w-[20%]">學系全名 / 簡稱</th>
+                            <th class="px-6 py-3 text-center text-xs font-bold text-slate-500 w-[12%]">系所代碼</th>
+                            <th class="px-6 py-3 text-center text-xs font-bold text-slate-500 w-[22%]">承辦窗口</th>
+                            <th class="px-6 py-3 text-center text-xs font-bold text-slate-500 w-[13%]">系統狀態</th>
+                            <th class="px-6 py-3 text-center text-xs font-bold text-slate-500 w-[13%]">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dept-table-body" class="divide-y divide-slate-100 text-sm">
+                        <tr><td colspan="7" class="px-6 py-16 text-center text-slate-400"><i class="ph-bold ph-spinner animate-spin text-3xl mb-3 text-blue-500"></i><p class="font-bold">資料載入中...</p></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- 分頁控制列 (固定在卡片底部) -->
+            <div class="bg-slate-50 border-t border-slate-200 px-6 py-3 flex justify-between items-center shrink-0">
+                <div id="pagination-info" class="text-xs font-bold text-slate-500">顯示 0 到 0 筆，共 0 筆</div>
+                <div id="pagination-buttons" class="flex gap-1">
+                    <!-- 動態生成按鈕 -->
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- ==========================================
-         彈跳視窗 1：設定學院管理 (College Settings Modal)
+         彈跳視窗 1：設定學院管理
          ========================================== -->
     <div id="college-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeCollegeModal()"></div>
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden modal-enter relative flex flex-col max-h-[80vh]">
-            <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden modal-enter relative flex flex-col max-h-[80vh]">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                 <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
                     <i class="ph-bold ph-list-dashes text-blue-600"></i> 學院選單設定
                 </h3>
@@ -127,55 +141,57 @@
             <div class="p-6 overflow-y-auto custom-scrollbar flex-1">
                 <div class="flex gap-2 mb-6">
                     <input type="text" id="new-college-input" placeholder="輸入新學院名稱" class="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                    <button onclick="addCollege()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors whitespace-nowrap">
-                        新增
-                    </button>
+                    <button onclick="addCollege()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors whitespace-nowrap shadow-sm">新增</button>
                 </div>
-                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">現有學院清單</div>
-                <ul id="college-list-container" class="space-y-2">
-                    <!-- 動態載入學院 -->
-                </ul>
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">現有學院清單 (可排序與編輯)</div>
+                <ul id="college-list-container" class="space-y-2"></ul>
             </div>
         </div>
     </div>
 
     <!-- ==========================================
-         彈跳視窗 2：新增/編輯系所 (Dept Modal)
+         彈跳視窗 2：新增/編輯系所
          ========================================== -->
     <div id="dept-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeDeptModal()"></div>
         <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden modal-enter relative max-h-[90vh] flex flex-col">
-            <div class="px-8 py-6 border-b border-slate-100 flex justify-between items-center shrink-0 bg-slate-50/50">
+            <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center shrink-0 bg-slate-50">
                 <h3 id="modal-title" class="font-black text-slate-800 text-lg flex items-center gap-2">
                     <i class="ph-bold ph-buildings text-blue-600"></i> 新增系所單位
                 </h3>
-                <button onclick="closeDeptModal()" class="text-slate-400 hover:text-slate-600 bg-white p-2 rounded-full shadow-sm border border-slate-100"><i class="ph-bold ph-x text-lg"></i></button>
+                <button onclick="closeDeptModal()" class="text-slate-400 hover:text-slate-600 bg-white p-1.5 rounded-full shadow-sm border border-slate-200"><i class="ph-bold ph-x text-lg"></i></button>
             </div>
             
-            <form id="dept-form" class="p-8 space-y-6 overflow-y-auto custom-scrollbar flex-1">
+            <form id="dept-form" class="p-8 space-y-5 overflow-y-auto custom-scrollbar flex-1">
                 <div class="grid grid-cols-2 gap-5">
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-2">所屬學院 <span class="text-rose-500">*</span></label>
-                        <!-- 改為 select 綁定學院設定 -->
-                        <select id="input-college" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer">
+                        <select id="input-college" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
                             <option value="">請選擇學院...</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-2">系所代碼 <span class="text-rose-500">*</span></label>
-                        <input type="text" id="input-code" required placeholder="例如：IM" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none uppercase font-mono font-bold text-slate-700">
+                        <input type="text" id="input-code" required placeholder="例如：IM" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none uppercase font-mono font-bold text-slate-700 shadow-sm">
                     </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-2">學系名稱 <span class="text-rose-500">*</span></label>
-                    <input type="text" id="input-name" required placeholder="例如：資訊管理學系" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700">
+                <!-- 支援全名與簡稱 -->
+                <div class="grid grid-cols-3 gap-5">
+                    <div class="col-span-2">
+                        <label class="block text-xs font-bold text-slate-600 mb-2">學系全名 <span class="text-rose-500">*</span></label>
+                        <input type="text" id="input-name" required placeholder="例如：資訊管理學系" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm">
+                    </div>
+                    <div class="col-span-1">
+                        <label class="block text-xs font-bold text-slate-600 mb-2">簡稱 (選填)</label>
+                        <input type="text" id="input-short-name" placeholder="例如：資管系" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm">
+                    </div>
                 </div>
                 
-                <div class="pt-6 border-t border-slate-100">
-                    <div class="flex justify-between items-center mb-4">
+                <div class="pt-5 border-t border-slate-100">
+                    <div class="flex justify-between items-center mb-3">
                         <label class="block text-xs font-bold text-slate-600">承辦窗口 (可多位)</label>
-                        <button type="button" onclick="addContactField()" class="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors">
-                            <i class="ph-bold ph-plus"></i> 新增助教
+                        <button type="button" onclick="addContactField()" class="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors border border-blue-100">
+                            <i class="ph-bold ph-plus"></i> 新增窗口
                         </button>
                     </div>
                     <div id="contacts-container" class="space-y-3">
@@ -184,16 +200,16 @@
                 </div>
             </form>
             
-            <div class="p-6 border-t border-slate-100 shrink-0 flex gap-4 bg-slate-50/50">
-                <button type="button" onclick="closeDeptModal()" class="flex-1 py-3 text-sm font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-all shadow-sm">取消</button>
-                <button type="button" id="btn-submit" onclick="submitDeptForm()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-500/30 transition-all flex items-center justify-center gap-2">
+            <div class="p-6 border-t border-slate-100 shrink-0 flex gap-4 bg-slate-50">
+                <button type="button" onclick="closeDeptModal()" class="flex-1 py-3 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-all shadow-sm">取消</button>
+                <button type="button" id="btn-submit" onclick="submitDeptForm()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2">
                     儲存系所
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Firebase 與邏輯 -->
+    <!-- Firebase 邏輯 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -216,40 +232,49 @@
         let allDepts = [];
         let collegeList = [];
         let editingId = null;
+        
+        // 分頁參數
+        let currentPage = 1;
+        const itemsPerPage = 10;
 
         // =====================================
-        // 學院設定邏輯 (Colleges)
+        // 學院設定邏輯
         // =====================================
         onSnapshot(collegeDocRef, (docSnap) => {
             if (docSnap.exists()) {
                 collegeList = docSnap.data().list || [];
             } else {
                 collegeList = ["文學院", "理學院", "工學院", "管理學院", "農學院"];
-                setDoc(collegeDocRef, { list: collegeList }); // 初始化預設值
+                setDoc(collegeDocRef, { list: collegeList }); 
             }
             renderCollegeUI();
-            renderTable(); // 重新渲染表格過濾器
+            renderTable();
         });
 
         window.openCollegeModal = () => document.getElementById('college-modal').classList.remove('hidden');
-        window.closeCollegeModal = () => {
-            document.getElementById('college-modal').classList.add('hidden');
-            document.getElementById('new-college-input').value = '';
-        };
+        window.closeCollegeModal = () => document.getElementById('college-modal').classList.add('hidden');
 
         function renderCollegeUI() {
-            // 渲染彈窗內的列表
             const listContainer = document.getElementById('college-list-container');
             listContainer.innerHTML = collegeList.map((c, index) => `
-                <li class="flex justify-between items-center bg-slate-50 border border-slate-100 rounded-lg p-3 text-sm">
-                    <span class="font-bold text-slate-700">${c}</span>
-                    <button onclick="removeCollege(${index})" class="text-slate-400 hover:text-rose-500 transition-colors"><i class="ph-bold ph-trash"></i></button>
+                <li class="flex justify-between items-center bg-white border border-slate-200 shadow-sm rounded-lg p-2 text-sm group">
+                    <div class="flex items-center gap-2 flex-1 overflow-hidden">
+                        <div class="flex flex-col opacity-30 group-hover:opacity-100 transition-opacity">
+                            <button onclick="moveCollege(${index}, -1)" class="hover:text-blue-600 disabled:opacity-0" ${index === 0 ? 'disabled' : ''}><i class="ph-fill ph-caret-up text-xs"></i></button>
+                            <button onclick="moveCollege(${index}, 1)" class="hover:text-blue-600 disabled:opacity-0" ${index === collegeList.length - 1 ? 'disabled' : ''}><i class="ph-fill ph-caret-down text-xs"></i></button>
+                        </div>
+                        <span id="col-text-${index}" class="font-bold text-slate-700 truncate pl-1">${c}</span>
+                        <input type="text" id="col-input-${index}" value="${c}" class="hidden flex-1 border border-blue-300 rounded px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-blue-100">
+                    </div>
+                    <div class="flex items-center ml-2">
+                        <button id="col-edit-btn-${index}" onclick="editCollege(${index})" class="text-slate-400 hover:text-blue-600 p-1.5 transition-colors"><i class="ph-bold ph-pencil-simple"></i></button>
+                        <button id="col-save-btn-${index}" onclick="saveCollege(${index})" class="hidden text-emerald-500 hover:text-emerald-600 p-1.5 transition-colors"><i class="ph-bold ph-check text-lg"></i></button>
+                        <button onclick="removeCollege(${index})" class="text-slate-400 hover:text-rose-500 p-1.5 transition-colors"><i class="ph-bold ph-trash"></i></button>
+                    </div>
                 </li>
             `).join('');
 
-            // 渲染下拉選單 (篩選器與新增表單)
             const optionsHtml = collegeList.map(c => `<option value="${c}">${c}</option>`).join('');
-            
             const filterSelect = document.getElementById('filter-college');
             const currentFilter = filterSelect.value;
             filterSelect.innerHTML = `<option value="all">全部學院</option>` + optionsHtml;
@@ -266,21 +291,45 @@
             const val = input.value.trim();
             if (!val) return;
             if (collegeList.includes(val)) { alert("此學院已存在！"); return; }
-            
-            const newList = [...collegeList, val].sort();
+            const newList = [...collegeList, val];
             await updateDoc(collegeDocRef, { list: newList });
             input.value = '';
         };
 
+        window.editCollege = (index) => {
+            document.getElementById(`col-text-${index}`).classList.add('hidden');
+            document.getElementById(`col-input-${index}`).classList.remove('hidden');
+            document.getElementById(`col-input-${index}`).focus();
+            document.getElementById(`col-edit-btn-${index}`).classList.add('hidden');
+            document.getElementById(`col-save-btn-${index}`).classList.remove('hidden');
+        };
+
+        window.saveCollege = async (index) => {
+            const newVal = document.getElementById(`col-input-${index}`).value.trim();
+            if (!newVal) return;
+            const newList = [...collegeList];
+            newList[index] = newVal;
+            await updateDoc(collegeDocRef, { list: newList });
+        };
+
+        window.moveCollege = async (index, dir) => {
+            if (index + dir < 0 || index + dir >= collegeList.length) return;
+            const newList = [...collegeList];
+            const temp = newList[index];
+            newList[index] = newList[index + dir];
+            newList[index + dir] = temp;
+            await updateDoc(collegeDocRef, { list: newList });
+        };
+
         window.removeCollege = async (index) => {
-            if (confirm(`確定移除「${collegeList[index]}」嗎？\n(注意：不會刪除已套用此學院的系所)`)) {
+            if (confirm(`確定移除「${collegeList[index]}」嗎？`)) {
                 const newList = collegeList.filter((_, i) => i !== index);
                 await updateDoc(collegeDocRef, { list: newList });
             }
         };
 
         // =====================================
-        // 系所操作邏輯 (Departments)
+        // 系所表單與新增邏輯
         // =====================================
         window.openDeptModal = () => {
             if (!editingId) { 
@@ -297,7 +346,6 @@
             editingId = null;
         };
 
-        // 動態聯絡人欄位 (支援多位)
         window.addContactField = (name = '', email = '') => {
             const container = document.getElementById('contacts-container');
             const div = document.createElement('div');
@@ -305,16 +353,16 @@
             div.innerHTML = `
                 <div class="flex-1 space-y-2 bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
                     <div class="flex items-center gap-2">
-                        <i class="ph-bold ph-user text-slate-400"></i>
-                        <input type="text" placeholder="助教姓名 (例如：陳助教)" value="${name}" class="contact-name w-full bg-transparent text-sm focus:outline-none font-bold text-slate-700">
+                        <span class="text-xs font-bold text-slate-400 w-12 shrink-0">姓名：</span>
+                        <input type="text" placeholder="例如：陳助教" value="${name}" class="contact-name w-full bg-transparent text-sm focus:outline-none font-bold text-slate-700">
                     </div>
                     <div class="h-px bg-slate-100"></div>
                     <div class="flex items-center gap-2">
-                        <i class="ph-bold ph-envelope-simple text-slate-400"></i>
-                        <input type="email" placeholder="Email (選填)" value="${email}" class="contact-email w-full bg-transparent text-sm focus:outline-none text-slate-500 font-mono">
+                        <span class="text-xs font-bold text-slate-400 w-12 shrink-0">Email：</span>
+                        <input type="email" placeholder="example@thu.edu.tw" value="${email}" class="contact-email w-full bg-transparent text-sm focus:outline-none text-slate-500 font-mono">
                     </div>
                 </div>
-                <button type="button" onclick="this.parentElement.remove()" class="p-2.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 rounded-xl transition-all h-fit mt-1">
+                <button type="button" onclick="this.parentElement.remove()" class="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 rounded-xl transition-all mt-1">
                     <i class="ph-bold ph-trash text-lg"></i>
                 </button>
             `;
@@ -322,12 +370,17 @@
         };
 
         // =====================================
-        // 資料表格渲染
+        // 資料表格渲染與分頁
         // =====================================
         onSnapshot(deptCollection, (snapshot) => {
             allDepts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             renderTable();
         });
+
+        window.changePage = (page) => {
+            currentPage = page;
+            renderTable();
+        };
 
         function renderTable() {
             const tbody = document.getElementById('dept-table-body');
@@ -337,6 +390,7 @@
 
             let filtered = allDepts.filter(d => {
                 const matchSearch = d.name.toLowerCase().includes(searchTerm) || 
+                                    (d.shortName && d.shortName.toLowerCase().includes(searchTerm)) ||
                                     d.code.toLowerCase().includes(searchTerm) ||
                                     (d.contacts && d.contacts.some(c => c.name.includes(searchTerm)));
                 const matchCollege = filterCollege === 'all' || d.college === filterCollege;
@@ -344,62 +398,85 @@
                 return matchSearch && matchCollege && matchStatus;
             });
 
-            // 排序 (依據 sortOrder)
             filtered.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
 
-            if (filtered.length === 0) {
+            // 分頁邏輯
+            const totalItems = filtered.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+            const paginatedItems = filtered.slice(startIndex, endIndex);
+
+            // 更新分頁資訊 UI
+            document.getElementById('pagination-info').innerText = totalItems > 0 ? `顯示 ${startIndex + 1} 到 ${endIndex} 筆，共 ${totalItems} 筆` : '尚無資料';
+            
+            let btnHtml = '';
+            btnHtml += `<button onclick="changePage(${currentPage - 1})" class="px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-40 transition-colors" ${currentPage === 1 ? 'disabled' : ''}>上一頁</button>`;
+            btnHtml += `<span class="px-4 py-1.5 text-sm font-bold text-blue-600 bg-blue-50 rounded-lg mx-1">${currentPage} / ${totalPages}</span>`;
+            btnHtml += `<button onclick="changePage(${currentPage + 1})" class="px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-40 transition-colors" ${currentPage === totalPages ? 'disabled' : ''}>下一頁</button>`;
+            document.getElementById('pagination-buttons').innerHTML = btnHtml;
+
+            if (totalItems === 0) {
                 tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-16 text-center text-slate-400 font-bold bg-white">找不到符合條件的系所。</td></tr>`;
                 return;
             }
 
             let html = '';
-            filtered.forEach((data, index) => {
+            paginatedItems.forEach((data, idx) => {
+                const globalIndex = startIndex + idx; // 真實的全域 Index，供排序判斷用
                 
-                // 多位聯絡人排版
+                // 多位聯絡人：移除 icon、靠左對齊
                 let contactsHtml = '';
                 if (data.contacts && data.contacts.length > 0) {
                     contactsHtml = data.contacts.map(c => `
-                        <div class="py-1">
+                        <div class="flex flex-col items-start mb-2 last:mb-0">
                             <div class="text-sm font-bold text-slate-700 truncate" title="${c.name}">${c.name || '未填寫'}</div>
-                            <div class="text-xs text-slate-400 font-mono truncate" title="${c.email}">${c.email || ''}</div>
+                            <div class="text-[11px] text-slate-400 font-mono tracking-tight truncate">${c.email || ''}</div>
                         </div>
                     `).join('');
                 } else {
-                    contactsHtml = '<span class="text-slate-400 text-xs font-bold">- 尚未設定 -</span>';
+                    contactsHtml = '<span class="text-slate-400 text-xs font-bold bg-slate-100 px-2 py-1 rounded">- 尚未設定 -</span>';
                 }
 
                 html += `
-                <tr class="group bg-white hover:bg-slate-50 transition-all duration-200 ${!data.is_active ? 'opacity-60 grayscale-[30%]' : ''}">
+                <tr class="group bg-white hover:bg-blue-50/40 transition-all duration-150 ${!data.is_active ? 'opacity-60 grayscale-[20%] bg-slate-50/50' : ''}">
                     <!-- 隱藏式排序箭頭 -->
                     <td class="px-4 py-4 align-middle text-center border-r border-transparent group-hover:border-slate-100">
                         <div class="flex flex-col items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onclick="window.moveOrder('${data.id}', 'up')" class="text-slate-400 hover:text-blue-600 disabled:opacity-0 transition-colors" ${index === 0 ? 'disabled' : ''}><i class="ph-fill ph-caret-up text-base"></i></button>
-                            <button onclick="window.moveOrder('${data.id}', 'down')" class="text-slate-400 hover:text-blue-600 disabled:opacity-0 transition-colors" ${index === filtered.length - 1 ? 'disabled' : ''}><i class="ph-fill ph-caret-down text-base"></i></button>
+                            <button onclick="window.moveOrder('${data.id}', 'up')" class="text-slate-400 hover:text-blue-600 disabled:opacity-0 transition-colors p-0.5" ${globalIndex === 0 ? 'disabled' : ''}><i class="ph-bold ph-caret-up text-sm"></i></button>
+                            <button onclick="window.moveOrder('${data.id}', 'down')" class="text-slate-400 hover:text-blue-600 disabled:opacity-0 transition-colors p-0.5" ${globalIndex === filtered.length - 1 ? 'disabled' : ''}><i class="ph-bold ph-caret-down text-sm"></i></button>
                         </div>
                     </td>
-                    <td class="px-6 py-4 align-middle truncate">
-                        <span class="text-slate-500 font-medium text-sm">${data.college}</span>
-                    </td>
-                    <td class="px-6 py-4 align-middle">
-                        <span class="text-base font-bold text-slate-800 break-words">${data.name}</span>
-                    </td>
+                    <!-- 學院純文字 -->
                     <td class="px-6 py-4 align-middle text-center">
-                        <!-- 還原截圖的代碼 Badge 設計 (淡灰邊框) -->
-                        <div class="inline-flex items-center justify-center px-3 py-1.5 rounded bg-slate-50 border border-slate-200 font-mono text-xs font-bold text-slate-500 tracking-wider">
+                        <span class="text-slate-700 font-bold text-sm">${data.college}</span>
+                    </td>
+                    <!-- 全名與簡稱 -->
+                    <td class="px-6 py-4 align-middle text-center">
+                        <div class="text-base font-bold text-slate-800 break-words leading-tight">${data.name}</div>
+                        ${data.shortName ? `<div class="text-xs text-slate-500 font-bold mt-1 tracking-wider">(${data.shortName})</div>` : ''}
+                    </td>
+                    <!-- 質感代碼標籤 -->
+                    <td class="px-6 py-4 align-middle text-center">
+                        <div class="inline-block px-2.5 py-1 rounded-md bg-slate-100 border border-slate-300 font-mono text-xs font-bold text-slate-600 tracking-widest shadow-inner">
                             ${data.code}
                         </div>
                     </td>
+                    <!-- 承辦窗口 (靠左) -->
                     <td class="px-6 py-4 align-middle">
-                        <div class="flex flex-col gap-1 overflow-hidden">
+                        <div class="flex flex-col items-start pl-4">
                             ${contactsHtml}
                         </div>
                     </td>
+                    <!-- 修復破圖的 Switch 開關 -->
                     <td class="px-6 py-4 align-middle text-center">
-                        <!-- 修正破圖的 iOS 風格 Toggle 開關並置中 -->
                         <div class="flex items-center justify-center">
                             <label class="relative inline-flex items-center cursor-pointer group/toggle">
                                 <input type="checkbox" class="sr-only peer" ${data.is_active ? 'checked' : ''} onchange="window.toggleStatus('${data.id}', ${data.is_active})">
-                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                                <!-- 加入 shrink-0 禁止縮放，並使用明確的 translate-x-[20px] 定位 -->
+                                <div class="relative w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-[20px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner shrink-0"></div>
                                 <span class="ml-3 text-sm font-bold ${data.is_active ? 'text-emerald-600' : 'text-slate-400'}">${data.is_active ? '啟用' : '停用'}</span>
                             </label>
                         </div>
@@ -419,10 +496,86 @@
             tbody.innerHTML = html;
         }
 
-        // 綁定搜尋與過濾事件
-        document.getElementById('search-input').addEventListener('input', renderTable);
-        document.getElementById('filter-college').addEventListener('change', renderTable);
-        document.getElementById('filter-status').addEventListener('change', renderTable);
+        // =====================================
+        // 匯出 / 匯入 CSV (支援簡稱)
+        // =====================================
+        window.exportToCSV = () => {
+            if (allDepts.length === 0) { alert("沒有資料可供匯出！"); return; }
+            
+            let csv = '\uFEFF'; 
+            csv += '排序,系統狀態,學院,學系全名,學系簡稱,系所代碼,聯絡人資訊\n';
+            
+            let sorted = [...allDepts].sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
+            
+            sorted.forEach(d => {
+                let status = d.is_active ? '啟用' : '停用';
+                let contactsStr = d.contacts ? d.contacts.map(c => `${c.name}(${c.email})`).join('; ') : '';
+                let row = [d.sortOrder, status, d.college, d.name, d.shortName || '', d.code, contactsStr];
+                
+                csv += row.map(v => `"${(v+'').replace(/"/g, '""')}"`).join(',') + '\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `ISAC系所清單_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        window.handleImport = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const btn = document.getElementById('btn-import');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-base"></i> 匯入中...';
+            btn.disabled = true;
+
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const text = event.target.result;
+                    const rows = text.split('\n').map(row => row.trim()).filter(row => row);
+                    
+                    let maxOrder = allDepts.length > 0 ? Math.max(...allDepts.map(d => d.sortOrder || 0)) : 0;
+                    let addedCount = 0;
+                    
+                    // CSV 標頭預期: 學院,學系全名,學系簡稱,系所代碼,助教姓名,助教Email
+                    for (let i = 1; i < rows.length; i++) {
+                        const cols = rows[i].split(',').map(col => col.replace(/(^"|"$)/g, '').trim());
+                        if (cols.length >= 4) {
+                            const college = cols[0];
+                            const name = cols[1];
+                            const shortName = cols[2];
+                            const code = cols[3].toUpperCase();
+                            const cName = cols[4] || '';
+                            const cEmail = cols[5] || '';
+                            
+                            const contacts = [];
+                            if (cName || cEmail) contacts.push({ name: cName, email: cEmail });
+
+                            maxOrder += 10;
+                            await addDoc(deptCollection, {
+                                college, name, shortName, code, contacts,
+                                is_active: true, sortOrder: maxOrder, created_at: serverTimestamp()
+                            });
+                            addedCount++;
+                        }
+                    }
+                    alert(`✅ 成功匯入 ${addedCount} 筆系所資料！`);
+                } catch (error) {
+                    alert("匯入失敗，請確認檔案格式是否正確。\n" + error.message);
+                } finally {
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                    e.target.value = '';
+                }
+            };
+            reader.readAsText(file);
+        };
 
         // =====================================
         // Firebase 增刪改查
@@ -430,7 +583,6 @@
         window.submitDeptForm = async () => {
             const btn = document.getElementById('btn-submit');
             
-            // 收集助教資料
             const contacts = Array.from(document.querySelectorAll('.contact-entry')).map(entry => ({
                 name: entry.querySelector('.contact-name').value.trim(),
                 email: entry.querySelector('.contact-email').value.trim()
@@ -440,12 +592,12 @@
                 college: document.getElementById('input-college').value.trim(),
                 code: document.getElementById('input-code').value.toUpperCase().trim(),
                 name: document.getElementById('input-name').value.trim(),
+                shortName: document.getElementById('input-short-name').value.trim(),
                 contacts: contacts
             };
 
             if(!payload.college || !payload.code || !payload.name) {
-                alert("請填寫必填欄位！");
-                return;
+                alert("請填寫必填欄位！"); return;
             }
 
             btn.disabled = true;
@@ -471,19 +623,19 @@
             document.getElementById('input-college').value = dept.college;
             document.getElementById('input-code').value = dept.code;
             document.getElementById('input-name').value = dept.name;
+            document.getElementById('input-short-name').value = dept.shortName || '';
 
             document.getElementById('contacts-container').innerHTML = '';
             if (dept.contacts && dept.contacts.length > 0) {
                 dept.contacts.forEach(c => addContactField(c.name, c.email));
             } else {
-                addContactField(); // 給空的輸入框
+                addContactField();
             }
 
             document.getElementById('modal-title').innerHTML = '<i class="ph-bold ph-pencil-simple text-blue-600"></i> 編輯系所單位';
             document.getElementById('dept-modal').classList.remove('hidden');
         };
 
-        // 排序上/下移
         window.moveOrder = async (id, direction) => {
             let sorted = [...allDepts].sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
             const currentIndex = sorted.findIndex(d => d.id === id);
@@ -508,6 +660,12 @@
         window.deleteDept = async (id, name) => {
             if (confirm(`確定要刪除「${name}」嗎？此操作無法復原。`)) {
                 await deleteDoc(doc(db, "departments", id));
+                
+                // 若刪除後當前頁碼超出範圍，自動退回一頁
+                const totalAfterDelete = allDepts.length - 1;
+                const totalPages = Math.ceil(totalAfterDelete / itemsPerPage) || 1;
+                if (currentPage > totalPages) currentPage = totalPages;
+                renderTable();
             }
         };
     </script>
