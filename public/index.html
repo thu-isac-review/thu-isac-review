@@ -16,7 +16,8 @@
       }
     </script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- 全面導入 Font Awesome 6.4.0 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script>
         tailwind.config = {
@@ -73,8 +74,12 @@
         function App() {
             const [user, setUser] = useState(null);
             const [loading, setLoading] = useState(true);
-            // 配合 Firebase cleanUrls，移除 .html 後綴
             const [contentUrl, setContentUrl] = useState('/manage/departments'); 
+            
+            // 透過時間戳記產生防快取網址
+            const getCacheBustedUrl = (url) => {
+                return `${url}?v=${new Date().getTime()}`;
+            };
 
             useEffect(() => {
                 const unsubscribe = onAuthStateChanged(auth, (u) => {
@@ -93,7 +98,7 @@
             if (loading) return (
                 <div className="h-full flex items-center justify-center bg-slate-50">
                     <div className="flex flex-col items-center gap-4">
-                        <div className="w-12 h-12 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
+                        <i className="fa-solid fa-circle-notch fa-spin text-4xl text-blue-600"></i>
                         <p className="text-slate-400 font-bold text-sm">系統載入中...</p>
                     </div>
                 </div>
@@ -113,7 +118,7 @@
                     <aside className="w-64 bg-sidebar text-slate-300 flex flex-col shrink-0 z-20 shadow-xl">
                         <div className="h-16 flex items-center px-6 border-b border-slate-700/50">
                             <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center mr-3 shadow-md">
-                                <i className="ph-bold ph-shield-check text-white text-lg"></i>
+                                <i className="fa-solid fa-shield-halved text-white text-lg"></i>
                             </div>
                             <span className="text-white font-bold text-lg tracking-wide">ISAC 審查中心</span>
                         </div>
@@ -123,13 +128,13 @@
                             <MenuBtn 
                                 active={contentUrl === '/dashboard-content'} 
                                 label="總覽儀表板" 
-                                icon="ph-fill ph-squares-four" 
+                                icon="fa-solid fa-table-cells-large" 
                                 onClick={() => setContentUrl('/dashboard-content')} 
                             />
                             <MenuBtn 
                                 active={contentUrl === '/list'} 
                                 label="學生待查核名單" 
-                                icon="ph-fill ph-users-three" 
+                                icon="fa-solid fa-graduation-cap" 
                                 onClick={() => setContentUrl('/list')} 
                             />
 
@@ -138,16 +143,15 @@
                             <MenuBtn 
                                 active={contentUrl === '/manage/departments'} 
                                 label="系所清單管理" 
-                                icon="ph-fill ph-buildings" 
+                                icon="fa-solid fa-university" 
                                 onClick={() => setContentUrl('/manage/departments')} 
                             />
                             
                             <div className="sidebar-item w-full flex items-center px-6 py-3 text-sm font-medium mb-1 text-slate-500 opacity-50 cursor-not-allowed">
-                                <i className="ph-fill ph-file-text text-xl mr-3 opacity-80"></i> 指標與表單設定
+                                <i className="fa-solid fa-file-contract text-lg mr-3 opacity-80 w-5 text-center"></i> 指標與表單設定
                             </div>
                         </div>
 
-                        {/* 底部帳號狀態：字體改回 text-sm */}
                         <div className="p-4 border-t border-slate-700/50">
                             <div className="flex items-center gap-3 px-2 py-2">
                                 <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-400 flex items-center justify-center text-white font-bold text-sm shadow-md">
@@ -158,7 +162,7 @@
                                     <div className="text-xs text-slate-500 truncate font-mono">{user.email}</div>
                                 </div>
                                 <button onClick={handleLogout} className="text-slate-400 hover:text-white transition-colors p-1" title="登出">
-                                    <i className="ph-bold ph-sign-out text-xl"></i>
+                                    <i className="fa-solid fa-arrow-right-from-bracket text-lg"></i>
                                 </button>
                             </div>
                         </div>
@@ -171,21 +175,22 @@
                             </div>
                             <div className="flex items-center gap-6">
                                 <div className="relative hidden lg:block">
-                                    <i className="ph-bold ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                                    <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-sm"></i>
                                     <input type="text" className="pl-9 pr-4 py-1.5 bg-slate-100 border-transparent rounded-lg text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all w-64 outline-none" placeholder="搜尋系統內容..." />
                                 </div>
                                 <div className="h-6 w-px bg-slate-200"></div>
                                 <div className="text-sm font-bold text-slate-700 flex items-center gap-2 cursor-pointer">
-                                    114-1 學年度 <i className="ph-bold ph-bell text-slate-400 text-lg"></i>
+                                    114-1 學年度 <i className="fa-solid fa-bell text-slate-400 text-base"></i>
                                 </div>
                             </div>
                         </header>
 
                         <div className="flex-1 overflow-hidden relative">
+                            {/* 💡 加上時間戳記防快取 */}
                             <iframe 
-                                src={contentUrl} 
+                                src={getCacheBustedUrl(contentUrl)} 
                                 key={contentUrl}
-                                className="animate-fade"
+                                className="animate-fade w-full h-full"
                                 title="Content View"
                             />
                         </div>
@@ -194,11 +199,10 @@
             );
         }
 
-        // 選單按鈕：字體改回 text-sm
         function MenuBtn({ active, label, icon, onClick }) {
             return (
                 <div onClick={onClick} className={`sidebar-item w-full flex items-center px-6 py-3 text-sm font-medium mb-1 ${active ? 'active' : ''}`}>
-                    <i className={`${icon} text-xl mr-3 ${active ? 'opacity-100' : 'opacity-80'}`}></i>
+                    <i className={`${icon} text-lg mr-3 ${active ? 'opacity-100' : 'opacity-80'} w-5 text-center`}></i>
                     <span className="tracking-tight">{label}</span>
                 </div>
             );
@@ -225,7 +229,7 @@
                     <form onSubmit={handleLogin} className="bg-white p-10 rounded-[2rem] shadow-2xl w-full max-w-md border border-slate-100 animate-fade">
                         <div className="flex flex-col items-center mb-8">
                             <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center mb-4 text-white shadow-lg shadow-blue-500/20">
-                                <i className="ph-bold ph-shield-check text-3xl"></i>
+                                <i className="fa-solid fa-shield-halved text-3xl"></i>
                             </div>
                             <h1 className="text-2xl font-black text-slate-800 tracking-tight">ISAC 審查管理系統</h1>
                             <p className="text-slate-400 text-sm mt-2 font-medium">請登入帳號以開始作業</p>
@@ -234,8 +238,8 @@
                             <input name="email" type="email" placeholder="Email" className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-medium" required />
                             <input name="password" type="password" placeholder="Password" className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-medium" required />
                         </div>
-                        <button disabled={isLoggingIn} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold shadow-xl transition-all mt-6 active:scale-[0.98] disabled:opacity-50">
-                            {isLoggingIn ? "連線中..." : "進入系統"}
+                        <button disabled={isLoggingIn} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold shadow-xl transition-all mt-6 active:scale-[0.98] disabled:opacity-50 flex justify-center items-center gap-2">
+                            {isLoggingIn ? <><i className="fa-solid fa-circle-notch fa-spin"></i> 連線中...</> : "進入系統"}
                         </button>
                     </form>
                 </div>
