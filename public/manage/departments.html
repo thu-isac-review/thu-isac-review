@@ -64,7 +64,7 @@
                 </select>
             </div>
 
-            <!-- 💡 升級版：批次操作懸浮列 (向外擴張 -inset-3，徹底遮蓋底層元素的殘餘陰影) -->
+            <!-- 批次操作懸浮列 -->
             <div id="batch-action-bar" class="hidden absolute -inset-3 bg-slate-50 px-3 flex items-center justify-between z-20 animate-fade">
                 <div class="flex items-center text-blue-700">
                     <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
@@ -123,10 +123,10 @@
         </div>
     </div>
 
-    <!-- Modal 結構皆與之前相同 -->
+    <!-- 學院設定 Modal -->
     <div id="college-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeCollegeModal()"></div>
-        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden modal-enter relative flex flex-col max-h-[90vh]">
+        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-xl overflow-hidden modal-enter relative flex flex-col max-h-[90vh]">
             <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center shrink-0 bg-slate-50">
                 <h3 class="font-black text-slate-800 text-lg flex items-center gap-2">
                     <i class="fa-solid fa-university text-blue-600"></i> 學院設定管理
@@ -137,9 +137,14 @@
                 <div>
                     <label class="block text-xs font-bold text-slate-600 mb-2">新增學院</label>
                     <div class="flex gap-3">
-                        <div class="relative flex-1">
-                            <i class="fa-solid fa-university absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                            <input type="text" id="new-college-input" placeholder="輸入新學院名稱..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all shadow-sm font-bold text-slate-700">
+                        <div class="flex flex-1 gap-2">
+                            <div class="relative flex-1">
+                                <i class="fa-solid fa-university absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                                <input type="text" id="new-college-name" placeholder="學院全名 (如: 管理學院)" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all shadow-sm font-bold text-slate-700">
+                            </div>
+                            <div class="relative w-1/3">
+                                <input type="text" id="new-college-short" placeholder="簡稱 (如: 管院)" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all shadow-sm font-bold text-slate-700">
+                            </div>
                         </div>
                         <button onclick="addCollege()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md shadow-blue-500/20 whitespace-nowrap">新增</button>
                     </div>
@@ -157,6 +162,7 @@
         </div>
     </div>
 
+    <!-- 系所設定 Modal -->
     <div id="dept-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeDeptModal()"></div>
         <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden modal-enter relative max-h-[90vh] flex flex-col">
@@ -227,8 +233,20 @@
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 onSnapshot(collegeDocRef, (docSnap) => {
-                    if (docSnap.exists()) { collegeList = docSnap.data().list || []; } 
-                    else { collegeList = ["文學院", "理學院", "工學院", "管理學院", "農學院"]; setDoc(collegeDocRef, { list: collegeList }); }
+                    if (docSnap.exists()) {
+                        const rawList = docSnap.data().list || [];
+                        // 確保資料結構升級為物件 {name, shortName}
+                        collegeList = rawList.map(c => typeof c === 'string' ? { name: c, shortName: c } : c);
+                    } else {
+                        collegeList = [
+                            {name: "文學院", shortName: "文院"},
+                            {name: "理學院", shortName: "理院"},
+                            {name: "工學院", shortName: "工院"},
+                            {name: "管理學院", shortName: "管院"},
+                            {name: "農學院", shortName: "農院"}
+                        ];
+                        setDoc(collegeDocRef, { list: collegeList }); 
+                    }
                     renderCollegeUI(); renderTable();
                 });
                 onSnapshot(deptCollection, (snapshot) => {
@@ -330,8 +348,16 @@
                             <button onclick="moveCollege(${index}, -1)" class="w-6 h-5 rounded hover:bg-slate-100 text-slate-400 hover:text-blue-600 disabled:opacity-0 transition-colors flex items-center justify-center shrink-0" ${index === 0 ? 'disabled' : ''}><i class="fa-solid fa-chevron-up text-[10px]"></i></button>
                             <button onclick="moveCollege(${index}, 1)" class="w-6 h-5 rounded hover:bg-slate-100 text-slate-400 hover:text-blue-600 disabled:opacity-0 transition-colors flex items-center justify-center shrink-0" ${index === collegeList.length - 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-down text-[10px]"></i></button>
                         </div>
-                        <span id="col-text-${index}" class="font-bold text-slate-700 truncate pl-1">${c}</span>
-                        <input type="text" id="col-input-${index}" value="${c}" class="hidden flex-1 border border-blue-400 bg-blue-50 rounded-lg px-3 py-1.5 text-sm font-bold text-blue-900 outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-inner">
+                        
+                        <div id="col-display-${index}" class="flex items-center gap-2 flex-1">
+                            <span class="font-bold text-slate-700 truncate pl-1">${c.name}</span>
+                            <span class="text-xs text-slate-400 font-medium">(${c.shortName})</span>
+                        </div>
+
+                        <div id="col-edit-group-${index}" class="hidden flex-1 flex gap-2">
+                            <input type="text" id="col-name-input-${index}" value="${c.name}" placeholder="全名" class="flex-1 border border-blue-400 bg-blue-50 rounded-lg px-3 py-1.5 text-sm font-bold text-blue-900 outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-inner">
+                            <input type="text" id="col-short-input-${index}" value="${c.shortName}" placeholder="簡稱" class="w-1/3 border border-blue-400 bg-blue-50 rounded-lg px-3 py-1.5 text-sm font-bold text-blue-900 outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-inner">
+                        </div>
                     </div>
                     <div class="flex items-center ml-3 gap-1.5 shrink-0">
                         <button id="col-edit-btn-${index}" onclick="editCollege(${index})" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors border border-transparent hover:border-blue-100 shrink-0"><i class="fa-solid fa-pen text-sm"></i></button>
@@ -342,39 +368,47 @@
                 </li>
             `).join('');
 
-            const optionsHtml = collegeList.map(c => `<option value="${c}">${c}</option>`).join('');
+            const optionsHtml = collegeList.map(c => `<option value="${c.name}">${c.shortName || c.name}</option>`).join('');
             document.getElementById('filter-college').innerHTML = `<option value="all">全部學院</option>` + optionsHtml;
             document.getElementById('input-college').innerHTML = `<option value="">請選擇學院...</option>` + optionsHtml;
         }
 
         window.addCollege = async () => {
-            const val = document.getElementById('new-college-input').value.trim();
-            if (!val) return;
-            if (collegeList.includes(val)) { alert("此學院已存在！"); return; }
-            await updateDoc(collegeDocRef, { list: [...collegeList, val] });
-            document.getElementById('new-college-input').value = '';
+            const nameVal = document.getElementById('new-college-name').value.trim();
+            const shortVal = document.getElementById('new-college-short').value.trim();
+            if (!nameVal) return;
+            if (collegeList.some(c => c.name === nameVal)) { alert("此學院已存在！"); return; }
+            await updateDoc(collegeDocRef, { list: [...collegeList, { name: nameVal, shortName: shortVal || nameVal }] });
+            document.getElementById('new-college-name').value = '';
+            document.getElementById('new-college-short').value = '';
         };
+        
         window.editCollege = (index) => {
-            document.getElementById(`col-text-${index}`).classList.add('hidden');
-            document.getElementById(`col-input-${index}`).classList.remove('hidden');
-            document.getElementById(`col-input-${index}`).focus();
+            document.getElementById(`col-display-${index}`).classList.add('hidden');
+            document.getElementById(`col-edit-group-${index}`).classList.remove('hidden');
+            document.getElementById(`col-name-input-${index}`).focus();
             document.getElementById(`col-edit-btn-${index}`).classList.add('hidden');
             document.getElementById(`col-save-btn-${index}`).classList.remove('hidden');
         };
+        
         window.saveCollege = async (index) => {
-            const newVal = document.getElementById(`col-input-${index}`).value.trim();
-            if (!newVal) return;
-            const newList = [...collegeList]; newList[index] = newVal;
+            const nameVal = document.getElementById(`col-name-input-${index}`).value.trim();
+            const shortVal = document.getElementById(`col-short-input-${index}`).value.trim();
+            if (!nameVal) return;
+            const newList = [...collegeList]; 
+            newList[index] = { name: nameVal, shortName: shortVal || nameVal };
             await updateDoc(collegeDocRef, { list: newList });
         };
+        
         window.moveCollege = async (index, dir) => {
             if (index + dir < 0 || index + dir >= collegeList.length) return;
             const newList = [...collegeList];
             const temp = newList[index]; newList[index] = newList[index + dir]; newList[index + dir] = temp;
             await updateDoc(collegeDocRef, { list: newList });
         };
+        
         window.removeCollege = async (index) => {
-            if (confirm(`確定移除「${collegeList[index]}」嗎？`)) {
+            if (confirm(`確定移除「${collegeList[index].name}」嗎？`)) {
                 await updateDoc(collegeDocRef, { list: collegeList.filter((_, i) => i !== index) });
             }
         };
@@ -458,7 +492,6 @@
             paginatedItems.forEach((data, idx) => {
                 const globalIndex = startIndex + idx; 
                 
-                // 💡 優化：置中處理未設定的狀態，並移除 font-mono 改為 font-bold
                 let contactsHtml = '';
                 let contactParentClass = '';
                 if (data.contacts && data.contacts.length > 0) {
@@ -474,6 +507,10 @@
                     contactParentClass = "flex justify-center items-center w-full";
                 }
 
+                // 💡 取得學院簡稱
+                const colObj = collegeList.find(c => c.name === data.college);
+                const colDispName = colObj && colObj.shortName ? colObj.shortName : data.college;
+
                 const isChecked = selectedIds.includes(data.id) ? 'checked' : '';
 
                 html += `
@@ -481,7 +518,7 @@
                     <td class="px-4 py-4 align-middle text-center">
                         <input type="checkbox" class="row-checkbox w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shadow-sm transition-all" value="${data.id}" onchange="toggleSelect('${data.id}')" ${isChecked}>
                     </td>
-                    <td class="px-4 py-4 align-middle text-center"><span class="text-slate-700 font-bold text-sm">${data.college}</span></td>
+                    <td class="px-4 py-4 align-middle text-center"><span class="text-slate-700 font-bold text-sm">${colDispName}</span></td>
                     <td class="px-4 py-4 align-middle text-center"><div class="text-sm font-bold text-slate-800 break-words leading-tight">${data.shortName || data.name}</div></td>
                     <td class="px-4 py-4 align-middle text-center"><div class="inline-block px-2.5 py-1 rounded-md bg-slate-100 border border-slate-300 font-mono text-xs font-bold text-slate-600 tracking-widest shadow-inner">${data.code}</div></td>
                     <td class="px-4 py-4 align-middle"><div class="${contactParentClass}">${contactsHtml}</div></td>
@@ -507,7 +544,6 @@
             tbody.innerHTML = html;
         }
 
-        // 💡 匯入/匯出格式修正為: 姓名(email), 姓名(email)
         window.exportToCSV = () => {
             if (allDepts.length === 0) { alert("沒有資料可供匯出！"); return; }
             let csv = '\uFEFF學院,系所代碼,學系全名,學系簡稱,聯絡人資訊(姓名(email), 姓名(email)),系統狀態\n';
@@ -541,7 +577,6 @@
                     let addedCount = 0;
                     
                     for (let i = 1; i < rows.length; i++) {
-                        // 處理 CSV 欄位可能包含引號的問題
                         let cols = [];
                         let inQuotes = false;
                         let currentVal = '';
@@ -562,7 +597,6 @@
 
                             if(!college || !code || !name) continue; 
 
-                            // 💡 匯入解析格式修正為: 姓名(email), 姓名(email)
                             let contacts = [];
                             if (contactsRaw) {
                                 contacts = contactsRaw.split(',').map(str => {
