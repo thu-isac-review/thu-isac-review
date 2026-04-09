@@ -3,55 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>系所清單管理</title>
+    <title>系所清單管理內容</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 使用穩定的 Font Awesome 6.5.1 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script>
         tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: { 50: '#f0f5fa', 500: '#2c75b3', 600: '#1a5c96', 700: '#004785' }
-                    }
-                }
-            }
+            theme: { extend: { colors: { brand: { 50: '#f0f5fa', 500: '#2c75b3', 600: '#1a5c96', 700: '#004785' } } } }
         }
     </script>
     <style>
-        /* 💡 修正破圖關鍵：將字體設定綁定在 body 而非全域 *，避免覆蓋 Font Awesome */
-        body { 
-            background-color: #f8fafc; margin: 0; padding: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; 
-            font-family: "SF Pro TC", "Noto Sans TC", sans-serif; -webkit-font-smoothing: antialiased; 
-        }
-        
+        body { background-color: transparent; margin: 0; padding: 0; font-family: "SF Pro TC", "Noto Sans TC", sans-serif; -webkit-font-smoothing: antialiased; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        
         .modal-enter { animation: modalFadeIn 0.2s ease-out forwards; }
-        @keyframes modalFadeIn { 
-            from { opacity: 0; transform: scale(0.97) translateY(-5px); } 
-            to { opacity: 1; transform: scale(1) translateY(0); } 
-        }
-
+        @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.97) translateY(-5px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         table { table-layout: fixed; width: 100%; }
         td { word-break: break-word; }
     </style>
 </head>
-<body class="custom-scrollbar">
+<body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden">
 
-    <!-- 頂部固定區塊 (不參與滾動) -->
-    <div class="shrink-0 px-6 pt-6 pb-4 space-y-4">
-        
-        <!-- 區塊 1：頂部標題與動作按鈕 -->
+    <!-- 頂部操作列 (僅保留頁面內的操作鈕) -->
+    <div class="shrink-0 px-6 pt-6 pb-4 space-y-4 animate-fade">
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shrink-0">
                     <i class="fa-solid fa-graduation-cap text-xl"></i>
                 </div>
                 <div>
-                    <h2 class="text-xl font-bold text-slate-800 tracking-tight">系所清單管理</h2>
-                    <p class="text-xs text-slate-500 mt-1">管理參與查核的學院與學系清單，並設定各系所的承辦窗口與開放狀態。</p>
+                    <h2 class="text-xl font-bold text-slate-800 tracking-tight">管理學系清單與承辦窗口</h2>
+                    <p class="text-xs text-slate-500 mt-1">設定參與查核的單位開放狀態。</p>
                 </div>
             </div>
             
@@ -75,7 +56,6 @@
             </div>
         </div>
 
-        <!-- 區塊 2：篩選與搜尋列 -->
         <div class="flex flex-col md:flex-row justify-between items-center gap-4 w-full">
             <div class="flex gap-2 w-full md:w-auto">
                 <select id="filter-college" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 h-10 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
@@ -95,7 +75,7 @@
     </div>
 
     <!-- 表格滾動區 -->
-    <div class="flex-1 overflow-hidden px-6 pb-6 flex flex-col">
+    <div class="flex-1 overflow-hidden px-6 pb-6 flex flex-col animate-fade">
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col flex-1 overflow-hidden">
             <div class="flex-1 overflow-auto custom-scrollbar relative">
                 <table class="w-full text-left table-fixed">
@@ -122,9 +102,7 @@
         </div>
     </div>
 
-    <!-- ==========================================
-         彈跳視窗 1：設定學院管理 (升級至與新增系所同級別的佈局)
-         ========================================== -->
+    <!-- 彈窗 (與之前邏輯相同) -->
     <div id="college-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeCollegeModal()"></div>
         <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden modal-enter relative flex flex-col max-h-[90vh]">
@@ -135,8 +113,7 @@
                 <button onclick="closeCollegeModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 bg-white shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             
-            <!-- 內部表單結構比照新增系所 -->
-            <div class="p-8 space-y-6 overflow-y-auto custom-scrollbar flex-1 bg-white">
+            <div class="p-8 space-y-5 overflow-y-auto custom-scrollbar flex-1 bg-white">
                 <div>
                     <label class="block text-xs font-bold text-slate-600 mb-2">新增學院</label>
                     <div class="flex gap-3">
@@ -148,8 +125,8 @@
                     </div>
                 </div>
 
-                <div class="pt-6 border-t border-slate-100">
-                    <div class="flex items-center justify-between mb-4">
+                <div class="pt-5 border-t border-slate-100">
+                    <div class="flex items-center justify-between mb-3">
                         <label class="block text-xs font-bold text-slate-600">現有學院清單 (可排序與編輯)</label>
                     </div>
                     <ul id="college-list-container" class="space-y-3"></ul>
@@ -157,14 +134,11 @@
             </div>
             
             <div class="p-6 border-t border-slate-100 shrink-0 flex gap-4 bg-slate-50">
-                <button type="button" onclick="closeCollegeModal()" class="w-full py-3 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-all shadow-sm">完成並關閉</button>
+                <button type="button" onclick="closeCollegeModal()" class="w-full py-3 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-all shadow-sm">關閉設定</button>
             </div>
         </div>
     </div>
 
-    <!-- ==========================================
-         彈跳視窗 2：新增/編輯系所
-         ========================================== -->
     <div id="dept-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeDeptModal()"></div>
         <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden modal-enter relative max-h-[90vh] flex flex-col">
@@ -206,9 +180,7 @@
                             <i class="fa-solid fa-plus"></i> 新增窗口
                         </button>
                     </div>
-                    <div id="contacts-container" class="space-y-3">
-                        <!-- 動態生成多窗口 -->
-                    </div>
+                    <div id="contacts-container" class="space-y-3"></div>
                 </div>
             </form>
             
@@ -221,47 +193,39 @@
         </div>
     </div>
 
-    <!-- Firebase 邏輯 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY",
-            authDomain: "thu-isac-review.firebaseapp.com",
-            projectId: "thu-isac-review",
-            storageBucket: "thu-isac-review.firebasestorage.app",
-            messagingSenderId: "453299876735",
-            appId: "1:453299876735:web:1d8babca3315423161a04a"
-        };
-
+        const firebaseConfig = { apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY", authDomain: "thu-isac-review.firebaseapp.com", projectId: "thu-isac-review", storageBucket: "thu-isac-review.firebasestorage.app", messagingSenderId: "453299876735", appId: "1:453299876735:web:1d8babca3315423161a04a" };
         const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
         const db = getFirestore(app);
         
         const deptCollection = collection(db, "departments");
         const collegeDocRef = doc(db, "settings", "colleges");
 
-        let allDepts = [];
-        let collegeList = [];
-        let editingId = null;
-        
-        let currentPage = 1;
-        const itemsPerPage = 10;
+        let allDepts = []; let collegeList = []; let editingId = null;
+        let currentPage = 1; const itemsPerPage = 10;
 
-        // =====================================
-        // 學院設定邏輯
-        // =====================================
-        onSnapshot(collegeDocRef, (docSnap) => {
-            if (docSnap.exists()) {
-                collegeList = docSnap.data().list || [];
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                onSnapshot(collegeDocRef, (docSnap) => {
+                    if (docSnap.exists()) { collegeList = docSnap.data().list || []; } 
+                    else { collegeList = ["文學院", "理學院", "工學院", "管理學院", "農學院"]; setDoc(collegeDocRef, { list: collegeList }); }
+                    renderCollegeUI(); renderTable();
+                });
+                onSnapshot(deptCollection, (snapshot) => {
+                    allDepts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderTable();
+                });
             } else {
-                collegeList = ["文學院", "理學院", "工學院", "管理學院", "農學院"];
-                setDoc(collegeDocRef, { list: collegeList }); 
+                document.getElementById('dept-table-body').innerHTML = `<tr><td colspan="6" class="px-6 py-16 text-center text-slate-400 font-bold"><i class="fa-solid fa-shield-halved text-3xl mb-3 text-slate-300"></i><p>請先登入系統以存取資料。</p></td></tr>`;
             }
-            renderCollegeUI();
-            renderTable();
         });
 
+        // 以下為原有的純粹邏輯 (無須更改)
         window.openCollegeModal = () => document.getElementById('college-modal').classList.remove('hidden');
         window.closeCollegeModal = () => document.getElementById('college-modal').classList.add('hidden');
 
@@ -288,14 +252,11 @@
 
             const optionsHtml = collegeList.map(c => `<option value="${c}">${c}</option>`).join('');
             const filterSelect = document.getElementById('filter-college');
-            const currentFilter = filterSelect.value;
             filterSelect.innerHTML = `<option value="all">全部學院</option>` + optionsHtml;
-            filterSelect.value = collegeList.includes(currentFilter) ? currentFilter : 'all';
+            filterSelect.value = collegeList.includes(filterSelect.value) ? filterSelect.value : 'all';
 
             const inputSelect = document.getElementById('input-college');
-            const currentInput = inputSelect.value;
             inputSelect.innerHTML = `<option value="">請選擇學院...</option>` + optionsHtml;
-            inputSelect.value = collegeList.includes(currentInput) ? currentInput : '';
         }
 
         window.addCollege = async () => {
@@ -303,8 +264,7 @@
             const val = input.value.trim();
             if (!val) return;
             if (collegeList.includes(val)) { alert("此學院已存在！"); return; }
-            const newList = [...collegeList, val];
-            await updateDoc(collegeDocRef, { list: newList });
+            await updateDoc(collegeDocRef, { list: [...collegeList, val] });
             input.value = '';
         };
 
@@ -319,30 +279,23 @@
         window.saveCollege = async (index) => {
             const newVal = document.getElementById(`col-input-${index}`).value.trim();
             if (!newVal) return;
-            const newList = [...collegeList];
-            newList[index] = newVal;
+            const newList = [...collegeList]; newList[index] = newVal;
             await updateDoc(collegeDocRef, { list: newList });
         };
 
         window.moveCollege = async (index, dir) => {
             if (index + dir < 0 || index + dir >= collegeList.length) return;
             const newList = [...collegeList];
-            const temp = newList[index];
-            newList[index] = newList[index + dir];
-            newList[index + dir] = temp;
+            const temp = newList[index]; newList[index] = newList[index + dir]; newList[index + dir] = temp;
             await updateDoc(collegeDocRef, { list: newList });
         };
 
         window.removeCollege = async (index) => {
-            if (confirm(`確定移除「${collegeList[index]}」嗎？\n(注意：不會刪除已套用此學院的系所)`)) {
-                const newList = collegeList.filter((_, i) => i !== index);
-                await updateDoc(collegeDocRef, { list: newList });
+            if (confirm(`確定移除「${collegeList[index]}」嗎？`)) {
+                await updateDoc(collegeDocRef, { list: collegeList.filter((_, i) => i !== index) });
             }
         };
 
-        // =====================================
-        // 系所表單邏輯
-        // =====================================
         window.openDeptModal = () => {
             if (!editingId) { 
                 document.getElementById('dept-form').reset();
@@ -363,7 +316,7 @@
             const div = document.createElement('div');
             div.className = 'contact-entry flex gap-3 items-start animate-[fadeIn_0.3s_ease-out]';
             div.innerHTML = `
-                <div class="flex-1 space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-sm">
+                <div class="flex-1 space-y-2 bg-slate-50 p-3 rounded-lg border border-slate-200 shadow-sm">
                     <div class="flex items-center gap-2">
                         <span class="text-xs font-bold text-slate-400 w-12 shrink-0">姓名：</span>
                         <input type="text" placeholder="例如：陳助教" value="${name}" class="contact-name w-full bg-transparent text-sm focus:outline-none font-bold text-slate-700">
@@ -381,18 +334,7 @@
             container.appendChild(div);
         };
 
-        // =====================================
-        // 資料表格渲染與分頁
-        // =====================================
-        onSnapshot(deptCollection, (snapshot) => {
-            allDepts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            renderTable();
-        });
-
-        window.changePage = (page) => {
-            currentPage = page;
-            renderTable();
-        };
+        window.changePage = (page) => { currentPage = page; renderTable(); };
 
         function renderTable() {
             const tbody = document.getElementById('dept-table-body');
@@ -401,10 +343,7 @@
             const filterStatus = document.getElementById('filter-status').value;
 
             let filtered = allDepts.filter(d => {
-                const matchSearch = d.name.toLowerCase().includes(searchTerm) || 
-                                    (d.shortName && d.shortName.toLowerCase().includes(searchTerm)) ||
-                                    d.code.toLowerCase().includes(searchTerm) ||
-                                    (d.contacts && d.contacts.some(c => c.name.includes(searchTerm)));
+                const matchSearch = d.name.toLowerCase().includes(searchTerm) || (d.shortName && d.shortName.toLowerCase().includes(searchTerm)) || d.code.toLowerCase().includes(searchTerm) || (d.contacts && d.contacts.some(c => c.name.includes(searchTerm)));
                 const matchCollege = filterCollege === 'all' || d.college === filterCollege;
                 const matchStatus = filterStatus === 'all' || (filterStatus === 'active' ? d.is_active : !d.is_active);
                 return matchSearch && matchCollege && matchStatus;
@@ -415,12 +354,10 @@
             const totalItems = filtered.length;
             const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
             if (currentPage > totalPages) currentPage = totalPages;
-
             const startIndex = (currentPage - 1) * itemsPerPage;
-            const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
-            const paginatedItems = filtered.slice(startIndex, endIndex);
+            const paginatedItems = filtered.slice(startIndex, startIndex + itemsPerPage);
 
-            document.getElementById('pagination-info').innerText = totalItems > 0 ? `顯示 ${startIndex + 1} 到 ${endIndex} 筆，共 ${totalItems} 筆` : '尚無資料';
+            document.getElementById('pagination-info').innerText = totalItems > 0 ? `顯示 ${startIndex + 1} 到 ${Math.min(startIndex + itemsPerPage, totalItems)} 筆，共 ${totalItems} 筆` : '尚無資料';
             
             let btnHtml = '';
             btnHtml += `<button onclick="changePage(${currentPage - 1})" class="px-3 py-1 border border-slate-200 rounded-md text-sm font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-40 transition-colors" ${currentPage === 1 ? 'disabled' : ''}>上一頁</button>`;
@@ -436,37 +373,18 @@
             let html = '';
             paginatedItems.forEach((data, idx) => {
                 const globalIndex = startIndex + idx; 
-                
-                let contactsHtml = '';
-                if (data.contacts && data.contacts.length > 0) {
-                    contactsHtml = data.contacts.map(c => `
-                        <div class="flex flex-col items-start mb-2 last:mb-0">
-                            <div class="text-sm font-bold text-slate-700 truncate" title="${c.name}">${c.name || '未填寫'}</div>
-                            <div class="text-[11px] text-slate-400 font-mono tracking-tight truncate">${c.email || ''}</div>
-                        </div>
-                    `).join('');
-                } else {
-                    contactsHtml = '<span class="text-slate-400 text-xs font-bold bg-slate-100 px-2 py-1 rounded">- 尚未設定 -</span>';
-                }
+                let contactsHtml = data.contacts && data.contacts.length > 0 ? data.contacts.map(c => `
+                    <div class="flex flex-col items-start mb-2 last:mb-0">
+                        <div class="text-sm font-bold text-slate-700 truncate" title="${c.name}">${c.name || '未填寫'}</div>
+                        <div class="text-[11px] text-slate-400 font-mono tracking-tight truncate">${c.email || ''}</div>
+                    </div>`).join('') : '<span class="text-slate-400 text-xs font-bold bg-slate-100 px-2 py-1 rounded">- 尚未設定 -</span>';
 
                 html += `
                 <tr class="group bg-white hover:bg-blue-50/40 transition-all duration-150 ${!data.is_active ? 'opacity-60 grayscale-[20%] bg-slate-50/50' : ''}">
-                    <td class="px-6 py-4 align-middle text-center">
-                        <span class="text-slate-700 font-bold text-sm">${data.college}</span>
-                    </td>
-                    <td class="px-6 py-4 align-middle text-center">
-                        <div class="text-sm font-bold text-slate-800 break-words leading-tight">${data.shortName || data.name}</div>
-                    </td>
-                    <td class="px-6 py-4 align-middle text-center">
-                        <div class="inline-block px-2.5 py-1 rounded-md bg-slate-100 border border-slate-300 font-mono text-xs font-bold text-slate-600 tracking-widest shadow-inner">
-                            ${data.code}
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 align-middle">
-                        <div class="flex flex-col items-start pl-4">
-                            ${contactsHtml}
-                        </div>
-                    </td>
+                    <td class="px-6 py-4 align-middle text-center"><span class="text-slate-700 font-bold text-sm">${data.college}</span></td>
+                    <td class="px-6 py-4 align-middle text-center"><div class="text-sm font-bold text-slate-800 break-words leading-tight">${data.shortName || data.name}</div></td>
+                    <td class="px-6 py-4 align-middle text-center"><div class="inline-block px-2.5 py-1 rounded-md bg-slate-100 border border-slate-300 font-mono text-xs font-bold text-slate-600 tracking-widest shadow-inner">${data.code}</div></td>
+                    <td class="px-6 py-4 align-middle"><div class="flex flex-col items-start pl-4">${contactsHtml}</div></td>
                     <td class="px-6 py-4 align-middle text-center">
                         <div class="flex items-center justify-center">
                             <label class="relative inline-flex items-center cursor-pointer group/toggle">
@@ -478,18 +396,10 @@
                     </td>
                     <td class="px-6 py-4 align-middle text-center">
                         <div class="flex items-center justify-center gap-2 opacity-100 transition-opacity">
-                            <button onclick="window.moveOrder('${data.id}', 'up')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all disabled:opacity-20" ${globalIndex === 0 ? 'disabled' : ''} title="向上移動">
-                                <i class="fa-solid fa-chevron-up text-xs"></i>
-                            </button>
-                            <button onclick="window.moveOrder('${data.id}', 'down')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all disabled:opacity-20" ${globalIndex === filtered.length - 1 ? 'disabled' : ''} title="向下移動">
-                                <i class="fa-solid fa-chevron-down text-xs"></i>
-                            </button>
-                            <button onclick="window.editDept('${data.id}')" class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all" title="編輯">
-                                <i class="fa-solid fa-pen text-sm"></i>
-                            </button>
-                            <button onclick="window.deleteDept('${data.id}', '${data.name}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all" title="刪除">
-                                <i class="fa-solid fa-trash-can text-sm"></i>
-                            </button>
+                            <button onclick="window.moveOrder('${data.id}', 'up')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all disabled:opacity-20" ${globalIndex === 0 ? 'disabled' : ''}><i class="fa-solid fa-chevron-up text-xs"></i></button>
+                            <button onclick="window.moveOrder('${data.id}', 'down')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all disabled:opacity-20" ${globalIndex === filtered.length - 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-down text-xs"></i></button>
+                            <button onclick="window.editDept('${data.id}')" class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all"><i class="fa-solid fa-pen text-sm"></i></button>
+                            <button onclick="window.deleteDept('${data.id}', '${data.name}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all"><i class="fa-solid fa-trash-can text-sm"></i></button>
                         </div>
                     </td>
                 </tr>`;
@@ -497,39 +407,24 @@
             tbody.innerHTML = html;
         }
 
-        // =====================================
-        // 匯出 / 匯入 CSV
-        // =====================================
         window.exportToCSV = () => {
             if (allDepts.length === 0) { alert("沒有資料可供匯出！"); return; }
-            
-            let csv = '\uFEFF'; 
-            csv += '排序,系統狀態,學院,學系全名,學系簡稱,系所代碼,聯絡人資訊\n';
-            
+            let csv = '\uFEFF排序,系統狀態,學院,學系全名,學系簡稱,系所代碼,聯絡人資訊\n';
             let sorted = [...allDepts].sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
-            
             sorted.forEach(d => {
                 let status = d.is_active ? '啟用' : '停用';
                 let contactsStr = d.contacts ? d.contacts.map(c => `${c.name}(${c.email})`).join('; ') : '';
-                let row = [d.sortOrder, status, d.college, d.name, d.shortName || '', d.code, contactsStr];
-                
-                csv += row.map(v => `"${(v+'').replace(/"/g, '""')}"`).join(',') + '\n';
+                csv += [d.sortOrder, status, d.college, d.name, d.shortName || '', d.code, contactsStr].map(v => `"${(v+'').replace(/"/g, '""')}"`).join(',') + '\n';
             });
-
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
-            link.href = url;
+            link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
             link.download = `ISAC系所清單_${new Date().toISOString().split('T')[0]}.csv`;
-            document.body.appendChild(link);
             link.click();
-            document.body.removeChild(link);
         };
 
         window.handleImport = async (e) => {
             const file = e.target.files[0];
             if (!file) return;
-
             const btn = document.getElementById('btn-import');
             const originalHtml = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-base text-blue-600"></i> 匯入中...';
@@ -538,75 +433,44 @@
             const reader = new FileReader();
             reader.onload = async (event) => {
                 try {
-                    const text = event.target.result;
-                    const rows = text.split('\n').map(row => row.trim()).filter(row => row);
-                    
+                    const rows = event.target.result.split('\n').map(row => row.trim()).filter(row => row);
                     let maxOrder = allDepts.length > 0 ? Math.max(...allDepts.map(d => d.sortOrder || 0)) : 0;
                     let addedCount = 0;
-                    
                     for (let i = 1; i < rows.length; i++) {
                         const cols = rows[i].split(',').map(col => col.replace(/(^"|"$)/g, '').trim());
                         if (cols.length >= 4) {
-                            const college = cols[0];
-                            const name = cols[1];
-                            const shortName = cols[2];
-                            const code = cols[3].toUpperCase();
-                            const cName = cols[4] || '';
-                            const cEmail = cols[5] || '';
-                            
-                            const contacts = [];
-                            if (cName || cEmail) contacts.push({ name: cName, email: cEmail });
-
+                            const [college, name, shortName, code, cName, cEmail] = [cols[0], cols[1], cols[2], cols[3].toUpperCase(), cols[4] || '', cols[5] || ''];
+                            const contacts = (cName || cEmail) ? [{ name: cName, email: cEmail }] : [];
                             maxOrder += 10;
-                            await addDoc(deptCollection, {
-                                college, name, shortName, code, contacts,
-                                is_active: true, sortOrder: maxOrder, created_at: serverTimestamp()
-                            });
+                            await addDoc(deptCollection, { college, name, shortName, code, contacts, is_active: true, sortOrder: maxOrder, created_at: serverTimestamp() });
                             addedCount++;
                         }
                     }
                     alert(`✅ 成功匯入 ${addedCount} 筆系所資料！`);
-                } catch (error) {
-                    alert("匯入失敗，請確認檔案格式是否正確。\n" + error.message);
-                } finally {
-                    btn.innerHTML = originalHtml;
-                    btn.disabled = false;
-                    e.target.value = '';
-                }
+                } catch (error) { alert("匯入失敗，請確認檔案格式是否正確。\n" + error.message); } 
+                finally { btn.innerHTML = originalHtml; btn.disabled = false; e.target.value = ''; }
             };
             reader.readAsText(file);
         };
 
-        // =====================================
-        // Firebase 增刪改查
-        // =====================================
         window.submitDeptForm = async () => {
             const btn = document.getElementById('btn-submit');
-            
             const contacts = Array.from(document.querySelectorAll('.contact-entry')).map(entry => ({
-                name: entry.querySelector('.contact-name').value.trim(),
-                email: entry.querySelector('.contact-email').value.trim()
+                name: entry.querySelector('.contact-name').value.trim(), email: entry.querySelector('.contact-email').value.trim()
             })).filter(c => c.name || c.email);
 
             const payload = {
-                college: document.getElementById('input-college').value.trim(),
-                code: document.getElementById('input-code').value.toUpperCase().trim(),
-                name: document.getElementById('input-name').value.trim(),
-                shortName: document.getElementById('input-short-name').value.trim(),
-                contacts: contacts
+                college: document.getElementById('input-college').value.trim(), code: document.getElementById('input-code').value.toUpperCase().trim(),
+                name: document.getElementById('input-name').value.trim(), shortName: document.getElementById('input-short-name').value.trim(), contacts
             };
 
-            if(!payload.college || !payload.code || !payload.name) {
-                alert("請填寫必填欄位！"); return;
-            }
+            if(!payload.college || !payload.code || !payload.name) { alert("請填寫必填欄位！"); return; }
 
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> 儲存中...';
+            btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> 儲存中...';
 
             try {
-                if (editingId) {
-                    await updateDoc(doc(db, "departments", editingId), { ...payload, updated_at: serverTimestamp() });
-                } else {
+                if (editingId) await updateDoc(doc(db, "departments", editingId), { ...payload, updated_at: serverTimestamp() });
+                else {
                     const maxOrder = allDepts.length > 0 ? Math.max(...allDepts.map(d => d.sortOrder || 0)) : 0;
                     await addDoc(deptCollection, { ...payload, sortOrder: maxOrder + 10, is_active: true, created_at: serverTimestamp() });
                 }
@@ -619,19 +483,11 @@
             const dept = allDepts.find(d => d.id === id);
             if (!dept) return;
             editingId = id;
-
-            document.getElementById('input-college').value = dept.college;
-            document.getElementById('input-code').value = dept.code;
-            document.getElementById('input-name').value = dept.name;
-            document.getElementById('input-short-name').value = dept.shortName || '';
-
+            document.getElementById('input-college').value = dept.college; document.getElementById('input-code').value = dept.code;
+            document.getElementById('input-name').value = dept.name; document.getElementById('input-short-name').value = dept.shortName || '';
             document.getElementById('contacts-container').innerHTML = '';
-            if (dept.contacts && dept.contacts.length > 0) {
-                dept.contacts.forEach(c => addContactField(c.name, c.email));
-            } else {
-                addContactField();
-            }
-
+            if (dept.contacts && dept.contacts.length > 0) dept.contacts.forEach(c => addContactField(c.name, c.email));
+            else addContactField();
             document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-pen text-blue-600"></i> 編輯系所單位';
             document.getElementById('dept-modal').classList.remove('hidden');
         };
@@ -639,34 +495,28 @@
         window.moveOrder = async (id, direction) => {
             let sorted = [...allDepts].sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
             const currentIndex = sorted.findIndex(d => d.id === id);
-            
             if (direction === 'up' && currentIndex > 0) {
-                const current = sorted[currentIndex];
-                const target = sorted[currentIndex - 1];
-                await updateDoc(doc(db, "departments", current.id), { sortOrder: target.sortOrder || (currentIndex-1)*10 });
-                await updateDoc(doc(db, "departments", target.id), { sortOrder: current.sortOrder || currentIndex*10 });
+                await updateDoc(doc(db, "departments", sorted[currentIndex].id), { sortOrder: sorted[currentIndex - 1].sortOrder || (currentIndex-1)*10 });
+                await updateDoc(doc(db, "departments", sorted[currentIndex - 1].id), { sortOrder: sorted[currentIndex].sortOrder || currentIndex*10 });
             } else if (direction === 'down' && currentIndex < sorted.length - 1) {
-                const current = sorted[currentIndex];
-                const target = sorted[currentIndex + 1];
-                await updateDoc(doc(db, "departments", current.id), { sortOrder: target.sortOrder || (currentIndex+1)*10 });
-                await updateDoc(doc(db, "departments", target.id), { sortOrder: current.sortOrder || currentIndex*10 });
+                await updateDoc(doc(db, "departments", sorted[currentIndex].id), { sortOrder: sorted[currentIndex + 1].sortOrder || (currentIndex+1)*10 });
+                await updateDoc(doc(db, "departments", sorted[currentIndex + 1].id), { sortOrder: sorted[currentIndex].sortOrder || currentIndex*10 });
             }
         };
 
-        window.toggleStatus = async (id, status) => {
-            await updateDoc(doc(db, "departments", id), { is_active: !status });
-        };
-
+        window.toggleStatus = async (id, status) => await updateDoc(doc(db, "departments", id), { is_active: !status });
         window.deleteDept = async (id, name) => {
             if (confirm(`確定要刪除「${name}」嗎？此操作無法復原。`)) {
                 await deleteDoc(doc(db, "departments", id));
-                
-                const totalAfterDelete = allDepts.length - 1;
-                const totalPages = Math.ceil(totalAfterDelete / itemsPerPage) || 1;
+                const totalPages = Math.ceil((allDepts.length - 1) / itemsPerPage) || 1;
                 if (currentPage > totalPages) currentPage = totalPages;
                 renderTable();
             }
         };
+        
+        document.getElementById('search-input').addEventListener('input', renderTable);
+        document.getElementById('filter-college').addEventListener('change', renderTable);
+        document.getElementById('filter-status').addEventListener('change', renderTable);
     </script>
 </body>
 </html>
