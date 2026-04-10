@@ -113,110 +113,123 @@
         </div>
     </div>
 
-    <div id="data-modal" class="fixed inset-0 z-50 hidden bg-slate-50 flex-col page-enter overflow-hidden">
-        
-        <form id="data-form" class="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8 w-full mx-auto flex flex-col">
+    <!-- ==========================================
+         彈跳視窗：極簡高質感寬版表單 (3欄+2欄)
+         ========================================== -->
+    <div id="data-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 sm:p-6">
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-[1400px] overflow-hidden modal-enter relative flex flex-col max-h-[95vh]">
             
-            <div class="flex justify-between items-end mb-6 shrink-0">
-                <div>
-                    <button type="button" onclick="closeModal()" class="text-sm font-bold text-slate-500 hover:text-blue-600 flex items-center gap-2 mb-2 transition-colors">
-                        <i class="fa-solid fa-arrow-left"></i> 返回清單
-                    </button>
-                    <h3 id="modal-title" class="font-black text-slate-800 text-2xl tracking-tight">建立實習紀錄</h3>
-                </div>
-                <button type="button" id="btn-submit" onclick="submitForm()" class="px-7 py-3 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 active:scale-95">
-                    <i class="fa-solid fa-check"></i> 儲存紀錄主檔
-                </button>
+            <!-- Modal 標頭 -->
+            <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center shrink-0 bg-slate-50/80 backdrop-blur-md">
+                <h3 id="modal-title" class="font-black text-slate-800 text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-file-pen text-blue-600"></i> 建立實習紀錄主檔
+                </h3>
+                <button onclick="closeModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 bg-white shadow-sm border border-slate-200 hover:bg-slate-100 transition-colors shrink-0"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-
-            <div class="flex flex-col flex-1 min-h-0">
+            
+            <form id="data-form" class="p-8 overflow-y-auto custom-scrollbar flex-1 bg-white flex flex-col gap-8">
                 
-                <div class="flex-[1.4] min-h-[350px] grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <!-- 上半部：三欄均分 (學生、機構、課程) -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-full relative z-30">
-                        <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2 shrink-0"><i class="fa-solid fa-user text-blue-500"></i> 1. 實習生綁定</h4>
-                        <div class="space-y-4 flex-1 flex flex-col justify-start">
-                            <div class="relative" id="student-search-container">
-                                <label class="block text-xs font-bold text-slate-600 mb-2">搜尋並選擇學生 <span class="text-rose-500">*</span></label>
-                                <div class="relative">
-                                    <input type="text" id="input-student" required placeholder="輸入學號或姓名搜尋..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-4 pr-10 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-bold text-slate-700 shadow-sm transition-all" autocomplete="off">
-                                    <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
-                                </div>
-                                <div id="student-dropdown" class="hidden absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-56 overflow-y-auto custom-scrollbar"></div>
-                                <div id="student-info-card" class="hidden mt-3 p-4 border-2 rounded-xl transition-all"></div>
+                    <!-- 1. 實習生綁定 -->
+                    <div class="flex flex-col space-y-4">
+                        <h4 class="text-sm font-black text-slate-800 border-b border-slate-100 pb-2"><i class="fa-solid fa-user text-blue-500 mr-1.5"></i>實習生綁定</h4>
+                        
+                        <div class="relative" id="student-search-container">
+                            <label class="block text-xs font-bold text-slate-500 mb-1.5">搜尋並選擇學生 <span class="text-rose-500">*</span></label>
+                            <div class="relative">
+                                <input type="text" id="input-student" required placeholder="輸入學號或姓名搜尋..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-4 pr-10 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-bold text-slate-700 shadow-sm transition-all" autocomplete="off">
+                                <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
                             </div>
+                            <div id="student-dropdown" class="hidden absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-56 overflow-y-auto custom-scrollbar"></div>
                             
-                            <div>
-                                <label class="block text-xs font-bold text-slate-600 mb-2">當學年年級 <span class="text-rose-500">*</span></label>
-                                <select id="input-grade" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-bold text-slate-700 shadow-sm cursor-pointer">
-                                    <option value="大一">大一</option><option value="大二">大二</option>
-                                    <option value="大三" selected>大三</option><option value="大四">大四</option>
-                                    <option value="延畢">延畢</option><option value="碩一">碩一</option>
-                                    <option value="碩二">碩二</option><option value="博一">博一</option>
-                                </select>
-                            </div>
+                            <!-- 動態資訊卡 -->
+                            <div id="student-info-card" class="hidden mt-3 p-4 bg-slate-50 border border-slate-200 rounded-xl shadow-sm transition-all"></div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1.5">當學年年級 <span class="text-rose-500">*</span></label>
+                            <select id="input-grade" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-bold text-slate-700 shadow-sm cursor-pointer">
+                                <option value="大一">大一</option><option value="大二">大二</option>
+                                <option value="大三" selected>大三</option><option value="大四">大四</option>
+                                <option value="延畢">延畢</option><option value="碩一">碩一</option>
+                                <option value="碩二">碩二</option><option value="博一">博一</option>
+                            </select>
                         </div>
                     </div>
 
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-full relative z-20">
-                        <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2 shrink-0"><i class="fa-solid fa-building text-emerald-500"></i> 2. 實習機構綁定</h4>
-                        <div class="relative flex-1 flex flex-col justify-start" id="inst-search-container">
-                            <label class="block text-xs font-bold text-slate-600 mb-2">搜尋並選擇機構 <span class="text-rose-500">*</span></label>
+                    <!-- 2. 實習機構綁定 -->
+                    <div class="flex flex-col space-y-4">
+                        <h4 class="text-sm font-black text-slate-800 border-b border-slate-100 pb-2"><i class="fa-solid fa-building text-emerald-500 mr-1.5"></i>實習機構綁定</h4>
+                        
+                        <div class="relative" id="inst-search-container">
+                            <label class="block text-xs font-bold text-slate-500 mb-1.5">搜尋並選擇機構 <span class="text-rose-500">*</span></label>
                             <div class="relative">
                                 <input type="text" id="input-institution" required placeholder="輸入機構名稱或統編搜尋..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-4 pr-10 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-bold text-slate-700 shadow-sm transition-all" autocomplete="off">
                                 <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
                             </div>
                             <div id="institution-dropdown" class="hidden absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-56 overflow-y-auto custom-scrollbar"></div>
-                            <div id="inst-info-card" class="hidden mt-3 p-4 border-2 rounded-xl transition-all"></div>
+                            
+                            <!-- 動態資訊卡 -->
+                            <div id="inst-info-card" class="hidden mt-3 p-4 bg-slate-50 border border-slate-200 rounded-xl shadow-sm transition-all"></div>
                         </div>
                     </div>
 
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-full relative z-10">
-                        <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2 shrink-0">
-                            <i class="fa-solid fa-layer-group text-indigo-500"></i> 3. 關聯實習課程 <span class="text-rose-500 ml-1">*</span>
+                    <!-- 3. 關聯實習課程 -->
+                    <div class="flex flex-col space-y-4 h-[350px] lg:h-auto">
+                        <h4 class="text-sm font-black text-slate-800 border-b border-slate-100 pb-2 flex justify-between items-end">
+                            <span><i class="fa-solid fa-layer-group text-indigo-500 mr-1.5"></i>關聯實習課程 <span class="text-rose-500">*</span></span>
+                            <span class="text-[10px] text-slate-400 font-normal">支援多選</span>
                         </h4>
-                        <div class="relative shrink-0 mb-3" id="course-search-container">
+                        
+                        <div class="relative shrink-0" id="course-search-container">
                             <input type="text" id="input-course-search" placeholder="搜尋課程名稱、代號或系所..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-4 pr-10 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-slate-700 shadow-sm transition-all" autocomplete="off">
                             <i class="fa-solid fa-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
                             <div id="course-dropdown" class="hidden absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-56 overflow-y-auto custom-scrollbar"></div>
                         </div>
-                        <div id="selected-courses-container" class="flex-1 overflow-y-auto custom-scrollbar pr-2 -mx-2 px-2 flex flex-col gap-2 min-h-[120px]">
-                            </div>
+                        
+                        <!-- 選中標籤區 -->
+                        <div id="selected-courses-container" class="flex-1 overflow-y-auto custom-scrollbar pr-2 flex flex-col gap-2 min-h-[120px]">
+                            <!-- JS 動態產生 -->
+                        </div>
                     </div>
-
                 </div>
 
-                <div class="flex-1 min-h-[300px] grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- 下半部：兩欄均分 (條件保障、備註) -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-8 border-t border-slate-100">
                     
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-center">
-                        <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-5 flex items-center gap-2 shrink-0"><i class="fa-solid fa-clock text-amber-500"></i> 4. 實習條件與保障</h4>
+                    <!-- 4. 實習條件與保障 -->
+                    <div>
+                        <h4 class="text-sm font-black text-slate-800 border-b border-slate-100 pb-2 mb-4"><i class="fa-solid fa-clock text-amber-500 mr-1.5"></i>實習條件與保障</h4>
                         
                         <div class="grid grid-cols-2 gap-x-6 gap-y-5">
                             <div class="col-span-2 sm:col-span-1">
-                                <label class="block text-xs font-bold text-slate-600 mb-1.5">實習起訖時間 <span class="text-rose-500">*</span></label>
-                                <input type="text" id="input-duration" required placeholder="如: 113/07/01-113/08/31" pattern="^\d{2,3}\/\d{2}\/\d{2}-\d{2,3}\/\d{2}\/\d{2}$" title="格式：YYY/MM/DD-YYY/MM/DD" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold font-mono text-center text-slate-700 shadow-sm outline-none focus:ring-2 focus:ring-amber-500">
+                                <label class="block text-xs font-bold text-slate-500 mb-1.5">實習起訖時間 <span class="text-rose-500">*</span></label>
+                                <input type="text" id="input-duration" required placeholder="如: 113/07/01-113/08/31" pattern="^\d{2,3}\/\d{2}\/\d{2}-\d{2,3}\/\d{2}\/\d{2}$" title="格式：YYY/MM/DD-YYY/MM/DD" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold font-mono text-slate-700 shadow-sm outline-none focus:ring-2 focus:ring-amber-500">
                             </div>
                             <div class="col-span-2 sm:col-span-1">
-                                <label class="block text-xs font-bold text-slate-600 mb-1.5">核定實習時數 <span class="text-rose-500">*</span></label>
-                                <input type="number" id="input-hours" required min="1" placeholder="填寫數字" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold font-mono text-center text-slate-700 shadow-sm outline-none focus:ring-2 focus:ring-amber-500">
+                                <label class="block text-xs font-bold text-slate-500 mb-1.5">核定實習時數 <span class="text-rose-500">*</span></label>
+                                <input type="number" id="input-hours" required min="1" placeholder="填寫數字" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold font-mono text-slate-700 shadow-sm outline-none focus:ring-2 focus:ring-amber-500">
                             </div>
                             
                             <div class="col-span-2 sm:col-span-1">
-                                <label class="block text-xs font-bold text-slate-600 mb-1.5">實習時間分類 <span class="text-rose-500">*</span></label>
+                                <label class="block text-xs font-bold text-slate-500 mb-1.5">實習時間分類 <span class="text-rose-500">*</span></label>
                                 <select id="input-period-type" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer">
                                     <option value="寒假實習">寒假實習</option><option value="暑假實習" selected>暑假實習</option>
                                     <option value="學期期間實習">學期期間實習</option><option value="單一學期實習">單一學期實習</option><option value="全學年">全學年</option>
                                 </select>
                             </div>
                             <div class="col-span-2 sm:col-span-1">
-                                <label class="block text-xs font-bold text-slate-600 mb-1.5">證明文件類型 <span class="text-rose-500">*</span></label>
+                                <label class="block text-xs font-bold text-slate-500 mb-1.5">證明文件類型 <span class="text-rose-500">*</span></label>
                                 <select id="input-proof-type" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer">
                                     <option value="合約" selected>合約</option><option value="公函">公函</option><option value="其他證明文件">其他證明文件</option>
                                 </select>
                             </div>
 
                             <div class="col-span-2 sm:col-span-1">
-                                <label class="block text-xs font-bold text-slate-600 mb-1.5">投保情形 <span class="text-rose-500">*</span></label>
+                                <label class="block text-xs font-bold text-slate-500 mb-1.5">投保情形 <span class="text-rose-500">*</span></label>
                                 <select id="input-insurance" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer">
                                     <option value="兩者皆有">兩者皆有 (校保+勞保)</option>
                                     <option value="僅校外實習保險" selected>僅校外實習保險</option>
@@ -225,7 +238,7 @@
                                 </select>
                             </div>
                             <div class="col-span-2 sm:col-span-1">
-                                <label class="block text-xs font-bold text-slate-600 mb-1.5">勞雇關係 <span class="text-rose-500">*</span></label>
+                                <label class="block text-xs font-bold text-slate-500 mb-1.5">勞雇關係 <span class="text-rose-500">*</span></label>
                                 <select id="input-employment" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer">
                                     <option value="是">是</option><option value="否" selected>否</option>
                                 </select>
@@ -233,16 +246,25 @@
                         </div>
                     </div>
 
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-full">
-                        <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2 shrink-0"><i class="fa-solid fa-comment-dots text-slate-500"></i> 5. 紀錄備註</h4>
-                        <textarea id="input-notes" placeholder="可選填相關備註說明 (如：學分抵免狀況、特殊注意事項)..." class="w-full flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-slate-500 outline-none font-medium text-slate-700 shadow-sm resize-none transition-all min-h-[100px]"></textarea>
+                    <!-- 5. 紀錄備註 -->
+                    <div class="flex flex-col h-full">
+                        <h4 class="text-sm font-black text-slate-800 border-b border-slate-100 pb-2 mb-4"><i class="fa-solid fa-comment-dots text-slate-500 mr-1.5"></i>紀錄備註</h4>
+                        <textarea id="input-notes" placeholder="可選填相關備註說明 (如：學分抵免狀況、特殊注意事項)..." class="w-full flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-slate-500 outline-none font-medium text-slate-700 shadow-sm resize-none transition-all min-h-[120px]"></textarea>
                     </div>
                 </div>
-
+            </form>
+            
+            <!-- Modal 底部按鈕 -->
+            <div class="p-6 border-t border-slate-100 shrink-0 flex gap-4 bg-slate-50 justify-end">
+                <button type="button" onclick="closeModal()" class="px-8 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-all shadow-sm">取消</button>
+                <button type="button" id="btn-submit" onclick="submitForm()" class="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 active:scale-[0.98]">
+                    <i class="fa-solid fa-check"></i> 儲存紀錄
+                </button>
             </div>
-        </form>
+        </div>
     </div>
 
+    <!-- Firebase 邏輯 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -346,7 +368,7 @@
             const filtered = list.filter(i => i.name.toLowerCase().includes(val) || (i.tax_id && i.tax_id.toLowerCase().includes(val)));
             if (filtered.length === 0) { dropdown.innerHTML = '<div class="p-3 text-sm text-slate-400 text-center font-bold">查無相符的機構資料</div>'; return; }
             dropdown.innerHTML = filtered.slice(0, 30).map(i => `
-                <div class="px-4 py-2.5 hover:bg-emerald-50 cursor-pointer border-b border-slate-50 last:border-0 transition-colors" onclick="window.selectInst('${i.name}')">
+                <div class="px-4 py-2.5 hover:bg-slate-50 cursor-pointer border-b border-slate-50 last:border-0 transition-colors" onclick="window.selectInst('${i.name}')">
                     <div class="text-sm font-bold text-slate-800">${i.name}</div>
                     <div class="text-[11px] font-bold text-slate-400 mt-0.5">統編: ${i.tax_id || '無'} | ${i.country}</div>
                 </div>
@@ -371,7 +393,7 @@
                 return; 
             }
             dropdown.innerHTML = filtered.slice(0, 30).map(c => `
-                <div class="px-4 py-2.5 hover:bg-indigo-50 cursor-pointer border-b border-slate-50 last:border-0 transition-colors" onclick="window.selectCourse('${c.id}')">
+                <div class="px-4 py-2.5 hover:bg-slate-50 cursor-pointer border-b border-slate-50 last:border-0 transition-colors" onclick="window.selectCourse('${c.id}')">
                     <div class="text-sm font-bold text-slate-800"><span class="text-[10px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded mr-1.5">${c.semester}</span>${c.course_name}</div>
                     <div class="text-[11px] font-bold text-slate-400 mt-0.5">${c.department} | 代號: ${c.course_code}</div>
                 </div>
@@ -390,11 +412,12 @@
             window.renderSelectedCourseChips();
         };
 
+        // 💡 優化：乾淨清爽的卡片式課程標籤
         window.renderSelectedCourseChips = () => {
             const container = document.getElementById('selected-courses-container');
             if (selectedCourseIds.length === 0) {
                 container.innerHTML = `
-                    <div class="flex flex-col items-center justify-center h-full text-slate-300 gap-2 mt-10">
+                    <div class="flex flex-col items-center justify-center h-full text-slate-300 gap-2 mt-8">
                         <i class="fa-solid fa-inbox text-3xl"></i>
                         <span class="text-xs font-bold">尚未加入任何課程</span>
                     </div>`;
@@ -406,13 +429,13 @@
                 const c = allCourses.find(x => x.id === id);
                 if (c) {
                     html += `
-                        <div class="flex items-center justify-between p-3.5 bg-indigo-50/50 border border-indigo-100 rounded-xl group shadow-sm transition-all hover:bg-indigo-50 shrink-0">
+                        <div class="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-xl shadow-sm">
                             <div class="flex flex-col">
-                                <span class="text-sm font-bold text-indigo-900"><span class="text-[10px] bg-indigo-200 text-indigo-800 px-1.5 py-0.5 rounded mr-1.5">${c.semester}</span>${c.course_name}</span>
-                                <span class="text-[10px] text-indigo-500 mt-1 font-mono tracking-tight">${c.department} | 代號: ${c.course_code} | ${c.credits}學分</span>
+                                <span class="text-sm font-bold text-slate-800"><span class="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded mr-1.5">${c.semester}</span>${c.course_name}</span>
+                                <span class="text-[11px] text-slate-400 mt-1 font-mono tracking-tight">${c.department} | 代號: ${c.course_code}</span>
                             </div>
-                            <button type="button" onclick="window.removeCourse('${c.id}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-indigo-300 hover:text-rose-500 hover:bg-rose-100 transition-colors shrink-0">
-                                <i class="fa-solid fa-xmark text-sm"></i>
+                            <button type="button" onclick="window.removeCourse('${c.id}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors shrink-0">
+                                <i class="fa-solid fa-xmark"></i>
                             </button>
                         </div>
                     `;
@@ -421,6 +444,7 @@
             container.innerHTML = html;
         };
 
+        // 💡 優化：乾淨清爽的資訊卡片
         window.autoFillStudentInfo = () => {
             const inputVal = document.getElementById('input-student').value;
             const card = document.getElementById('student-info-card');
@@ -429,21 +453,17 @@
             
             if (stu) {
                 card.innerHTML = `
-                    <div class="flex items-start gap-3">
+                    <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold shrink-0">${stu.name.charAt(0)}</div>
-                        <div class="flex-1">
-                            <div class="text-sm font-bold text-slate-800">${stu.name} <span class="text-xs text-slate-500 font-mono ml-1">${stu.student_id}</span></div>
-                            <div class="text-[11px] text-slate-500 mt-1 flex flex-wrap gap-1.5">
-                                <span class="bg-white border border-slate-200 px-2 py-0.5 rounded-md font-bold shadow-sm">${stu.college}</span>
-                                <span class="bg-white border border-slate-200 px-2 py-0.5 rounded-md font-bold shadow-sm">${stu.department}</span>
-                                <span class="bg-white border border-slate-200 px-2 py-0.5 rounded-md font-bold shadow-sm">${stu.gender || '未知'}</span>
-                            </div>
+                        <div>
+                            <div class="text-sm font-bold text-slate-800">${stu.name} <span class="text-[11px] text-slate-400 font-mono ml-1">${stu.student_id}</span></div>
+                            <div class="text-[11px] text-slate-500 mt-0.5 font-medium">${stu.college} ${stu.department}</div>
                         </div>
                     </div>`;
-                card.className = 'mt-3 p-4 border-2 rounded-xl transition-all border-blue-200 bg-blue-50/50 block';
+                card.className = 'mt-3 p-3 bg-slate-50 border border-slate-200 rounded-xl shadow-sm block';
             } else {
-                card.innerHTML = `<div class="flex items-center gap-2 text-rose-600 text-sm font-bold"><i class="fa-solid fa-circle-xmark"></i> 查無學生主檔，將建立獨立紀錄</div>`;
-                card.className = 'mt-3 p-4 border-2 rounded-xl transition-all border-rose-200 bg-rose-50 block';
+                card.innerHTML = `<div class="text-rose-500 text-xs font-bold flex items-center gap-1.5"><i class="fa-solid fa-circle-exclamation"></i> 查無此學生主檔，將建立獨立紀錄。</div>`;
+                card.className = 'mt-3 p-3 bg-rose-50 border border-rose-100 rounded-xl block';
             }
         };
 
@@ -456,21 +476,17 @@
                 const isDomestic = inst.country === '中華民國';
                 const dispTaxId = isDomestic && inst.tax_id ? inst.tax_id : '無統編';
                 card.innerHTML = `
-                    <div class="flex items-start gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold shrink-0"><i class="fa-solid fa-building text-lg"></i></div>
-                        <div class="flex-1">
-                            <div class="text-sm font-bold text-slate-800">${inst.name} <span class="text-xs text-slate-500 font-mono ml-1">(${dispTaxId})</span></div>
-                            <div class="text-[11px] text-slate-500 mt-1 flex flex-wrap gap-1.5">
-                                <span class="bg-white border border-slate-200 px-2 py-0.5 rounded-md font-bold shadow-sm">${inst.country}</span>
-                                <span class="bg-white border border-slate-200 px-2 py-0.5 rounded-md font-bold shadow-sm">${isDomestic && inst.city ? inst.city : '海外'}</span>
-                            </div>
-                            <div class="text-[11px] text-slate-500 mt-2 line-clamp-1 font-bold" title="${inst.address}"><i class="fa-solid fa-location-dot text-slate-400 mr-1"></i>${inst.address}</div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold shrink-0"><i class="fa-solid fa-building"></i></div>
+                        <div>
+                            <div class="text-sm font-bold text-slate-800">${inst.name} <span class="text-[11px] text-slate-400 font-mono ml-1">(${dispTaxId})</span></div>
+                            <div class="text-[11px] text-slate-500 mt-0.5 font-medium">${inst.country} ${isDomestic && inst.city ? inst.city : ''}</div>
                         </div>
                     </div>`;
-                card.className = 'mt-3 p-4 border-2 rounded-xl transition-all border-emerald-200 bg-emerald-50/50 block';
+                card.className = 'mt-3 p-3 bg-slate-50 border border-slate-200 rounded-xl shadow-sm block';
             } else {
-                card.innerHTML = `<div class="flex items-center gap-2 text-rose-600 text-sm font-bold"><i class="fa-solid fa-circle-info"></i> 查無機構主檔，將建立獨立紀錄</div>`;
-                card.className = 'mt-3 p-4 border-2 rounded-xl transition-all border-rose-200 bg-rose-50 block';
+                card.innerHTML = `<div class="text-rose-500 text-xs font-bold flex items-center gap-1.5"><i class="fa-solid fa-circle-exclamation"></i> 查無此機構主檔，將建立獨立紀錄。</div>`;
+                card.className = 'mt-3 p-3 bg-rose-50 border border-rose-100 rounded-xl block';
             }
         };
 
@@ -522,25 +538,21 @@
             } catch (e) { alert("刪除錯誤: " + e.message); }
         };
 
-        // 💡 滿版視窗控制 (切換主頁面與表單)
+        // 💡 Modal 控制邏輯回歸單純隱藏顯示
         window.openModal = () => {
             if (!editingId) { 
                 document.getElementById('data-form').reset();
                 document.getElementById('student-info-card').classList.add('hidden');
                 document.getElementById('inst-info-card').classList.add('hidden');
-                document.getElementById('modal-title').innerText = '建立實習紀錄';
+                document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-file-pen text-blue-600"></i> 建立實習紀錄主檔';
                 selectedCourseIds = [];
                 window.renderSelectedCourseChips();
             }
-            document.getElementById('main-list-view').classList.add('hidden');
             document.getElementById('data-modal').classList.remove('hidden');
-            document.getElementById('data-modal').classList.add('flex');
         };
 
         window.closeModal = () => { 
             document.getElementById('data-modal').classList.add('hidden'); 
-            document.getElementById('data-modal').classList.remove('flex');
-            document.getElementById('main-list-view').classList.remove('hidden');
             editingId = null; 
         };
         
@@ -598,7 +610,7 @@
                 if (data.courses && data.courses.length > 0) {
                     coursesHtml = data.courses.map(cid => {
                         const cDoc = allCourses.find(c => c.id === cid);
-                        return cDoc ? `<div class="inline-block bg-blue-50 border border-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded-lg mb-1 mr-1 shadow-sm"><span class="opacity-50 mr-1">${cDoc.semester}</span>${cDoc.course_name}</div>` : `<div class="inline-block bg-slate-100 text-slate-500 text-xs px-2 py-1 rounded mb-1 mr-1">未知課程</div>`;
+                        return cDoc ? `<div class="inline-block bg-blue-50 border border-blue-100 text-blue-700 text-[11px] font-bold px-1.5 py-0.5 rounded mr-1 mb-1 shadow-sm"><span class="opacity-50 mr-1">${cDoc.semester}</span>${cDoc.course_name}</div>` : `<div class="inline-block bg-slate-100 text-slate-500 text-[11px] px-1.5 py-0.5 rounded mr-1 mb-1">未知課程</div>`;
                     }).join('');
                 }
 
@@ -609,7 +621,7 @@
                 <tr class="group bg-white hover:bg-blue-50/40 transition-all duration-150 text-center">
                     <td class="px-2 py-3 align-middle"><input type="checkbox" class="row-checkbox w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shadow-sm transition-all" value="${data.id}" onchange="toggleSelect('${data.id}')" ${isChecked}></td>
                     <td class="px-4 py-3 align-middle text-left">
-                        <div class="text-sm font-bold text-slate-800 leading-tight">${stuName} <span class="text-xs font-bold text-slate-400 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded ml-1">${data.grade}</span></div>
+                        <div class="text-sm font-bold text-slate-800 leading-tight">${stuName} <span class="text-[10px] font-bold text-slate-400 bg-slate-100 border border-slate-200 px-1 py-0.5 rounded ml-1">${data.grade}</span></div>
                         <div class="text-[11px] font-bold text-slate-500 mt-1 uppercase">${stuIdMatch} <span class="mx-1 opacity-50">|</span> ${stuDept}</div>
                     </td>
                     <td class="px-4 py-3 align-middle text-left">
@@ -618,14 +630,14 @@
                     </td>
                     <td class="px-4 py-3 align-middle text-left"><div class="flex flex-wrap items-center">${coursesHtml}</div></td>
                     <td class="px-4 py-3 align-middle">
-                        <div class="text-[11px] font-bold text-blue-600 tracking-wider mb-1">${data.period_type}</div>
+                        <div class="text-[10px] font-bold text-blue-600 tracking-wider mb-1">${data.period_type}</div>
                         <div class="text-sm font-bold text-slate-700 font-mono tracking-tighter">${data.duration}</div>
-                        <div class="text-[11px] font-bold text-slate-400 mt-0.5">時數: <span class="text-slate-700">${data.hours}</span> 小時</div>
+                        <div class="text-[10px] font-bold text-slate-400 mt-0.5">時數: <span class="text-slate-700">${data.hours}</span> 小時</div>
                     </td>
                     <td class="px-4 py-3 align-middle">
-                        <div class="flex flex-col gap-1.5 items-center">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-md border text-[10px] font-bold ${insColor}">${data.insurance}</span>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-md border text-[10px] font-bold ${empColor}">勞雇關係: ${data.employment}</span>
+                        <div class="flex flex-col gap-1 items-center">
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded border text-[10px] font-bold ${insColor}">${data.insurance}</span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded border text-[10px] font-bold ${empColor}">勞雇關係: ${data.employment}</span>
                         </div>
                     </td>
                     <td class="px-2 py-3 align-middle whitespace-nowrap">
@@ -673,7 +685,7 @@
                 else await addDoc(recordsCol, { ...payload, created_at: serverTimestamp() });
                 closeModal();
             } catch (err) { alert("儲存發生錯誤：" + err.message); } 
-            finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> 儲存紀錄主檔'; }
+            finally { btn.disabled = false; btn.innerHTML = '儲存紀錄'; }
         };
 
         window.editData = (id) => {
@@ -696,12 +708,8 @@
             selectedCourseIds = [...(docData.courses || [])];
             window.renderSelectedCourseChips();
 
-            document.getElementById('modal-title').innerText = '編輯實習紀錄';
-            
-            // 隱藏清單，顯示全幅表單
-            document.getElementById('main-list-view').classList.add('hidden');
+            document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-file-pen text-blue-600"></i> 編輯實習紀錄主檔';
             document.getElementById('data-modal').classList.remove('hidden');
-            document.getElementById('data-modal').classList.add('flex');
         };
 
         window.deleteData = async (id, name) => {
