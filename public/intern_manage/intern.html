@@ -107,7 +107,7 @@
                             </tr>
                         </thead>
                         <tbody id="table-body" class="divide-y divide-slate-100 text-sm">
-                            <tr><td colspan="7" class="px-6 py-16 text-center text-slate-400"><i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-blue-500"></i><p class="font-bold">資料載入與關聯解析中...</p></td></tr>
+                            <tr><td colspan="7" class="px-6 py-16 text-center text-slate-400"><i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-blue-500"></i><p class="font-bold">資料庫連線與安全檢查中...</p></td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -320,7 +320,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc, serverTimestamp, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY", authDomain: "thu-isac-review.firebaseapp.com", projectId: "thu-isac-review", storageBucket: "thu-isac-review.firebasestorage.app", messagingSenderId: "453299876735", appId: "1:453299876735:web:1d8babca3315423161a04a" };
         const app = initializeApp(firebaseConfig);
@@ -349,47 +349,89 @@
         const collegeDocRef = doc(db, "settings", "colleges");
         const deptCol = collection(db, "departments");
 
+        // 安全時間轉換處理
+        const getTime = (timestamp) => {
+            if (!timestamp) return 0;
+            if (typeof timestamp.toMillis === 'function') return timestamp.toMillis();
+            if (timestamp.seconds) return timestamp.seconds * 1000;
+            if (timestamp instanceof Date) return timestamp.getTime();
+            return new Date(timestamp).getTime() || 0;
+        };
+
         function getColShort(name) {
+            if (!name) return '未知學院';
             const c = orderedColleges.find(x => x.name === name);
             return c && c.shortName ? c.shortName : name;
         }
         function getDeptShort(name) {
+            if (!name) return '未知學系';
             const d = globalDepts.find(x => x.name === name);
             return d && d.shortName ? d.shortName : name;
         }
 
-        onAuthStateChanged(auth, async (user) => {
+        onAuthStateChanged(auth, (user) => {
             if (user) {
-                // 載入系統設定
-                const colSnap = await getDoc(collegeDocRef);
-                if (colSnap.exists()) {
-                    const rawList = colSnap.data().list || [];
-                    orderedColleges = rawList.map(c => typeof c === 'string' ? { name: c, shortName: c } : c);
-                }
-                const depSnap = await getDocs(deptCol);
-                globalDepts = depSnap.docs.map(d => d.data());
+                // 💡 強固版非同步讀取邏輯：確保各資料表獨立抓取，避免單點出錯導致全站停擺
+                const p1 = getDoc(collegeDocRef).then(snap => {
+                    if (snap.exists()) {
+                        const rawList = snap.data().list || [];
+                        orderedColleges = rawList.map(c => typeof c === 'string' ? { name: c, shortName: c } : c);
+                    }
+                }).catch(e => console.warn("學院設定讀取失敗", e));
 
-                Promise.all([
-                    getDocs(studentsCol).then(s => allStudents = s.docs.map(d => ({id: d.id, ...d.data()}))),
-                    getDocs(instsCol).then(s => allInsts = s.docs.map(d => ({id: d.id, ...d.data()}))),
-                    getDocs(coursesCol).then(s => {
-                        allCourses = s.docs.map(d => ({id: d.id, ...d.data()}));
-                        allCourses.sort((a,b) => (a.academic_year === b.academic_year) ? (b.term || '').localeCompare(a.term || '') : (b.academic_year || '').localeCompare(a.academic_year || ''));
-                    })
-                ]).then(() => {
-                    setupDropdownListeners();
-                    setupCustomSelects(); // 啟動自訂下拉選單
+                const p2 = getDocs(deptCol).then(snap => {
+                    globalDepts = snap.docs.map(d => d.data());
+                }).catch(e => console.warn("系所設定讀取失敗", e));
+
+                const p3 = getDocs(studentsCol).then(s => {
+                    allStudents = s.docs.map(d => ({id: d.id, ...d.data()}));
+                }).catch(e => console.warn("學生主檔讀取失敗", e));
+
+                const p4 = getDocs(instsCol).then(s => {
+                    allInsts = s.docs.map(d => ({id: d.id, ...d.data()}));
+                }).catch(e => console.warn("機構主檔讀取失敗", e));
+
+                const p5 = getDocs(coursesCol).then(s => {
+                    allCourses = s.docs.map(d => ({id: d.id, ...d.data()}));
+                    allCourses.sort((a,b) => {
+                        const ayA = a.academic_year || '';
+                        const ayB = b.academic_year || '';
+                        if (ayA === ayB) return (b.term || '').localeCompare(a.term || '');
+                        return ayB.localeCompare(ayA);
+                    });
+                }).catch(e => console.warn("課程主檔讀取失敗", e));
+
+                // 等待所有前置作業結束後
+                Promise.all([p1, p2, p3, p4, p5]).then(() => {
+                    try {
+                        setupDropdownListeners();
+                        setupCustomSelects(); 
+                    } catch (uiErr) {
+                        console.error("UI 事件綁定錯誤", uiErr);
+                    }
+
+                    // 確保依賴資料庫載入後，才開始讀取並渲染表格
+                    onSnapshot(recordsCol, (snapshot) => {
+                        allRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        try {
+                            populateSemesterFilter();
+                            selectedIds = [];
+                            updateBatchActionBar();
+                            window.renderTable();
+                        } catch (renderErr) {
+                            console.error("表格渲染錯誤:", renderErr);
+                            document.getElementById('table-body').innerHTML = `<tr><td colspan="7" class="px-6 py-16 text-center text-rose-500 font-bold bg-white"><i class="fa-solid fa-triangle-exclamation text-3xl mb-3"></i><p>資料解析失敗，請聯絡系統管理員。</p></td></tr>`;
+                        }
+                    }, (error) => {
+                        console.error("主紀錄讀取失敗:", error);
+                        document.getElementById('table-body').innerHTML = `<tr><td colspan="7" class="px-6 py-16 text-center text-rose-500 font-bold bg-white"><i class="fa-solid fa-lock text-3xl mb-3"></i><p>資料讀取失敗，權限不足或連線異常。</p></td></tr>`;
+                    });
+
+                }).catch(err => {
+                    console.error("全域初始化失敗", err);
+                    document.getElementById('table-body').innerHTML = `<tr><td colspan="7" class="px-6 py-16 text-center text-rose-500 font-bold bg-white"><i class="fa-solid fa-circle-exclamation text-3xl mb-3"></i><p>系統初始化發生錯誤。</p></td></tr>`;
                 });
 
-                onSnapshot(recordsCol, (snapshot) => {
-                    allRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    populateSemesterFilter();
-                    selectedIds = [];
-                    updateBatchActionBar();
-                    window.renderTable();
-                }, (error) => {
-                    document.getElementById('table-body').innerHTML = `<tr><td colspan="7" class="px-6 py-16 text-center text-rose-500 font-bold bg-white"><i class="fa-solid fa-lock text-3xl mb-3"></i><p>資料讀取失敗，權限不足。</p></td></tr>`;
-                });
             } else {
                 document.getElementById('table-body').innerHTML = `<tr><td colspan="7" class="px-6 py-16 text-center text-slate-400 font-bold bg-white"><i class="fa-solid fa-shield-halved text-3xl mb-3 text-slate-300"></i><p>請先登入系統以存取資料。</p></td></tr>`;
             }
@@ -404,6 +446,8 @@
                 const hiddenInput = wrapper.querySelector('input[type="hidden"]');
                 const options = wrapper.querySelectorAll('.select-options > div');
 
+                if (!box || !optionsList || !textDisplay || !hiddenInput) return; // 防呆
+
                 // 清理舊事件 (Clone)
                 const newBox = box.cloneNode(true);
                 box.parentNode.replaceChild(newBox, box);
@@ -414,7 +458,7 @@
                     document.querySelectorAll('.select-options').forEach(opt => {
                         if (opt !== optionsList) {
                             opt.classList.add('hidden');
-                            opt.previousElementSibling.classList.remove('ring-2', 'ring-blue-500');
+                            if(opt.previousElementSibling) opt.previousElementSibling.classList.remove('ring-2', 'ring-blue-500');
                         }
                     });
                     optionsList.classList.toggle('hidden');
@@ -440,7 +484,7 @@
             document.addEventListener('click', () => {
                 document.querySelectorAll('.select-options').forEach(opt => {
                     opt.classList.add('hidden');
-                    opt.previousElementSibling.classList.remove('ring-2', 'ring-blue-500');
+                    if(opt.previousElementSibling) opt.previousElementSibling.classList.remove('ring-2', 'ring-blue-500');
                 });
             });
         }
@@ -450,6 +494,7 @@
             const hiddenInput = document.getElementById(id);
             if (!hiddenInput) return;
             const wrapper = hiddenInput.closest('.custom-select');
+            if (!wrapper) return;
             const textDisplay = wrapper.querySelector('.select-text');
             hiddenInput.value = val;
             if (val) {
@@ -472,19 +517,28 @@
             const courseInput = document.getElementById('input-course-search');
             const courseDropdown = document.getElementById('course-dropdown');
 
-            stuInput.addEventListener('focus', () => { stuDropdown.classList.remove('hidden'); renderStudentDropdown(allStudents, stuInput.value); });
-            stuInput.addEventListener('input', () => { stuDropdown.classList.remove('hidden'); renderStudentDropdown(allStudents, stuInput.value); window.autoFillStudentInfo(); });
+            if(stuInput && stuDropdown) {
+                stuInput.addEventListener('focus', () => { stuDropdown.classList.remove('hidden'); renderStudentDropdown(allStudents, stuInput.value); });
+                stuInput.addEventListener('input', () => { stuDropdown.classList.remove('hidden'); renderStudentDropdown(allStudents, stuInput.value); window.autoFillStudentInfo(); });
+            }
 
-            instInput.addEventListener('focus', () => { instDropdown.classList.remove('hidden'); renderInstDropdown(allInsts, instInput.value); });
-            instInput.addEventListener('input', () => { instDropdown.classList.remove('hidden'); renderInstDropdown(allInsts, instInput.value); window.autoFillInstInfo(); });
+            if(instInput && instDropdown) {
+                instInput.addEventListener('focus', () => { instDropdown.classList.remove('hidden'); renderInstDropdown(allInsts, instInput.value); });
+                instInput.addEventListener('input', () => { instDropdown.classList.remove('hidden'); renderInstDropdown(allInsts, instInput.value); window.autoFillInstInfo(); });
+            }
 
-            courseInput.addEventListener('focus', () => { courseDropdown.classList.remove('hidden'); renderCourseDropdown(allCourses, courseInput.value); });
-            courseInput.addEventListener('input', () => { courseDropdown.classList.remove('hidden'); renderCourseDropdown(allCourses, courseInput.value); });
+            if(courseInput && courseDropdown) {
+                courseInput.addEventListener('focus', () => { courseDropdown.classList.remove('hidden'); renderCourseDropdown(allCourses, courseInput.value); });
+                courseInput.addEventListener('input', () => { courseDropdown.classList.remove('hidden'); renderCourseDropdown(allCourses, courseInput.value); });
+            }
 
             document.addEventListener('click', (e) => {
-                if (!document.getElementById('student-search-container').contains(e.target)) stuDropdown.classList.add('hidden');
-                if (!document.getElementById('inst-search-container').contains(e.target)) instDropdown.classList.add('hidden');
-                if (!document.getElementById('course-search-container').contains(e.target)) courseDropdown.classList.add('hidden');
+                const stuContainer = document.getElementById('student-search-container');
+                const instContainer = document.getElementById('inst-search-container');
+                const courseContainer = document.getElementById('course-search-container');
+                if (stuContainer && stuDropdown && !stuContainer.contains(e.target)) stuDropdown.classList.add('hidden');
+                if (instContainer && instDropdown && !instContainer.contains(e.target)) instDropdown.classList.add('hidden');
+                if (courseContainer && courseDropdown && !courseContainer.contains(e.target)) courseDropdown.classList.add('hidden');
             });
         }
 
@@ -745,14 +799,14 @@
                 const matchSearch = (d.student_raw || '').toLowerCase().includes(searchTerm) || (d.inst_raw || '').toLowerCase().includes(searchTerm);
                 const matchPeriod = filterPeriod === 'all' || d.period_type === filterPeriod;
                 let matchSem = filterSem === 'all';
-                if (!matchSem && d.courses && d.courses.length > 0) {
+                if (!matchSem && Array.isArray(d.courses) && d.courses.length > 0) {
                     const linkedCourseDocs = allCourses.filter(c => d.courses.includes(c.id));
                     matchSem = linkedCourseDocs.some(c => c.semester === filterSem);
-                } else if (!matchSem && (!d.courses || d.courses.length === 0)) matchSem = false; 
+                } else if (!matchSem && (!Array.isArray(d.courses) || d.courses.length === 0)) matchSem = false; 
                 return matchSearch && matchPeriod && matchSem;
             });
 
-            filteredRecords.sort((a, b) => (b.created_at ? b.created_at.toMillis() : 0) - (a.created_at ? a.created_at.toMillis() : 0));
+            filteredRecords.sort((a, b) => getTime(b.created_at) - getTime(a.created_at));
 
             const totalItems = filteredRecords.length;
             const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
@@ -784,7 +838,7 @@
                 const stuDept = stuDoc ? getDeptShort(stuDoc.department) : '未綁定學系';
 
                 let coursesHtml = '<span class="text-xs text-slate-400 font-medium">未關聯課程</span>';
-                if (data.courses && data.courses.length > 0) {
+                if (Array.isArray(data.courses) && data.courses.length > 0) {
                     coursesHtml = data.courses.map(cid => {
                         const cDoc = allCourses.find(c => c.id === cid);
                         return cDoc ? `<div class="inline-block bg-blue-50 border border-blue-100 text-blue-700 text-[11px] font-bold px-1.5 py-0.5 rounded mr-1 mb-1 shadow-sm"><span class="opacity-50 mr-1">${cDoc.semester}</span>${cDoc.course_name}</div>` : `<div class="inline-block bg-slate-100 text-slate-500 text-[11px] px-1.5 py-0.5 rounded mr-1 mb-1">未知課程</div>`;
@@ -798,23 +852,23 @@
                 <tr class="group bg-white hover:bg-blue-50/40 transition-all duration-150 text-center">
                     <td class="px-2 py-3 align-middle"><input type="checkbox" class="row-checkbox w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shadow-sm transition-all" value="${data.id}" onchange="toggleSelect('${data.id}')" ${isChecked}></td>
                     <td class="px-4 py-3 align-middle text-left">
-                        <div class="text-sm font-bold text-slate-800 leading-tight">${stuName} <span class="text-[10px] font-bold text-slate-400 bg-slate-100 border border-slate-200 px-1 py-0.5 rounded ml-1">${data.grade}</span></div>
+                        <div class="text-sm font-bold text-slate-800 leading-tight">${stuName} <span class="text-[10px] font-bold text-slate-400 bg-slate-100 border border-slate-200 px-1 py-0.5 rounded ml-1">${data.grade || ''}</span></div>
                         <div class="text-[11px] font-bold text-slate-500 mt-1 uppercase">${stuIdMatch} <span class="mx-1 opacity-50">|</span> ${stuDept}</div>
                     </td>
                     <td class="px-4 py-3 align-middle text-left">
                         <div class="text-sm font-bold text-slate-800 leading-tight truncate w-full max-w-[200px]" title="${data.inst_raw}">${data.inst_raw}</div>
-                        <div class="text-[11px] font-bold text-slate-400 mt-1"><i class="fa-solid fa-file-contract"></i> ${data.proof_type}</div>
+                        <div class="text-[11px] font-bold text-slate-400 mt-1"><i class="fa-solid fa-file-contract"></i> ${data.proof_type || ''}</div>
                     </td>
                     <td class="px-4 py-3 align-middle text-left"><div class="flex flex-wrap items-center">${coursesHtml}</div></td>
                     <td class="px-4 py-3 align-middle">
-                        <div class="text-[10px] font-bold text-blue-600 tracking-wider mb-1">${data.period_type}</div>
-                        <div class="text-sm font-bold text-slate-700 font-mono tracking-tighter">${data.duration}</div>
-                        <div class="text-[10px] font-bold text-slate-400 mt-0.5">時數: <span class="text-slate-700">${data.hours}</span> 小時</div>
+                        <div class="text-[10px] font-bold text-blue-600 tracking-wider mb-1">${data.period_type || ''}</div>
+                        <div class="text-sm font-bold text-slate-700 font-mono tracking-tighter">${data.duration || ''}</div>
+                        <div class="text-[10px] font-bold text-slate-400 mt-0.5">時數: <span class="text-slate-700">${data.hours || 0}</span> 小時</div>
                     </td>
                     <td class="px-4 py-3 align-middle">
                         <div class="flex flex-col gap-1 items-center">
-                            <span class="inline-flex items-center px-1.5 py-0.5 rounded border text-[10px] font-bold ${insColor}">${data.insurance}</span>
-                            <span class="inline-flex items-center px-1.5 py-0.5 rounded border text-[10px] font-bold ${empColor}">勞雇關係: ${data.employment}</span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded border text-[10px] font-bold ${insColor}">${data.insurance || ''}</span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded border text-[10px] font-bold ${empColor}">勞雇關係: ${data.employment || ''}</span>
                         </div>
                     </td>
                     <td class="px-2 py-3 align-middle whitespace-nowrap">
@@ -832,7 +886,7 @@
             if (filteredRecords.length === 0) { alert("沒有資料可供匯出！"); return; }
             let csv = '\uFEFF實習生,當學年年級,實習機構,實習時間,實習起訖時間,核定時數,證明文件類型,投保情形,勞雇關係,關聯課程清單,備註\n';
             filteredRecords.forEach(d => {
-                let courseNames = (d.courses || []).map(cid => { const c = allCourses.find(x => x.id === cid); return c ? `[${c.semester}]${c.course_name}` : '未知'; }).join(' / ');
+                let courseNames = (Array.isArray(d.courses) ? d.courses : []).map(cid => { const c = allCourses.find(x => x.id === cid); return c ? `[${c.semester}]${c.course_name}` : '未知'; }).join(' / ');
                 csv += [d.student_raw, d.grade, d.inst_raw, d.period_type, d.duration, d.hours, d.proof_type, d.insurance, d.employment, courseNames, d.notes || ''].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
             });
             const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
@@ -861,7 +915,7 @@
             };
 
             if(!payload.student_raw || !payload.inst_raw || !payload.duration || !payload.hours || !payload.grade || !payload.period_type || !payload.proof_type || !payload.insurance || !payload.employment) { 
-                alert("請填寫所有帶有 * 號之必填欄位！"); return; 
+                alert("請完成所有包含 * 號之必填選單與欄位設定！"); return; 
             }
             
             btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> 儲存中...';
@@ -870,7 +924,7 @@
                 else await addDoc(recordsCol, { ...payload, created_at: serverTimestamp() });
                 closeModal();
             } catch (err) { alert("儲存發生錯誤：" + err.message); } 
-            finally { btn.disabled = false; btn.innerHTML = '儲存紀錄'; }
+            finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> 儲存紀錄'; }
         };
 
         window.editData = (id) => {
@@ -879,7 +933,7 @@
             document.getElementById('input-student').value = docData.student_raw || '';
             document.getElementById('input-institution').value = docData.inst_raw || '';
             document.getElementById('input-duration').value = docData.duration || '';
-            document.getElementById('input-hours').value = docData.hours || 0;
+            document.getElementById('input-hours').value = docData.hours || '';
             document.getElementById('input-notes').value = docData.notes || '';
             
             window.setCustomSelectVal('input-grade', docData.grade || '');
@@ -891,7 +945,7 @@
             window.autoFillStudentInfo();
             window.autoFillInstInfo();
 
-            selectedCourseIds = [...(docData.courses || [])];
+            selectedCourseIds = Array.isArray(docData.courses) ? [...docData.courses] : [];
             window.renderSelectedCourseChips();
 
             document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-file-pen text-blue-600"></i> 編輯實習紀錄主檔';
