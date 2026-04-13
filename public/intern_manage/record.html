@@ -11,14 +11,19 @@
     </script>
     <style>
         body { background-color: transparent; margin: 0; padding: 0; font-family: "SF Pro TC", "Noto Sans TC", sans-serif; -webkit-font-smoothing: antialiased; }
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .page-enter { animation: pageFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         @keyframes pageFadeIn { from { opacity: 0; transform: scale(0.99); } to { opacity: 1; transform: scale(1); } }
         table { table-layout: fixed; width: 100%; } td { word-break: break-word; }
         tr { transition: background-color 0.2s; }
         th, td { padding-top: 1rem !important; padding-bottom: 1rem !important; }
-        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        
+        /* 移除 input number 原生箭頭 */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; margin: 0; 
+        }
         input[type=number] { -moz-appearance: textfield; }
         .search-item-hover:hover { background-color: #f1f5f9; cursor: pointer; }
     </style>
@@ -27,7 +32,7 @@
 
     <!-- 主列表頁面 -->
     <div id="main-list-view" class="flex flex-col h-full w-full">
-        <div class="shrink-0 px-6 pt-6 pb-4 space-y-4 animate-fade">
+        <div class="shrink-0 px-6 pt-6 pb-2 space-y-4 animate-fade">
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shrink-0">
@@ -38,28 +43,27 @@
                         <p class="text-xs text-slate-500 mt-1">串連學生、機構與課程之查核主檔。</p>
                     </div>
                 </div>
+                
                 <div class="flex flex-wrap gap-2">
                     <button onclick="window.exportToCSV()" class="h-9 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-3 rounded-lg text-sm transition-all flex items-center gap-1.5 shadow-sm">
                         <i class="fa-solid fa-file-export text-emerald-600"></i> 匯出紀錄
                     </button>
                     <div class="w-px h-6 bg-slate-200 self-center mx-1"></div>
-                    <button onclick="window.openModal()" class="h-9 bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 rounded-lg text-sm transition-all shadow-sm">
+                    <button onclick="window.openModal()" class="h-9 bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 rounded-lg text-sm transition-all shadow-sm shadow-blue-500/20 active:scale-95">
                         <i class="fa-solid fa-plus mr-1"></i> 新增實習紀錄
                     </button>
                 </div>
             </div>
 
-            <div class="flex flex-col md:flex-row justify-between items-center gap-4 w-full relative">
-                <div class="flex gap-2 w-full md:w-auto">
-                    <select id="filter-semester" onchange="window.renderTable()" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 h-10 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-sm min-w-[140px]"></select>
-                    <select id="filter-period" onchange="window.renderTable()" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 h-10 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-sm">
-                        <option value="all">實習時間：全部</option>
-                        <option value="寒假實習">寒假實習</option><option value="暑假實習">暑假實習</option>
-                        <option value="學期期間實習">學期期間實習</option><option value="單一學期實習">單一學期實習</option><option value="全學年">全學年</option>
-                    </select>
+            <!-- 進階篩選與搜尋列 -->
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4 w-full relative z-20">
+                
+                <!-- Notion 風格多重篩選器容器 -->
+                <div id="advanced-filters-container" class="flex gap-2 overflow-x-auto custom-scrollbar pb-1 w-full md:w-auto flex-1 items-center">
+                    <!-- Javascript 動態載入篩選標籤 -->
                 </div>
 
-                <div id="batch-action-bar" class="hidden absolute -inset-3 bg-slate-50 px-3 flex items-center justify-between z-20 animate-fade">
+                <div id="batch-action-bar" class="hidden absolute -inset-3 bg-slate-50 px-3 flex items-center justify-between z-30 animate-fade rounded-xl">
                     <div class="flex items-center text-blue-700">
                         <span class="text-sm font-bold">已選擇 <span id="selected-count" class="text-lg mx-1 font-black text-blue-600">0</span> 筆紀錄</span>
                         <button id="btn-select-all-filtered" onclick="window.selectAllFiltered()" class="hidden ml-4 text-xs font-bold text-blue-600 hover:text-white bg-blue-50 hover:bg-blue-600 border border-blue-200 px-3 py-1.5 rounded-lg transition-all shadow-sm">選取全部符合條件</button>
@@ -70,26 +74,26 @@
                     </div>
                 </div>
 
-                <div class="relative w-full md:w-72 shadow-sm rounded-lg">
+                <div class="relative w-full md:w-72 shadow-sm rounded-lg shrink-0">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
                     <input type="text" id="search-input" oninput="window.renderTable()" placeholder="搜尋姓名、學號或機構..." class="w-full bg-white border border-slate-200 rounded-lg pl-9 pr-3 h-10 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all">
                 </div>
             </div>
         </div>
 
+        <!-- 總表格區 -->
         <div class="flex-1 overflow-hidden px-6 pb-6 flex flex-col animate-fade">
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col flex-1 overflow-hidden">
                 <div class="flex-1 overflow-auto custom-scrollbar relative">
-                    <!-- 💡 表格排版比例最佳化 -->
-                    <table class="w-full text-left border-collapse min-w-[1200px]">
+                    <table class="w-full text-left border-collapse min-w-[1300px]">
                         <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10 shadow-sm">
                             <tr>
                                 <th class="px-3 py-3.5 text-center w-[50px]"><input type="checkbox" id="selectAll" onchange="window.toggleSelectPage(event)" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shadow-sm transition-all"></th>
-                                <th class="px-4 py-3.5 text-left text-xs font-bold text-slate-500 w-[180px]">實習生資訊</th>
-                                <th class="px-4 py-3.5 text-left text-xs font-bold text-slate-500 w-[220px]">實習機構 / 證明</th>
-                                <th class="px-4 py-3.5 text-left text-xs font-bold text-slate-500 min-w-[240px]">關聯課程</th>
-                                <th class="px-4 py-3.5 text-left text-xs font-bold text-slate-500 w-[170px]">實習條件</th>
-                                <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[130px]">保障與勞雇</th>
+                                <th class="px-4 py-3.5 text-left text-xs font-bold text-slate-500 w-[200px]">實習學生</th>
+                                <th class="px-4 py-3.5 text-left text-xs font-bold text-slate-500 w-[260px]">實習機構</th>
+                                <th class="px-4 py-3.5 text-left text-xs font-bold text-slate-500 min-w-[280px]">實習課程</th>
+                                <th class="px-4 py-3.5 text-left text-xs font-bold text-slate-500 w-[200px]">實習時間</th>
+                                <th class="px-4 py-3.5 text-left text-xs font-bold text-slate-500 w-[200px]">其他</th>
                                 <th class="px-3 py-3.5 text-center text-xs font-bold text-slate-500 w-[100px]">操作</th>
                             </tr>
                         </thead>
@@ -261,6 +265,24 @@
         let allRecords = [], allStudents = [], allInsts = [], allCourses = [], editingId = null, currentPage = 1, itemsPerPage = 10, selectedIds = [], filteredRecords = [], selectedCourseIds = [];
         let globalDepts = [], orderedColleges = [];
 
+        // 💡 建立進階多選篩選的狀態中心
+        const filterSelections = {
+            semester: new Set(), college: new Set(), dept: new Set(), course: new Set(), inst: new Set(),
+            period: new Set(), proof: new Set(), insurance: new Set(), employment: new Set()
+        };
+        const filterDefinitions = [
+            { key: 'semester', label: '學期', searchable: false },
+            { key: 'college', label: '學院', searchable: false },
+            { key: 'dept', label: '學系', searchable: true },
+            { key: 'course', label: '關聯課程', searchable: true },
+            { key: 'inst', label: '實習機構', searchable: true },
+            { key: 'period', label: '實習時間', searchable: false },
+            { key: 'proof', label: '證明文件', searchable: false },
+            { key: 'insurance', label: '投保情形', searchable: false },
+            { key: 'employment', label: '勞雇關係', searchable: false }
+        ];
+        let isFiltersInitialized = false;
+
         const getTime = (ts) => ts ? (ts.toMillis ? ts.toMillis() : (ts.seconds ? ts.seconds * 1000 : new Date(ts).getTime() || 0)) : 0;
         const getColShort = (n) => { const c = orderedColleges.find(x => x.name === n); return c && c.shortName ? c.shortName : (n || '未知學院'); };
         const getDeptShort = (n) => { const d = globalDepts.find(x => x.name === n); return d && d.shortName ? d.shortName : (n || '未知學系'); };
@@ -277,11 +299,125 @@
                     setupGlobalListeners();
                     onSnapshot(recordsCol, (snapshot) => {
                         allRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                        populateSemesterFilter(); selectedIds = []; window.updateBatchActionBar(); window.renderTable();
+                        if (!isFiltersInitialized) {
+                            initializeFilters();
+                            isFiltersInitialized = true;
+                        }
+                        selectedIds = []; window.updateBatchActionBar(); window.renderTable();
                     });
                 });
             }
         });
+
+        // 💡 初始化 Notion 風格篩選器選單
+        function initializeFilters() {
+            const container = document.getElementById('advanced-filters-container');
+            container.innerHTML = '';
+            
+            const filterOptions = {
+                semester: [...new Set(allCourses.map(c=>c.semester))].filter(Boolean).sort().reverse().map(v=>({value:v, label:v})),
+                college: orderedColleges.map(c=>({value:c.name, label:c.shortName || c.name})),
+                dept: [...new Set(globalDepts.map(d=>d.name))].map(v=>({value:v, label: getDeptShort(v)})),
+                course: allCourses.map(c=>({value:c.id, label:`${c.academic_year}-${c.term}_${c.course_code}：${c.course_name}`})),
+                inst: [...new Set(allRecords.map(r=>r.inst_raw))].filter(Boolean).map(v=>({value:v, label:v})),
+                period: ['寒假實習', '暑假實習', '學期期間實習', '單一學期實習', '全學年'].map(v=>({value:v, label:v})),
+                proof: ['合約', '公函', '其他證明文件'].map(v=>({value:v, label:v})),
+                insurance: ['僅校外實習保險', '僅勞保', '兩者皆有', '兩者皆無'].map(v=>({value:v, label:v})),
+                employment: ['是', '否'].map(v=>({value:v, label:v}))
+            };
+
+            filterDefinitions.forEach(def => {
+                const options = filterOptions[def.key] || [];
+                const wrap = document.createElement('div');
+                wrap.className = 'relative group-filter shrink-0';
+                wrap.innerHTML = `
+                    <button type="button" class="filter-btn border border-slate-200 bg-white text-slate-700 text-[13px] font-bold rounded-lg px-3 py-1.5 shadow-sm flex items-center hover:bg-slate-50 transition-colors" data-key="${def.key}">
+                        ${def.label} <span class="filter-count hidden bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded text-[10px] ml-1.5">0</span> <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 ml-1.5"></i>
+                    </button>
+                    <div class="filter-panel hidden absolute top-full left-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl w-64 max-h-72 flex-col overflow-hidden z-[100]">
+                        ${def.searchable ? `
+                        <div class="p-2 border-b border-slate-100 shrink-0 bg-slate-50/50">
+                            <div class="relative">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[11px]"></i>
+                                <input type="text" placeholder="搜尋選項..." class="filter-search w-full bg-white border border-slate-200 rounded-lg pl-8 pr-3 py-1.5 text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500" data-key="${def.key}">
+                            </div>
+                        </div>` : ''}
+                        <div class="filter-options flex-1 overflow-y-auto p-1 custom-scrollbar space-y-0.5">
+                            ${options.map(opt => `
+                                <label class="flex items-start gap-2.5 p-2 hover:bg-slate-50 rounded-lg cursor-pointer option-label transition-colors">
+                                    <input type="checkbox" class="mt-0.5 w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer" value="${opt.value}" data-key="${def.key}">
+                                    <span class="text-xs font-bold text-slate-700 select-none flex-1 leading-tight">${opt.label}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                        <div class="p-2 border-t border-slate-100 shrink-0 bg-slate-50 flex justify-between clear-btn-wrap hidden">
+                            <button type="button" class="text-xs font-bold text-slate-500 hover:text-rose-600 transition-colors w-full text-center" onclick="window.clearFilter('${def.key}')">清除此條件</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(wrap);
+            });
+
+            // 綁定篩選選單事件
+            container.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const panel = btn.nextElementSibling;
+                    const wasHidden = panel.classList.contains('hidden');
+                    document.querySelectorAll('.filter-panel').forEach(p => { p.classList.add('hidden'); p.classList.remove('flex'); });
+                    if (wasHidden) { panel.classList.remove('hidden'); panel.classList.add('flex'); }
+                });
+            });
+
+            container.querySelectorAll('.filter-search').forEach(input => {
+                input.addEventListener('click', e => e.stopPropagation());
+                input.addEventListener('input', (e) => {
+                    const term = e.target.value.toLowerCase().trim();
+                    const panel = e.target.closest('.filter-panel');
+                    panel.querySelectorAll('.option-label').forEach(label => {
+                        const text = label.querySelector('span').innerText.toLowerCase();
+                        label.style.display = text.includes(term) ? 'flex' : 'none';
+                    });
+                });
+            });
+
+            container.querySelectorAll('input[type="checkbox"]').forEach(chk => {
+                chk.addEventListener('change', (e) => {
+                    const key = e.target.getAttribute('data-key');
+                    if (e.target.checked) filterSelections[key].add(e.target.value);
+                    else filterSelections[key].delete(e.target.value);
+                    window.updateFilterPillUI(key);
+                    currentPage = 1;
+                    window.renderTable();
+                });
+            });
+        }
+
+        window.updateFilterPillUI = (key) => {
+            const wrap = document.querySelector(`.group-filter .filter-btn[data-key="${key}"]`).closest('.group-filter');
+            const badge = wrap.querySelector('.filter-count');
+            const btn = wrap.querySelector('.filter-btn');
+            const clearWrap = wrap.querySelector('.clear-btn-wrap');
+            const set = filterSelections[key];
+            if(set.size > 0) {
+                badge.textContent = set.size; badge.classList.remove('hidden');
+                btn.classList.add('border-blue-500', 'bg-blue-50', 'text-blue-700'); btn.classList.remove('border-slate-200', 'bg-white', 'text-slate-700');
+                clearWrap.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+                btn.classList.remove('border-blue-500', 'bg-blue-50', 'text-blue-700'); btn.classList.add('border-slate-200', 'bg-white', 'text-slate-700');
+                clearWrap.classList.add('hidden');
+            }
+        };
+
+        window.clearFilter = (key) => {
+            filterSelections[key].clear();
+            const panel = document.querySelector(`button.filter-btn[data-key="${key}"]`).nextElementSibling;
+            panel.querySelectorAll('input[type="checkbox"]').forEach(chk => chk.checked = false);
+            window.updateFilterPillUI(key);
+            currentPage = 1;
+            window.renderTable();
+        };
 
         // 💡 智慧層級推升與點擊收合控制
         function setupGlobalListeners() {
@@ -310,7 +446,12 @@
             courseInput?.addEventListener('input', () => { handleFocus('course-search-container', courseDropdown); renderCourseDropdown(allCourses, courseInput.value); });
 
             document.addEventListener('click', (e) => {
-                // 點擊外部關閉自動完成選單並重置 z-index
+                // 進階篩選器點擊外部收起
+                if (!e.target.closest('.group-filter')) {
+                    document.querySelectorAll('.filter-panel').forEach(p => { p.classList.add('hidden'); p.classList.remove('flex'); });
+                }
+
+                // 表單內的自動完成點擊外部收起
                 if (!document.getElementById('student-search-container')?.contains(e.target)) { stuDropdown.classList.add('hidden'); document.getElementById('student-search-container').style.zIndex = ''; }
                 if (!document.getElementById('inst-search-container')?.contains(e.target)) { instDropdown.classList.add('hidden'); document.getElementById('inst-search-container').style.zIndex = ''; }
                 if (!document.getElementById('course-search-container')?.contains(e.target)) { courseDropdown.classList.add('hidden'); document.getElementById('course-search-container').style.zIndex = ''; }
@@ -419,7 +560,6 @@
             if (selectedCourseIds.length === 0) { container.innerHTML = '<div class="flex flex-col items-center justify-center h-full text-slate-300 gap-2 mt-12 text-xs">尚未加入課程</div>'; return; }
             container.innerHTML = selectedCourseIds.map(id => {
                 const c = allCourses.find(x => x.id === id); if (!c) return '';
-                // 💡 在已選課程卡片補回學分數
                 return `
                 <div class="flex items-center justify-between p-2.5 bg-white border border-slate-200 rounded-lg shadow-sm group hover:border-indigo-300 transition-colors shrink-0">
                     <div class="flex flex-col">
@@ -437,7 +577,7 @@
             const inputVal = document.getElementById('input-student').value; const card = document.getElementById('student-info-card');
             const studentIdMatch = inputVal.split(' - ')[0]; const stu = allStudents.find(s => s.student_id === studentIdMatch);
             if (stu) {
-                card.innerHTML = `<div class="flex items-start gap-3 h-full"><div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-user-circle"></i></div><div class="flex flex-col justify-center flex-1 min-w-0"><div class="text-sm font-black text-slate-800 break-words leading-tight">${stu.name} (${stu.student_id})</div><div class="text-xs font-bold text-slate-500 mt-1 break-words">${getColShort(stu.college)} | ${getDeptShort(stu.department)}</div></div></div>`;
+                card.innerHTML = `<div class="flex items-start gap-3 h-full"><div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-user-circle"></i></div><div class="flex flex-col justify-center flex-1 min-w-0"><div class="text-sm font-black text-slate-800 break-words leading-tight">${stu.name} (${stu.student_id})</div><div class="text-[11px] font-bold text-slate-500 mt-1 break-words">${getColShort(stu.college)} / ${getDeptShort(stu.department)}</div></div></div>`;
                 card.classList.remove('hidden');
             } else { card.innerHTML = `<div class="text-rose-600 text-[11px] font-bold py-1">查無主檔，將建立獨立紀錄</div>`; card.classList.remove('hidden'); }
         };
@@ -450,12 +590,6 @@
                 card.classList.remove('hidden');
             } else { card.innerHTML = `<div class="text-rose-600 text-[11px] font-bold py-1">查無主檔，將建立獨立紀錄</div>`; card.classList.remove('hidden'); }
         };
-
-        function populateSemesterFilter() {
-            const sems = [...new Set(allCourses.map(d => d.semester))].filter(Boolean).sort().reverse();
-            const filterSem = document.getElementById('filter-semester');
-            filterSem.innerHTML = '<option value="all">學期：全部</option>' + sems.map(s => `<option value="${s}">${s}</option>`).join('');
-        }
 
         window.toggleSelectPage = (e) => {
             const isChecked = e.target.checked; const startIndex = (currentPage - 1) * itemsPerPage;
@@ -484,19 +618,33 @@
         window.closeModal = () => { document.getElementById('data-modal').classList.add('hidden'); document.getElementById('data-modal').classList.remove('flex'); document.getElementById('main-list-view').classList.remove('hidden'); editingId = null; };
         window.changePage = (p) => { currentPage = p; window.renderTable(); };
 
-        // 💡 總表格排毒降噪：全部靠左，對齊乾淨，增加行高與空間感
+        // 💡 總表格排版對齊優化
         window.renderTable = () => {
-            const tbody = document.getElementById('table-body'); const search = document.getElementById('search-input').value.toLowerCase();
-            const filterSem = document.getElementById('filter-semester').value; const filterP = document.getElementById('filter-period').value;
+            const tbody = document.getElementById('table-body'); 
+            const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
 
             filteredRecords = allRecords.filter(d => {
-                const matchS = (d.student_raw || '').toLowerCase().includes(search) || (d.inst_raw || '').toLowerCase().includes(search);
-                const matchP = filterP === 'all' || d.period_type === filterP;
-                let matchSem = filterSem === 'all';
-                if (!matchSem && Array.isArray(d.courses) && d.courses.length > 0) {
-                    matchSem = allCourses.filter(c => d.courses.includes(c.id)).some(c => c.semester === filterSem);
-                } else if (!matchSem) matchSem = false;
-                return matchS && matchP && matchSem;
+                const matchSearch = (d.student_raw || '').toLowerCase().includes(searchTerm) || (d.inst_raw || '').toLowerCase().includes(searchTerm);
+                
+                // 💡 判斷所有進階多選篩選器
+                const stuIdMatch = (d.student_raw || '').split(' - ')[0];
+                const stuDoc = allStudents.find(s => s.student_id === stuIdMatch);
+                
+                let ok = matchSearch;
+                if (ok && filterSelections.semester.size > 0) {
+                    const matchedSems = (d.courses || []).map(cid => { const c = allCourses.find(x => x.id === cid); return c ? c.semester : null; });
+                    ok = matchedSems.some(s => filterSelections.semester.has(s));
+                }
+                if (ok && filterSelections.college.size > 0) ok = stuDoc && filterSelections.college.has(stuDoc.college);
+                if (ok && filterSelections.dept.size > 0) ok = stuDoc && filterSelections.dept.has(stuDoc.department);
+                if (ok && filterSelections.course.size > 0) ok = (d.courses || []).some(cid => filterSelections.course.has(cid));
+                if (ok && filterSelections.inst.size > 0) ok = filterSelections.inst.has(d.inst_raw);
+                if (ok && filterSelections.period.size > 0) ok = filterSelections.period.has(d.period_type);
+                if (ok && filterSelections.proof.size > 0) ok = filterSelections.proof.has(d.proof_type);
+                if (ok && filterSelections.insurance.size > 0) ok = filterSelections.insurance.has(d.insurance);
+                if (ok && filterSelections.employment.size > 0) ok = filterSelections.employment.has(d.employment);
+                
+                return ok;
             });
 
             filteredRecords.sort((a, b) => getTime(b.created_at) - getTime(a.created_at));
@@ -515,83 +663,139 @@
 
             tbody.innerHTML = items.map(data => {
                 const stuId = (data.student_raw || '').split(' - ')[0]; const stu = allStudents.find(s => s.student_id === stuId);
-                const stuDept = stu ? getDeptShort(stu.department) : '未綁定';
+                const stuCol = stu ? getColShort(stu.college) : '未知學院';
+                const stuDept = stu ? getDeptShort(stu.department) : '未綁定學系';
                 
-                // 課程清單優化：垂直條列、加底色區隔
-                let coursesHtml = '<span class="text-[11px] text-slate-400 font-bold">未關聯課程</span>';
+                const inst = allInsts.find(i => i.name === data.inst_raw);
+                const instTax = inst?.tax_id || '無統編';
+                const instCountry = inst?.country || '中華民國';
+                const instAddr = inst?.address || '無地址';
+
+                let coursesHtml = '<span class="text-slate-400 font-bold text-xs">無關聯課程</span>';
                 if (Array.isArray(data.courses) && data.courses.length > 0) {
-                    coursesHtml = '<div class="flex flex-col gap-1.5">' + data.courses.map(cid => {
+                    const cList = data.courses.map(cid => {
                         const c = allCourses.find(x => x.id === cid);
-                        return c ? `<div class="flex items-center text-[11px] font-bold bg-slate-50 border border-slate-200 rounded px-2 py-1 w-fit max-w-full shadow-sm"><span class="text-slate-500 mr-1.5 shrink-0">${c.academic_year}-${c.term}</span><span class="text-blue-700 truncate">${c.course_name}</span></div>` : `<div class="text-[11px] bg-slate-100 border border-slate-200 text-slate-500 px-2 py-1 rounded w-fit">未知課程</div>`;
-                    }).join('') + '</div>';
+                        return c ? `${c.academic_year}-${c.term}_${c.course_code}：${c.course_name}` : '';
+                    }).filter(Boolean);
+                    coursesHtml = `<div class="text-sm font-black text-slate-800 leading-relaxed">${cList.join('、')}</div>`;
                 }
 
-                let insColor = data.insurance === '兩者皆無' ? 'text-rose-600 bg-rose-50 border-rose-200' : 'text-emerald-600 bg-emerald-50 border-emerald-200';
-
                 return `
-                <tr class="group bg-white hover:bg-blue-50/30 transition-all duration-150 border-b border-slate-100 last:border-0">
+                <tr class="group bg-white hover:bg-blue-50/40 transition-all duration-150 border-b border-slate-100 last:border-0">
                     <td class="px-3 py-4 align-middle text-center">
                         <input type="checkbox" class="row-checkbox w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shadow-sm transition-all" value="${data.id}" onchange="window.toggleSelect('${data.id}')" ${selectedIds.includes(data.id)?'checked':''}>
                     </td>
                     <td class="px-4 py-4 align-middle text-left">
-                        <div class="text-sm font-black text-slate-800 leading-tight">${stu?stu.name:data.student_raw} <span class="text-[10px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded ml-1">${data.grade || ''}</span></div>
-                        <div class="text-[11px] font-bold text-slate-500 mt-1.5 uppercase tracking-tight">${stuId} <span class="mx-1 opacity-40">|</span> ${stuDept}</div>
+                        <div class="text-sm font-black text-slate-800 leading-tight">${stu?stu.name:data.student_raw} (${stuId})</div>
+                        <div class="text-[11px] font-bold text-slate-500 mt-1.5 tracking-tight">${stuCol} / ${stuDept} <span class="mx-1 opacity-40">|</span> ${data.grade || '-'}年級</div>
                     </td>
                     <td class="px-4 py-4 align-middle text-left">
-                        <div class="text-sm font-black text-slate-800 line-clamp-1 leading-tight" title="${data.inst_raw}">${data.inst_raw}</div>
-                        <div class="text-[11px] font-bold text-slate-500 mt-1.5 flex items-center gap-1.5"><i class="fa-solid fa-file-contract text-slate-400"></i> ${data.proof_type || ''}</div>
+                        <div class="text-sm font-black text-slate-800 leading-tight break-words">${data.inst_raw}</div>
+                        <div class="text-[11px] font-bold text-slate-500 mt-1.5 break-words">${instTax} | ${instCountry} | ${instAddr}</div>
                     </td>
                     <td class="px-4 py-4 align-middle text-left">
                         ${coursesHtml}
                     </td>
                     <td class="px-4 py-4 align-middle text-left">
-                        <div class="text-[11px] font-black text-blue-600 mb-1">${data.period_type || ''}</div>
-                        <div class="text-[12px] font-bold text-slate-700 font-mono tracking-tighter leading-tight">${data.duration || ''}</div>
-                        <div class="text-[11px] font-bold text-slate-500 mt-1 flex items-center gap-1"><i class="fa-regular fa-clock"></i> ${data.hours || 0} 小時</div>
+                        <div class="text-sm font-black text-slate-800 leading-tight">${data.duration || '無起訖時間'} (${data.hours || 0}小時)</div>
+                        <div class="text-[11px] font-bold text-slate-500 mt-1.5">${data.period_type || '-'}</div>
                     </td>
-                    <td class="px-4 py-4 align-middle text-center">
-                        <div class="flex flex-col gap-1.5 items-center">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded border text-[10px] font-bold ${insColor} shadow-sm">${data.insurance || ''}</span>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded border border-slate-200 text-[10px] font-bold bg-slate-50 text-slate-600 shadow-sm">勞雇: ${data.employment || ''}</span>
-                        </div>
+                    <td class="px-4 py-4 align-middle text-left">
+                        <div class="text-sm font-black text-slate-800 leading-tight">${data.proof_type || '-'}</div>
+                        <div class="text-[11px] font-bold text-slate-500 mt-1.5">勞雇關係：${data.employment || '-'} | 投保情形：${data.insurance || '-'}</div>
                     </td>
                     <td class="px-3 py-4 align-middle text-center whitespace-nowrap">
-                        <div class="flex items-center justify-center gap-1.5">
+                        <div class="flex items-center justify-center gap-1.5 opacity-100">
                             <button onclick="window.editData('${data.id}')" class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all shrink-0" title="編輯紀錄"><i class="fa-solid fa-pen text-[11px]"></i></button>
-                            <button onclick="window.deleteData('${data.id}', '${stu?stu.name:data.student_raw}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all shrink-0" title="刪除"><i class="fa-solid fa-trash-can text-[11px]"></i></button>
+                            <button onclick="window.deleteData('${data.id}', '${stu?stu.name:data.student_raw}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-all shrink-0" title="刪除"><i class="fa-solid fa-trash-can text-[11px]"></i></button>
                         </div>
                     </td>
                 </tr>`;
             }).join('');
         };
 
+        window.exportToCSV = () => {
+            if (filteredRecords.length === 0) { alert("沒有資料可供匯出！"); return; }
+            let csv = '\uFEFF實習學生,學院,學系,實習機構,實習課程,實習起訖時間,實習時數,時間分類,證明文件類型,投保情形,勞雇關係,備註\n';
+            filteredRecords.forEach(d => {
+                const stuIdMatch = (d.student_raw || '').split(' - ')[0];
+                const stuDoc = allStudents.find(s => s.student_id === stuIdMatch);
+                let courseNames = (Array.isArray(d.courses) ? d.courses : []).map(cid => { const c = allCourses.find(x => x.id === cid); return c ? `${c.academic_year}-${c.term}_${c.course_code}：${c.course_name}` : '未知'; }).join('、');
+                csv += [d.student_raw, stuDoc ? stuDoc.college : '', stuDoc ? stuDoc.department : '', d.inst_raw, courseNames, d.duration, d.hours, d.period_type, d.proof_type, d.insurance, d.employment, d.notes || ''].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+            });
+            const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+            link.download = `實習紀錄總表_${new Date().toISOString().split('T')[0]}.csv`; link.click();
+        };
+
         window.submitForm = async () => {
-            const btn = document.getElementById('btn-submit'); const dur = document.getElementById('input-duration').value.trim();
-            if (!/^\d{2,3}\/\d{2}\/\d{2}-\d{2,3}\/\d{2}\/\d{2}$/.test(dur)) { alert("時間格式錯誤！格式應為：YYY/MM/DD-YYY/MM/DD"); return; }
-            if (selectedCourseIds.length === 0) { alert("請至少選擇一門關聯課程！"); return; }
-            const payload = { student_raw: document.getElementById('input-student').value.trim(), grade: document.getElementById('input-grade').value, inst_raw: document.getElementById('input-institution').value.trim(), period_type: document.getElementById('input-period-type').value, duration: dur, insurance: document.getElementById('input-insurance').value, employment: document.getElementById('input-employment').value, proof_type: document.getElementById('input-proof-type').value, hours: Number(document.getElementById('input-hours').value), notes: document.getElementById('input-notes').value.trim(), courses: selectedCourseIds };
-            if(!payload.student_raw || !payload.inst_raw || !payload.duration || !payload.hours || !payload.grade || !payload.period_type || !payload.proof_type || !payload.insurance || !payload.employment) { alert("請完成所有包含 * 號之必填設定！"); return; }
+            const btn = document.getElementById('btn-submit');
+            const durationInput = document.getElementById('input-duration').value.trim();
+            const regex = /^\d{2,3}\/\d{2}\/\d{2}-\d{2,3}\/\d{2}\/\d{2}$/;
+            if (!regex.test(durationInput)) { alert("時間格式錯誤！格式應為：YYY/MM/DD-YYY/MM/DD"); return; }
+            if (selectedCourseIds.length === 0) { alert("請至少選擇一門關聯實習課程！"); return; }
+
+            const payload = { 
+                student_raw: document.getElementById('input-student').value.trim(), 
+                grade: document.getElementById('input-grade').value,
+                inst_raw: document.getElementById('input-institution').value.trim(), 
+                period_type: document.getElementById('input-period-type').value,
+                duration: durationInput, 
+                insurance: document.getElementById('input-insurance').value,
+                employment: document.getElementById('input-employment').value, 
+                proof_type: document.getElementById('input-proof-type').value,
+                hours: Number(document.getElementById('input-hours').value), 
+                notes: document.getElementById('input-notes').value.trim(),
+                courses: selectedCourseIds
+            };
+
+            if(!payload.student_raw || !payload.inst_raw || !payload.duration || !payload.hours || !payload.grade || !payload.period_type || !payload.proof_type || !payload.insurance || !payload.employment) { 
+                alert("請完成所有包含 * 號之必填選單與欄位設定！"); return; 
+            }
+            
             btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> 儲存中...';
             try {
                 if (editingId) await updateDoc(doc(db, "internship_records", editingId), { ...payload, updated_at: serverTimestamp() });
                 else await addDoc(recordsCol, { ...payload, created_at: serverTimestamp() });
                 window.closeModal();
-            } catch (err) { alert(err.message); } finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> 儲存紀錄主檔'; }
+            } catch (err) { alert("儲存發生錯誤：" + err.message); } 
+            finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check text-sm"></i> 儲存紀錄主檔'; }
         };
 
         window.editData = (id) => {
             const data = allRecords.find(d => d.id === id); if (!data) return;
-            editingId = id; document.getElementById('input-student').value = data.student_raw || ''; document.getElementById('input-institution').value = data.inst_raw || ''; document.getElementById('input-duration').value = data.duration || ''; document.getElementById('input-hours').value = data.hours || ''; document.getElementById('input-notes').value = data.notes || '';
-            ['input-grade', 'input-period-type', 'input-proof-type', 'input-insurance', 'input-employment'].forEach(k => {
-                const val = data[k.replace('input-', '').replace('-', '_')] || data[k.replace('input-', '')];
-                window.setCustomSelectVal(k, val || '');
-            });
-            window.autoFillStudentInfo(); window.autoFillInstInfo(); selectedCourseIds = Array.isArray(data.courses) ? [...data.courses] : []; window.renderSelectedCourseChips();
+            editingId = id;
+            document.getElementById('input-student').value = data.student_raw || '';
+            document.getElementById('input-institution').value = data.inst_raw || '';
+            document.getElementById('input-duration').value = data.duration || '';
+            document.getElementById('input-hours').value = data.hours || '';
+            document.getElementById('input-notes').value = data.notes || '';
+            
+            window.setCustomSelectVal('input-grade', data.grade || '');
+            window.setCustomSelectVal('input-period-type', data.period_type || '');
+            window.setCustomSelectVal('input-proof-type', data.proof_type || '');
+            window.setCustomSelectVal('input-insurance', data.insurance || '');
+            window.setCustomSelectVal('input-employment', data.employment || '');
+
+            window.autoFillStudentInfo();
+            window.autoFillInstInfo();
+
+            selectedCourseIds = Array.isArray(data.courses) ? [...data.courses] : [];
+            window.renderSelectedCourseChips();
+
             document.getElementById('modal-title').innerText = '編輯實習紀錄';
-            document.getElementById('main-list-view').classList.add('hidden'); document.getElementById('data-modal').classList.remove('hidden'); document.getElementById('data-modal').classList.add('flex');
+            
+            document.getElementById('main-list-view').classList.add('hidden');
+            document.getElementById('data-modal').classList.remove('hidden');
+            document.getElementById('data-modal').classList.add('flex');
         };
 
-        window.deleteData = async (id, name) => { if (confirm(`確定刪除 ${name} 紀錄？`)) { await deleteDoc(doc(db, "internship_records", id)); window.renderTable(); } };
+        window.deleteData = async (id, name) => {
+            if (confirm(`警告：確定要刪除學生「${name}」的這筆實習紀錄嗎？\n此操作無法復原。`)) {
+                await deleteDoc(doc(db, "internship_records", id));
+                window.renderTable();
+            }
+        };
+
     </script>
 </body>
 </html>
