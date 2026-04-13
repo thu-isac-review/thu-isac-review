@@ -738,18 +738,146 @@
             tbody.innerHTML = html;
         };
 
+        // 💡 修改匯出 CSV 的邏輯：學號與姓名分離
         window.exportToCSV = () => {
             if (filteredRecords.length === 0) { alert("沒有資料可供匯出！"); return; }
-            let csv = '\uFEFF實習學生(學號-姓名),當學年年級,實習機構名稱,關聯課程(學年-學期_代號),實習起訖時間,核定時數,實習時間分類,證明文件類型,投保情形,勞雇關係,備註\n';
+            let csv = '\uFEFF學號,學生姓名,當學年年級,實習機構名稱,關聯課程(學年-學期_代號),實習起訖時間,核定時數,實習時間分類,證明文件類型,投保情形,勞雇關係,備註\n';
             filteredRecords.forEach(d => {
                 let courseNames = (Array.isArray(d.courses) ? d.courses : []).map(cid => { 
                     const c = allCourses.find(x => x.id === cid); 
                     return c ? `${c.academic_year}-${c.term}_${c.course_code}` : ''; 
                 }).filter(Boolean).join('、');
-                csv += [d.student_raw, d.grade, d.inst_raw, courseNames, d.duration, d.hours, d.period_type, d.proof_type, d.insurance, d.employment, d.notes || ''].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+                
+                const stuParts = (d.student_raw || '').split(' - ');
+                const stuId = stuParts[0] || '';
+                const stuName = stuParts[1] || '';
+
+                csv += [stuId, stuName, d.grade, d.inst_raw, courseNames, d.duration, d.hours, d.period_type, d.proof_type, d.insurance, d.employment, d.notes || ''].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
             });
             const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
             link.download = `實習紀錄總表_${new Date().toISOString().split('T')[0]}.csv`; link.click();
+        };
+
+        // 💡 加入匯入防呆報告與欄位對應修正
+        window.handleImport = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const btn = document.getElementById('btn-import');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-blue-600"></i> 匯入中...';
+            btn.disabled = true;
+
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const rows = event.target.result.split('\n').map(row => row.trim()).filter(row => row);
+                    let parsedRows = [];
+                    let warningReport = [];
+                    let errorReport = [];
+                    
+                    for (let i = 1; i < rows.length; i++) {
+                        let cols = [];
+                        let inQuotes = false;
+                        let currentVal = '';
+                        for (let char of rows[i]) {
+                            if (char === '"') { inQuotes = !inQuotes; }
+                            else if (char === ',' && !inQuotes) { cols.push(currentVal.trim()); currentVal = ''; }
+                            else { currentVal += char; }
+                        }
+                        cols.push(currentVal.trim());
+
+                        if (cols.length >= 11) {
+                            const stuId = (cols[0] || '').trim().toUpperCase();
+                            const stuName = (cols[1] || '').trim();
+                            const grade = cols[2];
+                            const inst_raw = cols[3];
+                            const coursesRaw = cols[4];
+                            const duration = cols[5];
+                            const hours = Number(cols[6]) || 0;
+                            const period_type = cols[7];
+                            const proof_type = cols[8];
+                            const insurance = cols[9];
+                            const employment = cols[10];
+                            const notes = cols[11] || '';
+
+                            if (!stuId || !stuName || !inst_raw || !duration || !hours || !grade || !period_type || !proof_type || !insurance || !employment) {
+                                errorReport.push(`第 ${i+1} 列 (${stuName || '未知'}): 缺少必填欄位，已跳過。`);
+                                continue;
+                            }
+
+                            let rowWarnings = [];
+                            
+                            const studentMatch = allStudents.find(s => s.student_id.toUpperCase() === stuId);
+                            if (!studentMatch) rowWarnings.push("找不到系統學生主檔");
+                            
+                            const instMatch = allInsts.find(inst => inst.name === inst_raw);
+                            if (!instMatch) rowWarnings.push("找不到系統機構主檔");
+
+                            let courseIds = [];
+                            if (coursesRaw) {
+                                const cTokens = coursesRaw.split('、').map(s => s.trim()).filter(Boolean);
+                                cTokens.forEach(token => {
+                                    const match = allCourses.find(c => `${c.academic_year}-${c.term}_${c.course_code}` === token);
+                                    if(match) {
+                                        courseIds.push(match.id);
+                                    } else {
+                                        rowWarnings.push(`找不到課程「${token}」`);
+                                    }
+                                });
+                            } else {
+                                rowWarnings.push("未填寫關聯課程");
+                            }
+
+                            if (rowWarnings.length > 0) {
+                                warningReport.push(`第 ${i+1} 列 (${stuName}): ${rowWarnings.join('、')}`);
+                            }
+
+                            const payload = {
+                                student_raw: `${stuId} - ${stuName}`,
+                                grade, 
+                                inst_raw, 
+                                courses: courseIds, 
+                                duration, 
+                                hours, 
+                                period_type, 
+                                proof_type, 
+                                insurance, 
+                                employment, 
+                                notes,
+                                created_at: serverTimestamp()
+                            };
+
+                            parsedRows.push(payload);
+                        } else {
+                            errorReport.push(`第 ${i+1} 列：欄位數量不足，已跳過。`);
+                        }
+                    }
+
+                    let addedCount = 0;
+                    for (let payload of parsedRows) {
+                        await addDoc(recordsCol, payload);
+                        addedCount++;
+                    }
+
+                    // 建立報告訊息
+                    let alertMsg = `✅ 成功匯入 ${addedCount} 筆資料！\n`;
+                    if (errorReport.length > 0) {
+                        alertMsg += `\n❌ 失敗未匯入 (${errorReport.length} 筆)：\n` + errorReport.slice(0, 5).join('\n') + (errorReport.length > 5 ? `\n...等共 ${errorReport.length} 筆` : '');
+                    }
+                    if (warningReport.length > 0) {
+                        alertMsg += `\n⚠️ 異常提醒 (仍成功匯入純文字，但缺乏主檔連結，共 ${warningReport.length} 筆)：\n` + warningReport.slice(0, 10).join('\n') + (warningReport.length > 10 ? `\n...等共 ${warningReport.length} 筆` : '');
+                    }
+
+                    alert(alertMsg);
+                } catch (error) { 
+                    alert("匯入失敗，請確認 CSV 檔案格式是否正確。\n" + error.message); 
+                } finally { 
+                    btn.innerHTML = originalHtml; 
+                    btn.disabled = false; 
+                    e.target.value = ''; 
+                }
+            };
+            reader.readAsText(file);
         };
 
         window.submitForm = async () => {
