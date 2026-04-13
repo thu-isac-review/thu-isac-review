@@ -112,25 +112,32 @@
                     </select>
                 </div>
 
-                <div class="grid grid-cols-2 gap-5">
-                    <div>
+                <div class="grid grid-cols-3 gap-5">
+                    <div class="col-span-1">
                         <label class="block text-xs font-bold text-slate-600 mb-2">適用層級 <span class="text-rose-500">*</span></label>
                         <select id="input-level" required onchange="window.toggleFilenameInputs()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
-                            <option value="school">全校統一文件 (僅一份)</option>
-                            <option value="department" selected>各系所獨立文件 (每系一份)</option>
-                            <option value="both">全校與各系所 (皆須上傳)</option>
+                            <option value="school">全校統一文件</option>
+                            <option value="department" selected>各系所獨立文件</option>
+                            <option value="both">全校與各系所</option>
                         </select>
                     </div>
-                    <div>
+                    <div class="col-span-1">
+                        <label class="block text-xs font-bold text-slate-600 mb-2">檔案數量限制 <span class="text-rose-500">*</span></label>
+                        <select id="input-file-limit" required onchange="window.autoGenerateFilename()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
+                            <option value="single" selected>單一檔案</option>
+                            <option value="multiple">多檔上傳 (自動流水號)</option>
+                        </select>
+                    </div>
+                    <div class="col-span-1">
                         <label class="block text-xs font-bold text-slate-600 mb-2">要求上傳文件名稱 <span class="text-rose-500">*</span></label>
                         <div class="relative">
                             <i class="fa-solid fa-file-lines absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input type="text" id="input-name" required placeholder="如：實習委員會設置要點" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm">
+                            <input type="text" id="input-name" required placeholder="如：實習辦法 / 細則" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm" oninput="window.autoGenerateFilename()">
                         </div>
                     </div>
                 </div>
 
-                <!-- 檔名設定區塊 -->
+                <!-- 檔名設定區塊 (開放編輯與自訂變數) -->
                 <div class="bg-blue-50/40 border border-blue-100 rounded-xl p-5 mt-2 space-y-4">
                     <div class="flex justify-between items-center border-b border-blue-100/50 pb-2">
                         <span class="text-xs font-black text-blue-700 uppercase tracking-wide"><i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i> 標準上傳檔名規則設定</span>
@@ -138,17 +145,21 @@
                     </div>
                     
                     <div id="school-filename-group" class="hidden space-y-1.5">
-                        <label class="block text-[11px] font-bold text-indigo-500">【全校統一格式】預設檔名</label>
-                        <input type="text" id="input-school-filename" placeholder="例如：[指標代碼]_THU_東海大學_[學期]_[文件名稱].pdf" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono font-bold text-indigo-700 shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none transition-all">
+                        <label class="block text-[11px] font-bold text-indigo-500">【全校統一格式】預設檔名 (可自由修改)</label>
+                        <input type="text" id="input-school-filename" placeholder="例如：[指標代碼]_[流水號]_東海大學[文件名稱].pdf" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono font-bold text-indigo-700 shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none transition-all">
                     </div>
                     
                     <div id="dept-filename-group" class="hidden space-y-1.5">
-                        <label class="block text-[11px] font-bold text-blue-500">【各系所獨立格式】預設檔名</label>
-                        <input type="text" id="input-dept-filename" placeholder="例如：[指標代碼]_[系所代碼]_[系所名稱]_[學期]_[文件名稱].pdf" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono font-bold text-blue-700 shadow-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all">
+                        <label class="block text-[11px] font-bold text-blue-500">【各系所獨立格式】預設檔名 (可自由修改)</label>
+                        <input type="text" id="input-dept-filename" placeholder="例如：[指標代碼]_[系所代碼][流水號]_東海大學[系所名稱][文件名稱].pdf" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono font-bold text-blue-700 shadow-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all">
                     </div>
                     
-                    <div class="bg-white/60 p-3 rounded-lg border border-slate-200">
-                        <p class="text-[11px] text-slate-500 font-medium leading-relaxed"><i class="fa-solid fa-circle-info text-blue-400 mr-1"></i> <strong>可用變數：</strong><code>[指標代碼]</code>、<code>[文件名稱]</code>、<code>[學期]</code>、<code>[系所代碼]</code>、<code>[系所名稱]</code>。系統將於審查端自動替換這些變數為實際內容。</p>
+                    <div class="bg-white/60 p-4 rounded-lg border border-slate-200 space-y-2">
+                        <p class="text-[11px] text-slate-500 font-bold leading-relaxed border-b border-slate-100 pb-2"><i class="fa-solid fa-circle-info text-blue-400 mr-1"></i> <strong>可用自動變數：</strong><code>[指標代碼]</code>、<code>[文件名稱]</code>、<code>[學期]</code>、<code>[系所代碼]</code>、<code>[系所名稱]</code>、<code class="text-blue-600 bg-blue-50 px-1 border border-blue-100 rounded">[流水號]</code>。</p>
+                        <div class="text-[11px] text-slate-500 font-medium leading-relaxed">
+                            <span class="text-blue-600 font-bold">💡 智慧多檔流水號機制：</span><br>
+                            若您將檔案限制設為「多檔上傳」，只需在檔名規則中加入 <code>[流水號]</code>（例如 <code>[系所代碼][流水號]</code>），後端系所上傳介面將允許拖曳多份檔案。系統會自動依據檔案的「原始名稱排序」轉換為 001, 002... 完美串接，免除您手動建立多個項目的困擾！
+                        </div>
                     </div>
                 </div>
             </form>
@@ -212,7 +223,6 @@
             select.innerHTML = html;
         }
 
-        // 💡 控制檔名輸入框顯示狀態
         window.toggleFilenameInputs = () => {
             const level = document.getElementById('input-level').value;
             const schoolGroup = document.getElementById('school-filename-group');
@@ -230,9 +240,10 @@
             }
         };
 
-        // 💡 自動帶入標準檔名
+        // 💡 修改自動帶入建議格式，使用符合進階命名的萬用字串與流水號
         window.autoGenerateFilename = () => {
             const indSelect = document.getElementById('input-indicator');
+            const fileLimit = document.getElementById('input-file-limit').value;
             const docName = document.getElementById('input-name').value.trim() || '[文件名稱]';
             
             let code = '[指標代碼]';
@@ -240,8 +251,12 @@
                 code = indSelect.options[indSelect.selectedIndex].getAttribute('data-code') || code;
             }
 
-            document.getElementById('input-school-filename').value = `${code}_THU_東海大學_[學期]_${docName}.pdf`;
-            document.getElementById('input-dept-filename').value = `${code}_[系所代碼]_[系所名稱]_[學期]_${docName}.pdf`;
+            // 根據是否允許多檔，自動替換預設流水號變數
+            const schoolSeq = fileLimit === 'multiple' ? '[流水號]' : '000001';
+            const deptSeq = fileLimit === 'multiple' ? '[流水號]' : '001';
+
+            document.getElementById('input-school-filename').value = `${code}_${schoolSeq}_東海大學${docName}.pdf`;
+            document.getElementById('input-dept-filename').value = `${code}_[系所代碼]${deptSeq}_東海大學[系所名稱]${docName}.pdf`;
         };
 
         window.openDocModal = () => {
@@ -269,7 +284,6 @@
                 return matchSearch && matchLevel && matchStatus;
             });
 
-            // 💡 排序改為單純依指標代碼與名稱
             filtered.sort((a, b) => {
                 const codeA = (a.indicator_code || '') + '-' + (a.name || '');
                 const codeB = (b.indicator_code || '') + '-' + (b.name || '');
@@ -307,12 +321,16 @@
                     levelBadge = `<div class="flex flex-col gap-1 items-center justify-center"><span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-purple-50 border border-purple-200 text-purple-700 text-[10px] font-bold whitespace-nowrap shadow-sm"><i class="fa-solid fa-building-columns"></i> 全校</span><span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-purple-50 border border-purple-200 text-purple-700 text-[10px] font-bold whitespace-nowrap shadow-sm"><i class="fa-solid fa-graduation-cap"></i> 系所</span></div>`;
                 }
 
+                // 💡 新增檔案數量限制 Badge
+                let limitBadge = data.file_limit === 'multiple' 
+                    ? `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200 mt-1.5 shadow-sm"><i class="fa-solid fa-layer-group mr-1"></i>多檔 (自動流水號)</span>` 
+                    : `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-50 text-slate-500 border border-slate-200 mt-1.5 shadow-sm">單一檔案</span>`;
+
                 const boundIndicator = allIndicators.find(ind => ind.id === data.indicator_id);
                 const indicatorName = boundIndicator ? boundIndicator.item_name : '<span class="text-rose-500">指標已遺失</span>';
 
-                // 💡 讀取編輯後的檔名，若無則顯示預設或 fallback 邏輯 (相容舊資料)
-                let sFile = data.school_filename || `${data.indicator_code || ''}-${data.sequence || '1'}_THU_東海大學_[學期]${data.name || ''}.pdf`;
-                let dFile = data.dept_filename || `${data.indicator_code || ''}-${data.sequence || '1'}_[系所代碼]_[系所名稱]_[學期]${data.name || ''}.pdf`;
+                let sFile = data.school_filename || `<span class="text-slate-400 italic">尚未設定檔名格式</span>`;
+                let dFile = data.dept_filename || `<span class="text-slate-400 italic">尚未設定檔名格式</span>`;
                 
                 let previewFile = '';
                 if (data.level === 'school') {
@@ -336,7 +354,10 @@
                         </div>
                     </td>
                     <td class="px-6 py-4 align-middle">
-                        <span class="text-sm font-bold text-slate-800 leading-tight">${data.name}</span>
+                        <div class="flex flex-col items-start">
+                            <span class="text-sm font-bold text-slate-800 leading-tight">${data.name}</span>
+                            ${limitBadge}
+                        </div>
                     </td>
                     <td class="px-6 py-4 align-middle">
                         <div class="text-[11px] font-mono bg-slate-50 border border-slate-200 p-2.5 rounded-lg shadow-inner">
@@ -365,7 +386,7 @@
 
         window.exportToCSV = () => {
             if (allDocs.length === 0) { alert("沒有資料可供匯出！"); return; }
-            let csv = '\uFEFF適用層級,指標代碼,要求上傳文件名稱,預設上傳檔名規則,系統狀態\n';
+            let csv = '\uFEFF適用層級,指標代碼,要求上傳文件名稱,檔案數量限制,預設上傳檔名規則,系統狀態\n';
             
             let sorted = [...allDocs].sort((a, b) => {
                 const codeA = (a.indicator_code || '') + '-' + (a.name || '');
@@ -376,12 +397,13 @@
             sorted.forEach(d => {
                 let status = d.is_active ? '啟用' : '停用';
                 let level = d.level === 'school' ? '全校統一文件' : (d.level === 'department' ? '各系所獨立文件' : '全校與各系所');
+                let limitStr = d.file_limit === 'multiple' ? '多檔(自動流水號)' : '單一檔案';
                 
-                let sFile = d.school_filename || `${d.indicator_code || ''}-${d.sequence || '1'}_THU_東海大學_[學期]${d.name || ''}.pdf`;
-                let dFile = d.dept_filename || `${d.indicator_code || ''}-${d.sequence || '1'}_[系所代碼]_[系所名稱]_[學期]${d.name || ''}.pdf`;
+                let sFile = d.school_filename || `未設定`;
+                let dFile = d.dept_filename || `未設定`;
                 let patternStr = d.level === 'school' ? sFile : (d.level === 'department' ? dFile : `校:${sFile} / 系:${dFile}`);
 
-                csv += [level, d.indicator_code, d.name, patternStr, status].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+                csv += [level, d.indicator_code, d.name, limitStr, patternStr, status].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
             });
             const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
             link.download = `ISAC行政文件設定_${new Date().toISOString().split('T')[0]}.csv`; link.click();
@@ -396,11 +418,11 @@
                 indicatorCode = indSelect.options[indSelect.selectedIndex].getAttribute('data-code');
             }
             
-            // 💡 移除 sequence，加入 custom filenames
             const payload = { 
                 indicator_id: indSelect.value,
                 indicator_code: indicatorCode,
                 level: document.getElementById('input-level').value,
+                file_limit: document.getElementById('input-file-limit').value,
                 name: document.getElementById('input-name').value.trim(),
                 school_filename: document.getElementById('input-school-filename').value.trim(),
                 dept_filename: document.getElementById('input-dept-filename').value.trim()
@@ -429,14 +451,11 @@
             editingId = id;
             document.getElementById('input-indicator').value = docData.indicator_id || '';
             document.getElementById('input-level').value = docData.level || 'department';
+            document.getElementById('input-file-limit').value = docData.file_limit || 'single';
             document.getElementById('input-name').value = docData.name || ''; 
 
-            // 💡 相容舊版資料：如果沒有 school_filename，就自動將舊的序號組合成字串填入
-            let defaultSchool = docData.school_filename || `${docData.indicator_code || '[指標代碼]'}-${docData.sequence || '1'}_THU_東海大學_[學期]_${docData.name || '[文件名稱]'}.pdf`;
-            let defaultDept = docData.dept_filename || `${docData.indicator_code || '[指標代碼]'}-${docData.sequence || '1'}_[系所代碼]_[系所名稱]_[學期]_${docData.name || '[文件名稱]'}.pdf`;
-
-            document.getElementById('input-school-filename').value = docData.school_filename || defaultSchool;
-            document.getElementById('input-dept-filename').value = docData.dept_filename || defaultDept;
+            document.getElementById('input-school-filename').value = docData.school_filename || '';
+            document.getElementById('input-dept-filename').value = docData.dept_filename || '';
 
             window.toggleFilenameInputs();
 
