@@ -112,8 +112,8 @@
                     </select>
                 </div>
 
-                <div class="grid grid-cols-3 gap-5">
-                    <div class="col-span-1">
+                <div class="grid grid-cols-2 gap-5">
+                    <div>
                         <label class="block text-xs font-bold text-slate-600 mb-2">適用層級 <span class="text-rose-500">*</span></label>
                         <select id="input-level" required onchange="window.toggleFilenameInputs()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
                             <option value="school">全校統一文件</option>
@@ -121,19 +121,20 @@
                             <option value="both">全校與各系所</option>
                         </select>
                     </div>
-                    <div class="col-span-1">
+                    <div>
                         <label class="block text-xs font-bold text-slate-600 mb-2">檔案數量限制 <span class="text-rose-500">*</span></label>
                         <select id="input-file-limit" required onchange="window.autoGenerateFilename()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
                             <option value="single" selected>單一檔案</option>
                             <option value="multiple">多檔上傳 (自動生成流水號)</option>
                         </select>
                     </div>
-                    <div class="col-span-1">
-                        <label class="block text-xs font-bold text-slate-600 mb-2">要求上傳文件名稱 <span class="text-rose-500">*</span></label>
-                        <div class="relative">
-                            <i class="fa-solid fa-file-lines absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input type="text" id="input-name" required placeholder="如：實習辦法 / 細則" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm" oninput="window.autoGenerateFilename()">
-                        </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-2">要求上傳文件名稱 <span class="text-rose-500">*</span></label>
+                    <div class="relative">
+                        <i class="fa-solid fa-file-lines absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="input-name" required placeholder="如：實習辦法 / 細則" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm" oninput="window.autoGenerateFilename()">
                     </div>
                 </div>
 
