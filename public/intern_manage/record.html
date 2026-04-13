@@ -48,6 +48,11 @@
                     <button onclick="window.exportToCSV()" class="h-9 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-3 rounded-lg text-sm transition-all flex items-center gap-1.5 shadow-sm">
                         <i class="fa-solid fa-file-export text-emerald-600"></i> 匯出紀錄
                     </button>
+                    <button id="btn-import" onclick="document.getElementById('import-file').click()" class="h-9 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-3 rounded-lg text-sm transition-all flex items-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-file-import text-blue-600"></i> 批次匯入
+                    </button>
+                    <input type="file" id="import-file" accept=".csv" class="hidden" onchange="window.handleImport(event)">
+                    
                     <div class="w-px h-6 bg-slate-200 self-center mx-1"></div>
                     <button onclick="window.openModal()" class="h-9 bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 rounded-lg text-sm transition-all shadow-sm shadow-blue-500/20 active:scale-95">
                         <i class="fa-solid fa-plus mr-1"></i> 新增實習紀錄
@@ -58,8 +63,8 @@
             <!-- 進階篩選與搜尋列 -->
             <div class="flex flex-col md:flex-row justify-between items-center gap-4 w-full relative z-20">
                 
-                <!-- Notion 風格多重篩選器容器 -->
-                <div id="advanced-filters-container" class="flex gap-2 overflow-x-auto custom-scrollbar pb-1 w-full md:w-auto flex-1 items-center">
+                <!-- 💡 已修正為 flex-wrap 以避免選單被截斷產生上下滾動軸 -->
+                <div id="advanced-filters-container" class="flex flex-wrap gap-2 pb-1 w-full md:w-auto flex-1 items-center">
                     <!-- Javascript 動態載入篩選標籤 -->
                 </div>
 
@@ -299,97 +304,117 @@
                     setupGlobalListeners();
                     onSnapshot(recordsCol, (snapshot) => {
                         allRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                        if (!isFiltersInitialized) {
-                            initializeFilters();
-                            isFiltersInitialized = true;
-                        }
+                        // 💡 熱更新篩選選單資料
+                        renderFilterDropdowns();
                         selectedIds = []; window.updateBatchActionBar(); window.renderTable();
                     });
                 });
             }
         });
 
-        // 💡 初始化 Notion 風格篩選器選單
-        function initializeFilters() {
+        // 💡 重構篩選器渲染邏輯 (熱更新支援)
+        function renderFilterDropdowns() {
             const container = document.getElementById('advanced-filters-container');
-            container.innerHTML = '';
-            
+            if (!container) return;
+
             const filterOptions = {
                 semester: [...new Set(allCourses.map(c=>c.semester))].filter(Boolean).sort().reverse().map(v=>({value:v, label:v})),
                 college: orderedColleges.map(c=>({value:c.name, label:c.shortName || c.name})),
                 dept: [...new Set(globalDepts.map(d=>d.name))].map(v=>({value:v, label: getDeptShort(v)})),
                 course: allCourses.map(c=>({value:c.id, label:`${c.academic_year}-${c.term}_${c.course_code}：${c.course_name}`})),
-                inst: [...new Set(allRecords.map(r=>r.inst_raw))].filter(Boolean).map(v=>({value:v, label:v})),
+                inst: [...new Set(allRecords.map(r=>r.inst_raw))].filter(Boolean).sort().map(v=>({value:v, label:v})), // 抓取所有出現在主檔的機構
                 period: ['寒假實習', '暑假實習', '學期期間實習', '單一學期實習', '全學年'].map(v=>({value:v, label:v})),
                 proof: ['合約', '公函', '其他證明文件'].map(v=>({value:v, label:v})),
                 insurance: ['僅校外實習保險', '僅勞保', '兩者皆有', '兩者皆無'].map(v=>({value:v, label:v})),
                 employment: ['是', '否'].map(v=>({value:v, label:v}))
             };
 
-            filterDefinitions.forEach(def => {
-                const options = filterOptions[def.key] || [];
-                const wrap = document.createElement('div');
-                wrap.className = 'relative group-filter shrink-0';
-                wrap.innerHTML = `
-                    <button type="button" class="filter-btn border border-slate-200 bg-white text-slate-700 text-[13px] font-bold rounded-lg px-3 py-1.5 shadow-sm flex items-center hover:bg-slate-50 transition-colors" data-key="${def.key}">
-                        ${def.label} <span class="filter-count hidden bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded text-[10px] ml-1.5">0</span> <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 ml-1.5"></i>
-                    </button>
-                    <div class="filter-panel hidden absolute top-full left-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl w-64 max-h-72 flex-col overflow-hidden z-[100]">
-                        ${def.searchable ? `
-                        <div class="p-2 border-b border-slate-100 shrink-0 bg-slate-50/50">
-                            <div class="relative">
-                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[11px]"></i>
-                                <input type="text" placeholder="搜尋選項..." class="filter-search w-full bg-white border border-slate-200 rounded-lg pl-8 pr-3 py-1.5 text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500" data-key="${def.key}">
+            // 第一次建立外框與綁定事件
+            if (!isFiltersInitialized) {
+                container.innerHTML = '';
+                filterDefinitions.forEach(def => {
+                    const wrap = document.createElement('div');
+                    wrap.className = 'relative group-filter shrink-0 mb-1';
+                    wrap.innerHTML = `
+                        <button type="button" class="filter-btn border border-slate-200 bg-white text-slate-700 text-[13px] font-bold rounded-lg px-3 py-1.5 shadow-sm flex items-center hover:bg-slate-50 transition-colors" data-key="${def.key}">
+                            ${def.label} <span class="filter-count hidden bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded text-[10px] ml-1.5">0</span> <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 ml-1.5"></i>
+                        </button>
+                        <div class="filter-panel hidden absolute top-full left-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl w-64 max-h-72 flex-col overflow-hidden z-[100]">
+                            ${def.searchable ? `
+                            <div class="p-2 border-b border-slate-100 shrink-0 bg-slate-50/50">
+                                <div class="relative">
+                                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[11px]"></i>
+                                    <input type="text" placeholder="搜尋選項..." class="filter-search w-full bg-white border border-slate-200 rounded-lg pl-8 pr-3 py-1.5 text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500" data-key="${def.key}">
+                                </div>
+                            </div>` : ''}
+                            <div class="filter-options flex-1 overflow-y-auto p-1 custom-scrollbar space-y-0.5"></div>
+                            <div class="p-2 border-t border-slate-100 shrink-0 bg-slate-50 flex justify-between clear-btn-wrap hidden">
+                                <button type="button" class="text-xs font-bold text-slate-500 hover:text-rose-600 transition-colors w-full text-center" onclick="window.clearFilter('${def.key}')">清除此條件</button>
                             </div>
-                        </div>` : ''}
-                        <div class="filter-options flex-1 overflow-y-auto p-1 custom-scrollbar space-y-0.5">
-                            ${options.map(opt => `
-                                <label class="flex items-start gap-2.5 p-2 hover:bg-slate-50 rounded-lg cursor-pointer option-label transition-colors">
-                                    <input type="checkbox" class="mt-0.5 w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer" value="${opt.value}" data-key="${def.key}">
-                                    <span class="text-xs font-bold text-slate-700 select-none flex-1 leading-tight">${opt.label}</span>
-                                </label>
-                            `).join('')}
                         </div>
-                        <div class="p-2 border-t border-slate-100 shrink-0 bg-slate-50 flex justify-between clear-btn-wrap hidden">
-                            <button type="button" class="text-xs font-bold text-slate-500 hover:text-rose-600 transition-colors w-full text-center" onclick="window.clearFilter('${def.key}')">清除此條件</button>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(wrap);
-            });
-
-            // 綁定篩選選單事件
-            container.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const panel = btn.nextElementSibling;
-                    const wasHidden = panel.classList.contains('hidden');
-                    document.querySelectorAll('.filter-panel').forEach(p => { p.classList.add('hidden'); p.classList.remove('flex'); });
-                    if (wasHidden) { panel.classList.remove('hidden'); panel.classList.add('flex'); }
+                    `;
+                    container.appendChild(wrap);
                 });
-            });
 
-            container.querySelectorAll('.filter-search').forEach(input => {
-                input.addEventListener('click', e => e.stopPropagation());
-                input.addEventListener('input', (e) => {
-                    const term = e.target.value.toLowerCase().trim();
-                    const panel = e.target.closest('.filter-panel');
-                    panel.querySelectorAll('.option-label').forEach(label => {
-                        const text = label.querySelector('span').innerText.toLowerCase();
-                        label.style.display = text.includes(term) ? 'flex' : 'none';
+                // 綁定基礎開關與搜尋事件
+                container.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const panel = btn.nextElementSibling;
+                        const wasHidden = panel.classList.contains('hidden');
+                        document.querySelectorAll('.filter-panel').forEach(p => { p.classList.add('hidden'); p.classList.remove('flex'); });
+                        if (wasHidden) { panel.classList.remove('hidden'); panel.classList.add('flex'); }
                     });
                 });
-            });
 
-            container.querySelectorAll('input[type="checkbox"]').forEach(chk => {
-                chk.addEventListener('change', (e) => {
-                    const key = e.target.getAttribute('data-key');
-                    if (e.target.checked) filterSelections[key].add(e.target.value);
-                    else filterSelections[key].delete(e.target.value);
-                    window.updateFilterPillUI(key);
-                    currentPage = 1;
-                    window.renderTable();
+                container.querySelectorAll('.filter-search').forEach(input => {
+                    input.addEventListener('click', e => e.stopPropagation());
+                    input.addEventListener('input', (e) => {
+                        const term = e.target.value.toLowerCase().trim();
+                        const panel = e.target.closest('.filter-panel');
+                        panel.querySelectorAll('.option-label').forEach(label => {
+                            const text = label.querySelector('span').innerText.toLowerCase();
+                            label.style.display = text.includes(term) ? 'flex' : 'none';
+                        });
+                    });
                 });
+
+                isFiltersInitialized = true;
+            }
+
+            // 無論是否初始化，每次呼叫都會熱更新選項內容
+            filterDefinitions.forEach(def => {
+                const options = filterOptions[def.key] || [];
+                const wrap = document.querySelector(`.group-filter .filter-btn[data-key="${def.key}"]`).closest('.group-filter');
+                const optionsContainer = wrap.querySelector('.filter-options');
+                
+                const searchInput = wrap.querySelector('.filter-search');
+                const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+                optionsContainer.innerHTML = options.map(opt => {
+                    const isChecked = filterSelections[def.key].has(opt.value) ? 'checked' : '';
+                    const displayStyle = (searchTerm && !opt.label.toLowerCase().includes(searchTerm)) ? 'none' : 'flex';
+                    return `
+                        <label class="flex items-start gap-2.5 p-2 hover:bg-slate-50 rounded-lg cursor-pointer option-label transition-colors" style="display: ${displayStyle}">
+                            <input type="checkbox" class="mt-0.5 w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer filter-checkbox" value="${opt.value}" data-key="${def.key}" ${isChecked}>
+                            <span class="text-xs font-bold text-slate-700 select-none flex-1 leading-tight">${opt.label}</span>
+                        </label>
+                    `;
+                }).join('');
+
+                // 因為重寫了 innerHTML，需重新綁定勾選事件
+                optionsContainer.querySelectorAll('.filter-checkbox').forEach(chk => {
+                    chk.addEventListener('change', (e) => {
+                        const key = e.target.getAttribute('data-key');
+                        if (e.target.checked) filterSelections[key].add(e.target.value);
+                        else filterSelections[key].delete(e.target.value);
+                        window.updateFilterPillUI(key);
+                        currentPage = 1;
+                        window.renderTable();
+                    });
+                });
+
+                window.updateFilterPillUI(def.key);
             });
         }
 
@@ -618,7 +643,6 @@
         window.closeModal = () => { document.getElementById('data-modal').classList.add('hidden'); document.getElementById('data-modal').classList.remove('flex'); document.getElementById('main-list-view').classList.remove('hidden'); editingId = null; };
         window.changePage = (p) => { currentPage = p; window.renderTable(); };
 
-        // 💡 總表格排版對齊優化
         window.renderTable = () => {
             const tbody = document.getElementById('table-body'); 
             const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
@@ -626,7 +650,6 @@
             filteredRecords = allRecords.filter(d => {
                 const matchSearch = (d.student_raw || '').toLowerCase().includes(searchTerm) || (d.inst_raw || '').toLowerCase().includes(searchTerm);
                 
-                // 💡 判斷所有進階多選篩選器
                 const stuIdMatch = (d.student_raw || '').split(' - ')[0];
                 const stuDoc = allStudents.find(s => s.student_id === stuIdMatch);
                 
@@ -711,17 +734,19 @@
                         </div>
                     </td>
                 </tr>`;
-            }).join('');
+            });
+            tbody.innerHTML = html;
         };
 
         window.exportToCSV = () => {
             if (filteredRecords.length === 0) { alert("沒有資料可供匯出！"); return; }
-            let csv = '\uFEFF實習學生,學院,學系,實習機構,實習課程,實習起訖時間,實習時數,時間分類,證明文件類型,投保情形,勞雇關係,備註\n';
+            let csv = '\uFEFF實習學生(學號-姓名),當學年年級,實習機構名稱,關聯課程(學年-學期_代號),實習起訖時間,核定時數,實習時間分類,證明文件類型,投保情形,勞雇關係,備註\n';
             filteredRecords.forEach(d => {
-                const stuIdMatch = (d.student_raw || '').split(' - ')[0];
-                const stuDoc = allStudents.find(s => s.student_id === stuIdMatch);
-                let courseNames = (Array.isArray(d.courses) ? d.courses : []).map(cid => { const c = allCourses.find(x => x.id === cid); return c ? `${c.academic_year}-${c.term}_${c.course_code}：${c.course_name}` : '未知'; }).join('、');
-                csv += [d.student_raw, stuDoc ? stuDoc.college : '', stuDoc ? stuDoc.department : '', d.inst_raw, courseNames, d.duration, d.hours, d.period_type, d.proof_type, d.insurance, d.employment, d.notes || ''].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+                let courseNames = (Array.isArray(d.courses) ? d.courses : []).map(cid => { 
+                    const c = allCourses.find(x => x.id === cid); 
+                    return c ? `${c.academic_year}-${c.term}_${c.course_code}` : ''; 
+                }).filter(Boolean).join('、');
+                csv += [d.student_raw, d.grade, d.inst_raw, courseNames, d.duration, d.hours, d.period_type, d.proof_type, d.insurance, d.employment, d.notes || ''].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
             });
             const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
             link.download = `實習紀錄總表_${new Date().toISOString().split('T')[0]}.csv`; link.click();
