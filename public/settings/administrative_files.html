@@ -69,9 +69,9 @@
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col flex-1 overflow-hidden">
             <div class="flex-1 overflow-auto custom-scrollbar relative">
                 <table class="w-full text-left table-fixed">
-                    <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
+                    <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10 shadow-sm">
                         <tr>
-                            <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 w-[12%]">適用層級</th>
+                            <th class="px-6 py-3.5 text-left text-xs font-bold text-slate-500 w-[12%]">適用層級</th>
                             <th class="px-6 py-3.5 text-left text-xs font-bold text-slate-500 w-[20%]">所屬指標 (代碼)</th>
                             <th class="px-6 py-3.5 text-left text-xs font-bold text-slate-500 w-[20%]">要求上傳文件名稱</th>
                             <th class="px-6 py-3.5 text-left text-xs font-bold text-slate-500 w-[25%]">要求上傳檔名規則</th>
@@ -79,7 +79,7 @@
                             <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 w-[13%]">操作</th>
                         </tr>
                     </thead>
-                    <tbody id="doc-table-body" class="divide-y divide-slate-100 text-sm">
+                    <tbody id="doc-table-body" class="text-sm">
                         <tr><td colspan="6" class="px-6 py-16 text-center text-slate-400"><i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-blue-500"></i><p class="font-bold">資料載入與驗證中...</p></td></tr>
                     </tbody>
                 </table>
@@ -95,7 +95,7 @@
     <!-- 彈跳視窗：新增/編輯文件 -->
     <div id="doc-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="window.closeDocModal()"></div>
-        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden modal-enter relative max-h-[90vh] flex flex-col">
+        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-3xl overflow-hidden modal-enter relative max-h-[90vh] flex flex-col">
             <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center shrink-0 bg-slate-50">
                 <h3 id="modal-title" class="font-black text-slate-800 text-lg flex items-center gap-2">
                     <i class="fa-solid fa-file-circle-plus text-blue-600"></i> 新增行政文件
@@ -103,7 +103,7 @@
                 <button onclick="window.closeDocModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 bg-white shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors shrink-0"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             
-            <form id="doc-form" class="p-8 space-y-5 overflow-y-auto custom-scrollbar flex-1 bg-white">
+            <form id="doc-form" class="p-8 space-y-6 overflow-y-auto custom-scrollbar flex-1 bg-white">
                 <div>
                     <label class="block text-xs font-bold text-slate-600 mb-2">對應之教育部審查指標 <span class="text-rose-500">*</span></label>
                     <select id="input-indicator" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
@@ -125,7 +125,7 @@
                         <label class="block text-xs font-bold text-slate-600 mb-2">檔案數量限制 <span class="text-rose-500">*</span></label>
                         <select id="input-file-limit" required onchange="window.autoGenerateFilename()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
                             <option value="single" selected>單一檔案</option>
-                            <option value="multiple">多檔上傳 (自動流水號)</option>
+                            <option value="multiple">多檔上傳 (自動生成流水號)</option>
                         </select>
                     </div>
                     <div class="col-span-1">
@@ -145,20 +145,27 @@
                     </div>
                     
                     <div id="school-filename-group" class="hidden space-y-1.5">
-                        <label class="block text-[11px] font-bold text-indigo-500">【全校統一格式】預設檔名 (可自由修改)</label>
-                        <input type="text" id="input-school-filename" placeholder="例如：[指標代碼]_[流水號]_東海大學[文件名稱].pdf" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono font-bold text-indigo-700 shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none transition-all">
+                        <label class="block text-[11px] font-bold text-indigo-500">【全校統一格式】預設檔名範本 (可自由修改)</label>
+                        <input type="text" id="input-school-filename" placeholder="例如：[指標代碼]_[流水號]_[學期]_東海大學[文件名稱].pdf" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono font-bold text-indigo-700 shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none transition-all">
                     </div>
                     
                     <div id="dept-filename-group" class="hidden space-y-1.5">
-                        <label class="block text-[11px] font-bold text-blue-500">【各系所獨立格式】預設檔名 (可自由修改)</label>
-                        <input type="text" id="input-dept-filename" placeholder="例如：[指標代碼]_[系所代碼][流水號]_東海大學[系所名稱][文件名稱].pdf" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono font-bold text-blue-700 shadow-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all">
+                        <label class="block text-[11px] font-bold text-blue-500">【各系所獨立格式】預設檔名範本 (可自由修改)</label>
+                        <input type="text" id="input-dept-filename" placeholder="例如：[指標代碼]_[系所代碼][流水號]_[系所名稱]_[學期]_[文件名稱].pdf" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono font-bold text-blue-700 shadow-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all">
                     </div>
                     
-                    <div class="bg-white/60 p-4 rounded-lg border border-slate-200 space-y-2">
-                        <p class="text-[11px] text-slate-500 font-bold leading-relaxed border-b border-slate-100 pb-2"><i class="fa-solid fa-circle-info text-blue-400 mr-1"></i> <strong>可用自動變數：</strong><code>[指標代碼]</code>、<code>[文件名稱]</code>、<code>[學期]</code>、<code>[系所代碼]</code>、<code>[系所名稱]</code>、<code class="text-blue-600 bg-blue-50 px-1 border border-blue-100 rounded">[流水號]</code>。</p>
-                        <div class="text-[11px] text-slate-500 font-medium leading-relaxed">
-                            <span class="text-blue-600 font-bold">💡 智慧多檔流水號機制：</span><br>
-                            若您將檔案限制設為「多檔上傳」，只需在檔名規則中加入 <code>[流水號]</code>（例如 <code>[系所代碼][流水號]</code>），後端系所上傳介面將允許拖曳多份檔案。系統會自動依據檔案的「原始名稱排序」轉換為 001, 002... 完美串接，免除您手動建立多個項目的困擾！
+                    <div class="bg-white/80 p-4 rounded-xl border border-slate-200 space-y-3 shadow-sm">
+                        <!-- 💡 行政文件移除學生相關變數提示，避免管理員混淆 -->
+                        <p class="text-[12px] text-slate-700 font-bold leading-relaxed border-b border-slate-200 pb-2">
+                            <i class="fa-solid fa-circle-info text-blue-500 mr-1.5"></i> <strong>系統變數清單：</strong>您可使用 <code>[指標代碼]</code>、<code>[文件名稱]</code>、<code>[學期]</code>、<code>[系所代碼]</code>、<code>[系所名稱]</code>、<code class="text-blue-700 bg-blue-100 px-1 border border-blue-200 rounded">[流水號]</code>。
+                        </p>
+                        <div class="text-[11px] text-slate-600 font-medium leading-relaxed space-y-1.5">
+                            <p><strong class="text-blue-600"><i class="fa-solid fa-bolt mr-1"></i> 智慧多檔與自動流水號機制：</strong></p>
+                            <ul class="list-disc pl-4 space-y-1">
+                                <li>此頁面僅為「定義規則範本」。若您選擇「多檔上傳」並放入 <code>[流水號]</code> 變數，未來上傳端的使用者只需<strong>一次拖曳多份檔案</strong>即可，不需手動建立多個項目。</li>
+                                <li><strong>排序方式：</strong> 系統會自動依據上傳端檔案的「原始名稱 (A-Z)」進行排序後，依序賦予 001, 002... 的流水號並自動重新命名。</li>
+                                <li><strong>獨立計數：</strong> 每個單位上傳的文件都是獨立的運作空間，流水號永遠會自動從 001 開始安全起算，互不干擾！</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -240,7 +247,7 @@
             }
         };
 
-        // 💡 修改自動帶入建議格式，使用符合進階命名的萬用字串與流水號
+        // 💡 調整自動生成的範本 (移除學生變數)
         window.autoGenerateFilename = () => {
             const indSelect = document.getElementById('input-indicator');
             const fileLimit = document.getElementById('input-file-limit').value;
@@ -251,12 +258,11 @@
                 code = indSelect.options[indSelect.selectedIndex].getAttribute('data-code') || code;
             }
 
-            // 根據是否允許多檔，自動替換預設流水號變數
             const schoolSeq = fileLimit === 'multiple' ? '[流水號]' : '000001';
             const deptSeq = fileLimit === 'multiple' ? '[流水號]' : '001';
 
-            document.getElementById('input-school-filename').value = `${code}_${schoolSeq}_東海大學${docName}.pdf`;
-            document.getElementById('input-dept-filename').value = `${code}_[系所代碼]${deptSeq}_東海大學[系所名稱]${docName}.pdf`;
+            document.getElementById('input-school-filename').value = `${code}_${schoolSeq}_東海大學_[學期]_${docName}.pdf`;
+            document.getElementById('input-dept-filename').value = `${code}_[系所代碼]${deptSeq}_[系所名稱]_[學期]_${docName}.pdf`;
         };
 
         window.openDocModal = () => {
@@ -312,19 +318,20 @@
 
             let html = '';
             paginatedItems.forEach((data) => {
+                
+                // 💡 美化表格層級 Badge
                 let levelBadge = '';
                 if (data.level === 'school') {
-                    levelBadge = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold shadow-sm"><i class="fa-solid fa-building-columns"></i> 全校</span>`;
+                    levelBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold shadow-sm"><i class="fa-solid fa-building-columns"></i> 全校</span>`;
                 } else if (data.level === 'department') {
-                    levelBadge = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold shadow-sm"><i class="fa-solid fa-graduation-cap"></i> 系所</span>`;
+                    levelBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold shadow-sm"><i class="fa-solid fa-graduation-cap"></i> 系所</span>`;
                 } else if (data.level === 'both') {
-                    levelBadge = `<div class="flex flex-col gap-1 items-center justify-center"><span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-purple-50 border border-purple-200 text-purple-700 text-[10px] font-bold whitespace-nowrap shadow-sm"><i class="fa-solid fa-building-columns"></i> 全校</span><span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-purple-50 border border-purple-200 text-purple-700 text-[10px] font-bold whitespace-nowrap shadow-sm"><i class="fa-solid fa-graduation-cap"></i> 系所</span></div>`;
+                    levelBadge = `<div class="flex flex-col gap-1.5 items-start"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-indigo-50 border border-indigo-200 text-indigo-700 text-[10px] font-bold shadow-sm"><i class="fa-solid fa-building-columns"></i> 全校</span><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-bold shadow-sm"><i class="fa-solid fa-graduation-cap"></i> 系所</span></div>`;
                 }
 
-                // 💡 新增檔案數量限制 Badge
                 let limitBadge = data.file_limit === 'multiple' 
-                    ? `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200 mt-1.5 shadow-sm"><i class="fa-solid fa-layer-group mr-1"></i>多檔 (自動流水號)</span>` 
-                    : `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-50 text-slate-500 border border-slate-200 mt-1.5 shadow-sm">單一檔案</span>`;
+                    ? `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200 mt-1 shadow-sm"><i class="fa-solid fa-layer-group mr-1"></i>多檔 (自動流水號)</span>` 
+                    : `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-50 text-slate-500 border border-slate-200 mt-1 shadow-sm">單一檔案</span>`;
 
                 const boundIndicator = allIndicators.find(ind => ind.id === data.indicator_id);
                 const indicatorName = boundIndicator ? boundIndicator.item_name : '<span class="text-rose-500">指標已遺失</span>';
@@ -339,27 +346,28 @@
                     previewFile = `<div class="font-bold text-blue-700 break-all leading-tight">${dFile}</div>`;
                 } else if (data.level === 'both') {
                     previewFile = `
-                        <div class="mb-1.5 border-b border-blue-100/50 pb-1.5 break-all leading-tight"><span class="text-indigo-500 font-bold pr-1 text-[10px] bg-indigo-50 px-1 rounded border border-indigo-100">校</span> <span class="text-indigo-700 font-bold">${sFile}</span></div>
-                        <div class="break-all leading-tight"><span class="text-blue-500 font-bold pr-1 text-[10px] bg-blue-50 px-1 rounded border border-blue-100">系</span> <span class="text-blue-700 font-bold">${dFile}</span></div>
+                        <div class="mb-2 border-b border-slate-200 pb-2 break-all leading-tight"><span class="text-indigo-600 font-bold pr-1 text-[10px] bg-indigo-50 px-1 rounded border border-indigo-200 mr-1 shadow-sm">校</span> <span class="text-indigo-700 font-bold">${sFile}</span></div>
+                        <div class="break-all leading-tight"><span class="text-blue-600 font-bold pr-1 text-[10px] bg-blue-50 px-1 rounded border border-blue-200 mr-1 shadow-sm">系</span> <span class="text-blue-700 font-bold">${dFile}</span></div>
                     `;
                 }
 
+                // 💡 去雜訊排版，全面靠左對齊，減輕視覺負擔
                 html += `
-                <tr class="group bg-white hover:bg-blue-50/40 transition-all duration-150 ${!data.is_active ? 'opacity-60 grayscale-[20%] bg-slate-50/50' : ''}">
-                    <td class="px-6 py-4 align-middle text-center">${levelBadge}</td>
-                    <td class="px-6 py-4 align-middle">
-                        <div class="flex flex-col items-start gap-1">
+                <tr class="group bg-white hover:bg-blue-50/30 transition-all duration-150 border-b border-slate-100 last:border-0 ${!data.is_active ? 'opacity-60 grayscale-[20%] bg-slate-50/50' : ''}">
+                    <td class="px-6 py-4 align-middle text-left">${levelBadge}</td>
+                    <td class="px-6 py-4 align-middle text-left">
+                        <div class="flex flex-col items-start gap-1.5">
                             <span class="inline-block bg-slate-100 border border-slate-300 text-slate-600 font-mono font-bold px-2 py-0.5 rounded shadow-sm text-[11px] whitespace-nowrap">${data.indicator_code || '-'}</span>
-                            <span class="text-xs text-slate-500 font-medium line-clamp-2" title="${indicatorName}">${indicatorName}</span>
+                            <span class="text-xs font-bold text-slate-700 line-clamp-2 leading-relaxed" title="${indicatorName}">${indicatorName}</span>
                         </div>
                     </td>
-                    <td class="px-6 py-4 align-middle">
+                    <td class="px-6 py-4 align-middle text-left">
                         <div class="flex flex-col items-start">
-                            <span class="text-sm font-bold text-slate-800 leading-tight">${data.name}</span>
+                            <span class="text-sm font-black text-slate-800 leading-tight">${data.name}</span>
                             ${limitBadge}
                         </div>
                     </td>
-                    <td class="px-6 py-4 align-middle">
+                    <td class="px-6 py-4 align-middle text-left">
                         <div class="text-[11px] font-mono bg-slate-50 border border-slate-200 p-2.5 rounded-lg shadow-inner">
                             ${previewFile}
                         </div>
