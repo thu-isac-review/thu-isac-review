@@ -11,7 +11,7 @@
     </script>
     <style>
         body { background-color: transparent; margin: 0; padding: 0; font-family: "SF Pro TC", "Noto Sans TC", sans-serif; -webkit-font-smoothing: antialiased; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .page-enter { animation: pageFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         @keyframes pageFadeIn { from { opacity: 0; transform: scale(0.99); } to { opacity: 1; transform: scale(1); } }
@@ -63,7 +63,6 @@
             <!-- 進階篩選與搜尋列 -->
             <div class="flex flex-col md:flex-row justify-between items-center gap-4 w-full relative z-20">
                 
-                <!-- 💡 已修正為 flex-wrap 以避免選單被截斷產生上下滾動軸 -->
                 <div id="advanced-filters-container" class="flex flex-wrap gap-2 pb-1 w-full md:w-auto flex-1 items-center">
                     <!-- Javascript 動態載入篩選標籤 -->
                 </div>
@@ -251,6 +250,58 @@
         </form>
     </div>
 
+    <!-- ==========================================
+         匯入結果報表視窗 (System Built-in Modal)
+         ========================================== -->
+    <div id="import-report-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="window.closeImportReportModal()"></div>
+        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-4xl overflow-hidden relative flex flex-col max-h-[90vh] animate-in zoom-in duration-200">
+            <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
+                <h3 class="font-black text-slate-800 text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-file-invoice text-blue-600"></i> 批次匯入結果報告
+                </h3>
+                <button onclick="window.closeImportReportModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition-colors shrink-0"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <div class="p-8 overflow-y-auto custom-scrollbar flex-1 bg-white">
+                <div class="grid grid-cols-3 gap-4 mb-6">
+                    <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-xl text-center">
+                        <div class="text-3xl font-black text-emerald-600 mb-1" id="report-success-count">0</div>
+                        <div class="text-xs font-bold text-emerald-700">成功匯入 (筆)</div>
+                    </div>
+                    <div class="bg-amber-50 border border-amber-100 p-4 rounded-xl text-center">
+                        <div class="text-3xl font-black text-amber-600 mb-1" id="report-warning-count">0</div>
+                        <div class="text-xs font-bold text-amber-700">異常綁定 (筆)</div>
+                    </div>
+                    <div class="bg-rose-50 border border-rose-100 p-4 rounded-xl text-center">
+                        <div class="text-3xl font-black text-rose-600 mb-1" id="report-error-count">0</div>
+                        <div class="text-xs font-bold text-rose-700">嚴重錯誤 (筆)</div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
+                    <div class="px-4 py-2 bg-slate-100 border-b border-slate-200 text-xs font-bold text-slate-500 grid grid-cols-12 gap-2">
+                        <div class="col-span-2">狀態</div>
+                        <div class="col-span-2">Excel 來源列</div>
+                        <div class="col-span-3">學號 / 姓名</div>
+                        <div class="col-span-5">詳細說明</div>
+                    </div>
+                    <div id="report-details-container" class="divide-y divide-slate-100 max-h-64 overflow-y-auto custom-scrollbar text-sm">
+                        <!-- JS 動態插入清單 -->
+                    </div>
+                </div>
+                <p class="text-xs text-slate-400 mt-3 font-medium"><i class="fa-solid fa-circle-info text-blue-400 mr-1"></i> 提示：帶有「異常綁定」的資料依然會被匯入系統並顯示於表格中，您可以事後透過編輯功能或補齊主檔來修正。</p>
+            </div>
+
+            <div class="p-6 border-t border-slate-100 shrink-0 flex gap-4 bg-slate-50 justify-end">
+                <button type="button" onclick="window.closeImportReportModal()" class="px-6 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-all shadow-sm">關閉視窗</button>
+                <button type="button" onclick="window.downloadImportReport()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md shadow-blue-500/20 transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-download"></i> 下載詳細報表 (CSV)
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase 邏輯 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -270,7 +321,9 @@
         let allRecords = [], allStudents = [], allInsts = [], allCourses = [], editingId = null, currentPage = 1, itemsPerPage = 10, selectedIds = [], filteredRecords = [], selectedCourseIds = [];
         let globalDepts = [], orderedColleges = [];
 
-        // 💡 建立進階多選篩選的狀態中心
+        // 💡 匯入報告全域變數
+        window.globalImportReportData = [];
+
         const filterSelections = {
             semester: new Set(), college: new Set(), dept: new Set(), course: new Set(), inst: new Set(),
             period: new Set(), proof: new Set(), insurance: new Set(), employment: new Set()
@@ -304,7 +357,6 @@
                     setupGlobalListeners();
                     onSnapshot(recordsCol, (snapshot) => {
                         allRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                        // 💡 熱更新篩選選單資料
                         renderFilterDropdowns();
                         selectedIds = []; window.updateBatchActionBar(); window.renderTable();
                     });
@@ -312,7 +364,6 @@
             }
         });
 
-        // 💡 重構篩選器渲染邏輯 (熱更新支援)
         function renderFilterDropdowns() {
             const container = document.getElementById('advanced-filters-container');
             if (!container) return;
@@ -322,14 +373,13 @@
                 college: orderedColleges.map(c=>({value:c.name, label:c.shortName || c.name})),
                 dept: [...new Set(globalDepts.map(d=>d.name))].map(v=>({value:v, label: getDeptShort(v)})),
                 course: allCourses.map(c=>({value:c.id, label:`${c.academic_year}-${c.term}_${c.course_code}：${c.course_name}`})),
-                inst: [...new Set(allRecords.map(r=>r.inst_raw))].filter(Boolean).sort().map(v=>({value:v, label:v})), // 抓取所有出現在主檔的機構
+                inst: [...new Set(allRecords.map(r=>r.inst_raw))].filter(Boolean).sort().map(v=>({value:v, label:v})),
                 period: ['寒假實習', '暑假實習', '學期期間實習', '單一學期實習', '全學年'].map(v=>({value:v, label:v})),
                 proof: ['合約', '公函', '其他證明文件'].map(v=>({value:v, label:v})),
                 insurance: ['僅校外實習保險', '僅勞保', '兩者皆有', '兩者皆無'].map(v=>({value:v, label:v})),
                 employment: ['是', '否'].map(v=>({value:v, label:v}))
             };
 
-            // 第一次建立外框與綁定事件
             if (!isFiltersInitialized) {
                 container.innerHTML = '';
                 filterDefinitions.forEach(def => {
@@ -356,7 +406,6 @@
                     container.appendChild(wrap);
                 });
 
-                // 綁定基礎開關與搜尋事件
                 container.querySelectorAll('.filter-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         e.stopPropagation();
@@ -382,7 +431,6 @@
                 isFiltersInitialized = true;
             }
 
-            // 無論是否初始化，每次呼叫都會熱更新選項內容
             filterDefinitions.forEach(def => {
                 const options = filterOptions[def.key] || [];
                 const wrap = document.querySelector(`.group-filter .filter-btn[data-key="${def.key}"]`).closest('.group-filter');
@@ -402,7 +450,6 @@
                     `;
                 }).join('');
 
-                // 因為重寫了 innerHTML，需重新綁定勾選事件
                 optionsContainer.querySelectorAll('.filter-checkbox').forEach(chk => {
                     chk.addEventListener('change', (e) => {
                         const key = e.target.getAttribute('data-key');
@@ -444,7 +491,6 @@
             window.renderTable();
         };
 
-        // 💡 智慧層級推升與點擊收合控制
         function setupGlobalListeners() {
             const stuInput = document.getElementById('input-student'); const stuDropdown = document.getElementById('student-dropdown');
             const instInput = document.getElementById('input-institution'); const instDropdown = document.getElementById('institution-dropdown');
@@ -471,12 +517,10 @@
             courseInput?.addEventListener('input', () => { handleFocus('course-search-container', courseDropdown); renderCourseDropdown(allCourses, courseInput.value); });
 
             document.addEventListener('click', (e) => {
-                // 進階篩選器點擊外部收起
                 if (!e.target.closest('.group-filter')) {
                     document.querySelectorAll('.filter-panel').forEach(p => { p.classList.add('hidden'); p.classList.remove('flex'); });
                 }
 
-                // 表單內的自動完成點擊外部收起
                 if (!document.getElementById('student-search-container')?.contains(e.target)) { stuDropdown.classList.add('hidden'); document.getElementById('student-search-container').style.zIndex = ''; }
                 if (!document.getElementById('inst-search-container')?.contains(e.target)) { instDropdown.classList.add('hidden'); document.getElementById('inst-search-container').style.zIndex = ''; }
                 if (!document.getElementById('course-search-container')?.contains(e.target)) { courseDropdown.classList.add('hidden'); document.getElementById('course-search-container').style.zIndex = ''; }
@@ -738,7 +782,6 @@
             tbody.innerHTML = html;
         };
 
-        // 💡 修改匯出 CSV 的邏輯：學號與姓名分離
         window.exportToCSV = () => {
             if (filteredRecords.length === 0) { alert("沒有資料可供匯出！"); return; }
             let csv = '\uFEFF學號,學生姓名,當學年年級,實習機構名稱,關聯課程(學年-學期_代號),實習起訖時間,核定時數,實習時間分類,證明文件類型,投保情形,勞雇關係,備註\n';
@@ -758,22 +801,43 @@
             link.download = `實習紀錄總表_${new Date().toISOString().split('T')[0]}.csv`; link.click();
         };
 
-        // 💡 加入匯入防呆報告與欄位對應修正
+        // 💡 開關匯入報表 Modal
+        window.closeImportReportModal = () => {
+            document.getElementById('import-report-modal').classList.add('hidden');
+        };
+
+        window.downloadImportReport = () => {
+            if (!window.globalImportReportData || window.globalImportReportData.length === 0) return;
+            let csv = '\uFEFF狀態,Excel來源列,學號姓名,詳細說明\n';
+            window.globalImportReportData.forEach(r => {
+                csv += `"${r.status}","${r.rows}","${r.student}","${r.message}"\n`;
+            });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+            link.download = `批次匯入結果報告_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        };
+
+        // 💡 匯入邏輯升級：支援顯示內建詳細報告
         window.handleImport = async (e) => {
             const file = e.target.files[0];
             if (!file) return;
             const btn = document.getElementById('btn-import');
             const originalHtml = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-blue-600"></i> 匯入中...';
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-blue-600"></i> 處理並匯入中...';
             btn.disabled = true;
 
             const reader = new FileReader();
             reader.onload = async (event) => {
                 try {
                     const rows = event.target.result.split('\n').map(row => row.trim()).filter(row => row);
-                    let parsedRows = [];
-                    let warningReport = [];
-                    let errorReport = [];
+                    
+                    const recordsMap = new Map();
+                    window.globalImportReportData = []; // 初始化全域報告
+                    
+                    let successCount = 0;
+                    let warningCount = 0;
+                    let errorCount = 0;
                     
                     for (let i = 1; i < rows.length; i++) {
                         let cols = [];
@@ -800,77 +864,163 @@
                             const employment = cols[10];
                             const notes = cols[11] || '';
 
-                            if (!stuId || !stuName || !inst_raw || !duration || !hours || !grade || !period_type || !proof_type || !insurance || !employment) {
-                                errorReport.push(`第 ${i+1} 列 (${stuName || '未知'}): 缺少必填欄位，已跳過。`);
+                            if (!stuId || !inst_raw || !duration || !period_type || !proof_type || !insurance || !employment) {
+                                errorCount++;
+                                window.globalImportReportData.push({
+                                    status: '錯誤',
+                                    rows: `第 ${i+1} 列`,
+                                    student: stuName || '未知',
+                                    message: '缺少必填欄位 (學號、機構、時間、保險等)'
+                                });
                                 continue;
                             }
 
-                            let rowWarnings = [];
-                            
-                            const studentMatch = allStudents.find(s => s.student_id.toUpperCase() === stuId);
-                            if (!studentMatch) rowWarnings.push("找不到系統學生主檔");
-                            
-                            const instMatch = allInsts.find(inst => inst.name === inst_raw);
-                            if (!instMatch) rowWarnings.push("找不到系統機構主檔");
+                            const key = `${stuId}|${inst_raw}|${duration}`;
 
-                            let courseIds = [];
-                            if (coursesRaw) {
-                                const cTokens = coursesRaw.split('、').map(s => s.trim()).filter(Boolean);
-                                cTokens.forEach(token => {
-                                    const match = allCourses.find(c => `${c.academic_year}-${c.term}_${c.course_code}` === token);
-                                    if(match) {
-                                        courseIds.push(match.id);
-                                    } else {
-                                        rowWarnings.push(`找不到課程「${token}」`);
-                                    }
+                            if (!recordsMap.has(key)) {
+                                recordsMap.set(key, {
+                                    student_raw: `${stuId} - ${stuName}`,
+                                    stuId: stuId,
+                                    stuName: stuName,
+                                    grade,
+                                    inst_raw,
+                                    duration,
+                                    hours: 0, 
+                                    period_type,
+                                    proof_type,
+                                    insurance,
+                                    employment,
+                                    notes,
+                                    coursesRawList: [],
+                                    courseIds: [],
+                                    sourceRows: [] 
                                 });
-                            } else {
-                                rowWarnings.push("未填寫關聯課程");
                             }
 
-                            if (rowWarnings.length > 0) {
-                                warningReport.push(`第 ${i+1} 列 (${stuName}): ${rowWarnings.join('、')}`);
+                            const groupRecord = recordsMap.get(key);
+                            groupRecord.hours += hours; 
+                            groupRecord.sourceRows.push(i+1);
+                            
+                            if (coursesRaw) {
+                                const cTokens = coursesRaw.split(/[、,]/).map(s => s.trim()).filter(Boolean);
+                                groupRecord.coursesRawList.push(...cTokens);
                             }
 
-                            const payload = {
-                                student_raw: `${stuId} - ${stuName}`,
-                                grade, 
-                                inst_raw, 
-                                courses: courseIds, 
-                                duration, 
-                                hours, 
-                                period_type, 
-                                proof_type, 
-                                insurance, 
-                                employment, 
-                                notes,
-                                created_at: serverTimestamp()
-                            };
-
-                            parsedRows.push(payload);
                         } else {
-                            errorReport.push(`第 ${i+1} 列：欄位數量不足，已跳過。`);
+                            errorCount++;
+                            window.globalImportReportData.push({
+                                status: '錯誤',
+                                rows: `第 ${i+1} 列`,
+                                student: '-',
+                                message: '欄位數量不足，可能格式跑掉'
+                            });
                         }
                     }
 
-                    let addedCount = 0;
+                    let parsedRows = [];
+                    for (const [key, record] of recordsMap.entries()) {
+                        let rowWarnings = [];
+                        
+                        const studentMatch = allStudents.find(s => s.student_id.toUpperCase() === record.stuId);
+                        if (!studentMatch) rowWarnings.push("未綁定系統學生主檔");
+                        
+                        const instMatch = allInsts.find(inst => inst.name === record.inst_raw);
+                        if (!instMatch) rowWarnings.push("未綁定系統機構主檔");
+
+                        let uniqueCourses = [...new Set(record.coursesRawList)];
+                        uniqueCourses.forEach(token => {
+                            const cMatch = token.match(/(\d+-\d+)[_：:](.+)/);
+                            if (cMatch) {
+                                const sem = cMatch[1];
+                                const code = cMatch[2];
+                                const match = allCourses.find(c => c.semester === sem && c.course_code === code);
+                                if (match) {
+                                    if (!record.courseIds.includes(match.id)) { record.courseIds.push(match.id); }
+                                } else {
+                                    rowWarnings.push(`找不到課程「${token}」`);
+                                }
+                            } else {
+                                const match = allCourses.find(c => `${c.academic_year}-${c.term}_${c.course_code}` === token || `${c.academic_year}-${c.term}：${c.course_code}` === token);
+                                if (match) {
+                                    if (!record.courseIds.includes(match.id)) { record.courseIds.push(match.id); }
+                                } else {
+                                    rowWarnings.push(`無法識別課程「${token}」`);
+                                }
+                            }
+                        });
+
+                        if (record.courseIds.length === 0) rowWarnings.push("無法綁定任何實習課程");
+
+                        const payload = {
+                            student_raw: record.student_raw,
+                            grade: record.grade,
+                            inst_raw: record.inst_raw,
+                            courses: record.courseIds,
+                            duration: record.duration,
+                            hours: record.hours, 
+                            period_type: record.period_type,
+                            proof_type: record.proof_type,
+                            insurance: record.insurance,
+                            employment: record.employment,
+                            notes: record.notes,
+                            created_at: serverTimestamp()
+                        };
+
+                        if (rowWarnings.length > 0) {
+                            warningCount++;
+                            window.globalImportReportData.push({
+                                status: '警告',
+                                rows: `合併列 [${record.sourceRows.join(',')}]`,
+                                student: `${record.stuId} - ${record.stuName}`,
+                                message: rowWarnings.join('、')
+                            });
+                        } else {
+                            successCount++;
+                            window.globalImportReportData.push({
+                                status: '成功',
+                                rows: `合併列 [${record.sourceRows.join(',')}]`,
+                                student: `${record.stuId} - ${record.stuName}`,
+                                message: '完美匯入並綁定'
+                            });
+                        }
+
+                        parsedRows.push(payload);
+                    }
+
+                    // 執行寫入
                     for (let payload of parsedRows) {
                         await addDoc(recordsCol, payload);
-                        addedCount++;
                     }
 
-                    // 建立報告訊息
-                    let alertMsg = `✅ 成功匯入 ${addedCount} 筆資料！\n`;
-                    if (errorReport.length > 0) {
-                        alertMsg += `\n❌ 失敗未匯入 (${errorReport.length} 筆)：\n` + errorReport.slice(0, 5).join('\n') + (errorReport.length > 5 ? `\n...等共 ${errorReport.length} 筆` : '');
-                    }
-                    if (warningReport.length > 0) {
-                        alertMsg += `\n⚠️ 異常提醒 (仍成功匯入純文字，但缺乏主檔連結，共 ${warningReport.length} 筆)：\n` + warningReport.slice(0, 10).join('\n') + (warningReport.length > 10 ? `\n...等共 ${warningReport.length} 筆` : '');
-                    }
+                    // 更新 Modal 畫面資料
+                    document.getElementById('report-success-count').innerText = successCount;
+                    document.getElementById('report-warning-count').innerText = warningCount;
+                    document.getElementById('report-error-count').innerText = errorCount;
 
-                    alert(alertMsg);
+                    const detailsContainer = document.getElementById('report-details-container');
+                    let detailsHtml = '';
+                    window.globalImportReportData.forEach(item => {
+                        let statusHtml = '';
+                        if (item.status === '成功') statusHtml = '<span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px] font-bold">成功</span>';
+                        else if (item.status === '警告') statusHtml = '<span class="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-[10px] font-bold">異常綁定</span>';
+                        else statusHtml = '<span class="px-2 py-0.5 bg-rose-100 text-rose-700 rounded text-[10px] font-bold">嚴重錯誤</span>';
+
+                        detailsHtml += `
+                            <div class="px-4 py-3 grid grid-cols-12 gap-2 items-center hover:bg-slate-50 transition-colors">
+                                <div class="col-span-2">${statusHtml}</div>
+                                <div class="col-span-2 text-xs font-mono text-slate-500">${item.rows}</div>
+                                <div class="col-span-3 text-xs font-bold text-slate-700 truncate" title="${item.student}">${item.student}</div>
+                                <div class="col-span-5 text-xs text-slate-500 font-medium break-words">${item.message}</div>
+                            </div>
+                        `;
+                    });
+                    detailsContainer.innerHTML = detailsHtml;
+
+                    // 顯示 Modal
+                    document.getElementById('import-report-modal').classList.remove('hidden');
+
                 } catch (error) { 
-                    alert("匯入失敗，請確認 CSV 檔案格式是否正確。\n" + error.message); 
+                    alert("解析匯入檔時發生不可預期的錯誤：\n" + error.message); 
                 } finally { 
                     btn.innerHTML = originalHtml; 
                     btn.disabled = false; 
