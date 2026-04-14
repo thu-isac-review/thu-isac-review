@@ -729,3 +729,269 @@
 
         window.closeDocModal = () => { document.getElementById('doc-modal').classList.add('hidden'); editingId = null; };
         window.changePage = (page) => { currentPage = page; window.renderTable(); };
+
+        // 💡 修正數值排序造成的全域當機防呆
+        const sortDocsByCode = (a, b) => {
+            try {
+                const getParts = (item) => {
+                    const codeStr = String(item.indicator_code || '');
+                    const subStr = String(item.sub_indicator || '');
+                    const full = subStr ? `${codeStr}-${subStr}` : codeStr;
+                    return full.split('-').map(p => {
+                        const num = parseInt(p, 10);
+                        return isNaN(num) ? p : num;
+                    });
+                };
+                const partsA = getParts(a);
+                const partsB = getParts(b);
+                const len = Math.max(partsA.length, partsB.length);
+                for (let i = 0; i < len; i++) {
+                    const valA = partsA[i];
+                    const valB = partsB[i];
+                    if (valA === undefined && valB !== undefined) return -1;
+                    if (valA !== undefined && valB === undefined) return 1;
+                    if (valA !== valB) {
+                        if (typeof valA === 'number' && typeof valB === 'number') return valA - valB;
+                        return String(valA).localeCompare(String(valB));
+                    }
+                }
+                return String(a.name || '').localeCompare(String(b.name || ''));
+            } catch (e) {
+                console.error("Sorting error:", e);
+                return 0; // 若發生異常則維持原序，防止中斷
+            }
+        };
+
+        window.renderTable = () => {
+            try {
+                const tbody = document.getElementById('doc-table-body');
+                if (!tbody) return;
+                
+                const searchInputEl = document.getElementById('search-input');
+                const searchTerm = searchInputEl ? searchInputEl.value.toLowerCase().trim() : '';
+
+                let filtered = allDocs.filter(d => {
+                    const matchSearch = (d.name || '').toLowerCase().includes(searchTerm) || (d.indicator_code || '').toLowerCase().includes(searchTerm);
+                    
+                    let matchLevel = true;
+                    if (filterSelections.level.size > 0) matchLevel = filterSelections.level.has(d.level);
+
+                    let matchStatus = true;
+                    if (filterSelections.status.size > 0) {
+                        const statusStr = d.is_active ? 'active' : 'inactive';
+                        matchStatus = filterSelections.status.has(statusStr);
+                    }
+                    
+                    let matchIndicatorName = true;
+                    if (filterSelections.indicatorName.size > 0) {
+                        const ind = allIndicators.find(i => i.id === d.indicator_id);
+                        const indName = ind ? ind.item_name : '';
+                        matchIndicatorName = filterSelections.indicatorName.has(indName);
+                    }
+
+                    return matchSearch && matchLevel && matchStatus && matchIndicatorName;
+                });
+
+                filtered.sort(sortDocsByCode);
+
+                const totalItems = filtered.length;
+                const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+                if (currentPage > totalPages) currentPage = totalPages || 1;
+
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const paginatedItems = filtered.slice(startIndex, startIndex + itemsPerPage);
+
+                const infoEl = document.getElementById('pagination-info');
+                if (infoEl) infoEl.innerText = totalItems > 0 ? `顯示 ${startIndex + 1} 到 ${Math.min(startIndex + itemsPerPage, totalItems)} 筆，共 ${totalItems} 筆` : '尚無資料';
+                
+                let btnHtml = '';
+                btnHtml += `<button onclick="window.changePage(${currentPage - 1})" class="px-3 py-1 border border-slate-200 rounded-md text-sm font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-40 transition-colors" ${currentPage === 1 ? 'disabled' : ''}>上一頁</button>`;
+                btnHtml += `<span class="px-4 py-1 text-sm font-bold text-blue-600 bg-blue-50 rounded-md mx-1">${currentPage} / ${totalPages}</span>`;
+                btnHtml += `<button onclick="window.changePage(${currentPage + 1})" class="px-3 py-1 border border-slate-200 rounded-md text-sm font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-40 transition-colors" ${currentPage === totalPages ? 'disabled' : ''}>下一頁</button>`;
+                const btnContainer = document.getElementById('pagination-buttons');
+                if (btnContainer) btnContainer.innerHTML = btnHtml;
+
+                if (totalItems === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-16 text-center text-slate-400 font-bold bg-white">找不到符合條件的文件項目。</td></tr>`;
+                    return;
+                }
+
+                let html = '';
+                paginatedItems.forEach((data) => {
+                    let levelBadge = '';
+                    if (data.level === 'school') {
+                        levelBadge = `<div class="text-sm font-bold text-slate-700 text-center">全校</div>`;
+                    } else if (data.level === 'department') {
+                        levelBadge = `<div class="text-sm font-bold text-slate-700 text-center">系所</div>`;
+                    } else if (data.level === 'both') {
+                        levelBadge = `<div class="flex flex-col items-center justify-center gap-1.5"><div class="text-sm font-bold text-slate-700">全校</div><div class="text-sm font-bold text-slate-700">系所</div></div>`;
+                    }
+
+                    let limitBadge = data.file_limit === 'multiple' 
+                        ? `<span class="inline-block mt-1 text-[10px] font-bold text-amber-600 whitespace-nowrap"><i class="fa-solid fa-layer-group mr-1 opacity-70"></i>多檔上傳</span>` 
+                        : `<span class="inline-block mt-1 text-[10px] font-bold text-slate-400 whitespace-nowrap">單一檔案</span>`;
+
+                    const boundIndicator = allIndicators.find(ind => ind.id === data.indicator_id);
+                    const indicatorName = boundIndicator ? boundIndicator.item_name : '<span class="text-rose-500">指標已遺失</span>';
+
+                    let sFile = data.school_filename || `<span class="text-slate-400 italic">未設定</span>`;
+                    let dFile = data.dept_filename || `<span class="text-slate-400 italic">未設定</span>`;
+                    
+                    let sFileHtml = `<div class="mb-1.5 break-all flex items-start gap-1.5"><span class="text-[10px] font-bold bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded shrink-0 mt-0.5 whitespace-nowrap">校</span> <span class="text-[11px] font-mono text-blue-600 tracking-tight mt-0.5">${sFile}</span></div>`;
+                    let dFileHtml = `<div class="break-all flex items-start gap-1.5"><span class="text-[10px] font-bold bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded shrink-0 mt-0.5 whitespace-nowrap">系</span> <span class="text-[11px] font-mono text-blue-600 tracking-tight mt-0.5">${dFile}</span></div>`;
+                    
+                    let previewFile = '';
+                    if (data.level === 'school') previewFile = sFileHtml;
+                    else if (data.level === 'department') previewFile = dFileHtml;
+                    else if (data.level === 'both') previewFile = sFileHtml + dFileHtml;
+
+                    const fullCode = data.sub_indicator ? `${data.indicator_code}-${data.sub_indicator}` : (data.indicator_code || '-');
+
+                    // 💡 修正 w-full 在 td 上的佈局問題
+                    html += `
+                    <tr class="group bg-white hover:bg-slate-50/50 transition-all duration-150 border-b border-slate-100 last:border-0 ${!data.is_active ? 'opacity-50 grayscale' : ''}">
+                        <td class="px-5 py-4 align-middle text-center">${levelBadge}</td>
+                        <td class="px-5 py-4 align-middle text-center">
+                            <span class="inline-block bg-slate-100 text-slate-700 border border-slate-200 font-bold px-2.5 py-1 rounded text-xs whitespace-nowrap shadow-sm">${fullCode}</span>
+                        </td>
+                        <td class="px-5 py-4 align-middle text-left">
+                            <span class="text-sm font-bold text-slate-800 leading-tight line-clamp-2" title="${indicatorName}">${indicatorName}</span>
+                        </td>
+                        <td class="px-5 py-4 align-middle text-center">
+                            <div class="flex flex-col items-center gap-1">
+                                <span class="text-sm font-bold text-slate-800 leading-tight">${data.name}</span>
+                                ${limitBadge}
+                            </div>
+                        </td>
+                        <td class="px-5 py-4 align-middle text-left">
+                            <div class="bg-slate-50 border border-slate-200 p-2.5 rounded-lg shadow-inner">
+                                ${previewFile}
+                            </div>
+                        </td>
+                        <td class="px-5 py-4 align-middle text-center whitespace-nowrap">
+                            <div class="flex items-center justify-center">
+                                <label class="relative inline-flex items-center cursor-pointer group/toggle whitespace-nowrap">
+                                    <input type="checkbox" class="sr-only peer" ${data.is_active ? 'checked' : ''} onchange="window.toggleStatus('${data.id}', ${data.is_active})">
+                                    <div class="relative w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-[20px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner shrink-0"></div>
+                                    <span class="ml-2 text-xs font-bold ${data.is_active ? 'text-emerald-600' : 'text-slate-400'} whitespace-nowrap">${data.is_active ? '啟用' : '停用'}</span>
+                                </label>
+                            </div>
+                        </td>
+                        <td class="px-4 py-4 align-middle text-center">
+                            <div class="flex items-center justify-center gap-1.5 opacity-100 transition-opacity">
+                                <button onclick="window.editDoc('${data.id}')" class="w-9 h-9 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all shrink-0" title="編輯文件"><i class="fa-solid fa-pen text-[13px]"></i></button>
+                                <button onclick="window.deleteDoc('${data.id}', '${data.name}')" class="w-9 h-9 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all shrink-0" title="刪除文件"><i class="fa-solid fa-trash-can text-[13px]"></i></button>
+                            </div>
+                        </td>
+                    </tr>`;
+                });
+                tbody.innerHTML = html;
+            } catch (err) {
+                console.error("Render Table Fatal Error:", err);
+                const tbody = document.getElementById('doc-table-body');
+                if (tbody) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-16 text-center text-rose-500 font-bold"><i class="fa-solid fa-triangle-exclamation text-3xl mb-3 text-rose-500"></i><p>資料處理發生嚴重錯誤，請重新整理頁面。(${err.message})</p></td></tr>`;
+                }
+            }
+        }
+
+        window.exportToCSV = () => {
+            if (allDocs.length === 0) { alert("沒有資料可供匯出！"); return; }
+            let csv = '\uFEFF適用層級,指標代碼,文件子指標,要求上傳文件名稱,檔案數量限制,預設上傳檔名規則,系統狀態\n';
+            
+            let sorted = [...allDocs].sort(sortDocsByCode);
+
+            sorted.forEach(d => {
+                let status = d.is_active ? '啟用' : '停用';
+                let level = d.level === 'school' ? '全校統一文件' : (d.level === 'department' ? '各系所獨立文件' : '全校與各系所');
+                let limitStr = d.file_limit === 'multiple' ? '多檔(自動流水號)' : '單一檔案';
+                let fullCode = d.indicator_code || '';
+                
+                let sFile = d.school_filename || `未設定`;
+                let dFile = d.dept_filename || `未設定`;
+                let patternStr = d.level === 'school' ? sFile : (d.level === 'department' ? dFile : `校:${sFile} / 系:${dFile}`);
+
+                csv += [level, fullCode, d.sub_indicator || '', d.name, limitStr, patternStr, status].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+            });
+            const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+            link.download = `ISAC行政文件設定_${new Date().toISOString().split('T')[0]}.csv`; link.click();
+        };
+
+        window.submitDocForm = async () => {
+            const btn = document.getElementById('btn-submit');
+            const indSelect = document.getElementById('input-indicator');
+            
+            let indicatorCode = '';
+            if (indSelect.selectedIndex > 0) {
+                indicatorCode = indSelect.options[indSelect.selectedIndex].getAttribute('data-code');
+            }
+            
+            const checklistsText = document.getElementById('input-checklists').value;
+            const checklists = checklistsText.split('\n').map(line => line.trim()).filter(line => line !== '' && !/^\d+\.\s*$/.test(line));
+
+            const payload = { 
+                indicator_id: indSelect.value,
+                indicator_code: indicatorCode,
+                sub_indicator: document.getElementById('input-sub-indicator').value.trim(),
+                level: document.getElementById('input-level').value,
+                file_limit: document.getElementById('input-file-limit').value,
+                name: document.getElementById('input-name').value.trim(),
+                school_filename: document.getElementById('input-school-filename').value.trim(),
+                dept_filename: document.getElementById('input-dept-filename').value.trim(),
+                checklists: checklists
+            };
+
+            if(!payload.indicator_id || !payload.name) { 
+                alert("請填寫所有必填欄位！"); return; 
+            }
+
+            btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> 儲存中...';
+            try {
+                if (editingId) { 
+                    await updateDoc(doc(db, "admin_files_settings", editingId), { ...payload, updated_at: serverTimestamp() }); 
+                } else {
+                    await addDoc(docsCollection, { ...payload, is_active: true, created_at: serverTimestamp() });
+                }
+                window.closeDocModal();
+            } catch (err) { alert("儲存發生錯誤：" + err.message); } 
+            finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> 儲存設定'; }
+        };
+
+        window.editDoc = (id) => {
+            const docData = allDocs.find(d => d.id === id);
+            if (!docData) return;
+            
+            editingId = id;
+            document.getElementById('input-indicator').value = docData.indicator_id || '';
+            document.getElementById('input-sub-indicator').value = docData.sub_indicator || '';
+            document.getElementById('input-level').value = docData.level || 'department';
+            document.getElementById('input-file-limit').value = docData.file_limit || 'single';
+            document.getElementById('input-name').value = docData.name || ''; 
+
+            document.getElementById('input-school-filename').value = docData.school_filename || '';
+            document.getElementById('input-dept-filename').value = docData.dept_filename || '';
+
+            const checklistText = (docData.checklists && docData.checklists.length > 0) ? docData.checklists.join('\n') : '1. ';
+            document.getElementById('input-checklists').value = checklistText;
+
+            window.toggleFilenameInputs();
+
+            document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-pen text-blue-600"></i> 編輯行政文件';
+            document.getElementById('doc-modal').classList.remove('hidden');
+            bindTextareaEvent();
+        };
+        
+        window.toggleStatus = async (id, status) => { await updateDoc(doc(db, "admin_files_settings", id), { is_active: !status }); };
+
+        window.deleteDoc = async (id, name) => {
+            if (confirm(`警告：確定要刪除文件「${name}」嗎？\n此操作無法復原。`)) {
+                await deleteDoc(doc(db, "admin_files_settings", id));
+                if (currentPage > Math.ceil((allDocs.length - 1) / itemsPerPage) || 1) currentPage = Math.ceil((allDocs.length - 1) / itemsPerPage) || 1;
+                window.renderTable();
+            }
+        };
+
+        document.getElementById('search-input').addEventListener('input', () => window.renderTable());
+    </script>
+</body>
+</html>
