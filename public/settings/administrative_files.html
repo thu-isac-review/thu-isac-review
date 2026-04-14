@@ -64,22 +64,24 @@
         </div>
     </div>
 
+    <!-- 表格滾動區 -->
     <div class="flex-1 overflow-hidden px-6 pb-6 flex flex-col animate-fade">
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col flex-1 overflow-hidden">
             <div class="flex-1 overflow-auto custom-scrollbar relative">
-                <table class="w-full text-left table-fixed min-w-[1100px]">
+                <table class="w-full text-left table-fixed min-w-[1200px]">
                     <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10 shadow-sm">
                         <tr>
                             <th class="px-5 py-3.5 text-center text-xs font-bold text-slate-500 w-[10%]">適用層級</th>
-                            <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 w-[20%]">所屬指標</th>
-                            <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 w-[22%]">要求上傳文件名稱</th>
-                            <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 min-w-[280px]">上傳檔名規則</th>
-                            <th class="px-5 py-3.5 text-center text-xs font-bold text-slate-500 w-[10%] whitespace-nowrap">系統狀態</th>
+                            <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 w-[10%] whitespace-nowrap">指標代碼</th>
+                            <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 w-[18%]">審查項目名稱</th>
+                            <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 w-[18%]">要求文件名稱</th>
+                            <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 min-w-[250px]">上傳檔名規則</th>
+                            <th class="px-5 py-3.5 text-center text-xs font-bold text-slate-500 w-[9%] whitespace-nowrap">系統狀態</th>
                             <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[10%]">操作</th>
                         </tr>
                     </thead>
                     <tbody id="doc-table-body" class="divide-y divide-slate-100 text-sm">
-                        <tr><td colspan="6" class="px-6 py-16 text-center text-slate-400"><i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-blue-500"></i><p class="font-bold">資料載入與驗證中...</p></td></tr>
+                        <tr><td colspan="7" class="px-6 py-16 text-center text-slate-400"><i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-blue-500"></i><p class="font-bold">資料載入與驗證中...</p></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -91,6 +93,7 @@
         </div>
     </div>
 
+    <!-- 彈跳視窗：新增/編輯文件 -->
     <div id="doc-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="window.closeDocModal()"></div>
         <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-3xl overflow-hidden modal-enter relative max-h-[90vh] flex flex-col">
@@ -102,17 +105,12 @@
             </div>
             
             <form id="doc-form" class="p-8 space-y-6 overflow-y-auto custom-scrollbar flex-1 bg-white">
-                <div class="grid grid-cols-3 gap-5">
-                    <div class="col-span-2">
-                        <label class="block text-xs font-bold text-slate-600 mb-2">對應之教育部審查指標 <span class="text-rose-500">*</span></label>
-                        <select id="input-indicator" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm" onchange="window.autoGenerateFilename()">
-                            <option value="">請選擇要綁定的主檔指標...</option>
-                            </select>
-                    </div>
-                    <div class="col-span-1">
-                        <label class="block text-xs font-bold text-slate-600 mb-2" title="同一指標下的次分類編號，例如 1-1-1 中的最後一個 1">文件子指標 (序號) <span class="text-rose-500">*</span></label>
-                        <input type="text" id="input-sub-indicator" required placeholder="如：1, 2" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm" oninput="window.autoGenerateFilename()">
-                    </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-2">對應之教育部審查指標 <span class="text-rose-500">*</span></label>
+                    <select id="input-indicator" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm" onchange="window.autoGenerateFilename()">
+                        <option value="">請選擇要綁定的主檔指標...</option>
+                        <!-- 動態載入指標 -->
+                    </select>
                 </div>
 
                 <div class="grid grid-cols-2 gap-5">
@@ -141,6 +139,7 @@
                     </div>
                 </div>
 
+                <!-- 檔名設定區塊 (開放編輯與自訂變數) -->
                 <div class="bg-blue-50/30 border border-blue-100 rounded-xl p-5 mt-2 space-y-4">
                     <div class="flex justify-between items-center border-b border-blue-100/50 pb-2">
                         <span class="text-xs font-black text-blue-700 uppercase tracking-wide"><i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i> 標準上傳檔名規則設定</span>
@@ -149,12 +148,12 @@
                     
                     <div id="school-filename-group" class="hidden space-y-1.5">
                         <label class="block text-[11px] font-bold text-indigo-500">【全校統一格式】預設檔名範本 (可自由修改)</label>
-                        <input type="text" id="input-school-filename" placeholder="例如：[指標代碼]-[子指標]_[流水號]_東海大學[文件名稱].pdf" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono font-bold text-indigo-700 shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none transition-all">
+                        <input type="text" id="input-school-filename" placeholder="例如：[指標代碼]-1_[流水號]_東海大學[文件名稱].pdf" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono font-bold text-indigo-700 shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none transition-all">
                     </div>
                     
                     <div id="dept-filename-group" class="hidden space-y-1.5">
                         <label class="block text-[11px] font-bold text-blue-500">【各系所獨立格式】預設檔名範本 (可自由修改)</label>
-                        <input type="text" id="input-dept-filename" placeholder="例如：[指標代碼]-[子指標]_[系所代碼][流水號]_[系所名稱]_[文件名稱].pdf" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono font-bold text-blue-700 shadow-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all">
+                        <input type="text" id="input-dept-filename" placeholder="例如：[指標代碼]-1_[系所代碼][流水號]_[系所名稱]_[文件名稱].pdf" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono font-bold text-blue-700 shadow-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all">
                     </div>
                     
                     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
@@ -163,7 +162,6 @@
                         </p>
                         <div class="flex flex-wrap gap-2 text-[11px] font-mono">
                             <span class="bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-slate-600">[指標代碼]</span>
-                            <span class="bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-slate-600">[子指標]</span>
                             <span class="bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-slate-600">[文件名稱]</span>
                             <span class="bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-slate-600">[學期]</span>
                             <span class="bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded text-emerald-700">[系所代碼]</span>
@@ -173,6 +171,7 @@
                             <span class="bg-blue-50 border border-blue-200 px-2 py-0.5 rounded text-blue-700" title="多檔上傳適用">[流水號]</span>
                         </div>
                         <div class="text-[11px] text-slate-500 font-medium leading-relaxed mt-3 space-y-1">
+                            <p><strong class="text-blue-600"><i class="fa-solid fa-bolt mr-1"></i> 指標與子指標整合：</strong> 無須額外設定子指標變數，直接在範本中將 `[指標代碼]` 後方手動加上 <code>-1</code>、<code>-2</code> 等細項即可。</p>
                             <p><strong class="text-blue-600"><i class="fa-solid fa-bolt mr-1"></i> 多檔上傳與流水號機制：</strong> 若選擇「多檔上傳」並使用 <code>[流水號]</code> 變數，系統將依檔案原始名稱 (A-Z) 自動替換為 001, 002...，各系所獨立計算。</p>
                         </div>
                     </div>
@@ -188,6 +187,7 @@
         </div>
     </div>
 
+    <!-- Firebase 邏輯 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -219,10 +219,10 @@
                     allDocs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     window.renderTable();
                 }, (error) => {
-                    document.getElementById('doc-table-body').innerHTML = `<tr><td colspan="6" class="px-6 py-16 text-center text-rose-500 font-bold"><i class="fa-solid fa-lock text-3xl mb-3"></i><p>資料讀取失敗，權限不足。</p></td></tr>`;
+                    document.getElementById('doc-table-body').innerHTML = `<tr><td colspan="7" class="px-6 py-16 text-center text-rose-500 font-bold"><i class="fa-solid fa-lock text-3xl mb-3"></i><p>資料讀取失敗，權限不足。</p></td></tr>`;
                 });
             } else {
-                document.getElementById('doc-table-body').innerHTML = `<tr><td colspan="6" class="px-6 py-16 text-center text-slate-400 font-bold"><i class="fa-solid fa-shield-halved text-3xl mb-3 text-slate-300"></i><p>請先登入系統以存取資料。</p></td></tr>`;
+                document.getElementById('doc-table-body').innerHTML = `<tr><td colspan="7" class="px-6 py-16 text-center text-slate-400 font-bold"><i class="fa-solid fa-shield-halved text-3xl mb-3 text-slate-300"></i><p>請先登入系統以存取資料。</p></td></tr>`;
             }
         });
 
@@ -256,7 +256,6 @@
 
         window.autoGenerateFilename = () => {
             const indSelect = document.getElementById('input-indicator');
-            const subInd = document.getElementById('input-sub-indicator').value.trim() || '[子指標]';
             const fileLimit = document.getElementById('input-file-limit').value;
             const docName = document.getElementById('input-name').value.trim() || '[文件名稱]';
             
@@ -268,9 +267,9 @@
             const schoolSeq = fileLimit === 'multiple' ? '[流水號]' : '000001';
             const deptSeq = fileLimit === 'multiple' ? '[流水號]' : '001';
 
-            // 💡 根據要求，組合出指標代碼與子指標
-            document.getElementById('input-school-filename').value = `${code}-${subInd}_${schoolSeq}_東海大學_${docName}.pdf`;
-            document.getElementById('input-dept-filename').value = `${code}-${subInd}_[系所代碼]${deptSeq}_東海大學_[系所名稱]_${docName}.pdf`;
+            // 預設加上 -1 作為子指標的引導
+            document.getElementById('input-school-filename').value = `${code}-1_${schoolSeq}_東海大學_${docName}.pdf`;
+            document.getElementById('input-dept-filename').value = `${code}-1_[系所代碼]${deptSeq}_[系所名稱]_${docName}.pdf`;
         };
 
         window.openDocModal = () => {
@@ -298,15 +297,11 @@
                 return matchSearch && matchLevel && matchStatus;
             });
 
-            // 💡 排序邏輯：優先依據 指標代碼，再依據 文件子指標，最後依據 檔案名稱
+            // 💡 排序邏輯：優先依據 指標代碼，再依據 檔案名稱
             filtered.sort((a, b) => {
                 const codeA = a.indicator_code || '';
                 const codeB = b.indicator_code || '';
                 if (codeA !== codeB) return codeA.localeCompare(codeB);
-
-                const subA = a.sub_indicator || '';
-                const subB = b.sub_indicator || '';
-                if (subA !== subB) return subA.localeCompare(subB);
 
                 const nameA = a.name || '';
                 const nameB = b.name || '';
@@ -329,21 +324,24 @@
             document.getElementById('pagination-buttons').innerHTML = btnHtml;
 
             if (totalItems === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-16 text-center text-slate-400 font-bold bg-white">找不到符合條件的文件項目。</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-16 text-center text-slate-400 font-bold bg-white">找不到符合條件的文件項目。</td></tr>`;
                 return;
             }
 
             let html = '';
             paginatedItems.forEach((data) => {
                 
-                // 💡 優化層級標籤 (Badge)
+                // 💡 統一尺寸的層級標籤 (Badge)
+                const badgeSchool = `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded bg-indigo-50 text-indigo-700 text-xs font-bold border border-indigo-200 shadow-sm w-full"><i class="fa-solid fa-building-columns mr-1.5 opacity-70"></i>全校</span>`;
+                const badgeDept = `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200 shadow-sm w-full"><i class="fa-solid fa-graduation-cap mr-1.5 opacity-70"></i>系所</span>`;
+                
                 let levelBadge = '';
                 if (data.level === 'school') {
-                    levelBadge = `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded bg-slate-100 text-slate-600 text-xs font-bold border border-slate-200"><i class="fa-solid fa-building-columns mr-1.5 text-slate-400"></i>全校</span>`;
+                    levelBadge = badgeSchool;
                 } else if (data.level === 'department') {
-                    levelBadge = `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded bg-slate-100 text-slate-600 text-xs font-bold border border-slate-200"><i class="fa-solid fa-graduation-cap mr-1.5 text-slate-400"></i>系所</span>`;
+                    levelBadge = badgeDept;
                 } else if (data.level === 'both') {
-                    levelBadge = `<div class="flex gap-1.5 items-center justify-center"><span class="inline-flex items-center justify-center px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-bold border border-slate-200">全校</span><span class="inline-flex items-center justify-center px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-bold border border-slate-200">系所</span></div>`;
+                    levelBadge = `<div class="flex flex-col gap-1.5 w-full">${badgeSchool}${badgeDept}</div>`;
                 }
 
                 let limitBadge = data.file_limit === 'multiple' 
@@ -356,7 +354,7 @@
                 let sFile = data.school_filename || `<span class="text-slate-400 italic">未設定</span>`;
                 let dFile = data.dept_filename || `<span class="text-slate-400 italic">未設定</span>`;
                 
-                // 💡 優化檔名預覽樣式：清爽字體，去除厚重背景
+                // 💡 優化檔名預覽樣式
                 let previewFile = '';
                 if (data.level === 'school') {
                     previewFile = `<div class="text-sm font-medium text-slate-700 break-all">${sFile}</div>`;
@@ -369,26 +367,25 @@
                     `;
                 }
 
-                // 💡 全面左對齊去雜訊排版
+                // 💡 全面左對齊去雜訊排版，並將指標與名稱分開兩列
                 html += `
                 <tr class="group bg-white hover:bg-slate-50/50 transition-all duration-150 border-b border-slate-100 last:border-0 ${!data.is_active ? 'opacity-50 grayscale' : ''}">
-                    <td class="px-5 py-4 align-top text-center pt-5">${levelBadge}</td>
-                    <td class="px-5 py-4 align-top pt-5">
-                        <div class="flex flex-col items-start gap-1">
-                            <span class="inline-block bg-blue-50 text-blue-700 border border-blue-100 font-bold px-2 py-0.5 rounded text-xs whitespace-nowrap">${data.indicator_code || '-'}</span>
-                            <span class="text-[11px] text-slate-500 font-medium line-clamp-2 mt-1" title="${indicatorName}">${indicatorName}</span>
-                        </div>
+                    <td class="px-5 py-4 align-top text-center pt-5 w-full">${levelBadge}</td>
+                    <td class="px-5 py-4 align-top pt-5 text-left">
+                        <span class="inline-block bg-blue-50 text-blue-700 border border-blue-100 font-bold px-2.5 py-1 rounded text-xs whitespace-nowrap shadow-sm">${data.indicator_code || '-'}</span>
                     </td>
-                    <td class="px-5 py-4 align-top pt-5">
+                    <td class="px-5 py-4 align-top pt-5 text-left">
+                        <span class="text-sm font-bold text-slate-700 leading-relaxed" title="${indicatorName}">${indicatorName}</span>
+                    </td>
+                    <td class="px-5 py-4 align-top pt-5 text-left">
                         <div class="flex flex-col items-start">
                             <div class="flex items-center gap-1.5">
                                 <span class="text-sm font-bold text-slate-800 leading-tight">${data.name}</span>
                             </div>
-                            <div class="text-[11px] font-bold text-slate-400 mt-1">子指標: ${data.sub_indicator || '-'}</div>
                             ${limitBadge}
                         </div>
                     </td>
-                    <td class="px-5 py-4 align-top pt-5">
+                    <td class="px-5 py-4 align-top pt-5 text-left">
                         <div class="space-y-1.5">
                             ${previewFile}
                         </div>
@@ -413,7 +410,7 @@
 
         window.exportToCSV = () => {
             if (allDocs.length === 0) { alert("沒有資料可供匯出！"); return; }
-            let csv = '\uFEFF適用層級,指標代碼,文件子指標,要求上傳文件名稱,檔案數量限制,預設上傳檔名規則,系統狀態\n';
+            let csv = '\uFEFF適用層級,指標代碼,要求上傳文件名稱,檔案數量限制,預設上傳檔名規則,系統狀態\n';
             
             let sorted = [...allDocs].sort((a, b) => {
                 const codeA = (a.indicator_code || '') + '-' + (a.name || '');
@@ -430,7 +427,7 @@
                 let dFile = d.dept_filename || `未設定`;
                 let patternStr = d.level === 'school' ? sFile : (d.level === 'department' ? dFile : `校:${sFile} / 系:${dFile}`);
 
-                csv += [level, d.indicator_code, d.sub_indicator || '', d.name, limitStr, patternStr, status].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+                csv += [level, d.indicator_code, d.name, limitStr, patternStr, status].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
             });
             const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
             link.download = `ISAC行政文件設定_${new Date().toISOString().split('T')[0]}.csv`; link.click();
@@ -448,7 +445,6 @@
             const payload = { 
                 indicator_id: indSelect.value,
                 indicator_code: indicatorCode,
-                sub_indicator: document.getElementById('input-sub-indicator').value.trim(),
                 level: document.getElementById('input-level').value,
                 file_limit: document.getElementById('input-file-limit').value,
                 name: document.getElementById('input-name').value.trim(),
@@ -456,7 +452,7 @@
                 dept_filename: document.getElementById('input-dept-filename').value.trim()
             };
 
-            if(!payload.indicator_id || !payload.sub_indicator || !payload.name) { 
+            if(!payload.indicator_id || !payload.name) { 
                 alert("請填寫所有必填欄位！"); return; 
             }
 
@@ -469,7 +465,7 @@
                 }
                 window.closeDocModal();
             } catch (err) { alert("儲存發生錯誤：" + err.message); } 
-            finally { btn.disabled = false; btn.innerHTML = '儲存設定'; }
+            finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> 儲存設定'; }
         };
 
         window.editDoc = (id) => {
@@ -478,7 +474,6 @@
             
             editingId = id;
             document.getElementById('input-indicator').value = docData.indicator_id || '';
-            document.getElementById('input-sub-indicator').value = docData.sub_indicator || '';
             document.getElementById('input-level').value = docData.level || 'department';
             document.getElementById('input-file-limit').value = docData.file_limit || 'single';
             document.getElementById('input-name').value = docData.name || ''; 
