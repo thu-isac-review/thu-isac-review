@@ -43,23 +43,15 @@
             </div>
         </div>
 
-        <div class="flex flex-col md:flex-row justify-between items-center gap-4 w-full">
-            <div class="flex gap-2 w-full md:w-auto">
-                <select id="filter-level" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 h-10 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
-                    <option value="all">適用層級：全部</option>
-                    <option value="school">全校統一文件</option>
-                    <option value="department">各系所獨立文件</option>
-                    <option value="both">全校與各系所</option>
-                </select>
-                <select id="filter-status" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 h-10 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
-                    <option value="all">狀態：全部</option>
-                    <option value="active">狀態：啟用中</option>
-                    <option value="inactive">狀態：已停用</option>
-                </select>
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4 w-full z-20 relative">
+            <!-- 💡 Notion 風格篩選器容器 -->
+            <div id="advanced-filters-container" class="flex flex-wrap gap-2 w-full md:w-auto flex-1 items-center">
+                <!-- Javascript 動態載入篩選標籤 -->
             </div>
-            <div class="relative w-full md:w-72 shadow-sm rounded-lg">
+            
+            <div class="relative w-full md:w-72 shadow-sm rounded-lg shrink-0">
                 <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                <input type="text" id="search-input" placeholder="搜尋文件名稱或指標代碼..." class="w-full bg-white border border-slate-200 rounded-lg pl-9 pr-3 h-10 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                <input type="text" id="search-input" oninput="window.renderTable()" placeholder="搜尋文件名稱或指標代碼..." class="w-full bg-white border border-slate-200 rounded-lg pl-9 pr-3 h-10 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all">
             </div>
         </div>
     </div>
@@ -68,16 +60,17 @@
     <div class="flex-1 overflow-hidden px-6 pb-6 flex flex-col animate-fade">
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col flex-1 overflow-hidden">
             <div class="flex-1 overflow-auto custom-scrollbar relative">
-                <table class="w-full text-left table-fixed min-w-[1200px]">
+                <table class="w-full text-left table-fixed min-w-[1100px]">
                     <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10 shadow-sm">
                         <tr>
-                            <th class="px-5 py-3.5 text-center text-xs font-bold text-slate-500 w-[10%]">適用層級</th>
-                            <th class="px-5 py-3.5 text-center text-xs font-bold text-slate-500 w-[10%] whitespace-nowrap">指標代碼</th>
+                            <!-- 💡 調整寬度比例：縮小層級與指標代碼，放大文件名稱與檔名規則 -->
+                            <th class="px-5 py-3.5 text-center text-xs font-bold text-slate-500 w-[90px]">適用層級</th>
+                            <th class="px-5 py-3.5 text-center text-xs font-bold text-slate-500 w-[110px] whitespace-nowrap">指標代碼</th>
                             <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 w-[18%]">審查項目名稱</th>
-                            <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 w-[18%]">要求文件名稱</th>
-                            <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 min-w-[250px]">上傳檔名規則</th>
-                            <th class="px-5 py-3.5 text-center text-xs font-bold text-slate-500 w-[9%] whitespace-nowrap">系統狀態</th>
-                            <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[10%]">操作</th>
+                            <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 w-[24%]">要求文件名稱</th>
+                            <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 min-w-[320px]">上傳檔名規則</th>
+                            <th class="px-5 py-3.5 text-center text-xs font-bold text-slate-500 w-[90px] whitespace-nowrap">系統狀態</th>
+                            <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[90px]">操作</th>
                         </tr>
                     </thead>
                     <tbody id="doc-table-body" class="divide-y divide-slate-100 text-sm">
@@ -105,18 +98,12 @@
             </div>
             
             <form id="doc-form" class="p-8 space-y-6 overflow-y-auto custom-scrollbar flex-1 bg-white">
-                <div class="grid grid-cols-3 gap-5">
-                    <div class="col-span-2">
-                        <label class="block text-xs font-bold text-slate-600 mb-2">對應之教育部審查指標 <span class="text-rose-500">*</span></label>
-                        <select id="input-indicator" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm" onchange="window.autoGenerateFilename()">
-                            <option value="">請選擇要綁定的主檔指標...</option>
-                            <!-- 動態載入指標 -->
-                        </select>
-                    </div>
-                    <div class="col-span-1">
-                        <label class="block text-xs font-bold text-slate-600 mb-2" title="同一指標下的次分類編號，例如 1-1-1 中的最後一個 1">文件子指標 (序號) <span class="text-rose-500">*</span></label>
-                        <input type="text" id="input-sub-indicator" required placeholder="如：1, 2" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm" oninput="window.autoGenerateFilename()">
-                    </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-2">對應之教育部審查指標 <span class="text-rose-500">*</span></label>
+                    <select id="input-indicator" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm" onchange="window.autoGenerateFilename()">
+                        <option value="">請選擇要綁定的主檔指標...</option>
+                        <!-- 動態載入指標 -->
+                    </select>
                 </div>
 
                 <div class="grid grid-cols-2 gap-5">
@@ -141,7 +128,7 @@
                     <label class="block text-xs font-bold text-slate-600 mb-2">要求上傳文件名稱 <span class="text-rose-500">*</span></label>
                     <div class="relative">
                         <i class="fa-solid fa-file-lines absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="input-name" required placeholder="如：實習辦法 / 施行細則 / 授課大綱" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm" oninput="window.autoGenerateFilename()">
+                        <input type="text" id="input-name" required placeholder="如：實習辦法 / 細則" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm" oninput="window.autoGenerateFilename()">
                     </div>
                 </div>
 
@@ -154,12 +141,12 @@
                     
                     <div id="school-filename-group" class="hidden space-y-1.5">
                         <label class="block text-[11px] font-bold text-indigo-500">【全校統一格式】預設檔名範本 (可自由修改)</label>
-                        <input type="text" id="input-school-filename" placeholder="例如：[指標代碼]-[子指標]_[流水號]_東海大學[文件名稱].pdf" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono font-bold text-indigo-700 shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none transition-all">
+                        <input type="text" id="input-school-filename" placeholder="例如：[指標代碼]_[流水號]_東海大學[文件名稱].pdf" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono font-bold text-slate-700 shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none transition-all">
                     </div>
                     
                     <div id="dept-filename-group" class="hidden space-y-1.5">
                         <label class="block text-[11px] font-bold text-blue-500">【各系所獨立格式】預設檔名範本 (可自由修改)</label>
-                        <input type="text" id="input-dept-filename" placeholder="例如：[指標代碼]-[子指標]_[系所代碼][流水號]_[系所名稱]_[文件名稱].pdf" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono font-bold text-blue-700 shadow-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all">
+                        <input type="text" id="input-dept-filename" placeholder="例如：[指標代碼]_[系所代碼][流水號]_[系所名稱]_[文件名稱].pdf" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono font-bold text-slate-700 shadow-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all">
                     </div>
                     
                     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
@@ -168,7 +155,6 @@
                         </p>
                         <div class="flex flex-wrap gap-2 text-[11px] font-mono">
                             <span class="bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-slate-600">[指標代碼]</span>
-                            <span class="bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-slate-600">[子指標]</span>
                             <span class="bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-slate-600">[文件名稱]</span>
                             <span class="bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-slate-600">[學期]</span>
                             <span class="bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded text-emerald-700">[系所代碼]</span>
@@ -213,6 +199,17 @@
         let currentPage = 1; 
         const itemsPerPage = 10;
 
+        // 💡 Notion 風格篩選器狀態中心
+        const filterSelections = {
+            level: new Set(),
+            status: new Set()
+        };
+        const filterDefinitions = [
+            { key: 'level', label: '適用層級', searchable: false },
+            { key: 'status', label: '系統狀態', searchable: false }
+        ];
+        let isFiltersInitialized = false;
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 onSnapshot(indicatorsCollection, (snapshot) => {
@@ -223,6 +220,7 @@
 
                 onSnapshot(docsCollection, (snapshot) => {
                     allDocs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderFilterDropdowns(); // 熱更新篩選選單
                     window.renderTable();
                 }, (error) => {
                     document.getElementById('doc-table-body').innerHTML = `<tr><td colspan="7" class="px-6 py-16 text-center text-rose-500 font-bold"><i class="fa-solid fa-lock text-3xl mb-3"></i><p>資料讀取失敗，權限不足。</p></td></tr>`;
@@ -231,6 +229,124 @@
                 document.getElementById('doc-table-body').innerHTML = `<tr><td colspan="7" class="px-6 py-16 text-center text-slate-400 font-bold"><i class="fa-solid fa-shield-halved text-3xl mb-3 text-slate-300"></i><p>請先登入系統以存取資料。</p></td></tr>`;
             }
         });
+
+        // 💡 初始化與熱更新 Notion 風格篩選器
+        function renderFilterDropdowns() {
+            const container = document.getElementById('advanced-filters-container');
+            if (!container) return;
+
+            const filterOptions = {
+                level: [
+                    { value: 'school', label: '全校統一文件' },
+                    { value: 'department', label: '各系所獨立文件' },
+                    { value: 'both', label: '全校與各系所' }
+                ],
+                status: [
+                    { value: 'active', label: '啟用中' },
+                    { value: 'inactive', label: '已停用' }
+                ]
+            };
+
+            if (!isFiltersInitialized) {
+                container.innerHTML = '';
+                filterDefinitions.forEach(def => {
+                    const wrap = document.createElement('div');
+                    wrap.className = 'relative group-filter shrink-0 mb-1';
+                    wrap.innerHTML = `
+                        <button type="button" class="filter-btn border border-slate-200 bg-white text-slate-700 text-[13px] font-bold rounded-lg px-3 py-1.5 shadow-sm flex items-center hover:bg-slate-50 transition-colors" data-key="${def.key}">
+                            ${def.label} <span class="filter-count hidden bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded text-[10px] ml-1.5">0</span> <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 ml-1.5"></i>
+                        </button>
+                        <div class="filter-panel hidden absolute top-full left-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl w-56 max-h-72 flex-col overflow-hidden z-[100]">
+                            ${def.searchable ? `
+                            <div class="p-2 border-b border-slate-100 shrink-0 bg-slate-50/50">
+                                <div class="relative">
+                                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[11px]"></i>
+                                    <input type="text" placeholder="搜尋選項..." class="filter-search w-full bg-white border border-slate-200 rounded-lg pl-8 pr-3 py-1.5 text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500" data-key="${def.key}">
+                                </div>
+                            </div>` : ''}
+                            <div class="filter-options flex-1 overflow-y-auto p-1 custom-scrollbar space-y-0.5"></div>
+                            <div class="p-2 border-t border-slate-100 shrink-0 bg-slate-50 flex justify-between clear-btn-wrap hidden">
+                                <button type="button" class="text-xs font-bold text-slate-500 hover:text-rose-600 transition-colors w-full text-center" onclick="window.clearFilter('${def.key}')">清除此條件</button>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(wrap);
+                });
+
+                container.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const panel = btn.nextElementSibling;
+                        const wasHidden = panel.classList.contains('hidden');
+                        document.querySelectorAll('.filter-panel').forEach(p => { p.classList.add('hidden'); p.classList.remove('flex'); });
+                        if (wasHidden) { panel.classList.remove('hidden'); panel.classList.add('flex'); }
+                    });
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.group-filter')) {
+                        document.querySelectorAll('.filter-panel').forEach(p => { p.classList.add('hidden'); p.classList.remove('flex'); });
+                    }
+                });
+
+                isFiltersInitialized = true;
+            }
+
+            filterDefinitions.forEach(def => {
+                const options = filterOptions[def.key] || [];
+                const wrap = document.querySelector(`.group-filter .filter-btn[data-key="${def.key}"]`).closest('.group-filter');
+                const optionsContainer = wrap.querySelector('.filter-options');
+
+                optionsContainer.innerHTML = options.map(opt => {
+                    const isChecked = filterSelections[def.key].has(opt.value) ? 'checked' : '';
+                    return `
+                        <label class="flex items-start gap-2.5 p-2 hover:bg-slate-50 rounded-lg cursor-pointer option-label transition-colors">
+                            <input type="checkbox" class="mt-0.5 w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer filter-checkbox" value="${opt.value}" data-key="${def.key}" ${isChecked}>
+                            <span class="text-xs font-bold text-slate-700 select-none flex-1 leading-tight">${opt.label}</span>
+                        </label>
+                    `;
+                }).join('');
+
+                optionsContainer.querySelectorAll('.filter-checkbox').forEach(chk => {
+                    chk.addEventListener('change', (e) => {
+                        const key = e.target.getAttribute('data-key');
+                        if (e.target.checked) filterSelections[key].add(e.target.value);
+                        else filterSelections[key].delete(e.target.value);
+                        window.updateFilterPillUI(key);
+                        currentPage = 1;
+                        window.renderTable();
+                    });
+                });
+
+                window.updateFilterPillUI(def.key);
+            });
+        }
+
+        window.updateFilterPillUI = (key) => {
+            const wrap = document.querySelector(`.group-filter .filter-btn[data-key="${key}"]`).closest('.group-filter');
+            const badge = wrap.querySelector('.filter-count');
+            const btn = wrap.querySelector('.filter-btn');
+            const clearWrap = wrap.querySelector('.clear-btn-wrap');
+            const set = filterSelections[key];
+            if(set.size > 0) {
+                badge.textContent = set.size; badge.classList.remove('hidden');
+                btn.classList.add('border-blue-500', 'bg-blue-50', 'text-blue-700'); btn.classList.remove('border-slate-200', 'bg-white', 'text-slate-700');
+                clearWrap.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+                btn.classList.remove('border-blue-500', 'bg-blue-50', 'text-blue-700'); btn.classList.add('border-slate-200', 'bg-white', 'text-slate-700');
+                clearWrap.classList.add('hidden');
+            }
+        };
+
+        window.clearFilter = (key) => {
+            filterSelections[key].clear();
+            const panel = document.querySelector(`button.filter-btn[data-key="${key}"]`).nextElementSibling;
+            panel.querySelectorAll('input[type="checkbox"]').forEach(chk => chk.checked = false);
+            window.updateFilterPillUI(key);
+            currentPage = 1;
+            window.renderTable();
+        };
 
         function updateIndicatorDropdown() {
             const select = document.getElementById('input-indicator');
@@ -262,7 +378,6 @@
 
         window.autoGenerateFilename = () => {
             const indSelect = document.getElementById('input-indicator');
-            const subInd = document.getElementById('input-sub-indicator').value.trim() || '[子指標]';
             const fileLimit = document.getElementById('input-file-limit').value;
             const docName = document.getElementById('input-name').value.trim() || '[文件名稱]';
             
@@ -274,8 +389,8 @@
             const schoolSeq = fileLimit === 'multiple' ? '[流水號]' : '000001';
             const deptSeq = fileLimit === 'multiple' ? '[流水號]' : '001';
 
-            document.getElementById('input-school-filename').value = `${code}-${subInd}_${schoolSeq}_東海大學_${docName}.pdf`;
-            document.getElementById('input-dept-filename').value = `${code}-${subInd}_[系所代碼]${deptSeq}_[系所名稱]_${docName}.pdf`;
+            document.getElementById('input-school-filename').value = `${code}_${schoolSeq}_東海大學_${docName}.pdf`;
+            document.getElementById('input-dept-filename').value = `${code}_[系所代碼]${deptSeq}_[系所名稱]_${docName}.pdf`;
         };
 
         window.openDocModal = () => {
@@ -293,20 +408,28 @@
         window.renderTable = () => {
             const tbody = document.getElementById('doc-table-body');
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
-            const filterLevel = document.getElementById('filter-level').value;
-            const filterStatus = document.getElementById('filter-status').value;
 
             let filtered = allDocs.filter(d => {
                 const matchSearch = (d.name || '').toLowerCase().includes(searchTerm) || (d.indicator_code || '').toLowerCase().includes(searchTerm);
-                const matchLevel = filterLevel === 'all' || d.level === filterLevel;
-                const matchStatus = filterStatus === 'all' || (filterStatus === 'active' ? d.is_active : !d.is_active);
+                
+                let matchLevel = true;
+                if (filterSelections.level.size > 0) {
+                    matchLevel = filterSelections.level.has(d.level);
+                }
+
+                let matchStatus = true;
+                if (filterSelections.status.size > 0) {
+                    const statusStr = d.is_active ? 'active' : 'inactive';
+                    matchStatus = filterSelections.status.has(statusStr);
+                }
+
                 return matchSearch && matchLevel && matchStatus;
             });
 
-            // 💡 排序邏輯：優先依據指標代碼，再依據子指標，最後依據檔案名稱
+            // 💡 排序邏輯：優先依據指標代碼，最後依據檔案名稱
             filtered.sort((a, b) => {
-                const codeA = (a.indicator_code || '') + '-' + (a.sub_indicator || '');
-                const codeB = (b.indicator_code || '') + '-' + (b.sub_indicator || '');
+                const codeA = a.indicator_code || '';
+                const codeB = b.indicator_code || '';
                 const codeCmp = codeA.localeCompare(codeB, undefined, {numeric: true});
                 if (codeCmp !== 0) return codeCmp;
 
@@ -338,9 +461,9 @@
             let html = '';
             paginatedItems.forEach((data) => {
                 
-                // 💡 統一尺寸的層級標籤 (Badge)，改為灰色
-                const badgeSchool = `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded bg-slate-100 text-slate-600 text-xs font-bold border border-slate-200 shadow-sm"><i class="fa-solid fa-building-columns mr-1.5 opacity-70"></i>全校</span>`;
-                const badgeDept = `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded bg-slate-100 text-slate-600 text-xs font-bold border border-slate-200 shadow-sm"><i class="fa-solid fa-graduation-cap mr-1.5 opacity-70"></i>系所</span>`;
+                // 💡 統一尺寸且不過寬的層級標籤 (Badge)，置中並使用低調灰色
+                const badgeSchool = `<span class="inline-flex items-center justify-center px-2 py-1.5 rounded bg-slate-100 text-slate-600 text-xs font-bold border border-slate-200 shadow-sm"><i class="fa-solid fa-building-columns mr-1.5 opacity-70"></i>全校</span>`;
+                const badgeDept = `<span class="inline-flex items-center justify-center px-2 py-1.5 rounded bg-slate-100 text-slate-600 text-xs font-bold border border-slate-200 shadow-sm"><i class="fa-solid fa-graduation-cap mr-1.5 opacity-70"></i>系所</span>`;
                 
                 let levelBadge = '';
                 if (data.level === 'school') {
@@ -361,9 +484,9 @@
                 let sFile = data.school_filename || `<span class="text-slate-400 italic">未設定</span>`;
                 let dFile = data.dept_filename || `<span class="text-slate-400 italic">未設定</span>`;
                 
-                // 💡 檔名預覽樣式：無論單一層級或雙層級，皆顯示標籤與不同顏色
-                let sFileHtml = `<div class="mb-1.5 break-all flex items-start gap-1.5"><span class="text-[10px] font-bold bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded shrink-0 mt-0.5">校</span> <span class="text-sm font-bold text-indigo-600 tracking-tight">${sFile}</span></div>`;
-                let dFileHtml = `<div class="break-all flex items-start gap-1.5"><span class="text-[10px] font-bold bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded shrink-0 mt-0.5">系</span> <span class="text-sm font-bold text-blue-600 tracking-tight">${dFile}</span></div>`;
+                // 💡 檔名預覽樣式：統一字體顏色(slate-600)、等寬字體(font-mono)、縮小為11px
+                let sFileHtml = `<div class="mb-1.5 break-all flex items-start gap-1.5"><span class="text-[10px] font-bold bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded shrink-0 mt-0.5">校</span> <span class="text-[11px] font-mono text-slate-600 tracking-tight mt-0.5">${sFile}</span></div>`;
+                let dFileHtml = `<div class="break-all flex items-start gap-1.5"><span class="text-[10px] font-bold bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded shrink-0 mt-0.5">系</span> <span class="text-[11px] font-mono text-slate-600 tracking-tight mt-0.5">${dFile}</span></div>`;
                 
                 let previewFile = '';
                 if (data.level === 'school') {
@@ -374,8 +497,7 @@
                     previewFile = sFileHtml + dFileHtml;
                 }
 
-                // 💡 指標代碼三層合併 (e.g. 1-1-1)
-                const fullCode = data.sub_indicator ? `${data.indicator_code}-${data.sub_indicator}` : (data.indicator_code || '-');
+                const fullCode = data.indicator_code || '-';
 
                 // 💡 全面左對齊去雜訊排版，代碼置中
                 html += `
@@ -396,7 +518,7 @@
                         </div>
                     </td>
                     <td class="px-5 py-4 align-top pt-5 text-left">
-                        <div class="space-y-1.5">
+                        <div class="space-y-1.5 bg-slate-50 border border-slate-200 p-2.5 rounded-lg shadow-inner">
                             ${previewFile}
                         </div>
                     </td>
@@ -423,8 +545,8 @@
             let csv = '\uFEFF適用層級,指標代碼,要求上傳文件名稱,檔案數量限制,預設上傳檔名規則,系統狀態\n';
             
             let sorted = [...allDocs].sort((a, b) => {
-                const codeA = (a.indicator_code || '') + '-' + (a.sub_indicator || '');
-                const codeB = (b.indicator_code || '') + '-' + (b.sub_indicator || '');
+                const codeA = (a.indicator_code || '') + '-' + (a.name || '');
+                const codeB = (b.indicator_code || '') + '-' + (b.name || '');
                 return codeA.localeCompare(codeB, undefined, {numeric: true});
             });
 
@@ -432,7 +554,7 @@
                 let status = d.is_active ? '啟用' : '停用';
                 let level = d.level === 'school' ? '全校統一文件' : (d.level === 'department' ? '各系所獨立文件' : '全校與各系所');
                 let limitStr = d.file_limit === 'multiple' ? '多檔(自動流水號)' : '單一檔案';
-                let fullCode = d.sub_indicator ? `${d.indicator_code}-${d.sub_indicator}` : (d.indicator_code || '');
+                let fullCode = d.indicator_code || '';
                 
                 let sFile = d.school_filename || `未設定`;
                 let dFile = d.dept_filename || `未設定`;
@@ -456,7 +578,6 @@
             const payload = { 
                 indicator_id: indSelect.value,
                 indicator_code: indicatorCode,
-                sub_indicator: document.getElementById('input-sub-indicator').value.trim(),
                 level: document.getElementById('input-level').value,
                 file_limit: document.getElementById('input-file-limit').value,
                 name: document.getElementById('input-name').value.trim(),
@@ -464,7 +585,7 @@
                 dept_filename: document.getElementById('input-dept-filename').value.trim()
             };
 
-            if(!payload.indicator_id || !payload.sub_indicator || !payload.name) { 
+            if(!payload.indicator_id || !payload.name) { 
                 alert("請填寫所有必填欄位！"); return; 
             }
 
@@ -486,7 +607,6 @@
             
             editingId = id;
             document.getElementById('input-indicator').value = docData.indicator_id || '';
-            document.getElementById('input-sub-indicator').value = docData.sub_indicator || '';
             document.getElementById('input-level').value = docData.level || 'department';
             document.getElementById('input-file-limit').value = docData.file_limit || 'single';
             document.getElementById('input-name').value = docData.name || ''; 
@@ -511,8 +631,6 @@
         };
 
         document.getElementById('search-input').addEventListener('input', () => window.renderTable());
-        document.getElementById('filter-level').addEventListener('change', () => window.renderTable());
-        document.getElementById('filter-status').addEventListener('change', () => window.renderTable());
     </script>
 </body>
 </html>
