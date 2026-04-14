@@ -62,13 +62,13 @@
                 <table class="w-full text-left table-fixed min-w-[1100px]">
                     <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10 shadow-sm">
                         <tr>
-                            <th class="px-5 py-3.5 text-center text-xs font-bold text-slate-500 w-[90px]">適用層級</th>
+                            <th class="px-5 py-3.5 text-center text-xs font-bold text-slate-500 w-[100px] whitespace-nowrap">適用層級</th>
                             <th class="px-5 py-3.5 text-center text-xs font-bold text-slate-500 w-[110px] whitespace-nowrap">指標代碼</th>
                             <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 w-[18%]">審查項目名稱</th>
                             <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 w-[24%]">要求文件名稱</th>
                             <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 min-w-[320px]">上傳檔名規則</th>
-                            <th class="px-5 py-3.5 text-center text-xs font-bold text-slate-500 w-[100px] whitespace-nowrap">系統狀態</th>
-                            <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[100px]">操作</th>
+                            <th class="px-5 py-3.5 text-center text-xs font-bold text-slate-500 w-[90px] whitespace-nowrap">系統狀態</th>
+                            <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[90px]">操作</th>
                         </tr>
                     </thead>
                     <tbody id="doc-table-body" class="divide-y divide-slate-100 text-sm">
@@ -201,13 +201,16 @@
         let currentPage = 1; 
         const itemsPerPage = 10;
 
+        // 💡 加入了審查項目名稱篩選
         const filterSelections = {
             level: new Set(),
+            indicatorName: new Set(),
             status: new Set()
         };
         const filterDefinitions = [
-            { key: 'level', label: '適用層級', searchable: false },
-            { key: 'status', label: '系統狀態', searchable: false }
+            { key: 'level', label: '適用層級', searchable: false, width: 'w-56' },
+            { key: 'indicatorName', label: '審查項目名稱', searchable: true, width: 'w-72' },
+            { key: 'status', label: '系統狀態', searchable: false, width: 'w-56' }
         ];
         let isFiltersInitialized = false;
 
@@ -217,6 +220,7 @@
                     allIndicators = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     allIndicators.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
                     updateIndicatorDropdown();
+                    if (isFiltersInitialized) renderFilterDropdowns(); // 更新選項
                 });
 
                 onSnapshot(docsCollection, (snapshot) => {
@@ -231,10 +235,18 @@
             }
         });
 
-        // 💡 修改 filter-btn 加上 h-10 px-4 以強制與搜尋框同高度
+        // 💡 更新篩選器選單產生邏輯，加入動態生成選項
         function renderFilterDropdowns() {
             const container = document.getElementById('advanced-filters-container');
             if (!container) return;
+
+            // 動態擷取目前存在的審查項目名稱
+            const indicatorNameSet = new Set();
+            allDocs.forEach(d => {
+                const ind = allIndicators.find(i => i.id === d.indicator_id);
+                if (ind && ind.item_name) indicatorNameSet.add(ind.item_name);
+            });
+            const indicatorNameOptions = Array.from(indicatorNameSet).sort().map(name => ({ value: name, label: name }));
 
             const filterOptions = {
                 level: [
@@ -242,6 +254,7 @@
                     { value: 'department', label: '各系所獨立文件' },
                     { value: 'both', label: '全校與各系所' }
                 ],
+                indicatorName: indicatorNameOptions,
                 status: [
                     { value: 'active', label: '啟用中' },
                     { value: 'inactive', label: '已停用' }
@@ -257,7 +270,7 @@
                         <button type="button" class="filter-btn h-10 border border-slate-200 bg-white text-slate-700 text-[13px] font-bold rounded-lg px-4 shadow-sm flex items-center hover:bg-slate-50 transition-colors" data-key="${def.key}">
                             ${def.label} <span class="filter-count hidden bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded text-[10px] ml-1.5">0</span> <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 ml-1.5"></i>
                         </button>
-                        <div class="filter-panel hidden absolute top-[calc(100%+4px)] left-0 bg-white border border-slate-200 rounded-xl shadow-xl w-56 max-h-72 flex-col overflow-hidden z-[100]">
+                        <div class="filter-panel hidden absolute top-[calc(100%+4px)] left-0 bg-white border border-slate-200 rounded-xl shadow-xl ${def.width} max-h-72 flex-col overflow-hidden z-[100]">
                             ${def.searchable ? `
                             <div class="p-2 border-b border-slate-100 shrink-0 bg-slate-50/50">
                                 <div class="relative">
@@ -297,11 +310,14 @@
                 const options = filterOptions[def.key] || [];
                 const wrap = document.querySelector(`.group-filter .filter-btn[data-key="${def.key}"]`).closest('.group-filter');
                 const optionsContainer = wrap.querySelector('.filter-options');
+                const searchInput = wrap.querySelector('.filter-search');
+                const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
                 optionsContainer.innerHTML = options.map(opt => {
                     const isChecked = filterSelections[def.key].has(opt.value) ? 'checked' : '';
+                    const displayStyle = (searchTerm && !opt.label.toLowerCase().includes(searchTerm)) ? 'none' : 'flex';
                     return `
-                        <label class="flex items-start gap-2.5 p-2 hover:bg-slate-50 rounded-lg cursor-pointer option-label transition-colors">
+                        <label class="flex items-start gap-2.5 p-2 hover:bg-slate-50 rounded-lg cursor-pointer option-label transition-colors" style="display: ${displayStyle}">
                             <input type="checkbox" class="mt-0.5 w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer filter-checkbox" value="${opt.value}" data-key="${def.key}" ${isChecked}>
                             <span class="text-xs font-bold text-slate-700 select-none flex-1 leading-tight">${opt.label}</span>
                         </label>
@@ -408,7 +424,6 @@
         window.closeDocModal = () => { document.getElementById('doc-modal').classList.add('hidden'); editingId = null; };
         window.changePage = (page) => { currentPage = page; window.renderTable(); };
 
-        // 💡 客製化深度數值排序函式
         const sortDocsByCode = (a, b) => {
             const getParts = (item) => {
                 const codeStr = item.indicator_code || '';
@@ -454,11 +469,17 @@
                     const statusStr = d.is_active ? 'active' : 'inactive';
                     matchStatus = filterSelections.status.has(statusStr);
                 }
+                
+                let matchIndicatorName = true;
+                if (filterSelections.indicatorName.size > 0) {
+                    const ind = allIndicators.find(i => i.id === d.indicator_id);
+                    const indName = ind ? ind.item_name : '';
+                    matchIndicatorName = filterSelections.indicatorName.has(indName);
+                }
 
-                return matchSearch && matchLevel && matchStatus;
+                return matchSearch && matchLevel && matchStatus && matchIndicatorName;
             });
 
-            // 套用深度數值排序
             filtered.sort(sortDocsByCode);
 
             const totalItems = filtered.length;
@@ -484,8 +505,9 @@
             let html = '';
             paginatedItems.forEach((data) => {
                 
-                const badgeSchool = `<span class="inline-flex items-center justify-center px-2.5 py-1.5 rounded bg-slate-100 text-slate-600 text-xs font-bold border border-slate-200 shadow-sm whitespace-nowrap"><i class="fa-solid fa-building-columns mr-1.5 opacity-70"></i>全校</span>`;
-                const badgeDept = `<span class="inline-flex items-center justify-center px-2.5 py-1.5 rounded bg-slate-100 text-slate-600 text-xs font-bold border border-slate-200 shadow-sm whitespace-nowrap"><i class="fa-solid fa-graduation-cap mr-1.5 opacity-70"></i>系所</span>`;
+                // 💡 優化全校/系所標籤：固定寬度(72px)且 mx-auto 完美居中對齊
+                const badgeSchool = `<span class="inline-flex items-center justify-center w-[72px] py-1.5 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold border border-slate-200 shadow-sm whitespace-nowrap mx-auto"><i class="fa-solid fa-building-columns mr-1 opacity-70"></i>全校</span>`;
+                const badgeDept = `<span class="inline-flex items-center justify-center w-[72px] py-1.5 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold border border-slate-200 shadow-sm whitespace-nowrap mx-auto"><i class="fa-solid fa-graduation-cap mr-1 opacity-70"></i>系所</span>`;
                 
                 let levelBadge = '';
                 if (data.level === 'school') {
@@ -493,7 +515,7 @@
                 } else if (data.level === 'department') {
                     levelBadge = badgeDept;
                 } else if (data.level === 'both') {
-                    levelBadge = `<div class="flex flex-col gap-1.5 items-center justify-center">${badgeSchool}${badgeDept}</div>`;
+                    levelBadge = `<div class="flex flex-col gap-1.5 w-full">${badgeSchool}${badgeDept}</div>`;
                 }
 
                 let limitBadge = data.file_limit === 'multiple' 
@@ -520,10 +542,10 @@
 
                 const fullCode = data.sub_indicator ? `${data.indicator_code}-${data.sub_indicator}` : (data.indicator_code || '-');
 
-                // 💡 更新了系統狀態開關(w-11 h-6)與操作按鈕尺寸(w-8 h-8)
+                // 💡 放大操作按鈕 (w-8 h-8 rounded-lg) 並使用 align-middle 垂直置中
                 html += `
                 <tr class="group bg-white hover:bg-slate-50/50 transition-all duration-150 border-b border-slate-100 last:border-0 ${!data.is_active ? 'opacity-50 grayscale' : ''}">
-                    <td class="px-5 py-4 align-middle text-center">${levelBadge}</td>
+                    <td class="px-5 py-4 align-middle text-center w-full">${levelBadge}</td>
                     <td class="px-5 py-4 align-middle text-center">
                         <span class="inline-block bg-slate-100 text-slate-700 border border-slate-200 font-bold px-2.5 py-1 rounded text-xs whitespace-nowrap shadow-sm">${fullCode}</span>
                     </td>
@@ -545,15 +567,15 @@
                         <div class="flex items-center justify-center">
                             <label class="relative inline-flex items-center cursor-pointer group/toggle whitespace-nowrap">
                                 <input type="checkbox" class="sr-only peer" ${data.is_active ? 'checked' : ''} onchange="window.toggleStatus('${data.id}', ${data.is_active})">
-                                <div class="relative w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-[20px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner shrink-0 min-w-[44px]"></div>
-                                <span class="ml-3 text-sm font-bold ${data.is_active ? 'text-emerald-600' : 'text-slate-400'} whitespace-nowrap">${data.is_active ? '啟用' : '停用'}</span>
+                                <div class="relative w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-[20px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner shrink-0"></div>
+                                <span class="ml-2 text-xs font-bold ${data.is_active ? 'text-emerald-600' : 'text-slate-400'} whitespace-nowrap">${data.is_active ? '啟用' : '停用'}</span>
                             </label>
                         </div>
                     </td>
                     <td class="px-4 py-4 align-middle text-center">
                         <div class="flex items-center justify-center gap-1.5 opacity-100 transition-opacity">
-                            <button onclick="window.editDoc('${data.id}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all shrink-0" title="編輯文件"><i class="fa-solid fa-pen text-[11px]"></i></button>
-                            <button onclick="window.deleteDoc('${data.id}', '${data.name}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all shrink-0" title="刪除文件"><i class="fa-solid fa-trash-can text-[11px]"></i></button>
+                            <button onclick="window.editDoc('${data.id}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all shrink-0" title="編輯文件"><i class="fa-solid fa-pen text-[13px]"></i></button>
+                            <button onclick="window.deleteDoc('${data.id}', '${data.name}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all shrink-0" title="刪除文件"><i class="fa-solid fa-trash-can text-[13px]"></i></button>
                         </div>
                     </td>
                 </tr>`;
