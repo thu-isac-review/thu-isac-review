@@ -65,8 +65,8 @@
                             <th class="px-5 py-3.5 text-center text-xs font-bold text-slate-500 w-[100px] whitespace-nowrap">適用層級</th>
                             <th class="px-5 py-3.5 text-center text-xs font-bold text-slate-500 w-[110px] whitespace-nowrap">指標代碼</th>
                             <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 w-[18%]">審查項目名稱</th>
-                            <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 w-[24%]">要求文件名稱</th>
-                            <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 min-w-[320px]">上傳檔名規則</th>
+                            <th class="px-5 py-3.5 text-center text-xs font-bold text-slate-500 w-[24%]">要求文件名稱</th>
+                            <th class="px-5 py-3.5 text-center text-xs font-bold text-slate-500 min-w-[320px]">上傳檔名規則</th>
                             <th class="px-5 py-3.5 text-center text-xs font-bold text-slate-500 w-[90px] whitespace-nowrap">系統狀態</th>
                             <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[90px]">操作</th>
                         </tr>
@@ -87,7 +87,7 @@
     <!-- 彈跳視窗：新增/編輯文件 -->
     <div id="doc-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="window.closeDocModal()"></div>
-        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-3xl overflow-hidden modal-enter relative max-h-[90vh] flex flex-col">
+        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-5xl overflow-hidden modal-enter relative max-h-[90vh] flex flex-col">
             <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center shrink-0 bg-slate-50">
                 <h3 id="modal-title" class="font-black text-slate-800 text-lg flex items-center gap-2">
                     <i class="fa-solid fa-file-circle-plus text-blue-600"></i> 新增行政文件
@@ -95,79 +95,93 @@
                 <button onclick="window.closeDocModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 bg-white shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors shrink-0"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             
-            <form id="doc-form" class="p-8 space-y-6 overflow-y-auto custom-scrollbar flex-1 bg-white">
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-2">對應之教育部審查指標 <span class="text-rose-500">*</span></label>
-                    <select id="input-indicator" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm" onchange="window.autoGenerateFilename()">
-                        <option value="">請選擇要綁定的主檔指標...</option>
-                        <!-- 動態載入指標 -->
-                    </select>
-                </div>
-
-                <div class="grid grid-cols-3 gap-5">
-                    <div class="col-span-1">
-                        <label class="block text-xs font-bold text-slate-600 mb-2">適用層級 <span class="text-rose-500">*</span></label>
-                        <select id="input-level" required onchange="window.toggleFilenameInputs()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
-                            <option value="school">全校統一文件</option>
-                            <option value="department" selected>各系所獨立文件</option>
-                            <option value="both">全校與各系所</option>
+            <form id="doc-form" class="p-8 flex flex-col md:flex-row gap-8 overflow-y-auto custom-scrollbar flex-1 bg-white">
+                <!-- 💡 左側：文件設定與檔名規則 -->
+                <div class="flex-[3] space-y-6">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-2">對應之教育部審查指標 <span class="text-rose-500">*</span></label>
+                        <select id="input-indicator" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm" onchange="window.autoGenerateFilename()">
+                            <option value="">請選擇要綁定的主檔指標...</option>
+                            <!-- 動態載入指標 -->
                         </select>
                     </div>
-                    <div class="col-span-1">
-                        <label class="block text-xs font-bold text-slate-600 mb-2">檔案數量限制 <span class="text-rose-500">*</span></label>
-                        <select id="input-file-limit" required onchange="window.autoGenerateFilename()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
-                            <option value="single" selected>單一檔案</option>
-                            <option value="multiple">多檔上傳 (自動生成流水號)</option>
-                        </select>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                        <div class="col-span-1">
+                            <label class="block text-xs font-bold text-slate-600 mb-2">適用層級 <span class="text-rose-500">*</span></label>
+                            <select id="input-level" required onchange="window.toggleFilenameInputs()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
+                                <option value="school">全校統一文件</option>
+                                <option value="department" selected>各系所獨立文件</option>
+                                <option value="both">全校與各系所</option>
+                            </select>
+                        </div>
+                        <div class="col-span-1">
+                            <label class="block text-xs font-bold text-slate-600 mb-2">檔案數量限制 <span class="text-rose-500">*</span></label>
+                            <select id="input-file-limit" required onchange="window.autoGenerateFilename()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
+                                <option value="single" selected>單一檔案</option>
+                                <option value="multiple">多檔上傳 (自動生成流水號)</option>
+                            </select>
+                        </div>
+                        <div class="col-span-1">
+                            <label class="block text-xs font-bold text-slate-600 mb-2" title="同一指標下的次分類編號，例如 1-1-1 中的最後一個 1">文件子指標 <span class="text-rose-500">*</span></label>
+                            <input type="text" id="input-sub-indicator" required placeholder="如：1, 2" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm" oninput="window.autoGenerateFilename()">
+                        </div>
                     </div>
-                    <div class="col-span-1">
-                        <label class="block text-xs font-bold text-slate-600 mb-2" title="同一指標下的次分類編號，例如 1-1-1 中的最後一個 1">文件子指標 <span class="text-rose-500">*</span></label>
-                        <input type="text" id="input-sub-indicator" required placeholder="如：1, 2" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm" oninput="window.autoGenerateFilename()">
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-2">要求上傳文件名稱 <span class="text-rose-500">*</span></label>
+                        <div class="relative">
+                            <i class="fa-solid fa-file-lines absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="input-name" required placeholder="如：實習辦法 / 細則" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-800 shadow-sm" oninput="window.autoGenerateFilename()">
+                        </div>
+                    </div>
+
+                    <!-- 檔名設定區塊 -->
+                    <div class="bg-blue-50/30 border border-blue-100 rounded-xl p-5 mt-2 space-y-4">
+                        <div class="flex justify-between items-center border-b border-blue-100/50 pb-2">
+                            <span class="text-xs font-black text-blue-700 uppercase tracking-wide"><i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i> 標準上傳檔名規則設定</span>
+                            <button type="button" onclick="window.autoGenerateFilename()" class="text-[11px] font-bold bg-white border border-blue-200 text-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-600 hover:text-white transition-all shadow-sm active:scale-95">自動帶入建議格式</button>
+                        </div>
+                        
+                        <div id="school-filename-group" class="hidden space-y-1.5">
+                            <label class="block text-[11px] font-bold text-indigo-500">【全校統一格式】預設檔名範本 (可自由修改)</label>
+                            <input type="text" id="input-school-filename" placeholder="例如：[指標代碼]-[子指標]_[流水號]_東海大學[文件名稱].pdf" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono font-bold text-slate-700 shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none transition-all">
+                        </div>
+                        
+                        <div id="dept-filename-group" class="hidden space-y-1.5">
+                            <label class="block text-[11px] font-bold text-blue-500">【各系所獨立格式】預設檔名範本 (可自由修改)</label>
+                            <input type="text" id="input-dept-filename" placeholder="例如：[指標代碼]-[子指標]_[系所代碼][流水號]_[系所名稱]_[文件名稱].pdf" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono font-bold text-slate-700 shadow-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all">
+                        </div>
+                        
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                            <p class="text-[12px] text-slate-700 font-bold leading-relaxed border-b border-slate-100 pb-2 mb-2">
+                                <i class="fa-solid fa-circle-info text-blue-500 mr-1.5"></i> <strong>系統變數清單：</strong>
+                            </p>
+                            <div class="flex flex-wrap gap-2 text-[11px] font-mono">
+                                <span class="bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-slate-600">[指標代碼]</span>
+                                <span class="bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-slate-600">[文件名稱]</span>
+                                <span class="bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-slate-600">[學期]</span>
+                                <span class="bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded text-emerald-700">[系所代碼]</span>
+                                <span class="bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded text-emerald-700">[系所名稱]</span>
+                                <span class="bg-amber-50 border border-amber-200 px-2 py-0.5 rounded text-amber-700" title="課程大綱適用">[選課代號]</span>
+                                <span class="bg-amber-50 border border-amber-200 px-2 py-0.5 rounded text-amber-700" title="課程大綱適用">[課程名稱]</span>
+                                <span class="bg-blue-50 border border-blue-200 px-2 py-0.5 rounded text-blue-700" title="多檔上傳適用">[流水號]</span>
+                            </div>
+                            <div class="text-[11px] text-slate-500 font-medium leading-relaxed mt-3 space-y-1">
+                                <p><strong class="text-blue-600"><i class="fa-solid fa-bolt mr-1"></i> 多檔上傳與流水號機制：</strong> 若選擇「多檔上傳」並使用 <code>[流水號]</code> 變數，系統將依檔案原始名稱 (A-Z) 自動替換為 001, 002...，各系所獨立計算。</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-2">要求上傳文件名稱 <span class="text-rose-500">*</span></label>
-                    <div class="relative">
-                        <i class="fa-solid fa-file-lines absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="input-name" required placeholder="如：實習辦法 / 細則" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm" oninput="window.autoGenerateFilename()">
+                <!-- 💡 右側：文件檢核指標區塊 -->
+                <div class="flex-[2] flex flex-col border-t md:border-t-0 md:border-l border-slate-100 pt-6 md:pt-0 md:pl-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <label class="block text-sm font-bold text-slate-800">文件檢核指標</label>
+                        <button type="button" onclick="window.addChecklistItem()" class="text-[11px] font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 shadow-sm"><i class="fa-solid fa-plus"></i> 新增指標</button>
                     </div>
-                </div>
-
-                <!-- 檔名設定區塊 -->
-                <div class="bg-blue-50/40 border border-blue-100 rounded-xl p-5 mt-2 space-y-4">
-                    <div class="flex justify-between items-center border-b border-blue-100/50 pb-2">
-                        <span class="text-xs font-black text-blue-700 uppercase tracking-wide"><i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i> 標準上傳檔名規則設定</span>
-                        <button type="button" onclick="window.autoGenerateFilename()" class="text-[11px] font-bold bg-white border border-blue-200 text-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-600 hover:text-white transition-all shadow-sm active:scale-95">自動帶入建議格式</button>
-                    </div>
-                    
-                    <div id="school-filename-group" class="hidden space-y-1.5">
-                        <label class="block text-[11px] font-bold text-indigo-500">【全校統一格式】預設檔名範本 (可自由修改)</label>
-                        <input type="text" id="input-school-filename" placeholder="例如：[指標代碼]-[子指標]_[流水號]_東海大學[文件名稱].pdf" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono font-bold text-blue-600 shadow-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all">
-                    </div>
-                    
-                    <div id="dept-filename-group" class="hidden space-y-1.5">
-                        <label class="block text-[11px] font-bold text-blue-500">【各系所獨立格式】預設檔名範本 (可自由修改)</label>
-                        <input type="text" id="input-dept-filename" placeholder="例如：[指標代碼]-[子指標]_[系所代碼][流水號]_[系所名稱]_[文件名稱].pdf" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono font-bold text-blue-600 shadow-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all">
-                    </div>
-                    
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                        <p class="text-[12px] text-slate-700 font-bold leading-relaxed border-b border-slate-100 pb-2 mb-2">
-                            <i class="fa-solid fa-circle-info text-blue-500 mr-1.5"></i> <strong>系統變數清單：</strong>
-                        </p>
-                        <div class="flex flex-wrap gap-2 text-[11px] font-mono">
-                            <span class="bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-slate-600">[指標代碼]</span>
-                            <span class="bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-slate-600">[文件名稱]</span>
-                            <span class="bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-slate-600">[學期]</span>
-                            <span class="bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded text-emerald-700">[系所代碼]</span>
-                            <span class="bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded text-emerald-700">[系所名稱]</span>
-                            <span class="bg-amber-50 border border-amber-200 px-2 py-0.5 rounded text-amber-700" title="課程大綱適用">[選課代號]</span>
-                            <span class="bg-amber-50 border border-amber-200 px-2 py-0.5 rounded text-amber-700" title="課程大綱適用">[課程名稱]</span>
-                            <span class="bg-blue-50 border border-blue-200 px-2 py-0.5 rounded text-blue-700" title="多檔上傳適用">[流水號]</span>
-                        </div>
-                        <div class="text-[11px] text-slate-500 font-medium leading-relaxed mt-3 space-y-1">
-                            <p><strong class="text-blue-600"><i class="fa-solid fa-bolt mr-1"></i> 多檔上傳與流水號機制：</strong> 若選擇「多檔上傳」並使用 <code>[流水號]</code> 變數，系統將依檔案原始名稱 (A-Z) 自動替換為 001, 002...，各系所獨立計算。</p>
-                        </div>
+                    <div id="checklist-container" class="space-y-3 flex-1 overflow-y-auto custom-scrollbar pr-2">
+                        <!-- JS 動態插入檢核項目 -->
                     </div>
                 </div>
             </form>
@@ -201,7 +215,6 @@
         let currentPage = 1; 
         const itemsPerPage = 10;
 
-        // 💡 加入了審查項目名稱篩選
         const filterSelections = {
             level: new Set(),
             indicatorName: new Set(),
@@ -220,7 +233,7 @@
                     allIndicators = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     allIndicators.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
                     updateIndicatorDropdown();
-                    if (isFiltersInitialized) renderFilterDropdowns(); // 更新選項
+                    if (isFiltersInitialized) renderFilterDropdowns(); 
                 });
 
                 onSnapshot(docsCollection, (snapshot) => {
@@ -235,12 +248,25 @@
             }
         });
 
-        // 💡 更新篩選器選單產生邏輯，加入動態生成選項
+        // 💡 檢核清單操作函式
+        window.addChecklistItem = (val = '') => {
+            const container = document.getElementById('checklist-container');
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-2 checklist-item animate-fade';
+            div.innerHTML = `
+                <div class="flex-1 relative">
+                    <i class="fa-solid fa-list-check absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" value="${val}" placeholder="例如：甲乙丙三方是否皆已簽章？" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm checklist-input">
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" class="w-11 h-11 rounded-xl flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-all shrink-0 shadow-sm bg-white"><i class="fa-solid fa-trash-can text-sm"></i></button>
+            `;
+            container.appendChild(div);
+        };
+
         function renderFilterDropdowns() {
             const container = document.getElementById('advanced-filters-container');
             if (!container) return;
 
-            // 動態擷取目前存在的審查項目名稱
             const indicatorNameSet = new Set();
             allDocs.forEach(d => {
                 const ind = allIndicators.find(i => i.id === d.indicator_id);
@@ -416,6 +442,8 @@
             if (!editingId) { 
                 document.getElementById('doc-form').reset();
                 document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-file-circle-plus text-blue-600"></i> 新增行政文件';
+                document.getElementById('checklist-container').innerHTML = '';
+                window.addChecklistItem(); // 預設提供一格
                 window.toggleFilenameInputs();
             }
             document.getElementById('doc-modal').classList.remove('hidden');
@@ -505,17 +533,13 @@
             let html = '';
             paginatedItems.forEach((data) => {
                 
-                // 💡 優化全校/系所標籤：固定寬度(72px)且 mx-auto 完美居中對齊
-                const badgeSchool = `<span class="inline-flex items-center justify-center w-[72px] py-1.5 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold border border-slate-200 shadow-sm whitespace-nowrap mx-auto"><i class="fa-solid fa-building-columns mr-1 opacity-70"></i>全校</span>`;
-                const badgeDept = `<span class="inline-flex items-center justify-center w-[72px] py-1.5 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold border border-slate-200 shadow-sm whitespace-nowrap mx-auto"><i class="fa-solid fa-graduation-cap mr-1 opacity-70"></i>系所</span>`;
-                
                 let levelBadge = '';
                 if (data.level === 'school') {
-                    levelBadge = badgeSchool;
+                    levelBadge = `<div class="text-sm font-bold text-slate-700 text-center">全校</div>`;
                 } else if (data.level === 'department') {
-                    levelBadge = badgeDept;
+                    levelBadge = `<div class="text-sm font-bold text-slate-700 text-center">系所</div>`;
                 } else if (data.level === 'both') {
-                    levelBadge = `<div class="flex flex-col gap-1.5 w-full">${badgeSchool}${badgeDept}</div>`;
+                    levelBadge = `<div class="flex flex-col items-center justify-center gap-1.5"><div class="text-sm font-bold text-slate-700">全校</div><div class="text-sm font-bold text-slate-700">系所</div></div>`;
                 }
 
                 let limitBadge = data.file_limit === 'multiple' 
@@ -542,7 +566,6 @@
 
                 const fullCode = data.sub_indicator ? `${data.indicator_code}-${data.sub_indicator}` : (data.indicator_code || '-');
 
-                // 💡 放大操作按鈕 (w-8 h-8 rounded-lg) 並使用 align-middle 垂直置中
                 html += `
                 <tr class="group bg-white hover:bg-slate-50/50 transition-all duration-150 border-b border-slate-100 last:border-0 ${!data.is_active ? 'opacity-50 grayscale' : ''}">
                     <td class="px-5 py-4 align-middle text-center w-full">${levelBadge}</td>
@@ -550,7 +573,7 @@
                         <span class="inline-block bg-slate-100 text-slate-700 border border-slate-200 font-bold px-2.5 py-1 rounded text-xs whitespace-nowrap shadow-sm">${fullCode}</span>
                     </td>
                     <td class="px-5 py-4 align-middle text-left">
-                        <span class="text-sm font-bold text-slate-700 leading-relaxed line-clamp-2" title="${indicatorName}">${indicatorName}</span>
+                        <span class="text-sm font-bold text-slate-800 leading-tight line-clamp-2" title="${indicatorName}">${indicatorName}</span>
                     </td>
                     <td class="px-5 py-4 align-middle text-left">
                         <div class="flex flex-col items-start gap-1">
@@ -567,15 +590,15 @@
                         <div class="flex items-center justify-center">
                             <label class="relative inline-flex items-center cursor-pointer group/toggle whitespace-nowrap">
                                 <input type="checkbox" class="sr-only peer" ${data.is_active ? 'checked' : ''} onchange="window.toggleStatus('${data.id}', ${data.is_active})">
-                                <div class="relative w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-[20px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner shrink-0"></div>
+                                <div class="relative w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-[20px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner shrink-0 min-w-[44px]"></div>
                                 <span class="ml-2 text-xs font-bold ${data.is_active ? 'text-emerald-600' : 'text-slate-400'} whitespace-nowrap">${data.is_active ? '啟用' : '停用'}</span>
                             </label>
                         </div>
                     </td>
                     <td class="px-4 py-4 align-middle text-center">
                         <div class="flex items-center justify-center gap-1.5 opacity-100 transition-opacity">
-                            <button onclick="window.editDoc('${data.id}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all shrink-0" title="編輯文件"><i class="fa-solid fa-pen text-[13px]"></i></button>
-                            <button onclick="window.deleteDoc('${data.id}', '${data.name}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all shrink-0" title="刪除文件"><i class="fa-solid fa-trash-can text-[13px]"></i></button>
+                            <button onclick="window.editDoc('${data.id}')" class="w-9 h-9 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all shrink-0" title="編輯文件"><i class="fa-solid fa-pen text-[13px]"></i></button>
+                            <button onclick="window.deleteDoc('${data.id}', '${data.name}')" class="w-9 h-9 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all shrink-0" title="刪除文件"><i class="fa-solid fa-trash-can text-[13px]"></i></button>
                         </div>
                     </td>
                 </tr>`;
@@ -614,6 +637,10 @@
                 indicatorCode = indSelect.options[indSelect.selectedIndex].getAttribute('data-code');
             }
             
+            const checklists = Array.from(document.querySelectorAll('.checklist-input'))
+                                    .map(input => input.value.trim())
+                                    .filter(val => val !== '');
+
             const payload = { 
                 indicator_id: indSelect.value,
                 indicator_code: indicatorCode,
@@ -622,7 +649,8 @@
                 file_limit: document.getElementById('input-file-limit').value,
                 name: document.getElementById('input-name').value.trim(),
                 school_filename: document.getElementById('input-school-filename').value.trim(),
-                dept_filename: document.getElementById('input-dept-filename').value.trim()
+                dept_filename: document.getElementById('input-dept-filename').value.trim(),
+                checklists: checklists
             };
 
             if(!payload.indicator_id || !payload.name) { 
@@ -654,6 +682,13 @@
 
             document.getElementById('input-school-filename').value = docData.school_filename || '';
             document.getElementById('input-dept-filename').value = docData.dept_filename || '';
+
+            document.getElementById('checklist-container').innerHTML = '';
+            if (docData.checklists && docData.checklists.length > 0) {
+                docData.checklists.forEach(item => window.addChecklistItem(item));
+            } else {
+                window.addChecklistItem();
+            }
 
             window.toggleFilenameInputs();
 
