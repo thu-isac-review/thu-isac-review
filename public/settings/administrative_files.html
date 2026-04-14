@@ -62,13 +62,13 @@
                 <table class="w-full text-left table-fixed min-w-[1100px]">
                     <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10 shadow-sm">
                         <tr>
-                            <th class="px-5 py-3.5 text-center text-xs font-bold text-slate-500 w-[100px] whitespace-nowrap">適用層級</th>
+                            <th class="px-5 py-3.5 text-center text-xs font-bold text-slate-500 w-[90px]">適用層級</th>
                             <th class="px-5 py-3.5 text-center text-xs font-bold text-slate-500 w-[110px] whitespace-nowrap">指標代碼</th>
                             <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 w-[18%]">審查項目名稱</th>
                             <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 w-[24%]">要求文件名稱</th>
                             <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 min-w-[320px]">上傳檔名規則</th>
-                            <th class="px-5 py-3.5 text-center text-xs font-bold text-slate-500 w-[90px] whitespace-nowrap">系統狀態</th>
-                            <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[90px]">操作</th>
+                            <th class="px-5 py-3.5 text-center text-xs font-bold text-slate-500 w-[100px] whitespace-nowrap">系統狀態</th>
+                            <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[100px]">操作</th>
                         </tr>
                     </thead>
                     <tbody id="doc-table-body" class="divide-y divide-slate-100 text-sm">
@@ -96,22 +96,16 @@
             </div>
             
             <form id="doc-form" class="p-8 space-y-6 overflow-y-auto custom-scrollbar flex-1 bg-white">
-                <div class="grid grid-cols-3 gap-5">
-                    <div class="col-span-2">
-                        <label class="block text-xs font-bold text-slate-600 mb-2">對應之教育部審查指標 <span class="text-rose-500">*</span></label>
-                        <select id="input-indicator" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm" onchange="window.autoGenerateFilename()">
-                            <option value="">請選擇要綁定的主檔指標...</option>
-                            <!-- 動態載入指標 -->
-                        </select>
-                    </div>
-                    <div class="col-span-1">
-                        <label class="block text-xs font-bold text-slate-600 mb-2" title="同一指標下的次分類編號，例如 1-1-1 中的最後一個 1">文件子指標 <span class="text-rose-500">*</span></label>
-                        <input type="text" id="input-sub-indicator" required placeholder="如：1, 2" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm" oninput="window.autoGenerateFilename()">
-                    </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-2">對應之教育部審查指標 <span class="text-rose-500">*</span></label>
+                    <select id="input-indicator" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm" onchange="window.autoGenerateFilename()">
+                        <option value="">請選擇要綁定的主檔指標...</option>
+                        <!-- 動態載入指標 -->
+                    </select>
                 </div>
 
-                <div class="grid grid-cols-2 gap-5">
-                    <div>
+                <div class="grid grid-cols-3 gap-5">
+                    <div class="col-span-1">
                         <label class="block text-xs font-bold text-slate-600 mb-2">適用層級 <span class="text-rose-500">*</span></label>
                         <select id="input-level" required onchange="window.toggleFilenameInputs()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
                             <option value="school">全校統一文件</option>
@@ -119,12 +113,16 @@
                             <option value="both">全校與各系所</option>
                         </select>
                     </div>
-                    <div>
+                    <div class="col-span-1">
                         <label class="block text-xs font-bold text-slate-600 mb-2">檔案數量限制 <span class="text-rose-500">*</span></label>
                         <select id="input-file-limit" required onchange="window.autoGenerateFilename()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
                             <option value="single" selected>單一檔案</option>
                             <option value="multiple">多檔上傳 (自動生成流水號)</option>
                         </select>
+                    </div>
+                    <div class="col-span-1">
+                        <label class="block text-xs font-bold text-slate-600 mb-2" title="同一指標下的次分類編號，例如 1-1-1 中的最後一個 1">文件子指標 <span class="text-rose-500">*</span></label>
+                        <input type="text" id="input-sub-indicator" required placeholder="如：1, 2" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm" oninput="window.autoGenerateFilename()">
                     </div>
                 </div>
 
@@ -233,6 +231,7 @@
             }
         });
 
+        // 💡 修改 filter-btn 加上 h-10 px-4 以強制與搜尋框同高度
         function renderFilterDropdowns() {
             const container = document.getElementById('advanced-filters-container');
             if (!container) return;
@@ -253,12 +252,12 @@
                 container.innerHTML = '';
                 filterDefinitions.forEach(def => {
                     const wrap = document.createElement('div');
-                    wrap.className = 'relative group-filter shrink-0 mb-1';
+                    wrap.className = 'relative group-filter shrink-0';
                     wrap.innerHTML = `
-                        <button type="button" class="filter-btn border border-slate-200 bg-white text-slate-700 text-[13px] font-bold rounded-lg px-3 py-1.5 shadow-sm flex items-center hover:bg-slate-50 transition-colors" data-key="${def.key}">
+                        <button type="button" class="filter-btn h-10 border border-slate-200 bg-white text-slate-700 text-[13px] font-bold rounded-lg px-4 shadow-sm flex items-center hover:bg-slate-50 transition-colors" data-key="${def.key}">
                             ${def.label} <span class="filter-count hidden bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded text-[10px] ml-1.5">0</span> <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 ml-1.5"></i>
                         </button>
-                        <div class="filter-panel hidden absolute top-full left-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl w-56 max-h-72 flex-col overflow-hidden z-[100]">
+                        <div class="filter-panel hidden absolute top-[calc(100%+4px)] left-0 bg-white border border-slate-200 rounded-xl shadow-xl w-56 max-h-72 flex-col overflow-hidden z-[100]">
                             ${def.searchable ? `
                             <div class="p-2 border-b border-slate-100 shrink-0 bg-slate-50/50">
                                 <div class="relative">
@@ -409,6 +408,35 @@
         window.closeDocModal = () => { document.getElementById('doc-modal').classList.add('hidden'); editingId = null; };
         window.changePage = (page) => { currentPage = page; window.renderTable(); };
 
+        // 💡 客製化深度數值排序函式
+        const sortDocsByCode = (a, b) => {
+            const getParts = (item) => {
+                const codeStr = item.indicator_code || '';
+                const subStr = item.sub_indicator || '';
+                const full = subStr ? `${codeStr}-${subStr}` : codeStr;
+                return full.split('-').map(p => {
+                    const num = parseInt(p, 10);
+                    return isNaN(num) ? p : num;
+                });
+            };
+            const partsA = getParts(a);
+            const partsB = getParts(b);
+            const len = Math.max(partsA.length, partsB.length);
+            for (let i = 0; i < len; i++) {
+                const valA = partsA[i];
+                const valB = partsB[i];
+                if (valA === undefined && valB !== undefined) return -1;
+                if (valA !== undefined && valB === undefined) return 1;
+                if (valA !== valB) {
+                    if (typeof valA === 'number' && typeof valB === 'number') {
+                        return valA - valB;
+                    }
+                    return String(valA).localeCompare(String(valB));
+                }
+            }
+            return (a.name || '').localeCompare(b.name || '');
+        };
+
         window.renderTable = () => {
             const tbody = document.getElementById('doc-table-body');
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
@@ -430,16 +458,8 @@
                 return matchSearch && matchLevel && matchStatus;
             });
 
-            filtered.sort((a, b) => {
-                const codeA = a.indicator_code || '';
-                const codeB = b.indicator_code || '';
-                const codeCmp = codeA.localeCompare(codeB, undefined, {numeric: true});
-                if (codeCmp !== 0) return codeCmp;
-
-                const nameA = a.name || '';
-                const nameB = b.name || '';
-                return nameA.localeCompare(nameB);
-            });
+            // 套用深度數值排序
+            filtered.sort(sortDocsByCode);
 
             const totalItems = filtered.length;
             const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
@@ -500,6 +520,7 @@
 
                 const fullCode = data.sub_indicator ? `${data.indicator_code}-${data.sub_indicator}` : (data.indicator_code || '-');
 
+                // 💡 更新了系統狀態開關(w-11 h-6)與操作按鈕尺寸(w-8 h-8)
                 html += `
                 <tr class="group bg-white hover:bg-slate-50/50 transition-all duration-150 border-b border-slate-100 last:border-0 ${!data.is_active ? 'opacity-50 grayscale' : ''}">
                     <td class="px-5 py-4 align-middle text-center">${levelBadge}</td>
@@ -524,15 +545,15 @@
                         <div class="flex items-center justify-center">
                             <label class="relative inline-flex items-center cursor-pointer group/toggle whitespace-nowrap">
                                 <input type="checkbox" class="sr-only peer" ${data.is_active ? 'checked' : ''} onchange="window.toggleStatus('${data.id}', ${data.is_active})">
-                                <div class="relative w-9 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-[16px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500 shadow-inner shrink-0"></div>
-                                <span class="ml-2 text-xs font-bold ${data.is_active ? 'text-emerald-600' : 'text-slate-400'} whitespace-nowrap">${data.is_active ? '啟用' : '停用'}</span>
+                                <div class="relative w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-[20px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner shrink-0 min-w-[44px]"></div>
+                                <span class="ml-3 text-sm font-bold ${data.is_active ? 'text-emerald-600' : 'text-slate-400'} whitespace-nowrap">${data.is_active ? '啟用' : '停用'}</span>
                             </label>
                         </div>
                     </td>
                     <td class="px-4 py-4 align-middle text-center">
                         <div class="flex items-center justify-center gap-1.5 opacity-100 transition-opacity">
-                            <button onclick="window.editDoc('${data.id}')" class="w-7 h-7 rounded flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all shrink-0" title="編輯文件"><i class="fa-solid fa-pen text-xs"></i></button>
-                            <button onclick="window.deleteDoc('${data.id}', '${data.name}')" class="w-7 h-7 rounded flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all shrink-0" title="刪除文件"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                            <button onclick="window.editDoc('${data.id}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all shrink-0" title="編輯文件"><i class="fa-solid fa-pen text-[11px]"></i></button>
+                            <button onclick="window.deleteDoc('${data.id}', '${data.name}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all shrink-0" title="刪除文件"><i class="fa-solid fa-trash-can text-[11px]"></i></button>
                         </div>
                     </td>
                 </tr>`;
@@ -544,11 +565,7 @@
             if (allDocs.length === 0) { alert("沒有資料可供匯出！"); return; }
             let csv = '\uFEFF適用層級,指標代碼,文件子指標,要求上傳文件名稱,檔案數量限制,預設上傳檔名規則,系統狀態\n';
             
-            let sorted = [...allDocs].sort((a, b) => {
-                const codeA = (a.indicator_code || '') + '-' + (a.sub_indicator || '');
-                const codeB = (b.indicator_code || '') + '-' + (b.sub_indicator || '');
-                return codeA.localeCompare(codeB, undefined, {numeric: true});
-            });
+            let sorted = [...allDocs].sort(sortDocsByCode);
 
             sorted.forEach(d => {
                 let status = d.is_active ? '啟用' : '停用';
@@ -586,7 +603,7 @@
                 dept_filename: document.getElementById('input-dept-filename').value.trim()
             };
 
-            if(!payload.indicator_id || !payload.sub_indicator || !payload.name) { 
+            if(!payload.indicator_id || !payload.name) { 
                 alert("請填寫所有必填欄位！"); return; 
             }
 
