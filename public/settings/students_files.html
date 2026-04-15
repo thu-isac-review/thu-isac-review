@@ -142,11 +142,11 @@
                             <span class="bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded text-slate-600">[指標代碼]</span>
                             <span class="bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded text-slate-600">[子指標]</span>
                             <span class="bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded text-slate-600">[文件名稱]</span>
-                            <span class="bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded text-slate-600">[學年學期]</span>
+                            <span class="bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded text-slate-600">[學期]</span>
                             <span class="bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded text-indigo-700">[學號]</span>
                             <span class="bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded text-indigo-700">[學生姓名]</span>
-                            <span class="bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded text-emerald-700" title="指開課系所">[系所代碼]<span class="opacity-50">(開課)</span></span>
-                            <span class="bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded text-emerald-700" title="指開課系所">[系所名稱]<span class="opacity-50">(開課)</span></span>
+                            <span class="bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded text-emerald-700" title="指學生所屬系所">[系所代碼]<span class="opacity-50">(學生)</span></span>
+                            <span class="bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded text-emerald-700" title="指學生所屬系所">[系所名稱]<span class="opacity-50">(學生)</span></span>
                             <span class="bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded text-amber-700">[選課代號]</span>
                             <span class="bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded text-amber-700">[課程名稱]</span>
                             <span class="bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded text-blue-700">[流水號]</span>
@@ -315,7 +315,10 @@
             let code = indSelect.selectedIndex > 0 ? indSelect.options[indSelect.selectedIndex].getAttribute('data-code') : '[指標代碼]';
             const sub = subEl.value.trim() || '[子指標]', limit = fileL.value, docN = nameE.value.trim() || '[文件名稱]';
             const seq = limit === 'multiple' ? '_[流水號]' : '';
-            document.getElementById('input-filename').value = `${code}-${sub}_[學年學期]_[系所代碼]_[學號]_[學生姓名]_${docN}${seq}.pdf`;
+            
+            const fileInput = document.getElementById('input-filename');
+            
+            if(fileInput && document.activeElement !== fileInput) fileInput.value = `${code}-${sub}_[學期]_[系所代碼]_[學號]_[學生姓名]_${docN}${seq}.pdf`;
         };
 
         window.openDocModal = () => {
@@ -379,14 +382,14 @@
                 const ind = allIndicators.find(i => i.id === data.indicator_id);
                 const indName = ind ? ind.item_name : '<span class="text-rose-500">指標已遺失</span>';
                 
-                let rulesH = `<div class="flex items-start justify-center gap-1.5"><span class="bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded text-[10px] shrink-0 mt-0.5">檔名</span><span class="text-[11px] font-mono text-blue-600 tracking-tight mt-0.5">${data.filename || '未設定'}</span></div>`;
+                let rulesH = `<div class="flex items-start gap-1.5"><span class="bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded text-[10px] shrink-0 mt-0.5">檔名</span><span class="text-[11px] font-mono text-blue-600 tracking-tight mt-0.5">${data.filename || '未設定'}</span></div>`;
 
                 return `
                 <tr class="group bg-white hover:bg-blue-50/40 transition-all duration-150 border-b border-slate-100 last:border-0 ${!data.is_active ? 'opacity-50 grayscale' : ''}">
                     <td class="px-5 py-4 align-middle text-center"><span class="inline-block bg-slate-100 text-slate-700 border border-slate-200 font-bold px-2.5 py-1 rounded text-xs whitespace-nowrap shadow-sm">${String(data.indicator_code || '')}-${String(data.sub_indicator || '')}</span></td>
                     <td class="px-5 py-4 align-middle text-left"><span class="text-sm font-bold text-slate-800 leading-tight line-clamp-2" title="${indName}">${indName}</span></td>
-                    <td class="px-5 py-4 align-middle text-center"><div class="flex flex-col items-center gap-1"><span class="text-sm font-bold text-slate-800 leading-tight text-center w-full">${data.name}</span>${data.file_limit==='multiple'?'<span class="text-[10px] text-amber-600 font-bold">多檔上傳</span>':''}</div></td>
-                    <td class="px-5 py-4 align-middle text-center"><div class="bg-slate-50 border border-slate-200 p-2.5 rounded-lg shadow-inner">${rulesH}</div></td>
+                    <td class="px-5 py-4 align-middle text-left"><div class="flex flex-col items-start gap-1"><span class="text-sm font-bold text-slate-800 leading-tight w-full">${data.name}</span>${data.file_limit==='multiple'?'<span class="text-[10px] text-amber-600 font-bold">多檔上傳</span>':''}</div></td>
+                    <td class="px-5 py-4 align-middle text-left"><div class="bg-slate-50 border border-slate-200 p-2.5 rounded-lg shadow-inner">${rulesH}</div></td>
                     <td class="px-5 py-4 align-middle text-center whitespace-nowrap"><label class="relative inline-flex items-center cursor-pointer group/toggle whitespace-nowrap"><input type="checkbox" class="sr-only peer" ${data.is_active ? 'checked' : ''} onchange="window.toggleStatus('${data.id}', ${data.is_active})"><div class="relative w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-[20px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner shrink-0"></div><span class="ml-2 text-xs font-bold ${data.is_active ? 'text-emerald-600' : 'text-slate-400'}">${data.is_active ? '啟用' : '停用'}</span></label></td>
                     <td class="px-4 py-4 align-middle text-center"><div class="flex items-center justify-center gap-2 transition-opacity">
                         <button onclick="window.editDoc('${data.id}')" class="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all shrink-0"><i class="fa-solid fa-pen text-sm"></i></button>
