@@ -124,16 +124,11 @@
                         <input type="text" id="input-name" required placeholder="例如：學生實習計畫書" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-800 shadow-sm" oninput="window.autoGenerateFilename()">
                     </div>
 
-                    <div class="bg-blue-50/40 border border-blue-100 rounded-xl p-4 flex flex-col gap-3 flex-1 min-h-0 overflow-hidden">
-                        <div class="flex justify-between items-center border-b border-blue-100/50 pb-2 shrink-0">
-                            <span class="text-xs font-black text-blue-700 uppercase tracking-wide"><i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i> 標準上傳檔名規則設定</span>
-                            <button type="button" onclick="window.autoGenerateFilename()" class="text-[10px] font-bold bg-white border border-blue-200 text-blue-600 px-2 py-1 rounded hover:bg-blue-600 hover:text-white transition-all shadow-sm">建議格式</button>
-                        </div>
-                        <div class="flex-1 space-y-4 overflow-y-auto custom-scrollbar pr-1">
-                            <div class="space-y-1.5">
-                                <label class="block text-[11px] font-bold text-blue-500">預設檔名範本</label>
-                                <input type="text" id="input-filename" placeholder="請設定規則..." class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono font-bold text-blue-600 shadow-sm outline-none transition-all">
-                            </div>
+                    <!-- 檔名規則區 -->
+                    <div class="bg-blue-50/40 border border-blue-100 rounded-xl p-4 flex flex-col justify-center flex-1 min-h-0 overflow-hidden">
+                        <div class="space-y-1.5">
+                            <label class="block text-[11px] font-bold text-blue-500">【學生文件】預設檔名</label>
+                            <input type="text" id="input-filename" placeholder="請設定規則..." class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono font-bold text-blue-600 shadow-sm outline-none transition-all">
                         </div>
                     </div>
 
@@ -143,7 +138,7 @@
                             <i class="fa-solid fa-circle-info text-blue-500"></i>
                             <strong class="text-xs text-slate-700">系統變數清單：</strong>
                         </div>
-                        <div class="flex flex-wrap gap-1.5 text-[10px] font-mono leading-relaxed">
+                        <div class="flex flex-wrap gap-1.5 text-[10px] font-mono leading-relaxed mb-2">
                             <span class="bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded text-slate-600">[指標代碼]</span>
                             <span class="bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded text-slate-600">[子指標]</span>
                             <span class="bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded text-slate-600">[文件名稱]</span>
@@ -155,6 +150,9 @@
                             <span class="bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded text-amber-700">[選課代號]</span>
                             <span class="bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded text-amber-700">[課程名稱]</span>
                             <span class="bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded text-blue-700">[流水號]</span>
+                        </div>
+                        <div class="text-[10px] text-slate-500 font-medium leading-tight">
+                            <strong class="text-blue-600">多檔流水號機制：</strong> 若選擇「多檔上傳」並使用 <code>[流水號]</code> 變數，系統將依檔案原名(A-Z)自動編號001, 002...。
                         </div>
                     </div>
                 </div>
@@ -312,20 +310,12 @@
         }
 
         window.autoGenerateFilename = () => {
-            const indSelect = document.getElementById('input-indicator');
-            const subInd = document.getElementById('input-sub-indicator').value.trim();
-            const fileLimit = document.getElementById('input-file-limit').value;
-            const docName = document.getElementById('input-name').value.trim() || '[文件名稱]';
-            
-            let code = '[指標代碼]';
-            if (indSelect.selectedIndex > 0) {
-                code = indSelect.options[indSelect.selectedIndex].getAttribute('data-code') || code;
-            }
-
-            const subIndStr = subInd ? `-${subInd}` : '-[子指標]';
-            const seq = fileLimit === 'multiple' ? '_[流水號]' : '';
-            
-            document.getElementById('input-filename').value = `${code}${subIndStr}_[學年學期]_[系所代碼]_[學號]_[學生姓名]_${docName}${seq}.pdf`;
+            const indSelect = document.getElementById('input-indicator'), subEl = document.getElementById('input-sub-indicator'), fileL = document.getElementById('input-file-limit'), nameE = document.getElementById('input-name');
+            if (!indSelect || !subEl || !fileL || !nameE) return;
+            let code = indSelect.selectedIndex > 0 ? indSelect.options[indSelect.selectedIndex].getAttribute('data-code') : '[指標代碼]';
+            const sub = subEl.value.trim() || '[子指標]', limit = fileL.value, docN = nameE.value.trim() || '[文件名稱]';
+            const seq = limit === 'multiple' ? '_[流水號]' : '';
+            document.getElementById('input-filename').value = `${code}-${sub}_[學年學期]_[系所代碼]_[學號]_[學生姓名]_${docN}${seq}.pdf`;
         };
 
         window.openDocModal = () => {
