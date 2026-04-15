@@ -242,9 +242,18 @@
                         </div>
                     </div>
                 </div>
+
                 <div class="bg-white p-4 border border-slate-200 rounded-xl shadow-sm flex flex-col min-h-0">
-                    <h4 class="text-sm font-black text-slate-800 border-b border-slate-100 pb-2 mb-3 shrink-0 flex items-center"><i class="fa-solid fa-comment-dots text-slate-400 w-5"></i> 實習記錄備註</h4>
-                    <textarea id="input-notes" placeholder="可選填相關備註說明..." class="w-full flex-1 bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-slate-500 outline-none font-medium text-slate-700 shadow-sm resize-none"></textarea>
+                    <h4 class="text-sm font-black text-slate-800 border-b border-slate-100 pb-2 mb-3 shrink-0 flex items-center"><i class="fa-solid fa-building-user text-purple-500 w-5"></i> 行政歸屬與備註</h4>
+                    <div class="flex flex-col flex-1 min-h-0">
+                        <label class="block text-[11px] font-bold text-slate-500 mb-1">負責填報系所 (下拉包含學生系所及開課系所) <span class="text-rose-500">*</span></label>
+                        <select id="input-resp-dept" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none font-bold text-slate-700 cursor-pointer shadow-sm mb-3">
+                            <option value="">請先選擇學生與關聯課程...</option>
+                        </select>
+
+                        <label class="block text-[11px] font-bold text-slate-500 mb-1">實習記錄備註</label>
+                        <textarea id="input-notes" placeholder="可選填相關備註說明..." class="w-full flex-1 bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-slate-500 outline-none font-medium text-slate-700 shadow-sm resize-none"></textarea>
+                    </div>
                 </div>
             </div>
         </form>
@@ -385,7 +394,7 @@
                     const options = filterOptions[def.key] || [];
                     html += `
                         <div class="relative group-filter shrink-0 mb-1">
-                            <button type="button" class="filter-btn border border-slate-200 bg-white text-slate-700 text-[13px] font-bold rounded-lg px-3 py-1.5 shadow-sm flex items-center hover:bg-slate-50 transition-colors" data-key="${def.key}">
+                            <button type="button" class="filter-btn h-10 border border-slate-200 bg-white text-slate-700 text-[13px] font-bold rounded-lg px-3 shadow-sm flex items-center hover:bg-slate-50 transition-colors" data-key="${def.key}">
                                 ${def.label} <span class="filter-count hidden bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded text-[10px] ml-1.5">0</span> <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 ml-1.5"></i>
                             </button>
                             <div class="filter-panel hidden absolute top-full left-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl w-64 max-h-72 flex-col overflow-hidden z-[100]">
@@ -566,6 +575,50 @@
             else { txt.textContent = '請選擇'; txt.classList.replace('text-slate-700', 'text-slate-400'); }
         };
 
+        // 💡 聯動更新負責填報系所選單
+        window.updateRespDeptOptions = (preselectedValue = '') => {
+            const selectEl = document.getElementById('input-resp-dept');
+            if (!selectEl) return;
+
+            const stuMatch = document.getElementById('input-student').value.split(' - ')[0];
+            const stu = allStudents.find(s => s.student_id === stuMatch);
+            const stuDept = stu ? stu.department : null;
+
+            const courseDepts = selectedCourseIds.map(cid => {
+                const c = allCourses.find(x => x.id === cid);
+                return c ? c.department : null;
+            }).filter(Boolean);
+
+            const deptsSet = new Set();
+            if (stuDept) deptsSet.add(stuDept);
+            courseDepts.forEach(d => deptsSet.add(d));
+
+            const uniqueDepts = Array.from(deptsSet);
+
+            if (uniqueDepts.length === 0) {
+                selectEl.innerHTML = '<option value="">請先選擇學生與關聯課程...</option>';
+                return;
+            }
+
+            const currentVal = preselectedValue || selectEl.value;
+            let html = '<option value="">請選擇負責填報系所...</option>';
+            uniqueDepts.forEach(d => {
+                const deptObj = globalDepts.find(x => x.name === d);
+                const dispName = deptObj && deptObj.shortName ? deptObj.shortName : d;
+                html += `<option value="${d}">${dispName}</option>`;
+            });
+
+            selectEl.innerHTML = html;
+            
+            if (uniqueDepts.includes(currentVal)) {
+                selectEl.value = currentVal;
+            } else if (uniqueDepts.length === 1) {
+                selectEl.value = uniqueDepts[0]; // 如果只有一個選項直接預設
+            } else if (stuDept && uniqueDepts.includes(stuDept)) {
+                selectEl.value = stuDept; // 如果有多個選項，優先預設學生的所屬系所
+            }
+        };
+
         function renderStudentDropdown(list, term) {
             const dropdown = document.getElementById('student-dropdown'); 
             const val = term.split(' - ')[0].trim().toLowerCase(); 
@@ -644,10 +697,10 @@
             window.renderSelectedCourseChips(); 
         };
 
-        window.renderSelectedCourseChips = () => {
+        window.renderSelectedCourseChips = (skipRespUpdate = false) => {
             const container = document.getElementById('selected-courses-container'); const counter = document.getElementById('selected-course-count');
             if(counter) counter.innerText = `已選中 ${selectedCourseIds.length} 門`;
-            if (selectedCourseIds.length === 0) { container.innerHTML = '<div class="flex flex-col items-center justify-center h-full text-slate-300 gap-2 mt-12 text-xs">尚未加入課程</div>'; return; }
+            if (selectedCourseIds.length === 0) { container.innerHTML = '<div class="flex flex-col items-center justify-center h-full text-slate-300 gap-2 mt-12 text-xs">尚未加入課程</div>'; if (!skipRespUpdate) window.updateRespDeptOptions(); return; }
             
             let html = '';
             selectedCourseIds.forEach(id => {
@@ -662,17 +715,19 @@
                 </div>`;
             });
             container.innerHTML = html;
+            if (!skipRespUpdate) window.updateRespDeptOptions();
         };
         
         window.removeCourse = (id) => { selectedCourseIds = selectedCourseIds.filter(cid => cid !== id); window.renderSelectedCourseChips(); };
 
-        window.autoFillStudentInfo = () => {
+        window.autoFillStudentInfo = (skipRespUpdate = false) => {
             const inputVal = document.getElementById('input-student').value; const card = document.getElementById('student-info-card');
             const studentIdMatch = inputVal.split(' - ')[0]; const stu = allStudents.find(s => s.student_id === studentIdMatch);
             if (stu) {
                 card.innerHTML = `<div class="flex items-start gap-3 h-full"><div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-user-circle"></i></div><div class="flex flex-col justify-center flex-1 min-w-0"><div class="text-sm font-black text-slate-800 break-words leading-tight">${stu.name} (${stu.student_id})</div><div class="text-[11px] font-bold text-slate-500 mt-1 break-words">${getColShort(stu.college)} / ${getDeptShort(stu.department)}</div></div></div>`;
                 card.classList.remove('hidden');
             } else { card.innerHTML = `<div class="text-rose-600 text-[11px] font-bold py-1">查無主檔，將建立獨立紀錄</div>`; card.classList.remove('hidden'); }
+            if (!skipRespUpdate) window.updateRespDeptOptions();
         };
 
         window.autoFillInstInfo = () => {
@@ -704,6 +759,7 @@
                 document.getElementById('data-form').reset(); document.getElementById('student-info-card').classList.add('hidden'); document.getElementById('inst-info-card').classList.add('hidden');
                 ['input-grade', 'input-period-type', 'input-proof-type', 'input-insurance', 'input-employment'].forEach(id => window.setCustomSelectVal(id, ''));
                 selectedCourseIds = []; window.renderSelectedCourseChips();
+                document.getElementById('input-resp-dept').innerHTML = '<option value="">請先選擇學生與關聯課程...</option>';
             }
             document.getElementById('main-list-view').classList.add('hidden'); document.getElementById('data-modal').classList.remove('hidden'); document.getElementById('data-modal').classList.add('flex');
         };
@@ -794,7 +850,7 @@
                     </td>
                     <td class="px-4 py-4 align-middle text-left">
                         <div class="text-sm font-black text-slate-800 leading-tight">${data.proof_type || '-'}</div>
-                        <div class="text-[11px] font-bold text-slate-500 mt-1.5">勞雇關係：${data.employment || '-'} | 投保情形：${data.insurance || '-'}</div>
+                        <div class="text-[11px] font-bold text-slate-500 mt-1.5">歸屬：${data.resp_dept ? getDeptShort(data.resp_dept) : '未設定'} | 勞雇：${data.employment || '-'} | 投保：${data.insurance || '-'}</div>
                     </td>
                     <td class="px-3 py-4 align-middle text-center whitespace-nowrap">
                         <div class="flex items-center justify-center gap-1.5 opacity-100">
@@ -809,7 +865,7 @@
 
         window.exportToCSV = () => {
             if (filteredRecords.length === 0) { alert("沒有資料可供匯出！"); return; }
-            let csv = '\uFEFF學號,學生姓名,當學年年級,實習機構名稱,關聯課程(學年-學期_代號),實習起訖時間,核定時數,實習時間分類,證明文件類型,投保情形,勞雇關係,備註\n';
+            let csv = '\uFEFF學號,學生姓名,當學年年級,實習機構名稱,關聯課程(學年-學期_代號),負責填報系所,實習起訖時間,核定時數,實習時間分類,證明文件類型,投保情形,勞雇關係,備註\n';
             filteredRecords.forEach(d => {
                 let courseNames = (Array.isArray(d.courses) ? d.courses : []).map(cid => { 
                     const c = allCourses.find(x => x.id === cid); 
@@ -820,7 +876,7 @@
                 const stuId = stuParts[0] || '';
                 const stuName = stuParts[1] || '';
 
-                csv += [stuId, stuName, d.grade, d.inst_raw, courseNames, d.duration, d.hours, d.period_type, d.proof_type, d.insurance, d.employment, d.notes || ''].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+                csv += [stuId, stuName, d.grade, d.inst_raw, courseNames, d.resp_dept || '', d.duration, d.hours, d.period_type, d.proof_type, d.insurance, d.employment, d.notes || ''].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
             });
             const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
             link.download = `實習紀錄總表_${new Date().toISOString().split('T')[0]}.csv`; link.click();
@@ -835,7 +891,6 @@
             link.download = `批次匯入結果報告_${new Date().toISOString().split('T')[0]}.csv`; link.click();
         };
 
-        // 💡 嚴謹的匯入合併分群邏輯，解決 418 vs 419 筆的差異
         window.handleImport = async (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -883,7 +938,6 @@
                                 continue;
                             }
 
-                            // 💡 升級合併金鑰：包含所有可能相異的條件，避免過度合併
                             const key = `${stuId}|${inst_raw}|${duration}|${grade}|${period_type}|${proof_type}|${insurance}|${employment}`;
 
                             if (!recordsMap.has(key)) {
@@ -897,7 +951,6 @@
                             groupRecord.hours += hours; 
                             groupRecord.sourceRows.push(i+1);
                             
-                            // 合併備註
                             if (notes && !groupRecord.notes.includes(notes)) {
                                 groupRecord.notes = groupRecord.notes ? `${groupRecord.notes}；${notes}` : notes;
                             }
@@ -943,7 +996,9 @@
                         const payload = {
                             student_raw: record.student_raw, grade: record.grade, inst_raw: record.inst_raw, courses: record.courseIds, duration: record.duration,
                             hours: record.hours, period_type: record.period_type, proof_type: record.proof_type, insurance: record.insurance,
-                            employment: record.employment, notes: record.notes, created_at: serverTimestamp()
+                            employment: record.employment, notes: record.notes, 
+                            resp_dept: studentMatch ? studentMatch.department : '', // 預設使用學生所屬系所作為負責填報系所
+                            created_at: serverTimestamp()
                         };
 
                         if (rowWarnings.length > 0) {
@@ -996,19 +1051,22 @@
         window.submitForm = async () => {
             const btn = document.getElementById('btn-submit');
             const durationInput = document.getElementById('input-duration').value.trim();
+            const respDeptInput = document.getElementById('input-resp-dept').value;
             const regex = /^\d{2,3}\/\d{2}\/\d{2}-\d{2,3}\/\d{2}\/\d{2}$/;
+            
             if (!regex.test(durationInput)) { alert("時間格式錯誤！格式應為：YYY/MM/DD-YYY/MM/DD"); return; }
             if (selectedCourseIds.length === 0) { alert("請至少選擇一門關聯實習課程！"); return; }
+            if (!respDeptInput) { alert("請選擇負責填報系所！"); return; }
 
             const payload = { 
                 student_raw: document.getElementById('input-student').value.trim(), grade: document.getElementById('input-grade').value,
                 inst_raw: document.getElementById('input-institution').value.trim(), period_type: document.getElementById('input-period-type').value,
                 duration: durationInput, insurance: document.getElementById('input-insurance').value, employment: document.getElementById('input-employment').value, 
                 proof_type: document.getElementById('input-proof-type').value, hours: Number(document.getElementById('input-hours').value), 
-                notes: document.getElementById('input-notes').value.trim(), courses: selectedCourseIds
+                resp_dept: respDeptInput, notes: document.getElementById('input-notes').value.trim(), courses: selectedCourseIds
             };
 
-            if(!payload.student_raw || !payload.inst_raw || !payload.duration || !payload.hours || !payload.grade || !payload.period_type || !payload.proof_type || !payload.insurance || !payload.employment) { alert("請完成所有包含 * 號之必填選單與欄位設定！"); return; }
+            if(!payload.student_raw || !payload.inst_raw || !payload.duration || !payload.hours || !payload.grade || !payload.period_type || !payload.proof_type || !payload.insurance || !payload.employment || !payload.resp_dept) { alert("請完成所有包含 * 號之必填選單與欄位設定！"); return; }
             
             btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> 儲存中...';
             try {
@@ -1034,9 +1092,12 @@
             window.setCustomSelectVal('input-insurance', data.insurance || '');
             window.setCustomSelectVal('input-employment', data.employment || '');
 
-            window.autoFillStudentInfo(); window.autoFillInstInfo();
+            window.autoFillStudentInfo(true); 
+            window.autoFillInstInfo();
             selectedCourseIds = Array.isArray(data.courses) ? [...data.courses] : [];
-            window.renderSelectedCourseChips();
+            window.renderSelectedCourseChips(true);
+            
+            window.updateRespDeptOptions(data.resp_dept);
 
             document.getElementById('modal-title').innerText = '編輯實習紀錄';
             document.getElementById('main-list-view').classList.add('hidden');
