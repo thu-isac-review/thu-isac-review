@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系所審查作業</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        tailwind.config = { theme: { extend: { colors: { brand: { 50: '#f0f5fa', 500: '#2c75b3', 600: '#1a5c96', 700: '#004785' } } } } }
+    </script>
+    <style>
+        body { background-color: transparent; margin: 0; padding: 0; font-family: "SF Pro TC", "Noto Sans TC", sans-serif; -webkit-font-smoothing: antialiased; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .modal-enter { animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.97) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        td { word-break: break-word; }
+        tr { transition: background-color 0.2s; }
+        th, td { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+        
+        /* Checkbox 美化 */
+        .risk-checkbox:checked + div { background-color: #eff6ff; border-color: #3b82f6; }
+        .risk-checkbox:checked + div .check-icon { color: #3b82f6; opacity: 1; }
+        .risk-checkbox:not(:checked) + div { background-color: #fff; border-color: #e2e8f0; }
+        .risk-checkbox:not(:checked) + div .check-icon { opacity: 0.2; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden font-bold">
+
+    <!-- 主列表頁面 -->
+    <div id="main-list-view" class="flex flex-col h-full w-full">
+        <div class="shrink-0 px-6 pt-6 pb-2 space-y-4 animate-fade">
+            
+            <!-- 儀表板數據卡片 -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">應收件總數</div>
+                        <div class="text-3xl font-black text-slate-800" id="stat-total">0</div>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400"><i class="fa-solid fa-layer-group text-2xl"></i></div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <div class="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-1">審查通過</div>
+                        <div class="text-3xl font-black text-emerald-600" id="stat-approved">0</div>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-500"><i class="fa-solid fa-check-circle text-2xl"></i></div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <div class="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-1">有風險 (瑕疵)</div>
+                        <div class="text-3xl font-black text-amber-600" id="stat-risk">0</div>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500"><i class="fa-solid fa-triangle-exclamation text-2xl"></i></div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <div class="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-1">未繳交</div>
+                        <div class="text-3xl font-black text-rose-600" id="stat-missing">0</div>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-rose-50 flex items-center justify-center text-rose-500"><i class="fa-solid fa-file-circle-xmark text-2xl"></i></div>
+                </div>
+            </div>
+
+            <!-- 控制列 -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4 relative z-20">
+                <div class="flex gap-2 w-full md:w-auto">
+                    <select id="filter-status" onchange="window.renderTable()" class="bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold rounded-xl px-4 h-11 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
+                        <option value="all">審查狀態：全部</option>
+                        <option value="pending">狀態：未繳交</option>
+                        <option value="approved">狀態：審查通過</option>
+                        <option value="risk">狀態：有風險</option>
+                    </select>
+                    <select id="filter-dept" onchange="window.renderTable()" class="bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold rounded-xl px-4 h-11 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
+                        <option value="all">學系：全部</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-2 w-full md:w-auto">
+                    <div class="relative w-full md:w-64 shadow-sm rounded-xl overflow-hidden border border-slate-200 bg-white">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                        <input type="text" id="search-input" oninput="window.renderTable()" placeholder="搜尋系所或文件..." class="w-full pl-11 pr-4 h-11 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all border-none bg-transparent">
+                    </div>
+                    <button onclick="window.exportReport()" class="h-11 bg-slate-800 hover:bg-slate-900 text-white font-bold px-5 rounded-xl text-sm transition-all flex items-center gap-2 shadow-sm shrink-0">
+                        <i class="fa-solid fa-file-export"></i> 匯出報表
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 總表格區 -->
+        <div class="flex-1 overflow-hidden px-6 pb-6 flex flex-col animate-fade">
+            <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-200 flex flex-col flex-1 overflow-hidden">
+                <div class="flex-1 overflow-auto custom-scrollbar relative">
+                    <table class="w-full text-left border-collapse min-w-[1000px]">
+                        <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+                            <tr>
+                                <th class="px-5 py-4 text-left text-xs font-bold text-slate-500 w-[20%]">繳交學系</th>
+                                <th class="px-5 py-4 text-center text-xs font-bold text-slate-500 w-[15%]">對應指標</th>
+                                <th class="px-5 py-4 text-left text-xs font-bold text-slate-500 w-[25%]">應繳文件名稱</th>
+                                <th class="px-5 py-4 text-left text-xs font-bold text-slate-500 w-[25%]">風險紀錄 / 狀態</th>
+                                <th class="px-5 py-4 text-center text-xs font-bold text-slate-500 w-[15%]">審查操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body" class="text-sm divide-y divide-slate-100">
+                            <tr><td colspan="5" class="px-6 py-16 text-center text-slate-400 font-bold"><i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-blue-500"></i><p>資料重組中...</p></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="bg-slate-50 border-t border-slate-200 px-6 py-4 flex justify-between items-center shrink-0">
+                    <div id="pagination-info" class="text-xs font-bold text-slate-500">顯示 0 到 0 筆，共 0 筆</div>
+                    <div id="pagination-buttons" class="flex gap-1.5"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         全幅沉浸式審查工作站 (Modal)
+         ========================================== -->
+    <div id="audit-modal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-md flex-col items-center justify-center p-4 page-enter">
+        <div class="bg-slate-50 w-full h-full md:h-[96vh] md:w-[98vw] md:rounded-[2rem] shadow-2xl flex flex-col overflow-hidden border border-slate-200">
+            
+            <!-- Header -->
+            <div class="h-16 bg-white border-b border-slate-200 flex justify-between items-center px-6 shrink-0 z-20">
+                <div class="flex items-center gap-4">
+                    <button type="button" onclick="window.closeAuditModal()" class="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-all"><i class="fa-solid fa-xmark text-xl"></i></button>
+                    <div class="h-6 w-px bg-slate-200"></div>
+                    <div>
+                        <div class="text-[10px] font-black text-blue-600 tracking-widest uppercase" id="audit-subtitle">資訊管理學系</div>
+                        <h3 class="font-black text-slate-800 text-lg tracking-tight" id="audit-title">實習委員會設置要點</h3>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 雙畫面分割區 -->
+            <div class="flex-1 flex overflow-hidden">
+                
+                <!-- 左側：檔案整備與合併區 (60%) -->
+                <div class="w-full md:w-[55%] flex flex-col border-r border-slate-200 bg-slate-100/50 p-6 relative">
+                    <div class="flex justify-between items-end mb-4 shrink-0">
+                        <div>
+                            <h4 class="font-black text-slate-800 text-base"><i class="fa-solid fa-layer-group text-indigo-500 mr-2"></i>檔案整備與合併區</h4>
+                            <p class="text-[11px] text-slate-500 mt-1">請將收到的檔案拖曳至此。勾選多個檔案可設定為合併同一份 PDF。</p>
+                        </div>
+                        <button class="bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white border border-indigo-200 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm">
+                            <i class="fa-solid fa-object-group mr-1"></i> 合併勾選檔案
+                        </button>
+                    </div>
+
+                    <!-- 模擬拖曳上傳區 -->
+                    <div class="border-2 border-dashed border-blue-300 bg-blue-50/50 rounded-2xl flex flex-col items-center justify-center p-8 text-center cursor-pointer hover:bg-blue-50 transition-colors shrink-0 mb-4">
+                        <i class="fa-solid fa-cloud-arrow-up text-4xl text-blue-400 mb-3"></i>
+                        <span class="text-sm font-bold text-blue-800">點擊或拖曳 PDF 檔案至此上傳</span>
+                        <span class="text-[10px] text-blue-500 mt-1">支援多檔上傳</span>
+                    </div>
+
+                    <!-- 已上傳的整備檔案清單 (Mock) -->
+                    <div class="flex-1 overflow-y-auto custom-scrollbar space-y-3">
+                        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
+                            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer ml-1">
+                            <div class="w-10 h-10 bg-rose-50 text-rose-500 rounded-lg flex items-center justify-center shrink-0"><i class="fa-solid fa-file-pdf"></i></div>
+                            <div class="flex-1 min-w-0">
+                                <div class="text-sm font-bold text-slate-800 truncate">114實習委員會紀錄_上.pdf</div>
+                                <div class="text-[10px] text-slate-400">2.4 MB</div>
+                            </div>
+                            <button class="text-slate-300 hover:text-rose-500 p-2"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
+                            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer ml-1">
+                            <div class="w-10 h-10 bg-rose-50 text-rose-500 rounded-lg flex items-center justify-center shrink-0"><i class="fa-solid fa-file-pdf"></i></div>
+                            <div class="flex-1 min-w-0">
+                                <div class="text-sm font-bold text-slate-800 truncate">114實習委員會紀錄_簽到表.pdf</div>
+                                <div class="text-[10px] text-slate-400">1.1 MB</div>
+                            </div>
+                            <button class="text-slate-300 hover:text-rose-500 p-2"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右側：檢核指標與結果判定 (45%) -->
+                <div class="w-full md:w-[45%] flex flex-col bg-white">
+                    <div class="p-6 flex-1 overflow-y-auto custom-scrollbar flex flex-col">
+                        
+                        <!-- 檔名設定預覽 -->
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6 shrink-0">
+                            <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2"><i class="fa-solid fa-tag mr-1"></i> 預定產出檔名 (可微調)</div>
+                            <input type="text" id="audit-filename" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono font-bold text-blue-700 outline-none focus:ring-2 focus:ring-blue-500">
+                            <div class="text-[10px] text-slate-500 mt-2 font-medium">💡 提示：若設定為多檔，<span class="text-blue-500 font-mono">[流水號]</span> 將於最終打包匯出時自動產生。</div>
+                        </div>
+
+                        <div class="flex items-center justify-between mb-3 shrink-0 border-b border-slate-100 pb-2">
+                            <h4 class="font-black text-slate-800 text-base"><i class="fa-solid fa-list-check text-emerald-500 mr-2"></i>審查檢核指標</h4>
+                            <span class="text-[11px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded">依據設定動態載入</span>
+                        </div>
+                        <p class="text-xs text-slate-500 font-medium mb-4 shrink-0">請核對左側文件並勾選。若有未勾選的項目，系統將自動以此作為「風險原因」。</p>
+
+                        <!-- 動態檢核表 -->
+                        <div id="audit-checklist-container" class="space-y-3 flex-1">
+                            <!-- JS 渲染 checkboxes -->
+                        </div>
+
+                    </div>
+
+                    <!-- 底部操作列 (Sticky) -->
+                    <div class="p-6 bg-white border-t border-slate-200 shrink-0 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)]">
+                        <div class="grid grid-cols-2 gap-4">
+                            <button id="btn-audit-risk" onclick="window.submitAudit('risk')" class="py-4 rounded-2xl font-black text-sm flex flex-col items-center justify-center gap-1 transition-all border-2 border-amber-500 text-amber-600 hover:bg-amber-50 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed">
+                                <div class="flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation text-lg"></i> 標記為有風險</div>
+                                <span class="text-[10px] font-bold opacity-70">(含有未勾選之項目)</span>
+                            </button>
+                            <button id="btn-audit-pass" onclick="window.submitAudit('approved')" class="py-4 rounded-2xl font-black text-sm flex flex-col items-center justify-center gap-1 transition-all border-2 border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed">
+                                <div class="flex items-center gap-2"><i class="fa-solid fa-check-circle text-lg"></i> 審查通過</div>
+                                <span class="text-[10px] font-bold opacity-90">(需全部打勾)</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase 邏輯 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, doc, setDoc, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY", authDomain: "thu-isac-review.firebaseapp.com", projectId: "thu-isac-review", storageBucket: "thu-isac-review.firebasestorage.app", messagingSenderId: "453299876735", appId: "1:453299876735:web:1d8babca3315423161a04a" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app); 
+        const db = getFirestore(app);
+        
+        // 核心集合
+        const deptsCol = collection(db, "departments");
+        const adminFilesCol = collection(db, "admin_files_settings");
+        const reviewsCol = collection(db, "department_reviews"); // 儲存系所文件的審查結果
+
+        let globalDepts = [];
+        let adminFilesSettings = [];
+        let reviewRecords = []; // { id: deptId_fileId, status, risk_reasons, final_filename, ... }
+        
+        let allTaskMatrix = []; // 將 Department x File 攤平為陣列供表格使用
+        let filteredTasks = [];
+        
+        let currentPage = 1; 
+        const itemsPerPage = 10;
+        let currentAuditTask = null; // 紀錄當前正在審查的任務
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // 1. 抓取所有系所 (有啟用的)
+                const dSnap = await getDocs(deptsCol);
+                globalDepts = dSnap.docs.map(d => ({id: d.id, ...d.data()})).filter(d => d.is_active);
+                
+                // 2. 抓取行政文件設定 (僅限 level === 'department' 且 is_active)
+                const aSnap = await getDocs(adminFilesCol);
+                adminFilesSettings = aSnap.docs.map(d => ({id: d.id, ...d.data()}))
+                    .filter(d => d.is_active && (d.level === 'department' || d.level === 'both'));
+
+                // 3. 監聽審查結果表
+                onSnapshot(reviewsCol, (snapshot) => {
+                    reviewRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    buildTaskMatrix();
+                });
+
+            } else {
+                document.getElementById('table-body').innerHTML = `<tr><td colspan="5" class="px-6 py-16 text-center text-slate-400 font-bold"><i class="fa-solid fa-shield-halved text-3xl mb-3 text-slate-300"></i><p>請先登入系統以存取資料。</p></td></tr>`;
+            }
+        });
+
+        // 將系所與文件需求進行 Cross Join
+        function buildTaskMatrix() {
+            allTaskMatrix = [];
+            let statTotal = 0, statApprove = 0, statRisk = 0, statMissing = 0;
+
+            globalDepts.forEach(dept => {
+                adminFilesSettings.forEach(fileDef => {
+                    const taskId = `${dept.id}_${fileDef.id}`;
+                    const reviewData = reviewRecords.find(r => r.id === taskId);
+                    
+                    const status = reviewData ? reviewData.status : 'pending'; // pending, approved, risk
+                    
+                    statTotal++;
+                    if(status === 'approved') statApprove++;
+                    else if(status === 'risk') statRisk++;
+                    else statMissing++;
+
+                    allTaskMatrix.push({
+                        taskId: taskId,
+                        dept_id: dept.id,
+                        dept_name: dept.name,
+                        dept_code: dept.code,
+                        file_id: fileDef.id,
+                        file_name: fileDef.name,
+                        indicator: `${fileDef.indicator_code || ''}-${fileDef.sub_indicator || ''}`,
+                        checklists: fileDef.checklists || [],
+                        template_filename: fileDef.dept_filename || '',
+                        status: status,
+                        risk_reasons: reviewData?.risk_reasons || [],
+                        final_filename: reviewData?.final_filename || ''
+                    });
+                });
+            });
+
+            // 更新 Dashboard
+            document.getElementById('stat-total').innerText = statTotal;
+            document.getElementById('stat-approved').innerText = statApprove;
+            document.getElementById('stat-risk').innerText = statRisk;
+            document.getElementById('stat-missing').innerText = statMissing;
+
+            // 建立過濾器
+            const deptFilter = document.getElementById('filter-dept');
+            const currentDept = deptFilter.value;
+            let optHtml = '<option value="all">學系：全部</option>';
+            globalDepts.forEach(d => optHtml += `<option value="${d.id}">${d.shortName || d.name}</option>`);
+            deptFilter.innerHTML = optHtml;
+            if(globalDepts.some(d => d.id === currentDept)) deptFilter.value = currentDept;
+
+            window.renderTable();
+        }
+
+        window.changePage = (p) => { currentPage = p; window.renderTable(); };
+
+        window.renderTable = () => {
+            const tbody = document.getElementById('table-body'); 
+            const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
+            const filterStatus = document.getElementById('filter-status').value;
+            const filterDept = document.getElementById('filter-dept').value;
+
+            filteredTasks = allTaskMatrix.filter(t => {
+                const matchSearch = t.dept_name.toLowerCase().includes(searchTerm) || t.file_name.toLowerCase().includes(searchTerm);
+                const matchStatus = filterStatus === 'all' || t.status === filterStatus;
+                const matchDept = filterDept === 'all' || t.dept_id === filterDept;
+                return matchSearch && matchStatus && matchDept;
+            });
+
+            // 排序：先依據狀態(未繳交 -> 有風險 -> 已通過)，再依據學系，再依據指標
+            filteredTasks.sort((a, b) => {
+                const sWeight = { pending: 0, risk: 1, approved: 2 };
+                if(sWeight[a.status] !== sWeight[b.status]) return sWeight[a.status] - sWeight[b.status];
+                
+                const dCmp = a.dept_name.localeCompare(b.dept_name);
+                if (dCmp !== 0) return dCmp;
+                
+                return a.indicator.localeCompare(b.indicator);
+            });
+
+            const total = filteredTasks.length; 
+            const tPages = Math.ceil(total / itemsPerPage) || 1;
+            if (currentPage > tPages) currentPage = tPages;
+            const start = (currentPage - 1) * itemsPerPage; 
+            const items = filteredTasks.slice(start, start + itemsPerPage);
+
+            document.getElementById('pagination-info').innerText = total > 0 ? `顯示 ${start + 1} 到 ${Math.min(start + itemsPerPage, total)} 筆，共 ${total} 筆` : '尚無資料';
+            let bHtml = `<button onclick="window.changePage(${currentPage-1})" class="px-3 py-1 border border-slate-200 rounded-md text-sm font-bold" ${currentPage===1?'disabled':''}>上一頁</button>`;
+            bHtml += `<span class="px-4 py-1 text-sm font-bold text-blue-600 bg-blue-50 rounded-md mx-1">${currentPage} / ${tPages}</span>`;
+            bHtml += `<button onclick="window.changePage(${currentPage+1})" class="px-3 py-1 border border-slate-200 rounded-md text-sm font-bold" ${currentPage===tPages?'disabled':''}>下一頁</button>`;
+            document.getElementById('pagination-buttons').innerHTML = bHtml;
+
+            if (total === 0) { tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-16 text-center text-slate-400 font-bold bg-white">找不到符合條件的項目。</td></tr>`; return; }
+
+            let tHtml = '';
+            items.forEach(task => {
+                
+                let statusUI = '';
+                if(task.status === 'approved') {
+                    statusUI = `<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold"><i class="fa-solid fa-check-circle"></i> 審查通過</div>`;
+                } else if(task.status === 'risk') {
+                    const reasonStr = task.risk_reasons.length > 0 ? task.risk_reasons[0] + (task.risk_reasons.length > 1 ? '...' : '') : '待確認';
+                    statusUI = `
+                        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-amber-50 border border-amber-200 text-amber-700 text-[11px] font-bold mb-1"><i class="fa-solid fa-triangle-exclamation"></i> 有風險 (瑕疵)</div>
+                        <div class="text-[10px] text-slate-500 font-medium truncate w-full px-2" title="${task.risk_reasons.join('、')}">${reasonStr}</div>
+                    `;
+                } else {
+                    statusUI = `<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-100 border border-slate-200 text-slate-500 text-[11px] font-bold"><i class="fa-solid fa-clock"></i> 尚未繳交</div>`;
+                }
+
+                tHtml += `
+                <tr class="group bg-white hover:bg-blue-50/40 transition-all duration-150 border-b border-slate-100 last:border-0">
+                    <td class="px-5 py-4 align-middle text-left">
+                        <span class="text-sm font-bold text-slate-800 leading-tight">${task.dept_name}</span>
+                    </td>
+                    <td class="px-5 py-4 align-middle text-center">
+                        <span class="inline-block bg-slate-100 text-slate-700 border border-slate-200 font-bold px-2 py-1 rounded text-xs whitespace-nowrap shadow-sm">${task.indicator}</span>
+                    </td>
+                    <td class="px-5 py-4 align-middle text-left">
+                        <span class="text-sm font-bold text-slate-800 leading-tight">${task.file_name}</span>
+                    </td>
+                    <td class="px-5 py-4 align-middle text-left">
+                        <div class="flex flex-col items-start w-full max-w-[200px]">
+                            ${statusUI}
+                        </div>
+                    </td>
+                    <td class="px-5 py-4 align-middle text-center whitespace-nowrap">
+                        <button onclick="window.openAuditModal('${task.taskId}')" class="px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-200 rounded-xl text-xs font-black transition-all shadow-sm active:scale-95">
+                            <i class="fa-solid fa-magnifying-glass-arrow-right mr-1"></i> ${task.status === 'pending' ? '開啟審查' : '重新審查'}
+                        </button>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = tHtml;
+        };
+
+        // 開啟審查工作站
+        window.openAuditModal = (taskId) => {
+            currentAuditTask = allTaskMatrix.find(t => t.taskId === taskId);
+            if(!currentAuditTask) return;
+
+            document.getElementById('audit-subtitle').innerText = currentAuditTask.dept_name;
+            document.getElementById('audit-title').innerText = currentAuditTask.file_name;
+
+            // 解析並替換檔名預設值
+            let generatedFilename = currentAuditTask.template_filename
+                .replace(/\[系所代碼\]/g, currentAuditTask.dept_code)
+                .replace(/\[系所名稱\]/g, currentAuditTask.dept_name)
+                .replace(/\[文件名稱\]/g, currentAuditTask.file_name);
+            
+            document.getElementById('audit-filename').value = currentAuditTask.final_filename || generatedFilename;
+
+            // 渲染 Checklists
+            const container = document.getElementById('audit-checklist-container');
+            if(currentAuditTask.checklists.length === 0) {
+                container.innerHTML = '<div class="p-4 bg-slate-100 rounded-xl text-sm font-bold text-slate-400 text-center">無設定檢核指標</div>';
+            } else {
+                let html = '';
+                currentAuditTask.checklists.forEach((item, idx) => {
+                    // 如果是 pending，預設全勾選，方便工讀生快速通過
+                    // 如果已審查，則依據風險紀錄還原
+                    const isRiskItem = currentAuditTask.risk_reasons.includes(item);
+                    const isChecked = currentAuditTask.status === 'pending' ? true : !isRiskItem;
+                    
+                    html += `
+                    <label class="flex items-start cursor-pointer group w-full relative">
+                        <input type="checkbox" class="risk-checkbox sr-only" value="${item}" onchange="window.evaluateChecklist()" ${isChecked ? 'checked' : ''}>
+                        <div class="flex-1 border-2 rounded-xl p-4 transition-all flex gap-3 items-center">
+                            <div class="w-6 h-6 rounded-full border-2 border-current flex items-center justify-center shrink-0 check-icon">
+                                <i class="fa-solid fa-check text-xs"></i>
+                            </div>
+                            <span class="text-sm font-bold text-slate-700 leading-relaxed">${item}</span>
+                        </div>
+                    </label>
+                    `;
+                });
+                container.innerHTML = html;
+            }
+
+            window.evaluateChecklist(); // 初次評估按鈕狀態
+            document.getElementById('audit-modal').classList.remove('hidden');
+            document.getElementById('audit-modal').classList.add('flex');
+        };
+
+        window.closeAuditModal = () => {
+            document.getElementById('audit-modal').classList.add('hidden');
+            document.getElementById('audit-modal').classList.remove('flex');
+            currentAuditTask = null;
+        };
+
+        // 評估按鈕狀態 (全部勾=Pass, 部分勾=Risk)
+        window.evaluateChecklist = () => {
+            const checkboxes = document.querySelectorAll('.risk-checkbox');
+            if(checkboxes.length === 0) {
+                document.getElementById('btn-audit-pass').disabled = false;
+                document.getElementById('btn-audit-risk').disabled = true;
+                return;
+            }
+
+            let allChecked = true;
+            let anyUnchecked = false;
+
+            checkboxes.forEach(chk => {
+                if(chk.checked) {
+                    chk.nextElementSibling.querySelector('.check-icon').classList.add('text-blue-500');
+                    chk.nextElementSibling.querySelector('span').classList.add('text-blue-800');
+                } else {
+                    allChecked = false;
+                    anyUnchecked = true;
+                    chk.nextElementSibling.querySelector('.check-icon').classList.remove('text-blue-500');
+                    chk.nextElementSibling.querySelector('span').classList.remove('text-blue-800');
+                }
+            });
+
+            document.getElementById('btn-audit-pass').disabled = !allChecked;
+            document.getElementById('btn-audit-risk').disabled = !anyUnchecked;
+        };
+
+        window.submitAudit = async (status) => {
+            if(!currentAuditTask) return;
+
+            let risk_reasons = [];
+            if(status === 'risk') {
+                const checkboxes = document.querySelectorAll('.risk-checkbox');
+                checkboxes.forEach(chk => {
+                    if(!chk.checked) risk_reasons.push(chk.value);
+                });
+            }
+
+            const final_filename = document.getElementById('audit-filename').value.trim();
+
+            const payload = {
+                dept_id: currentAuditTask.dept_id,
+                file_setting_id: currentAuditTask.file_id,
+                status: status,
+                risk_reasons: risk_reasons,
+                final_filename: final_filename,
+                updated_at: serverTimestamp()
+            };
+
+            const btnId = status === 'approved' ? 'btn-audit-pass' : 'btn-audit-risk';
+            const btn = document.getElementById(btnId);
+            const oriHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-2xl"></i>';
+            
+            try {
+                await setDoc(doc(db, "department_reviews", currentAuditTask.taskId), payload);
+                window.closeAuditModal();
+            } catch (err) {
+                alert("儲存失敗：" + err.message);
+                btn.innerHTML = oriHtml;
+            }
+        };
+
+        window.exportReport = () => {
+            if(allTaskMatrix.length === 0) return;
+            let csv = '\uFEFF學系,對應指標,應繳文件名稱,審查狀態,瑕疵風險原因紀錄\n';
+            
+            const toExport = [...allTaskMatrix].sort((a,b) => a.dept_name.localeCompare(b.dept_name));
+            
+            toExport.forEach(t => {
+                let statusStr = t.status === 'approved' ? '審查通過' : (t.status === 'risk' ? '有風險(瑕疵)' : '未繳交');
+                let reasonStr = t.risk_reasons.join('；');
+                csv += [t.dept_name, t.indicator, t.file_name, statusStr, reasonStr].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+            });
+            const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+            link.download = `系所審查作業總表_${new Date().toISOString().split('T')[0]}.csv`; link.click();
+        };
+    </script>
+</body>
+</html>
