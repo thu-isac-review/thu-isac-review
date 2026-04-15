@@ -105,9 +105,16 @@
                         </select>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-3 gap-4">
                         <div class="col-span-1">
-                            <label class="block text-xs font-bold text-slate-600 mb-1.5">檔案數量限制 <span class="text-rose-500">*</span></label>
+                            <label class="block text-xs font-bold text-slate-600 mb-1.5">繳交屬性 <span class="text-rose-500">*</span></label>
+                            <select id="input-required" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
+                                <option value="true" selected>必繳項目</option>
+                                <option value="false">選繳 / 補充</option>
+                            </select>
+                        </div>
+                        <div class="col-span-1">
+                            <label class="block text-xs font-bold text-slate-600 mb-1.5">數量限制 <span class="text-rose-500">*</span></label>
                             <select id="input-file-limit" required onchange="window.autoGenerateFilename()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
                                 <option value="single" selected>單一檔案</option>
                                 <option value="multiple">多檔上傳</option>
@@ -325,6 +332,7 @@
             if (!editingId) { 
                 document.getElementById('doc-form').reset(); 
                 document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-file-circle-plus text-blue-600"></i> 新增學生文件'; 
+                document.getElementById('input-required').value = 'true';
                 document.getElementById('input-checklists').value = '1. '; 
             }
             document.getElementById('doc-modal').classList.remove('hidden');
@@ -382,13 +390,17 @@
                 const ind = allIndicators.find(i => i.id === data.indicator_id);
                 const indName = ind ? ind.item_name : '<span class="text-rose-500">指標已遺失</span>';
                 
-                let rulesH = `<div class="flex items-start gap-1.5"><span class="bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded text-[10px] shrink-0 mt-0.5">檔名</span><span class="text-[11px] font-mono text-blue-600 tracking-tight mt-0.5">${data.filename || '未設定'}</span></div>`;
+                let reqBadge = data.is_required === 'false' 
+                    ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200 ml-2 whitespace-nowrap">選繳</span>`
+                    : `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-100 ml-2 whitespace-nowrap">必繳</span>`;
+
+                let rulesH = `<span class="text-[11px] font-mono text-blue-600 tracking-tight">${data.filename || '未設定'}</span>`;
 
                 return `
                 <tr class="group bg-white hover:bg-blue-50/40 transition-all duration-150 border-b border-slate-100 last:border-0 ${!data.is_active ? 'opacity-50 grayscale' : ''}">
                     <td class="px-5 py-4 align-middle text-center"><span class="inline-block bg-slate-100 text-slate-700 border border-slate-200 font-bold px-2.5 py-1 rounded text-xs whitespace-nowrap shadow-sm">${String(data.indicator_code || '')}-${String(data.sub_indicator || '')}</span></td>
                     <td class="px-5 py-4 align-middle text-left"><span class="text-sm font-bold text-slate-800 leading-tight line-clamp-2" title="${indName}">${indName}</span></td>
-                    <td class="px-5 py-4 align-middle text-left"><div class="flex flex-col items-start gap-1"><span class="text-sm font-bold text-slate-800 leading-tight w-full">${data.name}</span>${data.file_limit==='multiple'?'<span class="text-[10px] text-amber-600 font-bold">多檔上傳</span>':''}</div></td>
+                    <td class="px-5 py-4 align-middle text-left"><div class="flex flex-col items-start gap-1"><div class="flex items-center"><span class="text-sm font-bold text-slate-800 leading-tight">${data.name}</span>${reqBadge}</div>${data.file_limit==='multiple'?'<span class="text-[10px] text-amber-600 font-bold mt-0.5">多檔上傳</span>':''}</div></td>
                     <td class="px-5 py-4 align-middle text-left"><div class="bg-slate-50 border border-slate-200 p-2.5 rounded-lg shadow-inner">${rulesH}</div></td>
                     <td class="px-5 py-4 align-middle text-center whitespace-nowrap"><label class="relative inline-flex items-center cursor-pointer group/toggle whitespace-nowrap"><input type="checkbox" class="sr-only peer" ${data.is_active ? 'checked' : ''} onchange="window.toggleStatus('${data.id}', ${data.is_active})"><div class="relative w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-[20px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner shrink-0"></div><span class="ml-2 text-xs font-bold ${data.is_active ? 'text-emerald-600' : 'text-slate-400'}">${data.is_active ? '啟用' : '停用'}</span></label></td>
                     <td class="px-4 py-4 align-middle text-center"><div class="flex items-center justify-center gap-2 transition-opacity">
@@ -401,7 +413,7 @@
 
         window.exportToCSV = () => {
             if (allDocs.length === 0) { alert("沒有資料可供匯出！"); return; }
-            let csv = '\uFEFF指標代碼,文件子指標,要求上傳文件名稱,檔案數量限制,預設上傳檔名規則,系統狀態\n';
+            let csv = '\uFEFF指標代碼,文件子指標,是否必繳,要求上傳文件名稱,檔案數量限制,預設上傳檔名規則,系統狀態\n';
             
             let sorted = [...allDocs].sort(sortDocsByCode);
 
@@ -409,8 +421,9 @@
                 let status = d.is_active ? '啟用' : '停用';
                 let limitStr = d.file_limit === 'multiple' ? '多檔(自動流水號)' : '單一檔案';
                 let fullCode = d.indicator_code || '';
+                let reqStr = d.is_required === 'false' ? '選繳' : '必繳';
                 
-                csv += [fullCode, d.sub_indicator || '', d.name, limitStr, d.filename || '', status].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+                csv += [fullCode, d.sub_indicator || '', reqStr, d.name, limitStr, d.filename || '', status].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
             });
             const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
             link.download = `ISAC學生文件設定_${new Date().toISOString().split('T')[0]}.csv`; link.click();
@@ -423,6 +436,7 @@
                 indicator_id: indS.value, 
                 indicator_code: indS.options[indS.selectedIndex]?.getAttribute('data-code') || '',
                 sub_indicator: document.getElementById('input-sub-indicator').value.trim(), 
+                is_required: document.getElementById('input-required').value,
                 file_limit: document.getElementById('input-file-limit').value, 
                 name: document.getElementById('input-name').value.trim(),
                 filename: document.getElementById('input-filename').value.trim(), 
@@ -442,6 +456,7 @@
             editingId = id;
             document.getElementById('input-indicator').value = d.indicator_id || '';
             document.getElementById('input-sub-indicator').value = d.sub_indicator || '';
+            document.getElementById('input-required').value = d.is_required || 'true';
             document.getElementById('input-file-limit').value = d.file_limit || 'single';
             document.getElementById('input-name').value = d.name || ''; 
             document.getElementById('input-filename').value = d.filename || '';
