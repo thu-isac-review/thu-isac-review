@@ -6,6 +6,8 @@
     <title>系級審查作業</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- 💡 引入 PDF-Lib 套件來處理真實的 PDF 合併 -->
+    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
     <script>
         tailwind.config = { theme: { extend: { colors: { brand: { 50: '#f0f5fa', 500: '#2c75b3', 600: '#1a5c96', 700: '#004785' } } } } }
     </script>
@@ -203,7 +205,7 @@
                                 <i class="fa-solid fa-cloud-arrow-up mr-1"></i> 上傳檔案
                             </button>
                             <input type="file" id="audit-file-upload" accept="application/pdf" multiple class="hidden" onchange="window.handleAuditFileUpload(event)">
-                            <button class="bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white border border-indigo-200 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm">
+                            <button id="btn-merge-files" onclick="window.mergeSelectedFiles()" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white border border-indigo-200 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm">
                                 <i class="fa-solid fa-object-group mr-1"></i> 合併勾選檔案
                             </button>
                         </div>
@@ -213,7 +215,7 @@
                     <div id="audit-drop-zone" class="border-2 border-dashed border-blue-300 bg-blue-50/50 rounded-2xl flex flex-col items-center justify-center p-8 text-center cursor-pointer hover:bg-blue-50 transition-colors shrink-0 mb-4 flex-1" onclick="document.getElementById('audit-file-upload').click()" ondragover="window.handleDragOver(event)" ondragleave="window.handleDragLeave(event)" ondrop="window.handleDrop(event)">
                         <i class="fa-solid fa-cloud-arrow-up text-5xl text-blue-400 mb-4"></i>
                         <span class="text-lg font-bold text-blue-800">點擊或拖曳 PDF 檔案至此上傳</span>
-                        <span class="text-xs text-blue-500 mt-2 font-medium">支援多檔上傳與預覽功能</span>
+                        <span class="text-xs text-blue-500 mt-2 font-medium">支援多檔上傳、預覽與合併功能</span>
                     </div>
 
                     <!-- 已上傳的整備檔案清單 -->
@@ -401,6 +403,64 @@
             const iframe = document.getElementById('audit-pdf-frame');
             // 加入 PDF 參數隱藏工具列讓預覽更沉浸
             iframe.src = item.url + '#toolbar=0&navpanes=0'; 
+        };
+
+        // 💡 實作：將勾選的 PDF 檔案合併
+        window.mergeSelectedFiles = async () => {
+            const selectedFiles = uploadedAuditFiles.filter(f => f.selected);
+            if (selectedFiles.length < 2) {
+                alert("請至少勾選兩個檔案進行合併！");
+                return;
+            }
+
+            const btn = document.getElementById('btn-merge-files');
+            const oriText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-1"></i> 合併中...';
+            btn.disabled = true;
+
+            try {
+                const { PDFDocument } = PDFLib;
+                const mergedPdf = await PDFDocument.create();
+
+                // 依序讀取並合併 PDF
+                for (const item of selectedFiles) {
+                    const arrayBuffer = await item.file.arrayBuffer();
+                    const pdf = await PDFDocument.load(arrayBuffer);
+                    const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+                    copiedPages.forEach((page) => mergedPdf.addPage(page));
+                }
+
+                const mergedPdfBytes = await mergedPdf.save();
+                const mergedBlob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+                
+                // 使用目前時間戳記產生預設檔名，也可直接套用 audit-filename 的值
+                const mergedFileName = "合併文件_" + new Date().getTime() + ".pdf";
+                const mergedFile = new File([mergedBlob], mergedFileName, { type: 'application/pdf' });
+                const mergedUrl = URL.createObjectURL(mergedBlob);
+
+                // 將未勾選的檔案保留，勾選的檔案移除
+                uploadedAuditFiles = uploadedAuditFiles.filter(f => !f.selected);
+
+                // 加入合併後的新檔案，並預設為選取狀態
+                uploadedAuditFiles.push({
+                    file: mergedFile,
+                    name: mergedFileName,
+                    size: (mergedFile.size / (1024 * 1024)).toFixed(2) + ' MB',
+                    url: mergedUrl,
+                    selected: true
+                });
+
+                window.renderAuditFiles();
+                // 預覽最新的合併檔案
+                window.previewFile(uploadedAuditFiles.length - 1);
+                
+            } catch (error) {
+                console.error("PDF 合併錯誤:", error);
+                alert("合併發生錯誤，請確認上傳的皆為有效的 PDF 檔案。");
+            } finally {
+                btn.innerHTML = oriText;
+                btn.disabled = false;
+            }
         };
         // -------------------------------
 
