@@ -26,9 +26,9 @@
         .risk-checkbox:not(:checked) + div { background-color: #fff; border-color: #e2e8f0; }
         .risk-checkbox:not(:checked) + div .check-icon { opacity: 0.15; border-color: #94a3b8; }
         
-        /* 頁籤過場 */
+        /* 頁籤過場 💡 修正：使用 flex 解決溢出無法捲動的問題 */
         .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+        .tab-content.active { display: flex; animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .filter-btn { height: 40px; }
     </style>
@@ -45,11 +45,11 @@
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shrink-0">
-                        <i class="fa-solid fa-building-user text-xl"></i>
+                        <i class="fa-solid fa-folder-tree text-xl"></i>
                     </div>
                     <div>
-                        <h2 class="text-xl font-bold text-slate-800 tracking-tight">系級審查作業</h2>
-                        <p class="text-xs text-slate-500 mt-1 font-bold">請選擇要處理的系所，進入其專屬的審查工作站。</p>
+                        <h2 class="text-xl font-bold text-slate-800 tracking-tight">管理各系所審查清單與作業狀況</h2>
+                        <p class="text-xs text-slate-500 mt-1 font-bold">掌握各系所的實習文件繳交進度，點擊卡片即可進入該系專屬的審查工作站。</p>
                     </div>
                 </div>
             </div>
@@ -113,8 +113,7 @@
         <div class="flex-1 overflow-hidden relative">
             
             <!-- Tab: 行政文件 -->
-            <div id="tab-content-admin" class="tab-content active h-full flex flex-col p-6">
-                <!-- 💡 新增：專屬的篩選與搜尋列 -->
+            <div id="tab-content-admin" class="tab-content active h-full flex-col p-6">
                 <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-4 w-full relative z-20">
                     <div id="ws-filters-container" class="flex flex-wrap gap-2 w-full md:w-auto flex-1 items-center font-bold">
                         <!-- JS 動態插入狀態篩選器 -->
@@ -146,7 +145,7 @@
             </div>
 
             <!-- Tab: 學生文件 (Placeholder) -->
-            <div id="tab-content-student" class="tab-content h-full flex flex-col p-6">
+            <div id="tab-content-student" class="tab-content h-full flex-col p-6">
                 <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-200 flex-1 flex flex-col items-center justify-center text-slate-400">
                     <i class="fa-solid fa-person-digging text-5xl mb-4 text-slate-300"></i>
                     <h3 class="text-lg font-bold text-slate-600">學生文件審查模組建置中</h3>
@@ -155,7 +154,7 @@
             </div>
 
             <!-- Tab: 機構文件 (Placeholder) -->
-            <div id="tab-content-institution" class="tab-content h-full flex flex-col p-6">
+            <div id="tab-content-institution" class="tab-content h-full flex-col p-6">
                 <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-200 flex-1 flex flex-col items-center justify-center text-slate-400">
                     <i class="fa-solid fa-person-digging text-5xl mb-4 text-slate-300"></i>
                     <h3 class="text-lg font-bold text-slate-600">機構文件審查模組建置中</h3>
@@ -167,67 +166,109 @@
     </div>
 
     <!-- ==========================================
-         View 3: 精簡版 - 單欄審查工作站 (Modal)
+         View 3: 雙畫面光速審查工作站 (Modal)
          ========================================== -->
     <div id="audit-modal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-md flex-col items-center justify-center p-4 page-enter">
-        <div class="absolute inset-0" onclick="window.closeAuditModal()"></div>
-        <!-- 💡 調整為置中卡片式設計 -->
-        <div class="bg-white w-full max-w-3xl rounded-[2rem] shadow-2xl flex flex-col overflow-hidden border border-slate-200 max-h-[90vh] relative z-10">
+        <div class="bg-slate-50 w-full h-full md:h-[96vh] md:w-[98vw] md:rounded-[2rem] shadow-2xl flex flex-col overflow-hidden border border-slate-200">
             
             <!-- Header -->
-            <div class="h-[72px] bg-slate-50 border-b border-slate-200 flex justify-between items-center px-8 shrink-0 z-20">
+            <div class="h-[72px] bg-white border-b border-slate-200 flex justify-between items-center px-6 shrink-0 z-20">
                 <div class="flex items-center gap-4">
+                    <button type="button" onclick="window.closeAuditModal()" class="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-all border border-slate-200 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button>
+                    <div class="h-8 w-px bg-slate-200"></div>
                     <div>
                         <div class="text-[10px] font-black text-blue-600 tracking-widest uppercase mb-0.5 flex items-center gap-1.5">
                             <span id="audit-dept-badge">資訊管理學系</span> <i class="fa-solid fa-angle-right text-slate-300"></i> <span class="text-slate-500">行政文件審查</span>
                         </div>
-                        <h3 class="font-black text-slate-800 text-lg tracking-tight flex items-center gap-2" id="audit-title">
-                            實習委員會設置要點
-                        </h3>
+                        <h3 class="font-black text-slate-800 text-lg tracking-tight" id="audit-title">實習委員會設置要點</h3>
                     </div>
                 </div>
-                <button type="button" onclick="window.closeAuditModal()" class="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-800 hover:bg-slate-200 transition-all shadow-sm bg-white border border-slate-200"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             
-            <!-- 單欄內容區 -->
-            <div class="flex flex-col flex-1 overflow-y-auto custom-scrollbar p-8">
+            <!-- 雙畫面分割區 -->
+            <div class="flex-1 flex overflow-hidden">
                 
-                <!-- 檔名設定 -->
-                <div class="bg-blue-50/40 border border-blue-100 rounded-xl p-5 mb-8 shrink-0">
-                    <div class="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                        <i class="fa-solid fa-tag"></i> 預定產出檔名 (可微調)
+                <!-- 左側：檔案整備與合併區 (60%) -->
+                <div class="w-full md:w-[60%] flex flex-col border-r border-slate-200 bg-slate-100/50 p-6 relative">
+                    <div class="flex justify-between items-end mb-4 shrink-0">
+                        <div>
+                            <h4 class="font-black text-slate-800 text-base"><i class="fa-solid fa-layer-group text-indigo-500 mr-2"></i>檔案整備與合併區</h4>
+                            <p class="text-[11px] text-slate-500 mt-1">請將收到的檔案拖曳至此。勾選多個檔案可設定為合併同一份 PDF。</p>
+                        </div>
+                        <button class="bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white border border-indigo-200 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm">
+                            <i class="fa-solid fa-object-group mr-1"></i> 合併勾選檔案
+                        </button>
                     </div>
-                    <input type="text" id="audit-filename" class="w-full bg-white border border-blue-200 rounded-lg px-4 py-2.5 text-sm font-mono font-bold text-blue-700 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all">
-                    <div class="text-[10px] text-blue-600/70 mt-2 font-medium">💡 提示：若設定為多檔，<span class="font-mono">[流水號]</span> 將於最終打包匯出時才自動依序產生。</div>
+
+                    <!-- 模擬拖曳上傳區 -->
+                    <div class="border-2 border-dashed border-blue-300 bg-blue-50/50 rounded-2xl flex flex-col items-center justify-center p-8 text-center cursor-pointer hover:bg-blue-50 transition-colors shrink-0 mb-4">
+                        <i class="fa-solid fa-cloud-arrow-up text-4xl text-blue-400 mb-3"></i>
+                        <span class="text-sm font-bold text-blue-800">點擊或拖曳 PDF 檔案至此上傳</span>
+                        <span class="text-[10px] text-blue-500 mt-1">支援多檔上傳與拖曳排序</span>
+                    </div>
+
+                    <!-- 已上傳的整備檔案清單 (UI Mock) -->
+                    <div class="flex-1 overflow-y-auto custom-scrollbar space-y-3">
+                        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
+                            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer ml-1" checked>
+                            <div class="w-10 h-10 bg-rose-50 text-rose-500 rounded-lg flex items-center justify-center shrink-0"><i class="fa-solid fa-file-pdf"></i></div>
+                            <div class="flex-1 min-w-0">
+                                <div class="text-sm font-bold text-slate-800 truncate">114實習委員會紀錄_上.pdf</div>
+                                <div class="text-[10px] text-slate-400">2.4 MB</div>
+                            </div>
+                            <button class="text-slate-300 hover:text-rose-500 p-2"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
+                            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer ml-1" checked>
+                            <div class="w-10 h-10 bg-rose-50 text-rose-500 rounded-lg flex items-center justify-center shrink-0"><i class="fa-solid fa-file-pdf"></i></div>
+                            <div class="flex-1 min-w-0">
+                                <div class="text-sm font-bold text-slate-800 truncate">114實習委員會紀錄_簽到表.pdf</div>
+                                <div class="text-[10px] text-slate-400">1.1 MB</div>
+                            </div>
+                            <button class="text-slate-300 hover:text-rose-500 p-2"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="flex items-center justify-between mb-4 shrink-0 border-b border-slate-100 pb-2">
-                    <h4 class="font-black text-slate-800 text-base"><i class="fa-solid fa-list-check text-emerald-500 mr-2"></i>審查檢核指標</h4>
-                    <span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">依文件設定動態載入</span>
-                </div>
-                <p class="text-xs text-slate-500 font-medium mb-5 shrink-0 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                    請核對實體/電子文件內容並勾選。若有<strong class="text-amber-600 mx-1">未勾選</strong>的項目，系統將自動以此作為「風險原因」。
-                </p>
+                <!-- 右側：檢核指標與結果判定 (40%) -->
+                <div class="w-full md:w-[40%] flex flex-col bg-white">
+                    <div class="p-6 flex-1 overflow-y-auto custom-scrollbar flex flex-col">
+                        
+                        <!-- 檔名設定預覽 -->
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6 shrink-0">
+                            <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2"><i class="fa-solid fa-tag mr-1"></i> 預定產出檔名 (可微調)</div>
+                            <input type="text" id="audit-filename" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono font-bold text-blue-700 outline-none focus:ring-2 focus:ring-blue-500 shadow-inner">
+                            <div class="text-[10px] text-slate-500 mt-2 font-medium">💡 提示：若為多檔，<span class="text-blue-500 font-mono">[流水號]</span> 將於最終打包匯出時才自動依序產生。</div>
+                        </div>
 
-                <!-- 動態檢核表 -->
-                <div id="audit-checklist-container" class="space-y-3 flex-1">
-                    <!-- JS 渲染 checkboxes -->
+                        <div class="flex items-center justify-between mb-3 shrink-0 border-b border-slate-100 pb-2">
+                            <h4 class="font-black text-slate-800 text-base"><i class="fa-solid fa-list-check text-emerald-500 mr-2"></i>審查檢核指標</h4>
+                            <span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">依文件設定動態載入</span>
+                        </div>
+                        <p class="text-xs text-slate-500 font-medium mb-4 shrink-0 bg-slate-50 p-2 rounded-lg">請核對左側文件內容並勾選。若有未勾選的項目，系統將自動以此作為「風險原因」。</p>
+
+                        <!-- 動態檢核表 -->
+                        <div id="audit-checklist-container" class="space-y-3 flex-1">
+                            <!-- JS 渲染 checkboxes -->
+                        </div>
+
+                    </div>
+
+                    <!-- 底部操作列 (Sticky) -->
+                    <div class="p-5 bg-slate-50 border-t border-slate-200 shrink-0">
+                        <div class="grid grid-cols-2 gap-3">
+                            <button id="btn-audit-risk" onclick="window.submitAudit('risk')" class="py-3.5 rounded-xl font-black text-sm flex flex-col items-center justify-center gap-0.5 transition-all border-2 border-amber-500 text-amber-600 hover:bg-amber-100 bg-white active:scale-95 disabled:opacity-30 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-50 disabled:cursor-not-allowed group shadow-sm">
+                                <div class="flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation text-base"></i> 標記為有風險</div>
+                                <span class="text-[9px] font-bold opacity-70 group-disabled:opacity-0">(含有未勾選之項目)</span>
+                            </button>
+                            <button id="btn-audit-pass" onclick="window.submitAudit('approved')" class="py-3.5 rounded-xl font-black text-sm flex flex-col items-center justify-center gap-0.5 transition-all border-2 border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95 disabled:opacity-30 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-50 disabled:cursor-not-allowed group shadow-md shadow-emerald-500/20">
+                                <div class="flex items-center gap-2"><i class="fa-solid fa-check-circle text-base"></i> 審查通過</div>
+                                <span class="text-[9px] font-bold opacity-90 group-disabled:opacity-0">(全數打勾無誤)</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
-            </div>
-
-            <!-- 底部操作列 (Sticky) -->
-            <div class="p-6 bg-slate-50 border-t border-slate-200 shrink-0">
-                <div class="grid grid-cols-2 gap-4">
-                    <button id="btn-audit-risk" onclick="window.submitAudit('risk')" class="py-4 rounded-xl font-black text-sm flex flex-col items-center justify-center gap-1 transition-all border-2 border-amber-500 text-amber-600 hover:bg-amber-100 bg-white shadow-sm active:scale-95 disabled:opacity-30 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-50 disabled:cursor-not-allowed group">
-                        <div class="flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation text-lg"></i> 標記為有風險</div>
-                        <span class="text-[10px] font-bold opacity-70 group-disabled:opacity-0">(含有未勾選之項目)</span>
-                    </button>
-                    <button id="btn-audit-pass" onclick="window.submitAudit('approved')" class="py-4 rounded-xl font-black text-sm flex flex-col items-center justify-center gap-1 transition-all border-2 border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600 shadow-md shadow-emerald-500/20 active:scale-95 disabled:opacity-30 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-50 disabled:cursor-not-allowed group">
-                        <div class="flex items-center gap-2"><i class="fa-solid fa-check-circle text-lg"></i> 審查通過</div>
-                        <span class="text-[10px] font-bold opacity-90 group-disabled:opacity-0">(全數打勾無誤)</span>
-                    </button>
-                </div>
             </div>
         </div>
     </div>
@@ -326,6 +367,7 @@
                     const adminPercent = totalAdminFiles === 0 ? 0 : Math.round((adminCompleted / totalAdminFiles) * 100);
                     let riskBadge = hasRisk ? `<div class="absolute -top-2 -right-2 w-5 h-5 bg-rose-500 rounded-full border-2 border-white shadow-sm flex items-center justify-center"><i class="fa-solid fa-exclamation text-white text-[10px]"></i></div>` : '';
 
+                    // 💡 補齊三個進度條 (行政、學生、機構)
                     html += `
                     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-400 transition-all cursor-pointer p-5 flex flex-col relative group" onclick="window.enterWorkspace('${dept.id}')">
                         ${riskBadge}
@@ -340,12 +382,32 @@
                         </div>
                         
                         <div class="mt-auto space-y-3 border-t border-slate-100 pt-4">
-                            <div class="flex justify-between items-end">
-                                <span class="text-[11px] font-bold text-slate-500"><i class="fa-solid fa-folder-open mr-1"></i> 行政文件</span>
-                                <span class="text-xs font-black ${adminCompleted === totalAdminFiles && totalAdminFiles > 0 ? 'text-emerald-500' : 'text-slate-700'}">${adminCompleted} / ${totalAdminFiles}</span>
+                            <div>
+                                <div class="flex justify-between items-end mb-1.5">
+                                    <span class="text-[11px] font-bold text-slate-500"><i class="fa-solid fa-folder-open mr-1"></i> 行政文件</span>
+                                    <span class="text-xs font-black ${adminCompleted === totalAdminFiles && totalAdminFiles > 0 ? 'text-emerald-500' : 'text-slate-700'}">${adminCompleted} / ${totalAdminFiles}</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                                    <div class="bg-${adminCompleted === totalAdminFiles && totalAdminFiles > 0 ? 'emerald' : 'blue'}-500 h-1.5 rounded-full transition-all" style="width: ${adminPercent}%"></div>
+                                </div>
                             </div>
-                            <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                                <div class="bg-${adminCompleted === totalAdminFiles && totalAdminFiles > 0 ? 'emerald' : 'blue'}-500 h-1.5 rounded-full transition-all" style="width: ${adminPercent}%"></div>
+                            <div>
+                                <div class="flex justify-between items-end mb-1.5">
+                                    <span class="text-[11px] font-bold text-slate-500"><i class="fa-solid fa-user-graduate mr-1"></i> 學生文件</span>
+                                    <span class="text-xs font-black text-slate-400">0 / 0</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                                    <div class="bg-slate-300 h-1.5 rounded-full transition-all" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between items-end mb-1.5">
+                                    <span class="text-[11px] font-bold text-slate-500"><i class="fa-solid fa-building mr-1"></i> 機構文件</span>
+                                    <span class="text-xs font-black text-slate-400">0 / 0</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                                    <div class="bg-slate-300 h-1.5 rounded-full transition-all" style="width: 0%"></div>
+                                </div>
                             </div>
                         </div>
                     </div>`;
@@ -577,7 +639,7 @@
         };
 
         // ==========================================
-        // View 3: 單欄審查 Modal
+        // View 3: 雙畫面審查 Modal
         // ==========================================
         window.openAuditModal = (taskId, fileDefId) => {
             const fileDef = adminFilesSettings.find(f => f.id === fileDefId);
@@ -602,7 +664,7 @@
             const risks = reviewData?.risk_reasons || [];
             
             if(!fileDef.checklists || fileDef.checklists.length === 0) {
-                container.innerHTML = '<div class="p-6 bg-slate-50 rounded-2xl text-sm font-bold text-slate-400 text-center border-2 border-dashed border-slate-200">此文件無設定檢核指標</div>';
+                container.innerHTML = '<div class="p-6 bg-slate-100 rounded-2xl text-sm font-bold text-slate-400 text-center border-2 border-dashed border-slate-200">此文件無設定檢核指標</div>';
             } else {
                 let html = '';
                 fileDef.checklists.forEach((item, idx) => {
