@@ -167,6 +167,9 @@
                 if (currentHash.includes('dashboard')) return '首頁';
                 if (currentHash.includes('list')) return '審查作業 / 學生待查核名單';
                 
+                if (currentHash.includes('review/department')) return '審查作業 / 系所審查作業';
+                if (currentHash.includes('review/school')) return '審查作業 / 校級審查作業';
+                
                 if (currentHash.includes('intern_view/course')) return '實習資料瀏覽 / 實習課程清單';
                 if (currentHash.includes('intern_view/students')) return '實習資料瀏覽 / 實習學生清單';
                 if (currentHash.includes('intern_view/institution')) return '實習資料瀏覽 / 實習機構清單';
@@ -175,7 +178,7 @@
                 if (currentHash.includes('intern_manage/course')) return '實習資料管理 / 實習課程管理';
                 if (currentHash.includes('intern_manage/students')) return '實習資料管理 / 實習學生管理';
                 if (currentHash.includes('intern_manage/institution')) return '實習資料管理 / 實習機構管理';
-                if (currentHash.includes('intern_manage/record')) return '實習資料管理 / 實習記錄管理';
+                if (currentHash.includes('intern_manage/intern')) return '實習資料管理 / 實習記錄管理';
 
                 if (currentHash.includes('moe-indicators')) return '審查項目設定 / 教育部審查指標設定';
                 if (currentHash.includes('administrative_files')) return '審查項目設定 / 行政文件審查設定';
@@ -210,6 +213,8 @@
                             
                             <div className="px-6 mt-6 mb-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">審查作業</div>
                             <MenuBtn active={currentHash === '/list.html'} label="學生待查核名單" icon="fa-solid fa-user-check" onClick={() => navigate('/list.html')} />
+                            <MenuBtn active={currentHash === '/review/department.html'} label="系所審查作業" icon="fa-solid fa-building-user" onClick={() => navigate('/review/department.html')} />
+                            <MenuBtn active={currentHash === '/review/school.html'} label="校級審查作業" icon="fa-solid fa-building-columns" onClick={() => navigate('/review/school.html')} />
                             
                             <div className="px-6 mt-6 mb-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">實習資料瀏覽</div>
                             <MenuBtn active={currentHash === '/intern_view/course.html'} label="實習課程清單" icon="fa-solid fa-book" onClick={() => navigate('/intern_view/course.html')} />
@@ -221,7 +226,7 @@
                             <MenuBtn active={currentHash === '/intern_manage/course.html'} label="實習課程管理" icon="fa-solid fa-book" onClick={() => navigate('/intern_manage/course.html')} />
                             <MenuBtn active={currentHash === '/intern_manage/students.html'} label="實習學生管理" icon="fa-solid fa-user-gear" onClick={() => navigate('/intern_manage/students.html')} />
                             <MenuBtn active={currentHash === '/intern_manage/institution.html'} label="實習機構管理" icon="fa-solid fa-building" onClick={() => navigate('/intern_manage/institution.html')} />
-                            <MenuBtn active={currentHash === '/intern_manage/record.html'} label="實習記錄管理" icon="fa-solid fa-clipboard-check" onClick={() => navigate('/intern_manage/record.html')} />
+                            <MenuBtn active={currentHash === '/intern_manage/intern.html'} label="實習記錄管理" icon="fa-solid fa-clipboard-check" onClick={() => navigate('/intern_manage/intern.html')} />
                             
                             <div className="px-6 mt-6 mb-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">審查項目設定</div>
                             <MenuBtn active={currentHash === '/settings/moe-indicators.html'} label="教育部審查指標設定" icon="fa-solid fa-list-check" onClick={() => navigate('/settings/moe-indicators.html')} />
