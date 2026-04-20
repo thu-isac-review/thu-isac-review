@@ -198,7 +198,7 @@
                     <div class="flex justify-between items-end mb-4 shrink-0">
                         <div>
                             <h4 class="font-black text-slate-800 text-base"><i class="fa-solid fa-layer-group text-indigo-500 mr-2"></i>上傳與檔案整備</h4>
-                            <p class="text-[11px] text-slate-500 mt-1">請將收到的檔案拖曳至此，點擊清單可預覽 PDF，勾選即可合併。</p>
+                            <p class="text-[11px] text-slate-500 mt-1">請將收到的檔案拖曳至此，可使用箭頭排序，勾選即可合併。</p>
                         </div>
                         <div class="flex gap-2">
                             <button onclick="document.getElementById('audit-file-upload').click()" class="bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm">
@@ -215,10 +215,10 @@
                     <div id="audit-drop-zone" class="border-2 border-dashed border-blue-300 bg-blue-50/50 rounded-2xl flex flex-col items-center justify-center p-8 text-center cursor-pointer hover:bg-blue-50 transition-colors shrink-0 mb-4 flex-1" onclick="document.getElementById('audit-file-upload').click()" ondragover="window.handleDragOver(event)" ondragleave="window.handleDragLeave(event)" ondrop="window.handleDrop(event)">
                         <i class="fa-solid fa-cloud-arrow-up text-5xl text-blue-400 mb-4"></i>
                         <span class="text-lg font-bold text-blue-800">點擊或拖曳 PDF 檔案至此上傳</span>
-                        <span class="text-xs text-blue-500 mt-2 font-medium">支援多檔上傳、預覽與合併功能</span>
+                        <span class="text-xs text-blue-500 mt-2 font-medium">支援多檔上傳、預覽與排序合併功能</span>
                     </div>
 
-                    <!-- 已上傳的整備檔案清單 -->
+                    <!-- 💡 已上傳的整備檔案清單 (加入排序功能) -->
                     <div id="audit-file-list" class="hidden flex-col gap-2 mb-4 shrink-0 max-h-40 overflow-y-auto custom-scrollbar pr-2">
                         <!-- JS Render -->
                     </div>
@@ -253,13 +253,13 @@
                             <!-- JS 渲染 checkboxes -->
                         </div>
 
-                        <!-- 💡 新增：人工註記 -->
+                        <!-- 人工註記 -->
                         <div class="mt-4 border-t border-slate-100 pt-4 shrink-0">
                             <label class="flex items-center gap-2 font-black text-slate-800 text-sm mb-2"><i class="fa-solid fa-pen-to-square text-blue-500"></i> 人工註記</label>
                             <textarea id="audit-manual-note" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-inner resize-none font-medium text-slate-700" placeholder="請輸入審查備註或特殊狀況說明..."></textarea>
                         </div>
 
-                        <!-- 💡 新增：編輯紀錄 -->
+                        <!-- 編輯紀錄 -->
                         <div class="mt-4 border-t border-slate-100 pt-4 flex-1 flex flex-col min-h-[120px]">
                             <label class="flex items-center gap-2 font-black text-slate-800 text-sm mb-2"><i class="fa-solid fa-clock-rotate-left text-slate-400"></i> 編輯紀錄</label>
                             <div id="audit-logs-container" class="flex-1 overflow-y-auto custom-scrollbar space-y-2 bg-slate-50 rounded-xl p-3 border border-slate-100 shadow-inner">
@@ -269,10 +269,10 @@
 
                     </div>
 
-                    <!-- 💡 底部操作列 (三分天下按鈕) -->
+                    <!-- 底部操作列 (三分天下按鈕) -->
                     <div class="p-5 bg-slate-50 border-t border-slate-200 shrink-0 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)]">
                         <div class="grid grid-cols-3 gap-3">
-                            <button id="btn-audit-missing" onclick="window.submitAudit('pending')" class="py-3 rounded-xl font-black text-[13px] flex flex-col items-center justify-center gap-0.5 transition-all border-2 border-slate-300 text-slate-500 hover:bg-slate-200 bg-slate-100 active:scale-95 shadow-sm">
+                            <button id="btn-audit-missing" onclick="window.submitAudit('missing')" class="py-3 rounded-xl font-black text-[13px] flex flex-col items-center justify-center gap-0.5 transition-all border-2 border-slate-300 text-slate-500 hover:bg-slate-200 bg-slate-100 active:scale-95 shadow-sm">
                                 <i class="fa-solid fa-file-circle-xmark text-base"></i>
                                 <span class="mt-0.5">無資料</span>
                             </button>
@@ -323,7 +323,7 @@
         let currentPreviewUrl = null;
         let currentLogs = [];
 
-        // 💡 新增：撰寫紀錄渲染函數
+        // 撰寫紀錄渲染函數
         window.renderLogs = () => {
             const container = document.getElementById('audit-logs-container');
             if (currentLogs.length === 0) {
@@ -388,6 +388,15 @@
             if(uploadedAuditFiles.length > 0) window.previewFile(uploadedAuditFiles.length - 1);
         }
 
+        // 💡 實作：文件排序功能
+        window.moveAuditFile = (index, dir) => {
+            if (index + dir < 0 || index + dir >= uploadedAuditFiles.length) return;
+            const temp = uploadedAuditFiles[index];
+            uploadedAuditFiles[index] = uploadedAuditFiles[index + dir];
+            uploadedAuditFiles[index + dir] = temp;
+            window.renderAuditFiles();
+        };
+
         window.renderAuditFiles = () => {
             const dropZone = document.getElementById('audit-drop-zone');
             const fileList = document.getElementById('audit-file-list');
@@ -408,10 +417,14 @@
             let html = '';
             uploadedAuditFiles.forEach((item, index) => {
                 html += `
-                <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3 hover:border-blue-400 transition-colors cursor-pointer group" onclick="window.previewFile(${index})">
-                    <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer ml-1" ${item.selected ? 'checked' : ''} onclick="event.stopPropagation(); window.toggleFileSelection(${index})">
-                    <div class="w-9 h-9 bg-rose-50 text-rose-500 rounded-lg flex items-center justify-center shrink-0"><i class="fa-solid fa-file-pdf"></i></div>
-                    <div class="flex-1 min-w-0">
+                <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm flex items-center gap-2 hover:border-blue-400 transition-colors cursor-pointer group" onclick="window.previewFile(${index})">
+                    <div class="flex flex-col gap-0.5 px-1 opacity-30 group-hover:opacity-100 transition-opacity">
+                        <button onclick="event.stopPropagation(); window.moveAuditFile(${index}, -1)" class="w-5 h-4 flex items-center justify-center bg-slate-100 hover:bg-blue-100 text-slate-500 hover:text-blue-600 rounded disabled:opacity-0 transition-colors" ${index === 0 ? 'disabled' : ''}><i class="fa-solid fa-caret-up text-[10px]"></i></button>
+                        <button onclick="event.stopPropagation(); window.moveAuditFile(${index}, 1)" class="w-5 h-4 flex items-center justify-center bg-slate-100 hover:bg-blue-100 text-slate-500 hover:text-blue-600 rounded disabled:opacity-0 transition-colors" ${index === uploadedAuditFiles.length - 1 ? 'disabled' : ''}><i class="fa-solid fa-caret-down text-[10px]"></i></button>
+                    </div>
+                    <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" ${item.selected ? 'checked' : ''} onclick="event.stopPropagation(); window.toggleFileSelection(${index})">
+                    <div class="w-8 h-8 bg-rose-50 text-rose-500 rounded-lg flex items-center justify-center shrink-0"><i class="fa-solid fa-file-pdf"></i></div>
+                    <div class="flex-1 min-w-0 pl-1">
                         <div class="text-sm font-bold text-slate-800 truncate group-hover:text-blue-600 transition-colors">${item.name}</div>
                         <div class="text-[10px] text-slate-400 font-mono">${item.size}</div>
                     </div>
@@ -534,17 +547,18 @@
 
                 const deptsInCollege = filteredDepts.filter(d => d.college === college);
                 deptsInCollege.forEach(dept => {
-                    let adminCompleted = 0;
+                    let adminProcessed = 0;
                     let hasRisk = false;
                     
                     adminFilesSettings.forEach(fileDef => {
                         const taskId = `${dept.id}_${fileDef.id}`;
                         const rev = reviewRecords.find(r => r.id === taskId);
-                        if(rev && rev.status === 'approved') adminCompleted++;
+                        // 💡 更新大廳進度邏輯：將 pending 以外的狀態皆視為已處理
+                        if(rev && rev.status !== 'pending') adminProcessed++;
                         if(rev && rev.status === 'risk') hasRisk = true;
                     });
 
-                    const adminPercent = totalAdminFiles === 0 ? 0 : Math.round((adminCompleted / totalAdminFiles) * 100);
+                    const adminPercent = totalAdminFiles === 0 ? 0 : Math.round((adminProcessed / totalAdminFiles) * 100);
                     let riskBadge = hasRisk ? `<div class="absolute -top-2 -right-2 w-5 h-5 bg-rose-500 rounded-full border-2 border-white shadow-sm flex items-center justify-center"><i class="fa-solid fa-exclamation text-white text-[10px]"></i></div>` : '';
 
                     html += `
@@ -564,10 +578,10 @@
                             <div>
                                 <div class="flex justify-between items-end mb-1.5">
                                     <span class="text-[11px] font-bold text-slate-500"><i class="fa-solid fa-folder-open mr-1"></i> 行政文件</span>
-                                    <span class="text-xs font-black ${adminCompleted === totalAdminFiles && totalAdminFiles > 0 ? 'text-emerald-500' : 'text-slate-700'}">${adminCompleted} / ${totalAdminFiles}</span>
+                                    <span class="text-xs font-black ${adminProcessed === totalAdminFiles && totalAdminFiles > 0 ? 'text-emerald-500' : 'text-slate-700'}">${adminProcessed} / ${totalAdminFiles}</span>
                                 </div>
                                 <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                                    <div class="bg-${adminCompleted === totalAdminFiles && totalAdminFiles > 0 ? 'emerald' : 'blue'}-500 h-1.5 rounded-full transition-all" style="width: ${adminPercent}%"></div>
+                                    <div class="bg-${adminProcessed === totalAdminFiles && totalAdminFiles > 0 ? 'emerald' : 'blue'}-500 h-1.5 rounded-full transition-all" style="width: ${adminPercent}%"></div>
                                 </div>
                             </div>
                             <div>
@@ -596,12 +610,13 @@
         };
 
         // ==========================================
-        // View 2: 工作站邏輯
+        // View 2: 工作站邏輯 (包含篩選器與排序)
         // ==========================================
         function initWsFilters() {
             const container = document.getElementById('ws-filters-container');
             if(!container) return;
             if(!isWsFiltersInitialized) {
+                // 💡 更新狀態篩選器項目
                 container.innerHTML = `
                     <div class="relative group-filter shrink-0 font-bold">
                         <button type="button" class="filter-btn h-10 border border-slate-200 bg-white text-slate-700 text-[13px] font-bold rounded-lg px-4 shadow-sm flex items-center hover:bg-slate-50 transition-colors" data-key="status">
@@ -611,7 +626,11 @@
                             <div class="filter-options flex-1 overflow-y-auto p-1 custom-scrollbar space-y-0.5">
                                 <label class="flex items-start gap-2.5 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors font-bold">
                                     <input type="checkbox" class="mt-0.5 w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 filter-checkbox" value="pending" data-key="status">
-                                    <span class="text-xs font-bold text-slate-700 select-none flex-1 leading-tight">尚未繳交</span>
+                                    <span class="text-xs font-bold text-slate-700 select-none flex-1 leading-tight">尚未審查</span>
+                                </label>
+                                <label class="flex items-start gap-2.5 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors font-bold">
+                                    <input type="checkbox" class="mt-0.5 w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 filter-checkbox" value="missing" data-key="status">
+                                    <span class="text-xs font-bold text-slate-700 select-none flex-1 leading-tight">無資料</span>
                                 </label>
                                 <label class="flex items-start gap-2.5 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors font-bold">
                                     <input type="checkbox" class="mt-0.5 w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 filter-checkbox" value="approved" data-key="status">
@@ -689,7 +708,6 @@
             if(!currentWorkspaceDept) return;
 
             document.getElementById('ws-college').innerText = currentWorkspaceDept.college;
-            // 💡 改用 shortName
             document.getElementById('ws-dept-name').innerText = (currentWorkspaceDept.shortName || currentWorkspaceDept.name) + ' 專屬審查室';
             document.getElementById('badge-admin').innerText = adminFilesSettings.length;
 
@@ -773,6 +791,7 @@
             let html = '';
             tasks.forEach(t => {
                 let statusUI = '';
+                // 💡 更新狀態 UI
                 if(t.status === 'approved') {
                     statusUI = `<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold"><i class="fa-solid fa-check-circle"></i> 審查通過</div>`;
                 } else if(t.status === 'risk') {
@@ -781,8 +800,10 @@
                         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-amber-50 border border-amber-200 text-amber-700 text-[11px] font-bold mb-1"><i class="fa-solid fa-triangle-exclamation"></i> 有風險</div>
                         <div class="text-[10px] text-slate-500 font-medium truncate w-full" title="${t.reviewData.risk_reasons.join('、')}">${reasonStr}</div>
                     `;
+                } else if(t.status === 'missing') {
+                    statusUI = `<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-200 border border-slate-300 text-slate-600 text-[11px] font-bold"><i class="fa-solid fa-file-circle-xmark"></i> 無資料</div>`;
                 } else {
-                    statusUI = `<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-100 border border-slate-200 text-slate-500 text-[11px] font-bold"><i class="fa-solid fa-clock"></i> 尚未繳交</div>`;
+                    statusUI = `<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-100 border border-slate-200 text-slate-500 text-[11px] font-bold"><i class="fa-solid fa-clock"></i> 尚未審查</div>`;
                 }
 
                 let timeStr = '-';
@@ -826,11 +847,9 @@
             currentAuditTask = { taskId, fileDef, dept: currentWorkspaceDept };
             const reviewData = reviewRecords.find(r => r.id === taskId);
 
-            // 💡 改用 shortName
             document.getElementById('audit-dept-badge').innerText = currentWorkspaceDept.shortName || currentWorkspaceDept.name;
             document.getElementById('audit-title').innerText = fileDef.name;
 
-            // 💡 檔名替換 (也改用 shortName)
             let generatedFilename = (fileDef.dept_filename || '')
                 .replace(/\[系所代碼\]/g, currentWorkspaceDept.code)
                 .replace(/\[系所名稱\]/g, currentWorkspaceDept.shortName || currentWorkspaceDept.name)
@@ -842,7 +861,6 @@
             currentLogs = reviewData?.logs || [];
             window.renderLogs();
 
-            // 檢核表生成
             const container = document.getElementById('audit-checklist-container');
             const risks = reviewData?.risk_reasons || [];
             
@@ -852,8 +870,8 @@
                 let html = '';
                 fileDef.checklists.forEach((item, idx) => {
                     const isRiskItem = risks.includes(item);
-                    // 💡 若尚未審查 (pending)，預設不勾選 (false)；若已審查過，則還原上次狀態
-                    const isChecked = (reviewData && reviewData.status !== 'pending') ? !isRiskItem : false;
+                    // 若尚未審查(pending) 或 無資料(missing)，預設不勾選；若已審查過(approved/risk)，則依據紀錄還原
+                    const isChecked = (reviewData && reviewData.status !== 'pending' && reviewData.status !== 'missing') ? !isRiskItem : false;
                     
                     html += `
                     <label class="flex items-start cursor-pointer group w-full relative">
@@ -932,9 +950,8 @@
             const final_filename = document.getElementById('audit-filename').value.trim();
             const manual_note = document.getElementById('audit-manual-note').value.trim();
             
-            // 加入當次操作紀錄
             const userEmail = auth.currentUser ? auth.currentUser.email.split('@')[0] : 'Unknown';
-            let actionLabel = status === 'approved' ? '審查通過' : (status === 'risk' ? '標記為有風險' : '重設為無資料');
+            let actionLabel = status === 'approved' ? '審查通過' : (status === 'risk' ? '標記為有風險' : '標記為無資料');
             const newLogs = [...currentLogs, { action: '儲存審查', detail: `狀態變更為：${actionLabel}`, user: userEmail, time: new Date().toISOString() }];
 
             const payload = {
@@ -960,7 +977,6 @@
             } catch (err) {
                 alert("儲存失敗：" + err.message);
             } finally {
-                // 💡 修復 Spinner 轉圈圈 Bug：確保還原按鈕狀態
                 btn.innerHTML = oriHtml;
                 btn.disabled = false;
             }
