@@ -22,12 +22,6 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* 檢核方塊樣式 */
-        .risk-checkbox:checked + div { background-color: #eff6ff; border-color: #3b82f6; }
-        .risk-checkbox:checked + div .check-icon { color: #3b82f6; opacity: 1; border-color: #3b82f6; }
-        .risk-checkbox:not(:checked) + div { background-color: #fff; border-color: #e2e8f0; }
-        .risk-checkbox:not(:checked) + div .check-icon { opacity: 0.15; border-color: #94a3b8; }
-        
         /* 頁籤過場 */
         .tab-content { display: none; }
         .tab-content.active { display: flex; animation: fadeIn 0.3s ease-in-out; }
@@ -188,7 +182,7 @@
                         <h3 class="font-black text-slate-800 text-lg tracking-tight" id="audit-title">實習委員會設置要點</h3>
                     </div>
                 </div>
-                <!-- 💡 編輯紀錄按鈕移至 Header 右側 -->
+                <!-- 編輯紀錄按鈕移至 Header 右側 -->
                 <button onclick="window.openLogsModal()" class="flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 border border-slate-200 hover:border-blue-200 rounded-lg transition-colors shadow-sm text-xs font-bold active:scale-95">
                     <i class="fa-solid fa-clock-rotate-left"></i> 編輯紀錄
                 </button>
@@ -197,8 +191,8 @@
             <!-- 雙畫面分割區 -->
             <div class="flex-1 flex overflow-hidden">
                 
-                <!-- 左側：檔案整備與合併區 (55%) -->
-                <div class="w-full md:w-[55%] flex flex-col border-r border-slate-200 bg-slate-100/50 p-6 relative">
+                <!-- 左側：檔案整備與合併區 (50%) -->
+                <div class="w-full md:w-[50%] flex flex-col border-r border-slate-200 bg-slate-100/50 p-6 relative">
                     <div class="flex justify-between items-end mb-4 shrink-0">
                         <div>
                             <h4 class="font-black text-slate-800 text-base"><i class="fa-solid fa-layer-group text-indigo-500 mr-2"></i>上傳與檔案整備</h4>
@@ -233,35 +227,39 @@
                     </div>
                 </div>
 
-                <!-- 右側：檢核指標與結果判定 (45%) -->
-                <div class="w-full md:w-[45%] flex flex-col bg-white">
-                    <div class="p-6 flex-1 overflow-y-auto custom-scrollbar flex flex-col">
+                <!-- 💡 右側：檢核指標與結果判定 (50%) -->
+                <div class="w-full md:w-[50%] flex flex-col bg-white">
+                    <div class="p-6 flex-1 flex flex-col min-h-0">
                         
-                        <!-- 檔名設定預覽 -->
-                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-5 shrink-0">
+                        <!-- 檔名設定預覽 (頂部全寬) -->
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6 shrink-0">
                             <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2"><i class="fa-solid fa-tag mr-1"></i> 預定產出檔名 (可微調)</div>
                             <input type="text" id="audit-filename" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono font-bold text-blue-700 outline-none focus:ring-2 focus:ring-blue-500 shadow-inner">
                         </div>
 
-                        <!-- 審查檢核指標區塊 -->
-                        <div class="flex items-center justify-between mb-2 shrink-0 pb-2">
-                            <h4 class="font-black text-slate-800 text-sm"><i class="fa-solid fa-list-check text-emerald-500 mr-1.5"></i>審查檢核指標</h4>
-                            <span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">依據設定動態載入</span>
+                        <!-- 💡 分割左右兩區：檢核指標 (左) 與 人工註記 (右) -->
+                        <div class="flex-1 flex gap-6 min-h-0">
+                            <!-- 左半部：檢核指標 -->
+                            <div class="w-1/2 flex flex-col min-h-0 border-r border-slate-100 pr-6">
+                                <div class="flex items-center justify-between mb-3 shrink-0 pb-2 border-b border-slate-100">
+                                    <h4 class="font-black text-slate-800 text-sm"><i class="fa-solid fa-list-check text-emerald-500 mr-1.5"></i>審查檢核指標</h4>
+                                </div>
+                                
+                                <!-- 動態檢核表 (不再使用卡片，改用緊湊列表 + 三態切換) -->
+                                <div id="audit-checklist-container" class="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-0">
+                                    <!-- JS 渲染 checkboxes -->
+                                </div>
+                            </div>
+                            
+                            <!-- 右半部：人工註記 -->
+                            <div class="w-1/2 flex flex-col min-h-0">
+                                <div class="flex items-center justify-between mb-3 shrink-0 pb-2 border-b border-slate-100">
+                                    <h4 class="font-black text-slate-800 text-sm"><i class="fa-solid fa-pen-to-square text-blue-500 mr-1.5"></i>人工註記</h4>
+                                </div>
+                                <textarea id="audit-manual-note" class="w-full flex-1 bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-inner resize-none font-medium text-slate-700 leading-relaxed" placeholder="請輸入審查備註或特殊狀況說明..."></textarea>
+                            </div>
                         </div>
-                        <p class="text-xs text-slate-500 font-medium mb-3 shrink-0 bg-amber-50 text-amber-700 p-2.5 rounded-lg border border-amber-100">
-                            請自行打勾確認。若選擇<strong class="mx-1 font-black">標記為有風險</strong>，系統將自動擷取「未勾選項目」作為退件/風險原因。
-                        </p>
 
-                        <!-- 動態檢核表 -->
-                        <div id="audit-checklist-container" class="space-y-2 shrink-0 mb-4">
-                            <!-- JS 渲染 checkboxes -->
-                        </div>
-
-                        <!-- 人工註記 -->
-                        <div class="border-t border-slate-100 pt-4 flex flex-col flex-1 min-h-[150px]">
-                            <label class="flex items-center gap-2 font-black text-slate-800 text-sm mb-2"><i class="fa-solid fa-pen-to-square text-blue-500"></i> 人工註記</label>
-                            <textarea id="audit-manual-note" class="w-full flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-inner resize-none font-medium text-slate-700" placeholder="請輸入審查備註或特殊狀況說明..."></textarea>
-                        </div>
                     </div>
 
                     <!-- 底部操作列 (三分天下按鈕) -->
@@ -273,7 +271,7 @@
                             </button>
                             <button id="btn-audit-risk" onclick="window.submitAudit('risk')" class="py-3 rounded-xl font-black text-[13px] flex flex-col items-center justify-center gap-0.5 transition-all border-2 border-amber-500 text-amber-600 hover:bg-amber-100 bg-white active:scale-95 disabled:opacity-30 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-50 disabled:cursor-not-allowed group shadow-sm">
                                 <i class="fa-solid fa-triangle-exclamation text-base"></i>
-                                <span class="mt-0.5 group-disabled:opacity-0">有風險</span>
+                                <span class="mt-0.5 group-disabled:opacity-0">標記瑕疵風險</span>
                             </button>
                             <button id="btn-audit-pass" onclick="window.submitAudit('approved')" class="py-3 rounded-xl font-black text-[13px] flex flex-col items-center justify-center gap-0.5 transition-all border-2 border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95 disabled:opacity-30 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-50 disabled:cursor-not-allowed group shadow-md shadow-emerald-500/20">
                                 <i class="fa-solid fa-check-circle text-base"></i>
@@ -287,15 +285,15 @@
         </div>
     </div>
 
-    <!-- 💡 新增：編輯紀錄專屬 Modal -->
+    <!-- 💡 編輯紀錄專屬 Modal (改為列表呈現) -->
     <div id="logs-modal" class="fixed inset-0 z-[60] hidden bg-slate-900/40 backdrop-blur-sm flex-col items-center justify-center p-4 page-enter" onclick="if(event.target === this) window.closeLogsModal()">
-        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg flex flex-col overflow-hidden border border-slate-200 max-h-[80vh]">
+        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden border border-slate-200 max-h-[80vh]">
             <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
                 <h3 class="font-black text-slate-800 text-lg flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-blue-600"></i> 檔案操作與編輯紀錄</h3>
                 <button onclick="window.closeLogsModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 bg-white shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors shrink-0"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <div class="p-6 overflow-y-auto custom-scrollbar flex-1 bg-slate-50/50">
-                <div id="audit-logs-container" class="space-y-3">
+            <div class="p-6 overflow-y-auto custom-scrollbar flex-1 bg-white">
+                <div id="audit-logs-container">
                     <!-- JS 渲染紀錄插入點 -->
                 </div>
             </div>
@@ -316,12 +314,12 @@
         const deptsCol = collection(db, "departments");
         const adminFilesCol = collection(db, "admin_files_settings");
         const reviewsCol = collection(db, "department_reviews");
-        const usersCol = collection(db, "users"); // 💡 載入用戶集合以對應真名
+        const usersCol = collection(db, "users");
 
         let globalDepts = [];
         let adminFilesSettings = [];
         let reviewRecords = [];
-        let globalUsers = []; // 儲存使用者名單
+        let globalUsers = []; 
         
         let currentWorkspaceDept = null;
         let activeTabId = 'admin';
@@ -342,14 +340,14 @@
             return u && u.name ? u.name : auth.currentUser.email.split('@')[0];
         };
 
-        // 💡 獨立撰寫紀錄渲染函數
+        // 💡 獨立撰寫紀錄渲染函數 (改為列表 List 呈現)
         window.renderLogs = () => {
             const container = document.getElementById('audit-logs-container');
             if (currentLogs.length === 0) {
                 container.innerHTML = '<div class="text-sm text-slate-400 text-center py-6 font-bold border-2 border-dashed border-slate-200 rounded-xl">尚無任何操作紀錄</div>';
                 return;
             }
-            let html = '';
+            let html = '<ul class="divide-y divide-slate-100">';
             currentLogs.slice().reverse().forEach(log => {
                 let timeStr = '';
                 if (log.time) {
@@ -357,15 +355,16 @@
                     timeStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
                 }
                 html += `
-                <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
-                    <div class="flex items-center gap-2 mb-1.5">
-                        <span class="text-blue-600 font-bold text-xs shrink-0 px-2 py-0.5 bg-blue-50 rounded-md border border-blue-100"><i class="fa-solid fa-user text-[10px] mr-1"></i>${log.user}</span>
-                        <span class="text-slate-400 font-mono text-[10px] shrink-0"><i class="fa-regular fa-clock mr-1"></i>${timeStr}</span>
-                        <span class="text-slate-800 font-black text-xs ml-auto">${log.action}</span>
+                <li class="py-3 flex flex-col gap-1.5 hover:bg-slate-50 transition-colors px-3 rounded-lg">
+                    <div class="flex items-center gap-3">
+                        <span class="text-slate-400 font-mono text-[11px] shrink-0 w-32"><i class="fa-regular fa-clock mr-1"></i>${timeStr}</span>
+                        <span class="text-blue-600 font-bold text-xs shrink-0 w-24 truncate" title="${log.user}"><i class="fa-solid fa-user text-[10px] mr-1"></i>${log.user}</span>
+                        <span class="text-slate-800 font-black text-xs shrink-0 w-24">${log.action}</span>
+                        <span class="text-slate-500 text-xs font-medium truncate flex-1" title="${log.detail || ''}">${log.detail || ''}</span>
                     </div>
-                    ${log.detail ? `<div class="text-slate-600 text-xs leading-relaxed bg-slate-50 p-2 rounded-lg border border-slate-100 mt-2 break-all">${log.detail}</div>` : ''}
-                </div>`;
+                </li>`;
             });
+            html += '</ul>';
             container.innerHTML = html;
         };
 
@@ -525,7 +524,6 @@
         // --- 核心系統加載 ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // 💡 取得使用者清單供紀錄對應用
                 onSnapshot(usersCol, (snap) => {
                     globalUsers = snap.docs.map(doc => doc.data());
                 });
@@ -588,7 +586,6 @@
                     adminFilesSettings.forEach(fileDef => {
                         const taskId = `${dept.id}_${fileDef.id}`;
                         const rev = reviewRecords.find(r => r.id === taskId);
-                        // 💡 更新大廳進度邏輯：將 pending 以外的狀態皆視為已處理
                         if(rev && rev.status !== 'pending') adminProcessed++;
                         if(rev && rev.status === 'risk') hasRisk = true;
                     });
@@ -651,7 +648,6 @@
             const container = document.getElementById('ws-filters-container');
             if(!container) return;
             if(!isWsFiltersInitialized) {
-                // 💡 更新狀態篩選器項目
                 container.innerHTML = `
                     <div class="relative group-filter shrink-0 font-bold">
                         <button type="button" class="filter-btn h-10 border border-slate-200 bg-white text-slate-700 text-[13px] font-bold rounded-lg px-4 shadow-sm flex items-center hover:bg-slate-50 transition-colors" data-key="status">
@@ -826,14 +822,13 @@
             let html = '';
             tasks.forEach(t => {
                 let statusUI = '';
-                // 💡 更新狀態 UI
                 if(t.status === 'approved') {
                     statusUI = `<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold"><i class="fa-solid fa-check-circle"></i> 審查通過</div>`;
                 } else if(t.status === 'risk') {
-                    const reasonStr = t.reviewData.risk_reasons.length > 0 ? t.reviewData.risk_reasons[0] + (t.reviewData.risk_reasons.length > 1 ? '...' : '') : '待確認';
+                    const reasonStr = t.reviewData.risk_reasons.length > 0 ? t.reviewData.risk_reasons[0].split('::')[0] + (t.reviewData.risk_reasons.length > 1 ? '...' : '') : '待確認';
                     statusUI = `
                         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-amber-50 border border-amber-200 text-amber-700 text-[11px] font-bold mb-1"><i class="fa-solid fa-triangle-exclamation"></i> 有風險</div>
-                        <div class="text-[10px] text-slate-500 font-medium truncate w-full" title="${t.reviewData.risk_reasons.join('、')}">${reasonStr}</div>
+                        <div class="text-[10px] text-slate-500 font-medium truncate w-full" title="${t.reviewData.risk_reasons.map(r=>r.split('::')[0]).join('、')}">${reasonStr}</div>
                     `;
                 } else if(t.status === 'missing') {
                     statusUI = `<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-200 border border-slate-300 text-slate-600 text-[11px] font-bold"><i class="fa-solid fa-file-circle-xmark"></i> 無資料</div>`;
@@ -904,20 +899,34 @@
             } else {
                 let html = '';
                 fileDef.checklists.forEach((item, idx) => {
-                    const isRiskItem = risks.includes(item);
-                    // 若尚未審查(pending) 或 無資料(missing)，預設不勾選；若已審查過(approved/risk)，則依據紀錄還原
-                    const isChecked = (reviewData && reviewData.status !== 'pending' && reviewData.status !== 'missing') ? !isRiskItem : false;
+                    const riskItem = risks.find(r => r === item || r.startsWith(item + '::'));
+                    let checkState = null;
+                    if (reviewData && reviewData.status !== 'pending' && reviewData.status !== 'missing') {
+                        if (riskItem) {
+                            checkState = riskItem.includes('::fail') ? 'fail' : 'risk';
+                        } else {
+                            checkState = 'pass';
+                        }
+                    }
                     
                     html += `
-                    <label class="flex items-start cursor-pointer group w-full relative">
-                        <input type="checkbox" class="risk-checkbox sr-only" value="${item}" onchange="window.evaluateChecklist()" ${isChecked ? 'checked' : ''}>
-                        <div class="flex-1 border-2 rounded-xl p-3 transition-all flex gap-3 items-center shadow-sm hover:shadow-md bg-white">
-                            <div class="w-5 h-5 rounded-full border-2 border-current flex items-center justify-center shrink-0 check-icon transition-colors">
-                                <i class="fa-solid fa-check text-[10px]"></i>
-                            </div>
-                            <span class="text-sm font-bold text-slate-700 leading-snug transition-colors">${item}</span>
+                    <div class="checklist-item-group py-3 border-b border-slate-100 last:border-0 flex flex-col gap-2" data-item="${item.replace(/"/g, '&quot;')}">
+                        <span class="text-sm font-bold text-slate-700 leading-snug">${item}</span>
+                        <div class="flex items-center gap-1.5 self-end">
+                            <label class="cursor-pointer relative" title="符合">
+                                <input type="radio" name="check_${idx}" value="pass" class="sr-only peer" ${checkState === 'pass' ? 'checked' : ''} onchange="window.evaluateChecklist()">
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-100 border border-slate-200 text-slate-400 peer-checked:bg-emerald-500 peer-checked:border-emerald-500 peer-checked:text-white hover:bg-slate-200 transition-all"><i class="fa-solid fa-check"></i></div>
+                            </label>
+                            <label class="cursor-pointer relative" title="部分符合/有瑕疵">
+                                <input type="radio" name="check_${idx}" value="risk" class="sr-only peer" ${checkState === 'risk' ? 'checked' : ''} onchange="window.evaluateChecklist()">
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-100 border border-slate-200 text-slate-400 peer-checked:bg-amber-500 peer-checked:border-amber-500 peer-checked:text-white hover:bg-slate-200 transition-all"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                            </label>
+                            <label class="cursor-pointer relative" title="不符合/缺漏">
+                                <input type="radio" name="check_${idx}" value="fail" class="sr-only peer" ${checkState === 'fail' ? 'checked' : ''} onchange="window.evaluateChecklist()">
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-100 border border-slate-200 text-slate-400 peer-checked:bg-rose-500 peer-checked:border-rose-500 peer-checked:text-white hover:bg-slate-200 transition-all"><i class="fa-solid fa-xmark"></i></div>
+                            </label>
                         </div>
-                    </label>
+                    </div>
                     `;
                 });
                 container.innerHTML = html;
@@ -940,35 +949,35 @@
         };
 
         window.evaluateChecklist = () => {
-            const checkboxes = document.querySelectorAll('.risk-checkbox');
+            const groups = document.querySelectorAll('.checklist-item-group');
             const btnPass = document.getElementById('btn-audit-pass');
             const btnRisk = document.getElementById('btn-audit-risk');
 
-            if(checkboxes.length === 0) {
+            if(groups.length === 0) {
                 if(btnPass) btnPass.disabled = false;
                 if(btnRisk) btnRisk.disabled = true;
                 return;
             }
 
-            let allChecked = true;
-            let anyUnchecked = false;
+            let allPassed = true;
+            let anyRiskOrFail = false;
+            let anyUnanswered = false;
 
-            checkboxes.forEach(chk => {
-                const icon = chk.nextElementSibling.querySelector('.check-icon');
-                const text = chk.nextElementSibling.querySelector('span');
-                if(chk.checked) {
-                    icon.classList.add('text-blue-500', 'border-blue-500');
-                    text.classList.add('text-blue-800');
+            groups.forEach(group => {
+                const checked = group.querySelector('input[type="radio"]:checked');
+                if (!checked) {
+                    anyUnanswered = true;
+                    allPassed = false;
                 } else {
-                    allChecked = false;
-                    anyUnchecked = true;
-                    icon.classList.remove('text-blue-500', 'border-blue-500');
-                    text.classList.remove('text-blue-800');
+                    if (checked.value === 'risk' || checked.value === 'fail') {
+                        anyRiskOrFail = true;
+                        allPassed = false;
+                    }
                 }
             });
 
-            if(btnPass) btnPass.disabled = !allChecked;
-            if(btnRisk) btnRisk.disabled = !anyUnchecked;
+            if(btnPass) btnPass.disabled = anyUnanswered || !allPassed;
+            if(btnRisk) btnRisk.disabled = anyUnanswered || !anyRiskOrFail;
         };
 
         window.submitAudit = async (status) => {
@@ -976,9 +985,13 @@
 
             let risk_reasons = [];
             if(status === 'risk') {
-                const checkboxes = document.querySelectorAll('.risk-checkbox');
-                checkboxes.forEach(chk => {
-                    if(!chk.checked) risk_reasons.push(chk.value);
+                const groups = document.querySelectorAll('.checklist-item-group');
+                groups.forEach(group => {
+                    const checked = group.querySelector('input[type="radio"]:checked');
+                    const itemText = group.getAttribute('data-item');
+                    if(checked && (checked.value === 'risk' || checked.value === 'fail')) {
+                        risk_reasons.push(`${itemText}::${checked.value}`);
+                    }
                 });
             }
 
