@@ -26,11 +26,14 @@
         .risk-checkbox:not(:checked) + div { background-color: #fff; border-color: #e2e8f0; }
         .risk-checkbox:not(:checked) + div .check-icon { opacity: 0.15; border-color: #94a3b8; }
         
-        /* 頁籤過場 💡 修正：使用 flex 解決溢出無法捲動的問題 */
+        /* 頁籤過場 */
         .tab-content { display: none; }
         .tab-content.active { display: flex; animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .filter-btn { height: 40px; }
+        
+        /* 預覽區 iframe 樣式 */
+        #audit-pdf-frame { width: 100%; height: 100%; border: none; border-radius: 1rem; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden font-bold">
@@ -166,10 +169,10 @@
     </div>
 
     <!-- ==========================================
-         View 3: 雙畫面光速審查工作站 (Modal)
+         View 3: 雙畫面光速審查工作站 (滿版全螢幕)
          ========================================== -->
-    <div id="audit-modal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-md flex-col items-center justify-center p-4 page-enter">
-        <div class="bg-slate-50 w-full h-full md:h-[96vh] md:w-[98vw] md:rounded-[2rem] shadow-2xl flex flex-col overflow-hidden border border-slate-200">
+    <div id="audit-modal" class="fixed inset-0 z-50 hidden bg-slate-50 flex-col page-enter">
+        <div class="w-full h-full flex flex-col overflow-hidden">
             
             <!-- Header -->
             <div class="h-[72px] bg-white border-b border-slate-200 flex justify-between items-center px-6 shrink-0 z-20">
@@ -192,41 +195,35 @@
                 <div class="w-full md:w-[60%] flex flex-col border-r border-slate-200 bg-slate-100/50 p-6 relative">
                     <div class="flex justify-between items-end mb-4 shrink-0">
                         <div>
-                            <h4 class="font-black text-slate-800 text-base"><i class="fa-solid fa-layer-group text-indigo-500 mr-2"></i>檔案整備與合併區</h4>
-                            <p class="text-[11px] text-slate-500 mt-1">請將收到的檔案拖曳至此。勾選多個檔案可設定為合併同一份 PDF。</p>
+                            <h4 class="font-black text-slate-800 text-base"><i class="fa-solid fa-layer-group text-indigo-500 mr-2"></i>上傳與檔案整備</h4>
+                            <p class="text-[11px] text-slate-500 mt-1">請將收到的檔案拖曳至此，點擊清單可預覽 PDF，勾選即可合併。</p>
                         </div>
-                        <button class="bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white border border-indigo-200 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm">
-                            <i class="fa-solid fa-object-group mr-1"></i> 合併勾選檔案
-                        </button>
+                        <div class="flex gap-2">
+                            <button onclick="document.getElementById('audit-file-upload').click()" class="bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm">
+                                <i class="fa-solid fa-cloud-arrow-up mr-1"></i> 上傳檔案
+                            </button>
+                            <input type="file" id="audit-file-upload" accept="application/pdf" multiple class="hidden" onchange="window.handleAuditFileUpload(event)">
+                            <button class="bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white border border-indigo-200 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm">
+                                <i class="fa-solid fa-object-group mr-1"></i> 合併勾選檔案
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- 模擬拖曳上傳區 -->
-                    <div class="border-2 border-dashed border-blue-300 bg-blue-50/50 rounded-2xl flex flex-col items-center justify-center p-8 text-center cursor-pointer hover:bg-blue-50 transition-colors shrink-0 mb-4">
-                        <i class="fa-solid fa-cloud-arrow-up text-4xl text-blue-400 mb-3"></i>
-                        <span class="text-sm font-bold text-blue-800">點擊或拖曳 PDF 檔案至此上傳</span>
-                        <span class="text-[10px] text-blue-500 mt-1">支援多檔上傳與拖曳排序</span>
+                    <!-- 拖曳上傳區 (空狀態) -->
+                    <div id="audit-drop-zone" class="border-2 border-dashed border-blue-300 bg-blue-50/50 rounded-2xl flex flex-col items-center justify-center p-8 text-center cursor-pointer hover:bg-blue-50 transition-colors shrink-0 mb-4 flex-1" onclick="document.getElementById('audit-file-upload').click()" ondragover="window.handleDragOver(event)" ondragleave="window.handleDragLeave(event)" ondrop="window.handleDrop(event)">
+                        <i class="fa-solid fa-cloud-arrow-up text-5xl text-blue-400 mb-4"></i>
+                        <span class="text-lg font-bold text-blue-800">點擊或拖曳 PDF 檔案至此上傳</span>
+                        <span class="text-xs text-blue-500 mt-2 font-medium">支援多檔上傳與預覽功能</span>
                     </div>
 
-                    <!-- 已上傳的整備檔案清單 (UI Mock) -->
-                    <div class="flex-1 overflow-y-auto custom-scrollbar space-y-3">
-                        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
-                            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer ml-1" checked>
-                            <div class="w-10 h-10 bg-rose-50 text-rose-500 rounded-lg flex items-center justify-center shrink-0"><i class="fa-solid fa-file-pdf"></i></div>
-                            <div class="flex-1 min-w-0">
-                                <div class="text-sm font-bold text-slate-800 truncate">114實習委員會紀錄_上.pdf</div>
-                                <div class="text-[10px] text-slate-400">2.4 MB</div>
-                            </div>
-                            <button class="text-slate-300 hover:text-rose-500 p-2"><i class="fa-solid fa-trash-can"></i></button>
-                        </div>
-                        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
-                            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer ml-1" checked>
-                            <div class="w-10 h-10 bg-rose-50 text-rose-500 rounded-lg flex items-center justify-center shrink-0"><i class="fa-solid fa-file-pdf"></i></div>
-                            <div class="flex-1 min-w-0">
-                                <div class="text-sm font-bold text-slate-800 truncate">114實習委員會紀錄_簽到表.pdf</div>
-                                <div class="text-[10px] text-slate-400">1.1 MB</div>
-                            </div>
-                            <button class="text-slate-300 hover:text-rose-500 p-2"><i class="fa-solid fa-trash-can"></i></button>
-                        </div>
+                    <!-- 已上傳的整備檔案清單 -->
+                    <div id="audit-file-list" class="hidden flex-col gap-2 mb-4 shrink-0 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                        <!-- JS Render -->
+                    </div>
+
+                    <!-- PDF 預覽區 -->
+                    <div id="audit-pdf-preview-container" class="hidden flex-1 bg-slate-200/80 rounded-2xl border border-slate-200 overflow-hidden relative shadow-inner">
+                        <iframe id="audit-pdf-frame"></iframe>
                     </div>
                 </div>
 
@@ -255,7 +252,7 @@
                     </div>
 
                     <!-- 底部操作列 (Sticky) -->
-                    <div class="p-5 bg-slate-50 border-t border-slate-200 shrink-0">
+                    <div class="p-5 bg-slate-50 border-t border-slate-200 shrink-0 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)]">
                         <div class="grid grid-cols-2 gap-3">
                             <button id="btn-audit-risk" onclick="window.submitAudit('risk')" class="py-3.5 rounded-xl font-black text-sm flex flex-col items-center justify-center gap-0.5 transition-all border-2 border-amber-500 text-amber-600 hover:bg-amber-100 bg-white active:scale-95 disabled:opacity-30 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-50 disabled:cursor-not-allowed group shadow-sm">
                                 <div class="flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation text-base"></i> 標記為有風險</div>
@@ -299,6 +296,113 @@
         
         let wsFilterSelections = { status: new Set() };
         let isWsFiltersInitialized = false;
+
+        // --- PDF 檔案上傳與預覽邏輯 ---
+        let uploadedAuditFiles = [];
+        let currentPreviewUrl = null;
+
+        window.handleAuditFileUpload = (event) => {
+            const files = Array.from(event.target.files).filter(f => f.type === 'application/pdf');
+            if(files.length > 0) addFilesToAudit(files);
+            event.target.value = ''; 
+        };
+
+        window.handleDragOver = (e) => {
+            e.preventDefault();
+            e.currentTarget.classList.add('bg-blue-100', 'border-blue-500');
+        };
+
+        window.handleDragLeave = (e) => {
+            e.preventDefault();
+            e.currentTarget.classList.remove('bg-blue-100', 'border-blue-500');
+        };
+
+        window.handleDrop = (e) => {
+            e.preventDefault();
+            e.currentTarget.classList.remove('bg-blue-100', 'border-blue-500');
+            if (e.dataTransfer.files) {
+                const files = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf');
+                if(files.length > 0) addFilesToAudit(files);
+            }
+        };
+
+        function addFilesToAudit(files) {
+            files.forEach(file => {
+                const previewUrl = URL.createObjectURL(file);
+                uploadedAuditFiles.push({
+                    file: file,
+                    name: file.name,
+                    size: (file.size / (1024 * 1024)).toFixed(2) + ' MB',
+                    url: previewUrl,
+                    selected: true 
+                });
+            });
+            window.renderAuditFiles();
+            // 自動預覽最新上傳的檔案
+            if(uploadedAuditFiles.length > 0) {
+                window.previewFile(uploadedAuditFiles.length - 1);
+            }
+        }
+
+        window.renderAuditFiles = () => {
+            const dropZone = document.getElementById('audit-drop-zone');
+            const fileList = document.getElementById('audit-file-list');
+            const previewContainer = document.getElementById('audit-pdf-preview-container');
+
+            if (uploadedAuditFiles.length === 0) {
+                dropZone.classList.remove('hidden');
+                dropZone.classList.add('flex');
+                fileList.classList.add('hidden');
+                previewContainer.classList.add('hidden');
+                if(currentPreviewUrl) URL.revokeObjectURL(currentPreviewUrl);
+                document.getElementById('audit-pdf-frame').src = '';
+                return;
+            }
+
+            dropZone.classList.add('hidden');
+            dropZone.classList.remove('flex');
+            fileList.classList.remove('hidden');
+            fileList.classList.add('flex');
+            previewContainer.classList.remove('hidden');
+            previewContainer.classList.add('flex');
+
+            let html = '';
+            uploadedAuditFiles.forEach((item, index) => {
+                html += `
+                <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3 hover:border-blue-400 transition-colors cursor-pointer group" onclick="window.previewFile(${index})">
+                    <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer ml-1" ${item.selected ? 'checked' : ''} onclick="event.stopPropagation(); window.toggleFileSelection(${index})">
+                    <div class="w-9 h-9 bg-rose-50 text-rose-500 rounded-lg flex items-center justify-center shrink-0"><i class="fa-solid fa-file-pdf"></i></div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm font-bold text-slate-800 truncate group-hover:text-blue-600 transition-colors">${item.name}</div>
+                        <div class="text-[10px] text-slate-400 font-mono">${item.size}</div>
+                    </div>
+                    <button onclick="event.stopPropagation(); window.removeAuditFile(${index})" class="text-slate-300 hover:text-rose-500 p-2 shrink-0 transition-colors"><i class="fa-solid fa-trash-can"></i></button>
+                </div>
+                `;
+            });
+            fileList.innerHTML = html;
+        };
+
+        window.toggleFileSelection = (index) => {
+            uploadedAuditFiles[index].selected = !uploadedAuditFiles[index].selected;
+        };
+
+        window.removeAuditFile = (index) => {
+            const removed = uploadedAuditFiles.splice(index, 1)[0];
+            URL.revokeObjectURL(removed.url);
+            window.renderAuditFiles();
+            if(uploadedAuditFiles.length > 0) {
+                window.previewFile(0);
+            }
+        };
+
+        window.previewFile = (index) => {
+            const item = uploadedAuditFiles[index];
+            const iframe = document.getElementById('audit-pdf-frame');
+            // 加入 PDF 參數隱藏工具列讓預覽更沉浸
+            iframe.src = item.url + '#toolbar=0&navpanes=0'; 
+        };
+        // -------------------------------
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -367,7 +471,6 @@
                     const adminPercent = totalAdminFiles === 0 ? 0 : Math.round((adminCompleted / totalAdminFiles) * 100);
                     let riskBadge = hasRisk ? `<div class="absolute -top-2 -right-2 w-5 h-5 bg-rose-500 rounded-full border-2 border-white shadow-sm flex items-center justify-center"><i class="fa-solid fa-exclamation text-white text-[10px]"></i></div>` : '';
 
-                    // 💡 補齊三個進度條 (行政、學生、機構)
                     html += `
                     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-400 transition-all cursor-pointer p-5 flex flex-col relative group" onclick="window.enterWorkspace('${dept.id}')">
                         ${riskBadge}
@@ -693,6 +796,11 @@
         };
 
         window.closeAuditModal = () => {
+            // 清理已上傳檔案的 URL 以免 memory leak
+            uploadedAuditFiles.forEach(f => URL.revokeObjectURL(f.url));
+            uploadedAuditFiles = [];
+            window.renderAuditFiles();
+
             document.getElementById('audit-modal').classList.add('hidden');
             document.getElementById('audit-modal').classList.remove('flex');
             currentAuditTask = null;
