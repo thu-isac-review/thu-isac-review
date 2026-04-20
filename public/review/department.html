@@ -188,6 +188,10 @@
                         <h3 class="font-black text-slate-800 text-lg tracking-tight" id="audit-title">實習委員會設置要點</h3>
                     </div>
                 </div>
+                <!-- 💡 編輯紀錄按鈕移至 Header 右側 -->
+                <button onclick="window.openLogsModal()" class="flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 border border-slate-200 hover:border-blue-200 rounded-lg transition-colors shadow-sm text-xs font-bold active:scale-95">
+                    <i class="fa-solid fa-clock-rotate-left"></i> 編輯紀錄
+                </button>
             </div>
             
             <!-- 雙畫面分割區 -->
@@ -218,7 +222,7 @@
                         <span class="text-xs text-blue-500 mt-2 font-medium">支援多檔上傳、預覽與排序合併功能</span>
                     </div>
 
-                    <!-- 💡 已上傳的整備檔案清單 (加入排序功能) -->
+                    <!-- 已上傳的整備檔案清單 (加入排序功能) -->
                     <div id="audit-file-list" class="hidden flex-col gap-2 mb-4 shrink-0 max-h-40 overflow-y-auto custom-scrollbar pr-2">
                         <!-- JS Render -->
                     </div>
@@ -249,24 +253,15 @@
                         </p>
 
                         <!-- 動態檢核表 -->
-                        <div id="audit-checklist-container" class="space-y-2 shrink-0">
+                        <div id="audit-checklist-container" class="space-y-2 shrink-0 mb-4">
                             <!-- JS 渲染 checkboxes -->
                         </div>
 
                         <!-- 人工註記 -->
-                        <div class="mt-4 border-t border-slate-100 pt-4 shrink-0">
+                        <div class="border-t border-slate-100 pt-4 flex flex-col flex-1 min-h-[150px]">
                             <label class="flex items-center gap-2 font-black text-slate-800 text-sm mb-2"><i class="fa-solid fa-pen-to-square text-blue-500"></i> 人工註記</label>
-                            <textarea id="audit-manual-note" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-inner resize-none font-medium text-slate-700" placeholder="請輸入審查備註或特殊狀況說明..."></textarea>
+                            <textarea id="audit-manual-note" class="w-full flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-inner resize-none font-medium text-slate-700" placeholder="請輸入審查備註或特殊狀況說明..."></textarea>
                         </div>
-
-                        <!-- 編輯紀錄 -->
-                        <div class="mt-4 border-t border-slate-100 pt-4 flex-1 flex flex-col min-h-[120px]">
-                            <label class="flex items-center gap-2 font-black text-slate-800 text-sm mb-2"><i class="fa-solid fa-clock-rotate-left text-slate-400"></i> 編輯紀錄</label>
-                            <div id="audit-logs-container" class="flex-1 overflow-y-auto custom-scrollbar space-y-2 bg-slate-50 rounded-xl p-3 border border-slate-100 shadow-inner">
-                                <!-- 紀錄插入點 -->
-                            </div>
-                        </div>
-
                     </div>
 
                     <!-- 底部操作列 (三分天下按鈕) -->
@@ -292,6 +287,21 @@
         </div>
     </div>
 
+    <!-- 💡 新增：編輯紀錄專屬 Modal -->
+    <div id="logs-modal" class="fixed inset-0 z-[60] hidden bg-slate-900/40 backdrop-blur-sm flex-col items-center justify-center p-4 page-enter" onclick="if(event.target === this) window.closeLogsModal()">
+        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg flex flex-col overflow-hidden border border-slate-200 max-h-[80vh]">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
+                <h3 class="font-black text-slate-800 text-lg flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-blue-600"></i> 檔案操作與編輯紀錄</h3>
+                <button onclick="window.closeLogsModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 bg-white shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors shrink-0"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto custom-scrollbar flex-1 bg-slate-50/50">
+                <div id="audit-logs-container" class="space-y-3">
+                    <!-- JS 渲染紀錄插入點 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase 邏輯 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -306,10 +316,12 @@
         const deptsCol = collection(db, "departments");
         const adminFilesCol = collection(db, "admin_files_settings");
         const reviewsCol = collection(db, "department_reviews");
+        const usersCol = collection(db, "users"); // 💡 載入用戶集合以對應真名
 
         let globalDepts = [];
         let adminFilesSettings = [];
         let reviewRecords = [];
+        let globalUsers = []; // 儲存使用者名單
         
         let currentWorkspaceDept = null;
         let activeTabId = 'admin';
@@ -323,38 +335,53 @@
         let currentPreviewUrl = null;
         let currentLogs = [];
 
-        // 撰寫紀錄渲染函數
+        // 💡 解析使用者真名
+        const getUserName = () => {
+            if(!auth.currentUser) return 'Unknown';
+            const u = globalUsers.find(x => x.email === auth.currentUser.email);
+            return u && u.name ? u.name : auth.currentUser.email.split('@')[0];
+        };
+
+        // 💡 獨立撰寫紀錄渲染函數
         window.renderLogs = () => {
             const container = document.getElementById('audit-logs-container');
             if (currentLogs.length === 0) {
-                container.innerHTML = '<div class="text-xs text-slate-400 text-center py-4 font-bold">尚無任何操作紀錄</div>';
+                container.innerHTML = '<div class="text-sm text-slate-400 text-center py-6 font-bold border-2 border-dashed border-slate-200 rounded-xl">尚無任何操作紀錄</div>';
                 return;
             }
             let html = '';
-            // 反轉順序，最新在最上
             currentLogs.slice().reverse().forEach(log => {
                 let timeStr = '';
                 if (log.time) {
                     let d = log.time.toDate ? log.time.toDate() : new Date(log.time);
-                    timeStr = `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+                    timeStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
                 }
                 html += `
-                <div class="text-[11px] leading-relaxed border-b border-slate-200/60 pb-2 last:border-0 last:pb-0 mb-2">
-                    <div class="flex items-center gap-2">
-                        <span class="text-slate-400 font-mono shrink-0">${timeStr}</span>
-                        <span class="text-blue-600 font-bold truncate max-w-[100px] shrink-0" title="${log.user}">[${log.user}]</span>
-                        <span class="text-slate-700 font-black shrink-0">${log.action}</span>
+                <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+                    <div class="flex items-center gap-2 mb-1.5">
+                        <span class="text-blue-600 font-bold text-xs shrink-0 px-2 py-0.5 bg-blue-50 rounded-md border border-blue-100"><i class="fa-solid fa-user text-[10px] mr-1"></i>${log.user}</span>
+                        <span class="text-slate-400 font-mono text-[10px] shrink-0"><i class="fa-regular fa-clock mr-1"></i>${timeStr}</span>
+                        <span class="text-slate-800 font-black text-xs ml-auto">${log.action}</span>
                     </div>
-                    ${log.detail ? `<div class="text-slate-500 mt-1 ml-[52px] break-all leading-tight bg-white p-1.5 rounded border border-slate-100">${log.detail}</div>` : ''}
+                    ${log.detail ? `<div class="text-slate-600 text-xs leading-relaxed bg-slate-50 p-2 rounded-lg border border-slate-100 mt-2 break-all">${log.detail}</div>` : ''}
                 </div>`;
             });
             container.innerHTML = html;
         };
 
         window.addLog = (action, detail) => {
-            const userEmail = auth.currentUser ? auth.currentUser.email.split('@')[0] : 'Unknown';
-            currentLogs.push({ action: action, detail: detail, user: userEmail, time: new Date().toISOString() });
+            currentLogs.push({ action: action, detail: detail, user: getUserName(), time: new Date().toISOString() });
             window.renderLogs();
+        };
+
+        window.openLogsModal = () => {
+            document.getElementById('logs-modal').classList.remove('hidden');
+            document.getElementById('logs-modal').classList.add('flex');
+        };
+
+        window.closeLogsModal = () => {
+            document.getElementById('logs-modal').classList.add('hidden');
+            document.getElementById('logs-modal').classList.remove('flex');
         };
 
         window.handleAuditFileUpload = (event) => {
@@ -388,7 +415,6 @@
             if(uploadedAuditFiles.length > 0) window.previewFile(uploadedAuditFiles.length - 1);
         }
 
-        // 💡 實作：文件排序功能
         window.moveAuditFile = (index, dir) => {
             if (index + dir < 0 || index + dir >= uploadedAuditFiles.length) return;
             const temp = uploadedAuditFiles[index];
@@ -473,7 +499,11 @@
 
                 const mergedPdfBytes = await mergedPdf.save();
                 const mergedBlob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
-                const mergedFileName = "合併文件_" + new Date().getTime() + ".pdf";
+                
+                const d = new Date();
+                const timeSuffix = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}_${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}`;
+                const mergedFileName = `合併文件_${timeSuffix}.pdf`;
+                
                 const mergedFile = new File([mergedBlob], mergedFileName, { type: 'application/pdf' });
                 const mergedUrl = URL.createObjectURL(mergedBlob);
 
@@ -495,6 +525,11 @@
         // --- 核心系統加載 ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
+                // 💡 取得使用者清單供紀錄對應用
+                onSnapshot(usersCol, (snap) => {
+                    globalUsers = snap.docs.map(doc => doc.data());
+                });
+
                 const dSnap = await getDocs(deptsCol);
                 globalDepts = dSnap.docs.map(d => ({id: d.id, ...d.data()})).filter(d => d.is_active);
                 globalDepts.sort((a,b) => (a.sortOrder||999) - (b.sortOrder||999));
@@ -809,7 +844,7 @@
                 let timeStr = '-';
                 if(t.reviewData && t.reviewData.updated_at && t.reviewData.updated_at.toDate) {
                     const d = t.reviewData.updated_at.toDate();
-                    timeStr = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+                    timeStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
                 }
 
                 html += `
@@ -950,9 +985,8 @@
             const final_filename = document.getElementById('audit-filename').value.trim();
             const manual_note = document.getElementById('audit-manual-note').value.trim();
             
-            const userEmail = auth.currentUser ? auth.currentUser.email.split('@')[0] : 'Unknown';
             let actionLabel = status === 'approved' ? '審查通過' : (status === 'risk' ? '標記為有風險' : '標記為無資料');
-            const newLogs = [...currentLogs, { action: '儲存審查', detail: `狀態變更為：${actionLabel}`, user: userEmail, time: new Date().toISOString() }];
+            const newLogs = [...currentLogs, { action: '儲存審查', detail: `狀態變更為：${actionLabel}`, user: getUserName(), time: new Date().toISOString() }];
 
             const payload = {
                 dept_id: currentAuditTask.dept.id,
