@@ -177,7 +177,7 @@
         <div class="w-full h-full flex flex-col overflow-hidden">
             
             <!-- Header -->
-            <div class="h-[72px] bg-white border-b border-slate-200 flex justify-between items-center px-6 shrink-0 z-20">
+            <div class="h-[72px] bg-white border-b border-slate-200 flex justify-between items-center px-6 shrink-0 z-20 shadow-sm">
                 <div class="flex items-center gap-4">
                     <button type="button" onclick="window.closeAuditModal()" class="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-all border border-slate-200 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button>
                     <div class="h-8 w-px bg-slate-200"></div>
@@ -193,8 +193,8 @@
             <!-- 雙畫面分割區 -->
             <div class="flex-1 flex overflow-hidden">
                 
-                <!-- 左側：檔案整備與合併區 (60%) -->
-                <div class="w-full md:w-[60%] flex flex-col border-r border-slate-200 bg-slate-100/50 p-6 relative">
+                <!-- 左側：檔案整備與合併區 (55%) -->
+                <div class="w-full md:w-[55%] flex flex-col border-r border-slate-200 bg-slate-100/50 p-6 relative">
                     <div class="flex justify-between items-end mb-4 shrink-0">
                         <div>
                             <h4 class="font-black text-slate-800 text-base"><i class="fa-solid fa-layer-group text-indigo-500 mr-2"></i>上傳與檔案整備</h4>
@@ -206,7 +206,7 @@
                             </button>
                             <input type="file" id="audit-file-upload" accept="application/pdf" multiple class="hidden" onchange="window.handleAuditFileUpload(event)">
                             <button id="btn-merge-files" onclick="window.mergeSelectedFiles()" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white border border-indigo-200 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm">
-                                <i class="fa-solid fa-object-group mr-1"></i> 合併勾選檔案
+                                <i class="fa-solid fa-object-group mr-1"></i> 合併勾選
                             </button>
                         </div>
                     </div>
@@ -229,40 +229,60 @@
                     </div>
                 </div>
 
-                <!-- 右側：檢核指標與結果判定 (40%) -->
-                <div class="w-full md:w-[40%] flex flex-col bg-white">
+                <!-- 右側：檢核指標與結果判定 (45%) -->
+                <div class="w-full md:w-[45%] flex flex-col bg-white">
                     <div class="p-6 flex-1 overflow-y-auto custom-scrollbar flex flex-col">
                         
                         <!-- 檔名設定預覽 -->
-                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6 shrink-0">
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-5 shrink-0">
                             <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2"><i class="fa-solid fa-tag mr-1"></i> 預定產出檔名 (可微調)</div>
                             <input type="text" id="audit-filename" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono font-bold text-blue-700 outline-none focus:ring-2 focus:ring-blue-500 shadow-inner">
-                            <div class="text-[10px] text-slate-500 mt-2 font-medium">💡 提示：若為多檔，<span class="text-blue-500 font-mono">[流水號]</span> 將於最終打包匯出時才自動依序產生。</div>
                         </div>
 
-                        <div class="flex items-center justify-between mb-3 shrink-0 border-b border-slate-100 pb-2">
-                            <h4 class="font-black text-slate-800 text-base"><i class="fa-solid fa-list-check text-emerald-500 mr-2"></i>審查檢核指標</h4>
-                            <span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">依文件設定動態載入</span>
+                        <!-- 審查檢核指標區塊 -->
+                        <div class="flex items-center justify-between mb-2 shrink-0 pb-2">
+                            <h4 class="font-black text-slate-800 text-sm"><i class="fa-solid fa-list-check text-emerald-500 mr-1.5"></i>審查檢核指標</h4>
+                            <span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">依據設定動態載入</span>
                         </div>
-                        <p class="text-xs text-slate-500 font-medium mb-4 shrink-0 bg-slate-50 p-2 rounded-lg">請核對左側文件內容並勾選。若有未勾選的項目，系統將自動以此作為「風險原因」。</p>
+                        <p class="text-xs text-slate-500 font-medium mb-3 shrink-0 bg-amber-50 text-amber-700 p-2.5 rounded-lg border border-amber-100">
+                            請自行打勾確認。若選擇<strong class="mx-1 font-black">標記為有風險</strong>，系統將自動擷取「未勾選項目」作為退件/風險原因。
+                        </p>
 
                         <!-- 動態檢核表 -->
-                        <div id="audit-checklist-container" class="space-y-3 flex-1">
+                        <div id="audit-checklist-container" class="space-y-2 shrink-0">
                             <!-- JS 渲染 checkboxes -->
+                        </div>
+
+                        <!-- 💡 新增：人工註記 -->
+                        <div class="mt-4 border-t border-slate-100 pt-4 shrink-0">
+                            <label class="flex items-center gap-2 font-black text-slate-800 text-sm mb-2"><i class="fa-solid fa-pen-to-square text-blue-500"></i> 人工註記</label>
+                            <textarea id="audit-manual-note" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-inner resize-none font-medium text-slate-700" placeholder="請輸入審查備註或特殊狀況說明..."></textarea>
+                        </div>
+
+                        <!-- 💡 新增：編輯紀錄 -->
+                        <div class="mt-4 border-t border-slate-100 pt-4 flex-1 flex flex-col min-h-[120px]">
+                            <label class="flex items-center gap-2 font-black text-slate-800 text-sm mb-2"><i class="fa-solid fa-clock-rotate-left text-slate-400"></i> 編輯紀錄</label>
+                            <div id="audit-logs-container" class="flex-1 overflow-y-auto custom-scrollbar space-y-2 bg-slate-50 rounded-xl p-3 border border-slate-100 shadow-inner">
+                                <!-- 紀錄插入點 -->
+                            </div>
                         </div>
 
                     </div>
 
-                    <!-- 底部操作列 (Sticky) -->
+                    <!-- 💡 底部操作列 (三分天下按鈕) -->
                     <div class="p-5 bg-slate-50 border-t border-slate-200 shrink-0 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)]">
-                        <div class="grid grid-cols-2 gap-3">
-                            <button id="btn-audit-risk" onclick="window.submitAudit('risk')" class="py-3.5 rounded-xl font-black text-sm flex flex-col items-center justify-center gap-0.5 transition-all border-2 border-amber-500 text-amber-600 hover:bg-amber-100 bg-white active:scale-95 disabled:opacity-30 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-50 disabled:cursor-not-allowed group shadow-sm">
-                                <div class="flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation text-base"></i> 標記為有風險</div>
-                                <span class="text-[9px] font-bold opacity-70 group-disabled:opacity-0">(含有未勾選之項目)</span>
+                        <div class="grid grid-cols-3 gap-3">
+                            <button id="btn-audit-missing" onclick="window.submitAudit('pending')" class="py-3 rounded-xl font-black text-[13px] flex flex-col items-center justify-center gap-0.5 transition-all border-2 border-slate-300 text-slate-500 hover:bg-slate-200 bg-slate-100 active:scale-95 shadow-sm">
+                                <i class="fa-solid fa-file-circle-xmark text-base"></i>
+                                <span class="mt-0.5">無資料</span>
                             </button>
-                            <button id="btn-audit-pass" onclick="window.submitAudit('approved')" class="py-3.5 rounded-xl font-black text-sm flex flex-col items-center justify-center gap-0.5 transition-all border-2 border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95 disabled:opacity-30 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-50 disabled:cursor-not-allowed group shadow-md shadow-emerald-500/20">
-                                <div class="flex items-center gap-2"><i class="fa-solid fa-check-circle text-base"></i> 審查通過</div>
-                                <span class="text-[9px] font-bold opacity-90 group-disabled:opacity-0">(全數打勾無誤)</span>
+                            <button id="btn-audit-risk" onclick="window.submitAudit('risk')" class="py-3 rounded-xl font-black text-[13px] flex flex-col items-center justify-center gap-0.5 transition-all border-2 border-amber-500 text-amber-600 hover:bg-amber-100 bg-white active:scale-95 disabled:opacity-30 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-50 disabled:cursor-not-allowed group shadow-sm">
+                                <i class="fa-solid fa-triangle-exclamation text-base"></i>
+                                <span class="mt-0.5 group-disabled:opacity-0">有風險</span>
+                            </button>
+                            <button id="btn-audit-pass" onclick="window.submitAudit('approved')" class="py-3 rounded-xl font-black text-[13px] flex flex-col items-center justify-center gap-0.5 transition-all border-2 border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95 disabled:opacity-30 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-50 disabled:cursor-not-allowed group shadow-md shadow-emerald-500/20">
+                                <i class="fa-solid fa-check-circle text-base"></i>
+                                <span class="mt-0.5 group-disabled:opacity-0">審查通過</span>
                             </button>
                         </div>
                     </div>
@@ -283,7 +303,6 @@
         const auth = getAuth(app); 
         const db = getFirestore(app);
         
-        // 核心集合
         const deptsCol = collection(db, "departments");
         const adminFilesCol = collection(db, "admin_files_settings");
         const reviewsCol = collection(db, "department_reviews");
@@ -299,51 +318,74 @@
         let wsFilterSelections = { status: new Set() };
         let isWsFiltersInitialized = false;
 
-        // --- PDF 檔案上傳與預覽邏輯 ---
+        // --- PDF 與紀錄變數 ---
         let uploadedAuditFiles = [];
         let currentPreviewUrl = null;
+        let currentLogs = [];
+
+        // 💡 新增：撰寫紀錄渲染函數
+        window.renderLogs = () => {
+            const container = document.getElementById('audit-logs-container');
+            if (currentLogs.length === 0) {
+                container.innerHTML = '<div class="text-xs text-slate-400 text-center py-4 font-bold">尚無任何操作紀錄</div>';
+                return;
+            }
+            let html = '';
+            // 反轉順序，最新在最上
+            currentLogs.slice().reverse().forEach(log => {
+                let timeStr = '';
+                if (log.time) {
+                    let d = log.time.toDate ? log.time.toDate() : new Date(log.time);
+                    timeStr = `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+                }
+                html += `
+                <div class="text-[11px] leading-relaxed border-b border-slate-200/60 pb-2 last:border-0 last:pb-0 mb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-slate-400 font-mono shrink-0">${timeStr}</span>
+                        <span class="text-blue-600 font-bold truncate max-w-[100px] shrink-0" title="${log.user}">[${log.user}]</span>
+                        <span class="text-slate-700 font-black shrink-0">${log.action}</span>
+                    </div>
+                    ${log.detail ? `<div class="text-slate-500 mt-1 ml-[52px] break-all leading-tight bg-white p-1.5 rounded border border-slate-100">${log.detail}</div>` : ''}
+                </div>`;
+            });
+            container.innerHTML = html;
+        };
+
+        window.addLog = (action, detail) => {
+            const userEmail = auth.currentUser ? auth.currentUser.email.split('@')[0] : 'Unknown';
+            currentLogs.push({ action: action, detail: detail, user: userEmail, time: new Date().toISOString() });
+            window.renderLogs();
+        };
 
         window.handleAuditFileUpload = (event) => {
             const files = Array.from(event.target.files).filter(f => f.type === 'application/pdf');
-            if(files.length > 0) addFilesToAudit(files);
+            if(files.length > 0) {
+                addFilesToAudit(files);
+                window.addLog('上傳檔案', files.map(f => f.name).join(', '));
+            }
             event.target.value = ''; 
         };
 
-        window.handleDragOver = (e) => {
-            e.preventDefault();
-            e.currentTarget.classList.add('bg-blue-100', 'border-blue-500');
-        };
-
-        window.handleDragLeave = (e) => {
-            e.preventDefault();
-            e.currentTarget.classList.remove('bg-blue-100', 'border-blue-500');
-        };
-
+        window.handleDragOver = (e) => { e.preventDefault(); e.currentTarget.classList.add('bg-blue-100', 'border-blue-500'); };
+        window.handleDragLeave = (e) => { e.preventDefault(); e.currentTarget.classList.remove('bg-blue-100', 'border-blue-500'); };
         window.handleDrop = (e) => {
-            e.preventDefault();
-            e.currentTarget.classList.remove('bg-blue-100', 'border-blue-500');
+            e.preventDefault(); e.currentTarget.classList.remove('bg-blue-100', 'border-blue-500');
             if (e.dataTransfer.files) {
                 const files = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf');
-                if(files.length > 0) addFilesToAudit(files);
+                if(files.length > 0) {
+                    addFilesToAudit(files);
+                    window.addLog('拖曳上傳', files.map(f => f.name).join(', '));
+                }
             }
         };
 
         function addFilesToAudit(files) {
             files.forEach(file => {
                 const previewUrl = URL.createObjectURL(file);
-                uploadedAuditFiles.push({
-                    file: file,
-                    name: file.name,
-                    size: (file.size / (1024 * 1024)).toFixed(2) + ' MB',
-                    url: previewUrl,
-                    selected: true 
-                });
+                uploadedAuditFiles.push({ file: file, name: file.name, size: (file.size / (1024 * 1024)).toFixed(2) + ' MB', url: previewUrl, selected: true });
             });
             window.renderAuditFiles();
-            // 自動預覽最新上傳的檔案
-            if(uploadedAuditFiles.length > 0) {
-                window.previewFile(uploadedAuditFiles.length - 1);
-            }
+            if(uploadedAuditFiles.length > 0) window.previewFile(uploadedAuditFiles.length - 1);
         }
 
         window.renderAuditFiles = () => {
@@ -352,21 +394,16 @@
             const previewContainer = document.getElementById('audit-pdf-preview-container');
 
             if (uploadedAuditFiles.length === 0) {
-                dropZone.classList.remove('hidden');
-                dropZone.classList.add('flex');
-                fileList.classList.add('hidden');
-                previewContainer.classList.add('hidden');
+                dropZone.classList.remove('hidden'); dropZone.classList.add('flex');
+                fileList.classList.add('hidden'); previewContainer.classList.add('hidden');
                 if(currentPreviewUrl) URL.revokeObjectURL(currentPreviewUrl);
                 document.getElementById('audit-pdf-frame').src = '';
                 return;
             }
 
-            dropZone.classList.add('hidden');
-            dropZone.classList.remove('flex');
-            fileList.classList.remove('hidden');
-            fileList.classList.add('flex');
-            previewContainer.classList.remove('hidden');
-            previewContainer.classList.add('flex');
+            dropZone.classList.add('hidden'); dropZone.classList.remove('flex');
+            fileList.classList.remove('hidden'); fileList.classList.add('flex');
+            previewContainer.classList.remove('hidden'); previewContainer.classList.add('flex');
 
             let html = '';
             uploadedAuditFiles.forEach((item, index) => {
@@ -385,33 +422,25 @@
             fileList.innerHTML = html;
         };
 
-        window.toggleFileSelection = (index) => {
-            uploadedAuditFiles[index].selected = !uploadedAuditFiles[index].selected;
-        };
+        window.toggleFileSelection = (index) => { uploadedAuditFiles[index].selected = !uploadedAuditFiles[index].selected; };
 
         window.removeAuditFile = (index) => {
             const removed = uploadedAuditFiles.splice(index, 1)[0];
             URL.revokeObjectURL(removed.url);
+            window.addLog('移除檔案', removed.name);
             window.renderAuditFiles();
-            if(uploadedAuditFiles.length > 0) {
-                window.previewFile(0);
-            }
+            if(uploadedAuditFiles.length > 0) window.previewFile(0);
         };
 
         window.previewFile = (index) => {
             const item = uploadedAuditFiles[index];
             const iframe = document.getElementById('audit-pdf-frame');
-            // 加入 PDF 參數隱藏工具列讓預覽更沉浸
             iframe.src = item.url + '#toolbar=0&navpanes=0'; 
         };
 
-        // 💡 實作：將勾選的 PDF 檔案合併
         window.mergeSelectedFiles = async () => {
             const selectedFiles = uploadedAuditFiles.filter(f => f.selected);
-            if (selectedFiles.length < 2) {
-                alert("請至少勾選兩個檔案進行合併！");
-                return;
-            }
+            if (selectedFiles.length < 2) { alert("請至少勾選兩個檔案進行合併！"); return; }
 
             const btn = document.getElementById('btn-merge-files');
             const oriText = btn.innerHTML;
@@ -422,7 +451,6 @@
                 const { PDFDocument } = PDFLib;
                 const mergedPdf = await PDFDocument.create();
 
-                // 依序讀取並合併 PDF
                 for (const item of selectedFiles) {
                     const arrayBuffer = await item.file.arrayBuffer();
                     const pdf = await PDFDocument.load(arrayBuffer);
@@ -432,38 +460,26 @@
 
                 const mergedPdfBytes = await mergedPdf.save();
                 const mergedBlob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
-                
-                // 使用目前時間戳記產生預設檔名，也可直接套用 audit-filename 的值
                 const mergedFileName = "合併文件_" + new Date().getTime() + ".pdf";
                 const mergedFile = new File([mergedBlob], mergedFileName, { type: 'application/pdf' });
                 const mergedUrl = URL.createObjectURL(mergedBlob);
 
-                // 將未勾選的檔案保留，勾選的檔案移除
                 uploadedAuditFiles = uploadedAuditFiles.filter(f => !f.selected);
+                uploadedAuditFiles.push({ file: mergedFile, name: mergedFileName, size: (mergedFile.size / (1024 * 1024)).toFixed(2) + ' MB', url: mergedUrl, selected: true });
 
-                // 加入合併後的新檔案，並預設為選取狀態
-                uploadedAuditFiles.push({
-                    file: mergedFile,
-                    name: mergedFileName,
-                    size: (mergedFile.size / (1024 * 1024)).toFixed(2) + ' MB',
-                    url: mergedUrl,
-                    selected: true
-                });
-
+                window.addLog('合併檔案', `產出新檔: ${mergedFileName}`);
                 window.renderAuditFiles();
-                // 預覽最新的合併檔案
                 window.previewFile(uploadedAuditFiles.length - 1);
                 
             } catch (error) {
-                console.error("PDF 合併錯誤:", error);
                 alert("合併發生錯誤，請確認上傳的皆為有效的 PDF 檔案。");
             } finally {
                 btn.innerHTML = oriText;
                 btn.disabled = false;
             }
         };
-        // -------------------------------
 
+        // --- 核心系統加載 ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const dSnap = await getDocs(deptsCol);
@@ -497,7 +513,7 @@
             
             let html = '';
             let filteredDepts = globalDepts.filter(d => 
-                (d.name||'').toLowerCase().includes(search) || (d.code||'').toLowerCase().includes(search)
+                (d.name||'').toLowerCase().includes(search) || (d.code||'').toLowerCase().includes(search) || (d.shortName||'').toLowerCase().includes(search)
             );
 
             if(filteredDepts.length === 0) {
@@ -536,7 +552,7 @@
                         ${riskBadge}
                         <div class="flex items-start justify-between mb-4">
                             <div>
-                                <h3 class="text-base font-black text-slate-800 leading-tight">${dept.name}</h3>
+                                <h3 class="text-base font-black text-slate-800 leading-tight">${dept.shortName || dept.name}</h3>
                                 <div class="text-xs font-mono text-slate-400 mt-1">${dept.code}</div>
                             </div>
                             <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-colors shadow-inner">
@@ -580,7 +596,7 @@
         };
 
         // ==========================================
-        // View 2: 工作站邏輯 (包含篩選器與排序)
+        // View 2: 工作站邏輯
         // ==========================================
         function initWsFilters() {
             const container = document.getElementById('ws-filters-container');
@@ -673,7 +689,8 @@
             if(!currentWorkspaceDept) return;
 
             document.getElementById('ws-college').innerText = currentWorkspaceDept.college;
-            document.getElementById('ws-dept-name').innerText = currentWorkspaceDept.name + ' 專屬審查室';
+            // 💡 改用 shortName
+            document.getElementById('ws-dept-name').innerText = (currentWorkspaceDept.shortName || currentWorkspaceDept.name) + ' 專屬審查室';
             document.getElementById('badge-admin').innerText = adminFilesSettings.length;
 
             document.getElementById('view-lobby').classList.add('hidden');
@@ -717,7 +734,6 @@
                 return;
             }
 
-            // 整理資料與過濾
             let tasks = adminFilesSettings.map(fileDef => {
                 const taskId = `${currentWorkspaceDept.id}_${fileDef.id}`;
                 const reviewData = reviewRecords.find(r => r.id === taskId);
@@ -730,7 +746,6 @@
                 return matchSearch && matchStatus;
             });
 
-            // 💡 排序：依據指標代碼
             tasks.sort((a, b) => {
                 const indA = `${a.fileDef.indicator_code || ''}-${a.fileDef.sub_indicator || ''}`;
                 const indB = `${b.fileDef.indicator_code || ''}-${b.fileDef.sub_indicator || ''}`;
@@ -811,16 +826,21 @@
             currentAuditTask = { taskId, fileDef, dept: currentWorkspaceDept };
             const reviewData = reviewRecords.find(r => r.id === taskId);
 
-            document.getElementById('audit-dept-badge').innerText = currentWorkspaceDept.name;
+            // 💡 改用 shortName
+            document.getElementById('audit-dept-badge').innerText = currentWorkspaceDept.shortName || currentWorkspaceDept.name;
             document.getElementById('audit-title').innerText = fileDef.name;
 
-            // 檔名替換
+            // 💡 檔名替換 (也改用 shortName)
             let generatedFilename = (fileDef.dept_filename || '')
                 .replace(/\[系所代碼\]/g, currentWorkspaceDept.code)
-                .replace(/\[系所名稱\]/g, currentWorkspaceDept.name)
+                .replace(/\[系所名稱\]/g, currentWorkspaceDept.shortName || currentWorkspaceDept.name)
                 .replace(/\[文件名稱\]/g, fileDef.name);
             
             document.getElementById('audit-filename').value = reviewData?.final_filename || generatedFilename;
+            document.getElementById('audit-manual-note').value = reviewData?.manual_note || '';
+
+            currentLogs = reviewData?.logs || [];
+            window.renderLogs();
 
             // 檢核表生成
             const container = document.getElementById('audit-checklist-container');
@@ -832,17 +852,17 @@
                 let html = '';
                 fileDef.checklists.forEach((item, idx) => {
                     const isRiskItem = risks.includes(item);
-                    // 若是 pending 狀態，預設全勾；若是已審查，則依據紀錄還原
-                    const isChecked = (!reviewData || reviewData.status === 'pending') ? true : !isRiskItem;
+                    // 💡 若尚未審查 (pending)，預設不勾選 (false)；若已審查過，則還原上次狀態
+                    const isChecked = (reviewData && reviewData.status !== 'pending') ? !isRiskItem : false;
                     
                     html += `
                     <label class="flex items-start cursor-pointer group w-full relative">
                         <input type="checkbox" class="risk-checkbox sr-only" value="${item}" onchange="window.evaluateChecklist()" ${isChecked ? 'checked' : ''}>
-                        <div class="flex-1 border-2 rounded-2xl p-4 transition-all flex gap-3 items-center shadow-sm hover:shadow-md">
-                            <div class="w-6 h-6 rounded-full border-2 border-current flex items-center justify-center shrink-0 check-icon transition-colors">
-                                <i class="fa-solid fa-check text-xs"></i>
+                        <div class="flex-1 border-2 rounded-xl p-3 transition-all flex gap-3 items-center shadow-sm hover:shadow-md bg-white">
+                            <div class="w-5 h-5 rounded-full border-2 border-current flex items-center justify-center shrink-0 check-icon transition-colors">
+                                <i class="fa-solid fa-check text-[10px]"></i>
                             </div>
-                            <span class="text-sm font-bold text-slate-700 leading-relaxed transition-colors">${item}</span>
+                            <span class="text-sm font-bold text-slate-700 leading-snug transition-colors">${item}</span>
                         </div>
                     </label>
                     `;
@@ -856,9 +876,9 @@
         };
 
         window.closeAuditModal = () => {
-            // 清理已上傳檔案的 URL 以免 memory leak
             uploadedAuditFiles.forEach(f => URL.revokeObjectURL(f.url));
             uploadedAuditFiles = [];
+            currentLogs = [];
             window.renderAuditFiles();
 
             document.getElementById('audit-modal').classList.add('hidden');
@@ -872,8 +892,8 @@
             const btnRisk = document.getElementById('btn-audit-risk');
 
             if(checkboxes.length === 0) {
-                btnPass.disabled = false;
-                btnRisk.disabled = true;
+                if(btnPass) btnPass.disabled = false;
+                if(btnRisk) btnRisk.disabled = true;
                 return;
             }
 
@@ -894,8 +914,8 @@
                 }
             });
 
-            btnPass.disabled = !allChecked;
-            btnRisk.disabled = !anyUnchecked;
+            if(btnPass) btnPass.disabled = !allChecked;
+            if(btnRisk) btnRisk.disabled = !anyUnchecked;
         };
 
         window.submitAudit = async (status) => {
@@ -910,6 +930,12 @@
             }
 
             const final_filename = document.getElementById('audit-filename').value.trim();
+            const manual_note = document.getElementById('audit-manual-note').value.trim();
+            
+            // 加入當次操作紀錄
+            const userEmail = auth.currentUser ? auth.currentUser.email.split('@')[0] : 'Unknown';
+            let actionLabel = status === 'approved' ? '審查通過' : (status === 'risk' ? '標記為有風險' : '重設為無資料');
+            const newLogs = [...currentLogs, { action: '儲存審查', detail: `狀態變更為：${actionLabel}`, user: userEmail, time: new Date().toISOString() }];
 
             const payload = {
                 dept_id: currentAuditTask.dept.id,
@@ -917,10 +943,12 @@
                 status: status,
                 risk_reasons: risk_reasons,
                 final_filename: final_filename,
+                manual_note: manual_note,
+                logs: newLogs,
                 updated_at: serverTimestamp()
             };
 
-            const btnId = status === 'approved' ? 'btn-audit-pass' : 'btn-audit-risk';
+            const btnId = status === 'approved' ? 'btn-audit-pass' : (status === 'risk' ? 'btn-audit-risk' : 'btn-audit-missing');
             const btn = document.getElementById(btnId);
             const oriHtml = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-2xl"></i>';
@@ -931,6 +959,8 @@
                 window.closeAuditModal();
             } catch (err) {
                 alert("儲存失敗：" + err.message);
+            } finally {
+                // 💡 修復 Spinner 轉圈圈 Bug：確保還原按鈕狀態
                 btn.innerHTML = oriHtml;
                 btn.disabled = false;
             }
