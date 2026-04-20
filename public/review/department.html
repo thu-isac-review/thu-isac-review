@@ -35,33 +35,39 @@
 <body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden font-bold">
 
     <!-- ==========================================
-         View 1: 系所大廳 (Lobby)
+         View 1: 系級審查作業首頁
          ========================================== -->
     <div id="view-lobby" class="flex flex-col h-full w-full page-enter">
-        <div class="shrink-0 px-8 pt-8 pb-4">
-            <div class="flex justify-between items-end mb-6">
-                <div>
-                    <h2 class="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-3">
-                        <div class="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
-                            <i class="fa-solid fa-building-user"></i>
-                        </div>
-                        系級審查作業大廳
-                    </h2>
-                    <p class="text-sm text-slate-500 mt-2 font-medium">請選擇要處理的系所，進入其專屬的審查工作站。</p>
+        
+        <div class="shrink-0 px-6 pt-6 pb-4 space-y-4 animate-fade">
+            <!-- 統一風格：頂部標題區塊 -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shrink-0">
+                        <i class="fa-solid fa-building-user text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800 tracking-tight">系級審查作業</h2>
+                        <p class="text-xs text-slate-500 mt-1 font-bold">請選擇要處理的系所，進入其專屬的審查工作站。</p>
+                    </div>
                 </div>
-                <div class="relative w-72">
-                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="search-dept" placeholder="搜尋系所名稱或代碼..." class="w-full bg-white border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm transition-all">
+            </div>
+
+            <!-- 統一風格：搜尋與控制列 -->
+            <div class="flex flex-col md:flex-row justify-end items-center gap-4 w-full z-20 relative">
+                <div class="relative w-full md:w-72 shadow-sm rounded-lg shrink-0">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input type="text" id="search-dept" oninput="window.renderLobby()" placeholder="搜尋系所名稱或代碼..." class="w-full bg-white border border-slate-200 rounded-lg pl-9 pr-3 h-10 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-bold">
                 </div>
             </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto custom-scrollbar px-8 pb-8">
+        <div class="flex-1 overflow-y-auto custom-scrollbar px-6 pb-6">
             <div id="dept-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                <!-- JS 動態載入系所卡片 -->
+                <!-- JS 動態載入系所卡片與學院分類標題 -->
                 <div class="col-span-full py-20 text-center text-slate-400">
                     <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-blue-500"></i>
-                    <p>載入系所大廳中...</p>
+                    <p>資料載入中...</p>
                 </div>
             </div>
         </div>
@@ -295,7 +301,7 @@
                 // 3. 監聽審查結果表
                 onSnapshot(reviewsCol, (snapshot) => {
                     reviewRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    renderLobby();
+                    window.renderLobby();
                     if(currentWorkspaceDept) {
                         renderWorkspaceAdminFiles();
                     }
@@ -309,7 +315,7 @@
         // ==========================================
         // View 1: 大廳邏輯
         // ==========================================
-        function renderLobby() {
+        window.renderLobby = () => {
             const grid = document.getElementById('dept-grid');
             const search = document.getElementById('search-dept').value.toLowerCase().trim();
             
@@ -325,52 +331,62 @@
 
             const totalAdminFiles = adminFilesSettings.length;
 
-            filteredDepts.forEach(dept => {
-                // 計算行政文件進度
-                let adminCompleted = 0;
-                let hasRisk = false;
-                
-                adminFilesSettings.forEach(fileDef => {
-                    const taskId = `${dept.id}_${fileDef.id}`;
-                    const rev = reviewRecords.find(r => r.id === taskId);
-                    if(rev && rev.status === 'approved') adminCompleted++;
-                    if(rev && rev.status === 'risk') hasRisk = true;
-                });
+            // 依學院群組
+            const colleges = [...new Set(filteredDepts.map(d => d.college))];
 
-                const adminPercent = totalAdminFiles === 0 ? 0 : Math.round((adminCompleted / totalAdminFiles) * 100);
-                
-                // 風險警示 UI
-                let riskBadge = hasRisk ? `<div class="absolute -top-2 -right-2 w-5 h-5 bg-rose-500 rounded-full border-2 border-white shadow-sm flex items-center justify-center"><i class="fa-solid fa-exclamation text-white text-[10px]"></i></div>` : '';
-
+            colleges.forEach(college => {
                 html += `
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-300 transition-all cursor-pointer p-5 flex flex-col relative group" onclick="window.enterWorkspace('${dept.id}')">
-                    ${riskBadge}
-                    <div class="flex items-start justify-between mb-4">
-                        <div>
-                            <div class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">${dept.college}</div>
-                            <h3 class="text-base font-black text-slate-800 leading-tight">${dept.name}</h3>
-                            <div class="text-xs font-mono text-slate-400 mt-1">${dept.code}</div>
-                        </div>
-                        <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-colors shadow-inner">
-                            <i class="fa-solid fa-arrow-right"></i>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-auto space-y-3 border-t border-slate-100 pt-4">
-                        <div class="flex justify-between items-end">
-                            <span class="text-[11px] font-bold text-slate-500"><i class="fa-solid fa-folder-open mr-1"></i> 行政文件</span>
-                            <span class="text-xs font-black ${adminCompleted === totalAdminFiles && totalAdminFiles > 0 ? 'text-emerald-500' : 'text-slate-700'}">${adminCompleted} / ${totalAdminFiles}</span>
-                        </div>
-                        <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                            <div class="bg-${adminCompleted === totalAdminFiles && totalAdminFiles > 0 ? 'emerald' : 'blue'}-500 h-1.5 rounded-full transition-all" style="width: ${adminPercent}%"></div>
-                        </div>
-                    </div>
+                <div class="col-span-full mt-6 mb-2 first:mt-0">
+                    <h3 class="text-base font-black text-slate-700 border-b-2 border-slate-200 pb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-landmark text-blue-600"></i> ${college || '未分類學院'}
+                    </h3>
                 </div>`;
+
+                const deptsInCollege = filteredDepts.filter(d => d.college === college);
+                deptsInCollege.forEach(dept => {
+                    // 計算行政文件進度
+                    let adminCompleted = 0;
+                    let hasRisk = false;
+                    
+                    adminFilesSettings.forEach(fileDef => {
+                        const taskId = `${dept.id}_${fileDef.id}`;
+                        const rev = reviewRecords.find(r => r.id === taskId);
+                        if(rev && rev.status === 'approved') adminCompleted++;
+                        if(rev && rev.status === 'risk') hasRisk = true;
+                    });
+
+                    const adminPercent = totalAdminFiles === 0 ? 0 : Math.round((adminCompleted / totalAdminFiles) * 100);
+                    
+                    // 風險警示 UI
+                    let riskBadge = hasRisk ? `<div class="absolute -top-2 -right-2 w-5 h-5 bg-rose-500 rounded-full border-2 border-white shadow-sm flex items-center justify-center"><i class="fa-solid fa-exclamation text-white text-[10px]"></i></div>` : '';
+
+                    html += `
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-400 transition-all cursor-pointer p-5 flex flex-col relative group" onclick="window.enterWorkspace('${dept.id}')">
+                        ${riskBadge}
+                        <div class="flex items-start justify-between mb-4">
+                            <div>
+                                <h3 class="text-base font-black text-slate-800 leading-tight">${dept.name}</h3>
+                                <div class="text-xs font-mono text-slate-400 mt-1">${dept.code}</div>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-colors shadow-inner">
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-auto space-y-3 border-t border-slate-100 pt-4">
+                            <div class="flex justify-between items-end">
+                                <span class="text-[11px] font-bold text-slate-500"><i class="fa-solid fa-folder-open mr-1"></i> 行政文件</span>
+                                <span class="text-xs font-black ${adminCompleted === totalAdminFiles && totalAdminFiles > 0 ? 'text-emerald-500' : 'text-slate-700'}">${adminCompleted} / ${totalAdminFiles}</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                                <div class="bg-${adminCompleted === totalAdminFiles && totalAdminFiles > 0 ? 'emerald' : 'blue'}-500 h-1.5 rounded-full transition-all" style="width: ${adminPercent}%"></div>
+                            </div>
+                        </div>
+                    </div>`;
+                });
             });
             grid.innerHTML = html;
-        }
-
-        document.getElementById('search-dept').addEventListener('input', renderLobby);
+        };
 
         // ==========================================
         // View 2: 工作站邏輯
