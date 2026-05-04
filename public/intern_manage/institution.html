@@ -73,6 +73,8 @@
                     </button>
                 </div>
                 <div class="flex gap-2">
+                    <!-- 💡 補回這顆關鍵的合併按鈕 -->
+                    <button onclick="window.openMergeModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"><i class="fa-solid fa-link"></i> 合併勾選機構</button>
                     <button onclick="batchDelete()" class="bg-rose-500 hover:bg-rose-600 text-white px-5 py-2 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"><i class="fa-solid fa-trash-can"></i> 批次刪除選取</button>
                 </div>
             </div>
@@ -170,7 +172,7 @@
         </div>
     </div>
 
-    <!-- 💡 新增：合併機構專屬 Modal -->
+    <!-- 💡 合併機構專屬 Modal -->
     <div id="merge-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4 page-enter">
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="window.closeMergeModal()"></div>
         <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden relative flex flex-col max-h-[90vh]">
@@ -204,7 +206,6 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        // 💡 匯入 writeBatch 用於安全執行多個資料庫的合併更新
         import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc, serverTimestamp, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY", authDomain: "thu-isac-review.firebaseapp.com", projectId: "thu-isac-review", storageBucket: "thu-isac-review.firebasestorage.app", messagingSenderId: "453299876735", appId: "1:453299876735:web:1d8babca3315423161a04a" };
@@ -213,10 +214,10 @@
         const db = getFirestore(app);
         
         const dataCollection = collection(db, "internship_institutions");
-        const recordsCol = collection(db, "internship_records"); // 💡 合併時需要更新紀錄表
+        const recordsCol = collection(db, "internship_records"); 
         
         let allData = []; 
-        let allRecords = []; // 快取所有紀錄以供合併比對
+        let allRecords = []; 
         let editingId = null; 
         let currentPage = 1; 
         const itemsPerPage = 10;
@@ -228,7 +229,6 @@
         const LIST_COUNTRIES = ["中華民國","大陸地區","日本","美國","越南","泰國","澳大利亞","香港","澳門","馬來西亞","菲律賓","印尼","印度","孟加拉","緬甸","柬埔寨","黎巴嫩","蒙古","巴西","巴拉圭","秘魯"];
         const LIST_CITIES = ["臺北市","新北市","基隆市","桃園市","新竹縣","新竹市","苗栗縣","臺中市","彰化縣","南投縣","雲林縣","嘉義縣","嘉義市","臺南市","高雄市","屏東縣","宜蘭縣","花蓮縣","臺東縣","澎湖縣","金門縣","連江縣"];
 
-        // 初始化下拉選單
         function initSelectOptions() {
             const renderOptions = (list, targetId, placeholder = "") => {
                 let html = placeholder ? `<option value="">${placeholder}</option>` : '';
@@ -258,7 +258,6 @@
                     document.getElementById('table-body').innerHTML = `<tr><td colspan="7" class="px-6 py-16 text-center text-rose-500 font-bold"><i class="fa-solid fa-lock text-3xl mb-3"></i><p>資料讀取失敗，權限不足。</p></td></tr>`;
                 });
 
-                // 同步抓取紀錄資料 (備用合併)
                 getDocs(recordsCol).then(snap => {
                     allRecords = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 });
@@ -268,7 +267,6 @@
             }
         });
 
-        // 💡 處理海外機構防呆
         window.handleCountryChange = () => {
             const country = document.getElementById('input-country').value;
             const taxInput = document.getElementById('input-tax-id');
@@ -365,7 +363,7 @@
         window.openModal = () => {
             if (!editingId) { 
                 document.getElementById('data-form').reset();
-                window.handleCountryChange(); // 重置防呆狀態
+                window.handleCountryChange(); 
                 document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-building text-blue-600"></i> 新增實習機構';
             }
             document.getElementById('data-modal').classList.remove('hidden');
@@ -386,7 +384,6 @@
                 return matchSearch && matchCountry;
             });
 
-            // 排序：國別(中華民國優先) ➡️ 縣市別(依列表排序) ➡️ 機構名稱
             filteredInstitutions.sort((a, b) => {
                 const aIsDomestic = a.country === '中華民國' ? 0 : 1;
                 const bIsDomestic = b.country === '中華民國' ? 0 : 1;
@@ -432,7 +429,6 @@
             paginatedItems.forEach((data) => {
                 const isChecked = selectedIds.includes(data.id) ? 'checked' : '';
                 
-                // 處理海外機構防呆顯示
                 const isDomestic = data.country === '中華民國';
                 const dispTaxId = isDomestic && data.tax_id ? data.tax_id : '<span class="text-slate-300">-</span>';
                 const dispCity = isDomestic && data.city ? data.city : '<span class="text-slate-300">-</span>';
@@ -464,7 +460,6 @@
 
         window.exportToCSV = () => {
             if (filteredInstitutions.length === 0) { alert("沒有資料可供匯出！"); return; }
-            // 💡 更新 CSV 表頭
             let csv = '\uFEFF實習機構名稱,統一編號,實習場所國別,縣市別,實習場所地址\n';
             
             filteredInstitutions.sort((a, b) => {
@@ -489,7 +484,6 @@
                 const exportTaxId = isDomestic ? (d.tax_id || '') : '-';
                 const exportCity = isDomestic ? (d.city || '') : '-';
                 
-                // 💡 對應新的 CSV 順序
                 csv += [d.name, exportTaxId, d.country, exportCity, d.address].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
             });
             const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
@@ -517,7 +511,6 @@
                         }
                         cols.push(currentVal.trim());
                         
-                        // 💡 更新 CSV 欄位讀取邏輯
                         if (cols.length >= 5) {
                             const payload = {
                                 name: cols[0],
@@ -530,7 +523,6 @@
                             
                             if (!payload.name) continue;
                             
-                            // 海外防呆邏輯
                             if (payload.country !== '中華民國') {
                                 payload.tax_id = '';
                                 payload.city = '';
@@ -590,7 +582,7 @@
             document.getElementById('input-city').value = docData.city || '';
             document.getElementById('input-address').value = docData.address || '';
             
-            window.handleCountryChange(); // 觸發防呆狀態更新
+            window.handleCountryChange(); 
             
             document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-pen text-blue-600"></i> 編輯實習機構';
             document.getElementById('data-modal').classList.remove('hidden');
@@ -603,9 +595,6 @@
             }
         };
 
-        // ==========================================
-        // 💡 實作：機構批次合併功能
-        // ==========================================
         window.openMergeModal = () => {
             if(selectedIds.length < 2) {
                 alert("請至少勾選 2 個機構才能進行合併！");
@@ -616,7 +605,6 @@
             const container = document.getElementById('merge-options-container');
             let html = '';
             
-            // 找出被勾選的機構資料
             const targetInsts = allData.filter(i => selectedIds.includes(i.id));
 
             targetInsts.forEach((inst, idx) => {
@@ -630,7 +618,7 @@
                 </label>`;
             });
             container.innerHTML = html;
-            document.getElementById('btn-merge-submit').disabled = true; // 尚未選擇主體前鎖定按鈕
+            document.getElementById('btn-merge-submit').disabled = true; 
             
             document.getElementById('merge-modal').classList.remove('hidden');
         };
@@ -657,11 +645,8 @@
             btn.disabled = true;
 
             try {
-                // 初始化 Batch
                 const batch = writeBatch(db);
 
-                // 1. 更新關聯的 Internship Records
-                // 在所有的紀錄中，尋找 inst_raw 等於「準備被刪除的機構名稱」的紀錄
                 allRecords.forEach(record => {
                     if (deletedNames.includes(record.inst_raw)) {
                         const recordRef = doc(db, "internship_records", record.id);
@@ -672,22 +657,18 @@
                     }
                 });
 
-                // 2. 刪除被淘汰的機構
                 instsToDelete.forEach(id => {
                     const instRef = doc(db, "internship_institutions", id);
                     batch.delete(instRef);
                 });
 
-                // 執行 Batch
                 await batch.commit();
 
-                // 重置狀態
                 selectedIds = [];
                 updateBatchActionBar();
                 window.closeMergeModal();
                 alert(`合併成功！已保留「${masterInst.name}」並更新相關實習紀錄。`);
                 
-                // 重新載入紀錄資料 (確保快取最新)
                 const snap = await getDocs(recordsCol);
                 allRecords = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
