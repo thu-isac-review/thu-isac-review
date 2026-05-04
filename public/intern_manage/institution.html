@@ -73,7 +73,6 @@
                     </button>
                 </div>
                 <div class="flex gap-2">
-                    <!-- 💡 補回這顆關鍵的合併按鈕 -->
                     <button onclick="window.openMergeModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"><i class="fa-solid fa-link"></i> 合併勾選機構</button>
                     <button onclick="batchDelete()" class="bg-rose-500 hover:bg-rose-600 text-white px-5 py-2 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"><i class="fa-solid fa-trash-can"></i> 批次刪除選取</button>
                 </div>
@@ -219,6 +218,7 @@
         let allData = []; 
         let allRecords = []; 
         let editingId = null; 
+        let editingOldName = null; // 💡 紀錄編輯前的機構名稱
         let currentPage = 1; 
         const itemsPerPage = 10;
         
@@ -369,7 +369,11 @@
             document.getElementById('data-modal').classList.remove('hidden');
         };
 
-        window.closeModal = () => { document.getElementById('data-modal').classList.add('hidden'); editingId = null; };
+        window.closeModal = () => { 
+            document.getElementById('data-modal').classList.add('hidden'); 
+            editingId = null; 
+            editingOldName = null;
+        };
         
         window.changePage = (page) => { currentPage = page; window.renderTable(); };
 
@@ -565,9 +569,32 @@
 
             btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> 儲存中...';
             try {
-                if (editingId) { await updateDoc(doc(db, "internship_institutions", editingId), { ...payload, updated_at: serverTimestamp() }); } 
-                else { await addDoc(dataCollection, { ...payload, created_at: serverTimestamp() }); }
-                closeModal();
+                if (editingId) {
+                    // 💡 加入批次更新連動實習紀錄
+                    const batch = writeBatch(db);
+                    batch.update(doc(db, "internship_institutions", editingId), { ...payload, updated_at: serverTimestamp() });
+                    
+                    if (editingOldName && editingOldName !== payload.name) {
+                        allRecords.forEach(record => {
+                            if (record.inst_raw === editingOldName) {
+                                batch.update(doc(db, "internship_records", record.id), { 
+                                    inst_raw: payload.name, 
+                                    updated_at: serverTimestamp() 
+                                });
+                            }
+                        });
+                    }
+                    await batch.commit();
+
+                    if (editingOldName && editingOldName !== payload.name) {
+                        const snap = await getDocs(recordsCol);
+                        allRecords = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    }
+                } 
+                else { 
+                    await addDoc(dataCollection, { ...payload, created_at: serverTimestamp() }); 
+                }
+                window.closeModal();
             } catch (err) { alert("儲存發生錯誤：" + err.message); } 
             finally { btn.disabled = false; btn.innerText = '儲存機構主檔資料'; }
         };
@@ -575,6 +602,7 @@
         window.editData = (id) => {
             const docData = allData.find(d => d.id === id); if (!docData) return;
             editingId = id;
+            editingOldName = docData.name || ''; // 💡 紀錄編輯前的機構名稱
             
             document.getElementById('input-country').value = docData.country || '中華民國';
             document.getElementById('input-name').value = docData.name || '';
