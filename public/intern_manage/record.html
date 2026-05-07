@@ -928,19 +928,23 @@
                         }
                         cols.push(currentVal.trim());
 
-                        if (cols.length >= 11) {
-                            const stuId = (cols[0] || '').trim().toUpperCase();
-                            const stuName = (cols[1] || '').trim();
-                            const grade = cols[2];
-                            const inst_raw = cols[3];
-                            const coursesRaw = cols[4];
-                            const duration = cols[5];
-                            const hours = Number(cols[6]) || 0;
-                            const period_type = cols[7];
-                            const proof_type = cols[8];
-                            const insurance = cols[9];
-                            const employment = cols[10];
-                            const notes = cols[11] || '';
+                        if (cols.length >= 12) { // 確保有足夠的欄位
+                            const payload = {
+                                student_id: (cols[0] || '').toUpperCase().trim(),
+                                student_name: cols[1] || '',
+                                grade: cols[2] || '',           // cols[2]: 當學年年級
+                                inst_name: cols[3] || '',       // cols[3]: 實習機構名稱
+                                courses: cols[4] ? cols[4].split(';').map(c => c.trim()).filter(c=>c) : [],
+                                resp_dept: cols[5] || '',       // cols[5]: 負責填報系所 (文學院從這裡讀取)
+                                duration: cols[6] || '',        // cols[6]: 實習起訖時間
+                                hours: cols[7] || '',           // cols[7]: 核定時數
+                                period_type: cols[8] || '',     // cols[8]: 實習時間分類
+                                proof_type: cols[9] || '',      // cols[9]: 證明文件類型
+                                insurance: cols[10] || '',      // cols[10]: 投保情形
+                                employment: cols[11] || '',     // cols[11]: 勞雇關係
+                                notes: cols[12] || '',          // cols[12]: 備註
+                                created_at: serverTimestamp() 
+                            };
 
                             if (!stuId || !inst_raw || !duration || !period_type || !proof_type || !insurance || !employment || !grade) {
                                 errorCount++;
