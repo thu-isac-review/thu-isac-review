@@ -89,7 +89,7 @@
         </div>
     </div>
 
-    <!-- 表格滾動區 -->
+    <!-- 表格滾 कटोच區 -->
     <div class="flex-1 overflow-hidden px-6 pb-6 flex flex-col animate-fade">
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col flex-1 overflow-hidden">
             <div class="flex-1 overflow-auto custom-scrollbar relative">
@@ -369,7 +369,6 @@
             renderTable(); 
         };
 
-        // 💡 核心修正：將 renderTable 掛載到 window 以便 HTML 觸發
         window.renderTable = () => {
             const tbody = document.getElementById('table-body');
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
@@ -522,6 +521,7 @@
                 try {
                     const rows = event.target.result.split('\n').map(row => row.trim()).filter(row => row);
                     let addedCount = 0;
+                    let skippedCount = 0; // 紀錄因重複而跳過的數量
                     
                     for (let i = 1; i < rows.length; i++) {
                         let cols = [];
@@ -535,10 +535,20 @@
                         cols.push(currentVal.trim());
 
                         if (cols.length >= 5) {
+                            const studentId = (cols[2] || '').toUpperCase().trim();
+                            
+                            // 💡 檢查學號是否已經存在於目前的系統名單中 (allData)
+                            const isExist = allData.some(d => d.student_id === studentId);
+                            
+                            if (isExist) {
+                                skippedCount++; // 已存在，計數並跳過此筆
+                                continue;
+                            }
+
                             const payload = {
                                 college: cols[0],
                                 department: cols[1],
-                                student_id: (cols[2] || '').toUpperCase(),
+                                student_id: studentId,
                                 name: cols[3],
                                 gender: cols[4] || '男',
                                 nationality: cols[5] || '本國籍',
@@ -552,7 +562,14 @@
                         }
                     }
 
-                    alert(`✅ 成功匯入 ${addedCount} 筆學生資料！`);
+                    // 組裝完成訊息
+                    let finishMessage = `✅ 成功匯入 ${addedCount} 筆學生資料！`;
+                    if (skippedCount > 0) {
+                        finishMessage += `\n⚠️ 另有 ${skippedCount} 筆資料因「學號已存在」已自動跳過不重複新增。`;
+                    }
+                    
+                    alert(finishMessage);
+
                 } catch (error) { alert("匯入失敗，請確認 CSV 檔案格式是否正確。\n" + error.message); } 
                 finally { btn.innerHTML = originalHtml; btn.disabled = false; e.target.value = ''; }
             };
