@@ -866,17 +866,27 @@
         window.exportToCSV = () => {
             if (filteredRecords.length === 0) { alert("沒有資料可供匯出！"); return; }
             let csv = '\uFEFF學號,學生姓名,當學年年級,實習機構名稱,關聯課程(學年-學期_代號),負責填報系所,實習起訖時間,核定時數,實習時間分類,證明文件類型,投保情形,勞雇關係,備註\n';
-            filteredRecords.forEach(d => {
-                let courseNames = (Array.isArray(d.courses) ? d.courses : []).map(cid => { 
-                    const c = allCourses.find(x => x.id === cid); 
-                    return c ? `${c.academic_year}-${c.term}_${c.course_code}` : ''; 
-                }).filter(Boolean).join('、');
-                
-                const stuParts = (d.student_raw || '').split(' - ');
-                const stuId = stuParts[0] || '';
-                const stuName = stuParts[1] || '';
 
-                csv += [stuId, stuName, d.grade, d.inst_raw, courseNames, d.resp_dept || '', d.duration, d.hours, d.period_type, d.proof_type, d.insurance, d.employment, d.notes || ''].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+            filtered.forEach(d => {
+                let courseStr = Array.isArray(d.courses) ? d.courses.join('; ') : (d.courses || '');
+                
+                // 嚴格對齊 13 個欄位，把多擠進去的「學系」拿掉，最後補上備註
+                let row = [
+                    d.student_id,       // 1. 學號
+                    d.student_name,     // 2. 學生姓名
+                    d.grade,            // 3. 當學年年級
+                    d.inst_name,        // 4. 實習機構名稱
+                    courseStr,          // 5. 關聯課程
+                    d.resp_dept,        // 6. 負責填報系所 (您的「文學院」會出現在這裡)
+                    d.duration,         // 7. 實習起訖時間
+                    d.hours,            // 8. 核定時數
+                    d.period_type,      // 9. 實習時間分類
+                    d.proof_type,       // 10. 證明文件類型
+                    d.insurance,        // 11. 投保情形
+                    d.employment,       // 12. 勞雇關係
+                    d.notes             // 13. 備註 (補回來)
+                ];
+                csv += row.map(v => `"${(v || '').toString().replace(/"/g, '""')}"`).join(',') + '\n';
             });
             const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
             link.download = `實習紀錄總表_${new Date().toISOString().split('T')[0]}.csv`; link.click();
