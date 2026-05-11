@@ -866,27 +866,17 @@
         window.exportToCSV = () => {
             if (filteredRecords.length === 0) { alert("沒有資料可供匯出！"); return; }
             let csv = '\uFEFF學號,學生姓名,當學年年級,實習機構名稱,關聯課程(學年-學期_代號),負責填報系所,實習起訖時間,核定時數,實習時間分類,證明文件類型,投保情形,勞雇關係,備註\n';
-
-            filtered.forEach(d => {
-                let courseStr = Array.isArray(d.courses) ? d.courses.join('; ') : (d.courses || '');
+            filteredRecords.forEach(d => {
+                let courseNames = (Array.isArray(d.courses) ? d.courses : []).map(cid => { 
+                    const c = allCourses.find(x => x.id === cid); 
+                    return c ? `${c.academic_year}-${c.term}_${c.course_code}` : ''; 
+                }).filter(Boolean).join('、');
                 
-                // 嚴格對齊 13 個欄位，把多擠進去的「學系」拿掉，最後補上備註
-                let row = [
-                    d.student_id,       // 1. 學號
-                    d.student_name,     // 2. 學生姓名
-                    d.grade,            // 3. 當學年年級
-                    d.inst_name,        // 4. 實習機構名稱
-                    courseStr,          // 5. 關聯課程
-                    d.resp_dept,        // 6. 負責填報系所 (您的「文學院」會出現在這裡)
-                    d.duration,         // 7. 實習起訖時間
-                    d.hours,            // 8. 核定時數
-                    d.period_type,      // 9. 實習時間分類
-                    d.proof_type,       // 10. 證明文件類型
-                    d.insurance,        // 11. 投保情形
-                    d.employment,       // 12. 勞雇關係
-                    d.notes             // 13. 備註 (補回來)
-                ];
-                csv += row.map(v => `"${(v || '').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+                const stuParts = (d.student_raw || '').split(' - ');
+                const stuId = stuParts[0] || '';
+                const stuName = stuParts[1] || '';
+
+                csv += [stuId, stuName, d.grade, d.inst_raw, courseNames, d.resp_dept || '', d.duration, d.hours, d.period_type, d.proof_type, d.insurance, d.employment, d.notes || ''].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
             });
             const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
             link.download = `實習紀錄總表_${new Date().toISOString().split('T')[0]}.csv`; link.click();
@@ -928,23 +918,19 @@
                         }
                         cols.push(currentVal.trim());
 
-                        if (cols.length >= 12) { // 確保有足夠的欄位
-                            const payload = {
-                                student_id: (cols[0] || '').toUpperCase().trim(),
-                                student_name: cols[1] || '',
-                                grade: cols[2] || '',           // cols[2]: 當學年年級
-                                inst_name: cols[3] || '',       // cols[3]: 實習機構名稱
-                                courses: cols[4] ? cols[4].split(';').map(c => c.trim()).filter(c=>c) : [],
-                                resp_dept: cols[5] || '',       // cols[5]: 負責填報系所 (文學院從這裡讀取)
-                                duration: cols[6] || '',        // cols[6]: 實習起訖時間
-                                hours: cols[7] || '',           // cols[7]: 核定時數
-                                period_type: cols[8] || '',     // cols[8]: 實習時間分類
-                                proof_type: cols[9] || '',      // cols[9]: 證明文件類型
-                                insurance: cols[10] || '',      // cols[10]: 投保情形
-                                employment: cols[11] || '',     // cols[11]: 勞雇關係
-                                notes: cols[12] || '',          // cols[12]: 備註
-                                created_at: serverTimestamp() 
-                            };
+                        if (cols.length >= 11) {
+                            const stuId = (cols[0] || '').trim().toUpperCase();
+                            const stuName = (cols[1] || '').trim();
+                            const grade = cols[2];
+                            const inst_raw = cols[3];
+                            const coursesRaw = cols[4];
+                            const duration = cols[5];
+                            const hours = Number(cols[6]) || 0;
+                            const period_type = cols[7];
+                            const proof_type = cols[8];
+                            const insurance = cols[9];
+                            const employment = cols[10];
+                            const notes = cols[11] || '';
 
                             if (!stuId || !inst_raw || !duration || !period_type || !proof_type || !insurance || !employment || !grade) {
                                 errorCount++;
