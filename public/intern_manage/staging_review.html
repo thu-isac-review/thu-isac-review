@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>批次匯入審查中心</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -21,14 +21,14 @@
         th { background-color: #ffffff; border-bottom: 2px solid #f3f4f6; color: #6b7280; font-weight: 700; font-size: 13px; }
         tbody tr:hover td { background-color: #f9fafb; }
 
-        /* 凍結窗格 */
+        /* 凍結窗格設定 */
         .sticky-col-1 { position: sticky; left: 0; z-index: 10; }
         .sticky-col-2 { position: sticky; left: 50px; z-index: 10; }
         .sticky-col-3 { position: sticky; left: 210px; z-index: 10; }
         .sticky-shadow::after { content: ''; position: absolute; top: 0; right: -6px; bottom: 0; width: 6px; background: linear-gradient(to right, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0) 100%); pointer-events: none; z-index: 15; }
         thead .sticky-col-1, thead .sticky-col-2, thead .sticky-col-3 { z-index: 20; background-color: #ffffff; }
 
-        /* 手機版解除凍結 (保留空間給滑動) */
+        /* 手機版解除過多凍結，保留橫向滑動空間 */
         @media (max-width: 768px) {
             .sticky-col-2, .sticky-col-3 { position: static; left: auto; z-index: auto; }
             thead .sticky-col-2, thead .sticky-col-3 { z-index: auto; }
@@ -36,7 +36,7 @@
             .sticky-col-1::after { content: ''; position: absolute; top: 0; right: -6px; bottom: 0; width: 6px; background: linear-gradient(to right, rgba(0,0,0,0.06) 0%, rgba(0,0,0,0) 100%); pointer-events: none; z-index: 15; }
         }
 
-        /* 輸入框樣式 */
+        /* 無縫輸入框 (Borderless Inputs) */
         .clean-input { width: 100%; height: auto; min-height: 36px; background: transparent; border: 1px solid transparent; padding: 6px 10px; font-size: 14px; font-weight: 600; color: #1f2937; outline: none; transition: all 0.15s; border-radius: 8px; }
         .clean-input:hover:not(:disabled) { background-color: #f3f4f6; border-color: #e5e7eb; }
         .clean-input:focus:not(:disabled) { background-color: #ffffff; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); z-index: 5; position: relative; }
@@ -48,122 +48,115 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
+<body class="h-[100dvh] flex flex-col overflow-hidden text-slate-800 bg-[#F4F5F8]">
 
-<body class="h-[100dvh] flex flex-col overflow-hidden text-slate-800">
+    <div class="flex-1 w-full h-full overflow-y-auto overflow-x-hidden flex flex-col custom-scrollbar">
 
-    <div class="shrink-0 px-4 md:px-10 pt-6 md:pt-10 pb-4 md:pb-6 z-20 animate-fade flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 lg:gap-0">
-        <div class="w-full">
-            <h1 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">批次匯入審查中心</h1>
-            <p class="text-slate-500 mt-2 font-bold text-xs md:text-sm">上傳總表後資料將安全暫存於雲端。請核實下方機構與紀錄細節，確認無誤後點擊放行。</p>
-        </div>
-        <div class="flex flex-row flex-wrap gap-2 w-full lg:w-auto">
-            <button onclick="window.downloadTemplate()" class="flex-1 md:flex-none justify-center whitespace-nowrap h-11 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-6 rounded-xl text-sm transition-all shadow-sm flex items-center gap-2 active:scale-95">
-                下載範本
-            </button>
-            <button onclick="document.getElementById('import-file').click()" class="flex-1 md:flex-none justify-center whitespace-nowrap h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 rounded-xl text-sm transition-all shadow-md shadow-indigo-600/20 flex items-center gap-2 active:scale-95">
-                上傳資料總表
-            </button>
-            <input type="file" id="import-file" accept=".csv" class="hidden" onchange="window.processImport(event)">
-        </div>
-    </div>
-
-    <div class="shrink-0 px-4 md:px-10 pb-4 md:pb-6 grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-6 animate-fade" style="animation-delay: 0.1s;">
-        <div class="bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-100 flex justify-between items-center">
-            <div>
-                <div class="text-xs md:text-sm text-slate-500 font-bold mb-1">待審核資料</div>
-                <div class="text-3xl md:text-4xl font-black text-slate-800" id="stat-pending">0</div>
+        <div class="shrink-0 px-4 md:px-10 pt-6 md:pt-10 pb-4 md:pb-6 z-20 animate-fade flex flex-col lg:flex-row justify-between items-start lg:items-end gap-5 lg:gap-0">
+            <div class="w-full">
+                <h1 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">批次匯入審查中心</h1>
+                <p class="text-slate-500 mt-2 font-bold text-xs md:text-sm">上傳總表後資料將安全暫存於雲端。請核實下方機構與紀錄細節，確認無誤後點擊放行。</p>
             </div>
-            <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center text-xl md:text-2xl"><i class="fa-solid fa-file-lines"></i></div>
-        </div>
-        <div class="bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-100 flex justify-between items-center">
-            <div>
-                <div class="text-xs md:text-sm text-slate-500 font-bold mb-1">本次登入已核准</div>
-                <div class="text-3xl md:text-4xl font-black text-slate-800" id="stat-approved">0</div>
+            <div class="flex flex-row w-full lg:w-auto gap-2 md:gap-3">
+                <button onclick="window.downloadTemplate()" class="flex-1 lg:flex-none flex items-center justify-center whitespace-nowrap h-11 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-4 md:px-6 rounded-xl text-sm transition-all shadow-sm active:scale-95">
+                    下載範本
+                </button>
+                <button onclick="document.getElementById('import-file').click()" class="flex-1 lg:flex-none flex items-center justify-center whitespace-nowrap h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 md:px-6 rounded-xl text-sm transition-all shadow-md shadow-indigo-600/20 active:scale-95">
+                    上傳資料總表
+                </button>
+                <input type="file" id="import-file" accept=".csv" class="hidden" onchange="window.processImport(event)">
             </div>
-            <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-emerald-50 text-emerald-500 flex items-center justify-center text-xl md:text-2xl"><i class="fa-solid fa-check"></i></div>
         </div>
-        <div class="bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-100 flex justify-between items-center">
-            <div>
-                <div class="text-xs md:text-sm text-slate-500 font-bold mb-1">匯入阻擋 (缺必填)</div>
-                <div class="text-3xl md:text-4xl font-black text-slate-800" id="stat-error">0</div>
-            </div>
-            <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center text-xl md:text-2xl"><i class="fa-solid fa-exclamation"></i></div>
-        </div>
-    </div>
 
-    <div class="flex-1 overflow-hidden px-4 md:px-10 pb-4 md:pb-10 flex flex-col animate-fade min-h-0" style="animation-delay: 0.2s;">
-        <div class="bg-white rounded-2xl md:rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col flex-1 overflow-hidden relative min-h-0">
-            
-            <div class="px-4 md:px-8 py-4 md:py-5 border-b border-slate-100 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 shrink-0 z-20 bg-white">
-                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full lg:w-auto">
-                    <div class="relative w-full sm:w-72">
-                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="search-input" oninput="window.renderStagingTable()" placeholder="搜尋學生、機構..." class="w-full bg-slate-50 border border-slate-100 pl-11 pr-4 py-2.5 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+        <div class="shrink-0 px-4 md:px-10 pb-4 md:pb-6 grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-6 animate-fade" style="animation-delay: 0.1s;">
+            <div class="bg-white p-5 md:p-6 rounded-2xl md:rounded-3xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-100 flex justify-between items-center">
+                <div>
+                    <div class="text-xs md:text-sm text-slate-500 font-bold mb-1">待審核資料</div>
+                    <div class="text-3xl md:text-4xl font-black text-slate-800" id="stat-pending">0</div>
+                </div>
+                <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center text-xl md:text-2xl"><i class="fa-solid fa-file-lines"></i></div>
+            </div>
+            <div class="bg-white p-5 md:p-6 rounded-2xl md:rounded-3xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-100 flex justify-between items-center">
+                <div>
+                    <div class="text-xs md:text-sm text-slate-500 font-bold mb-1">本次登入已核准</div>
+                    <div class="text-3xl md:text-4xl font-black text-slate-800" id="stat-approved">0</div>
+                </div>
+                <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-emerald-50 text-emerald-500 flex items-center justify-center text-xl md:text-2xl"><i class="fa-solid fa-check"></i></div>
+            </div>
+            <div class="bg-white p-5 md:p-6 rounded-2xl md:rounded-3xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-100 flex justify-between items-center">
+                <div>
+                    <div class="text-xs md:text-sm text-slate-500 font-bold mb-1">匯入阻擋 (缺必填)</div>
+                    <div class="text-3xl md:text-4xl font-black text-slate-800" id="stat-error">0</div>
+                </div>
+                <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center text-xl md:text-2xl"><i class="fa-solid fa-exclamation"></i></div>
+            </div>
+        </div>
+
+        <div class="flex-1 flex flex-col shrink-0 min-h-[600px] md:min-h-0 px-4 md:px-10 pb-6 md:pb-10 animate-fade" style="animation-delay: 0.2s;">
+            <div class="bg-white rounded-2xl md:rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col flex-1 overflow-hidden relative min-h-0">
+                
+                <div class="px-4 md:px-8 py-4 md:py-5 border-b border-slate-100 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 shrink-0 z-20 bg-white">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full lg:w-auto">
+                        <div class="relative w-full sm:w-72">
+                            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="search-input" oninput="window.renderStagingTable()" placeholder="搜尋學生、機構..." class="w-full bg-slate-50 border border-slate-100 pl-11 pr-4 py-2.5 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+                        </div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto hidden sm:flex">
+                            <span class="bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap" id="badge-count">0 筆待審核</span>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-2 w-full sm:w-auto">
-                        <button class="flex-1 sm:flex-none whitespace-nowrap bg-white border border-slate-200 text-slate-600 px-4 py-2.5 rounded-xl text-sm font-bold shadow-sm hover:bg-slate-50 transition-all">篩選條件</button>
-                        <div class="hidden sm:block h-6 w-px bg-slate-200 mx-2"></div>
-                        <span class="hidden sm:inline-block bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap" id="badge-count">0 筆待審核</span>
+                    <div class="flex flex-row gap-2 w-full lg:w-auto">
+                        <button onclick="window.clearAllStaging()" class="flex-1 lg:flex-none justify-center whitespace-nowrap text-sm bg-white hover:bg-rose-50 text-slate-500 hover:text-rose-600 border border-slate-200 px-4 py-2.5 rounded-xl transition-colors font-bold shadow-sm flex items-center gap-1.5">
+                            <i class="fa-solid fa-trash-can"></i> 清空
+                        </button>
+                        <button onclick="window.approveAll()" class="flex-[2] lg:flex-none justify-center whitespace-nowrap text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl transition-colors font-bold shadow-md shadow-indigo-600/20 active:scale-95">
+                            批次核准全部
+                        </button>
                     </div>
                 </div>
-                <div class="flex flex-row gap-2 w-full lg:w-auto">
-                    <button onclick="window.clearAllStaging()" class="flex-1 lg:flex-none justify-center whitespace-nowrap text-sm bg-white hover:bg-rose-50 text-slate-500 hover:text-rose-600 border border-slate-200 px-5 py-2.5 rounded-xl transition-colors font-bold shadow-sm flex items-center gap-1.5">
-                        <i class="fa-solid fa-trash-can"></i> 清空
-                    </button>
-                    <button onclick="window.approveAll()" class="flex-1 lg:flex-none justify-center whitespace-nowrap text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl transition-colors font-bold shadow-md shadow-indigo-600/20 active:scale-95">
-                        批次核准全部
-                    </button>
+
+                <div class="flex-1 overflow-auto custom-scrollbar relative bg-white min-h-0">
+                    <table class="saas-table">
+                        <colgroup>
+                            <col style="width: 50px;">  <col style="width: 160px;"> <col style="width: 240px;"> <col style="width: 140px;"> <col style="width: 240px;"> <col style="width: 150px;"> <col style="width: 140px;"> <col style="width: 280px;"> <col style="width: 200px;"> <col style="width: 100px;"> <col style="width: 160px;"> <col style="width: 160px;"> <col style="width: 160px;"> <col style="width: 120px;"> <col style="width: 180px;"> </colgroup>
+
+                        <thead class="sticky top-0 z-30">
+                            <tr>
+                                <th class="px-4 py-4 text-center sticky-col-1"><i class="fa-solid fa-bolt text-slate-300"></i></th>
+                                <th class="px-4 py-4 text-left sticky-col-2">學生資訊</th>
+                                <th class="px-4 py-4 text-left sticky-col-3 sticky-shadow">課程標籤</th>
+                                <th class="px-4 py-4 text-left pl-8">國別 <span class="text-rose-400">*</span></th>
+                                <th class="px-4 py-4 text-left">機構名稱 <span class="text-rose-400">*</span></th>
+                                <th class="px-4 py-4 text-left">機構統編</th>
+                                <th class="px-4 py-4 text-left">縣市別</th>
+                                <th class="px-4 py-4 text-left">完整地址 <span class="text-rose-400">*</span></th>
+                                <th class="px-4 py-4 text-left pl-8">起訖時間 (Y/M/D) <span class="text-rose-400">*</span></th>
+                                <th class="px-4 py-4 text-center">總時數 <span class="text-rose-400">*</span></th>
+                                <th class="px-4 py-4 text-left">時間分類 <span class="text-rose-400">*</span></th>
+                                <th class="px-4 py-4 text-left">證明文件 <span class="text-rose-400">*</span></th>
+                                <th class="px-4 py-4 text-left">投保情形 <span class="text-rose-400">*</span></th>
+                                <th class="px-4 py-4 text-left">勞雇 <span class="text-rose-400">*</span></th>
+                                <th class="px-4 py-4 text-left">負責系所</th>
+                            </tr>
+                        </thead>
+                        <tbody id="staging-table-body">
+                            <tr>
+                                <td colspan="15" class="py-32 text-center text-slate-400 border-none">
+                                    <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-4 text-indigo-400"></i>
+                                    <p class="font-bold text-sm tracking-wide">與資料庫連線中...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-            </div>
-
-            <div class="flex-1 overflow-auto custom-scrollbar relative bg-white min-h-0">
-                <table class="saas-table">
-                    <colgroup>
-                        <col style="width: 50px;">  <col style="width: 160px;"> <col style="width: 240px;"> <col style="width: 140px;"> <col style="width: 240px;"> <col style="width: 150px;"> <col style="width: 140px;"> <col style="width: 280px;"> <col style="width: 200px;"> <col style="width: 100px;"> <col style="width: 160px;"> <col style="width: 160px;"> <col style="width: 160px;"> <col style="width: 120px;"> <col style="width: 180px;"> </colgroup>
-
-                    <thead class="sticky top-0 z-30">
-                        <tr>
-                            <th class="px-4 py-5 text-center sticky-col-1"><i class="fa-solid fa-bolt text-slate-300"></i></th>
-                            <th class="px-4 py-5 text-left sticky-col-2">學生資訊</th>
-                            <th class="px-4 py-5 text-left sticky-col-3 sticky-shadow">課程標籤</th>
-                            <th class="px-4 py-5 text-left pl-8">國別 <span class="text-rose-400">*</span></th>
-                            <th class="px-4 py-5 text-left">機構名稱 <span class="text-rose-400">*</span></th>
-                            <th class="px-4 py-5 text-left">機構統編</th>
-                            <th class="px-4 py-5 text-left">縣市別</th>
-                            <th class="px-4 py-5 text-left">完整地址 <span class="text-rose-400">*</span></th>
-                            <th class="px-4 py-5 text-left pl-8">起訖時間 (Y/M/D) <span class="text-rose-400">*</span></th>
-                            <th class="px-4 py-5 text-center">總時數 <span class="text-rose-400">*</span></th>
-                            <th class="px-4 py-5 text-left">時間分類 <span class="text-rose-400">*</span></th>
-                            <th class="px-4 py-5 text-left">證明文件 <span class="text-rose-400">*</span></th>
-                            <th class="px-4 py-5 text-left">投保情形 <span class="text-rose-400">*</span></th>
-                            <th class="px-4 py-5 text-left">勞雇 <span class="text-rose-400">*</span></th>
-                            <th class="px-4 py-5 text-left">負責系所</th>
-                        </tr>
-                    </thead>
-                    <tbody id="staging-table-body">
-                        <tr>
-                            <td colspan="15" class="py-32 text-center text-slate-400 border-none">
-                                <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-4 text-indigo-400"></i>
-                                <p class="font-bold text-sm tracking-wide">與資料庫連線中...</p>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            
-            <div class="bg-white border-t border-slate-100 px-4 md:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0 md:rounded-b-[2rem]">
-                <div id="pagination-info" class="text-sm font-bold text-slate-500">顯示 0 - 0 筆，共 0 筆資料</div>
-                <div class="flex gap-2">
-                    <button class="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 transition-colors"><i class="fa-solid fa-arrow-left"></i></button>
-                    <button class="w-10 h-10 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center shadow-md">1</button>
-                    <button class="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 transition-colors"><i class="fa-solid fa-arrow-right"></i></button>
+                
+                <div class="bg-white border-t border-slate-100 px-4 md:px-8 py-3 md:py-4 flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0 md:rounded-b-[2rem]">
+                    <div id="pagination-info" class="text-xs md:text-sm font-bold text-slate-500">顯示 0 - 0 筆，共 0 筆資料</div>
                 </div>
-            </div>
 
+            </div>
         </div>
-    </div>
-
-    <script type="module">
+    </div> <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, addDoc, serverTimestamp, writeBatch, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -361,7 +354,6 @@
             let html = '';
             filteredData.forEach(row => {
                 const id = row.id;
-                // 純淨膠囊標籤
                 const courseBadges = row.coursesInfo.map(c => `<span class="inline-flex items-center bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md text-[12px] font-bold mr-1.5 mb-1.5"><span class="mr-1.5 text-indigo-500">${c.code}</span>${c.name}</span>`).join('');
                 
                 const isOverseas = row.inst_country !== '中華民國';
@@ -372,10 +364,10 @@
                 <tr id="tr-${id}">
                     <td class="px-2 py-2 align-middle text-center sticky-col-1 bg-white group-hover:bg-slate-50/80 transition-colors">
                         <div class="flex flex-col gap-1.5 px-1 items-center justify-center">
-                            <button onclick="window.approveRow('${id}')" class="w-full h-8 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-md flex items-center justify-center transition-colors shadow-sm text-xs font-bold" title="核准放行">
+                            <button onclick="window.approveRow('${id}')" class="w-full h-8 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-md flex items-center justify-center transition-colors shadow-sm text-[11px] font-bold" title="核准放行">
                                 放行
                             </button>
-                            <button onclick="window.deleteStaging('${id}')" class="w-full h-7 bg-white text-slate-400 hover:bg-rose-500 hover:text-white rounded-md flex items-center justify-center transition-colors shadow-sm border border-slate-200 hover:border-rose-500 text-xs font-bold" title="刪除捨棄">
+                            <button onclick="window.deleteStaging('${id}')" class="w-full h-7 bg-white text-slate-400 hover:bg-rose-500 hover:text-white rounded-md flex items-center justify-center transition-colors shadow-sm border border-slate-200 hover:border-rose-500 text-[10px] font-bold" title="刪除捨棄">
                                 刪除
                             </button>
                         </div>
