@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>匯入資料審查中心</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { background-color: transparent; margin: 0; padding: 0; font-family: "SF Pro TC", "Noto Sans TC", sans-serif; -webkit-font-smoothing: antialiased; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        /* 讓表格內的輸入框更服貼 */
+        .cell-input { width: 100%; border: 1px solid transparent; background: transparent; padding: 4px 8px; border-radius: 6px; outline: none; transition: all 0.2s; }
+        .cell-input:hover { border-color: #cbd5e1; background: #f8fafc; }
+        .cell-input:focus { border-color: #3b82f6; background: #fff; box-shadow: 0 0 0 2px rgba(59,130,246,0.1); }
+        .cell-select { appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.2rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 1.5rem; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden font-bold">
+
+    <!-- 頂部資訊列 -->
+    <div class="shrink-0 px-6 pt-6 pb-2 space-y-4 fade-in z-20">
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
+            
+            <div class="flex items-center gap-4 relative z-10">
+                <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 shrink-0">
+                    <i class="fa-solid fa-list-check text-2xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-black text-slate-800 tracking-tight">批次匯入審查中心 (Staging Area)</h2>
+                    <p class="text-xs text-slate-500 mt-1 font-medium">上傳系所總表後，系統將自動建檔學生與課程，並將待核實之機構與時數統整於此供您審查放行。</p>
+                </div>
+            </div>
+            
+            <div class="flex gap-2 relative z-10">
+                <button onclick="document.getElementById('import-file').click()" class="h-10 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 rounded-xl text-sm transition-all shadow-md shadow-indigo-500/20 flex items-center gap-2 active:scale-95">
+                    <i class="fa-solid fa-cloud-arrow-up text-base"></i> 上傳系所總表 (CSV)
+                </button>
+                <input type="file" id="import-file" accept=".csv" class="hidden" onchange="window.processImport(event)">
+            </div>
+        </div>
+
+        <!-- 處理結果摘要卡片 (預設隱藏) -->
+        <div id="summary-cards" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4 fade-in">
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4 border-l-4 border-l-blue-500">
+                <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center text-lg"><i class="fa-solid fa-user-graduate"></i></div>
+                <div><div class="text-[11px] text-slate-500 font-bold">自動寫入學生主檔</div><div class="text-xl font-black text-slate-800" id="count-student">0 <span class="text-xs font-bold text-slate-400">筆新資料</span></div></div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4 border-l-4 border-l-emerald-500">
+                <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-lg"><i class="fa-solid fa-book"></i></div>
+                <div><div class="text-[11px] text-slate-500 font-bold">自動寫入課程主檔</div><div class="text-xl font-black text-slate-800" id="count-course">0 <span class="text-xs font-bold text-slate-400">門新課程</span></div></div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4 border-l-4 border-l-amber-500">
+                <div class="w-10 h-10 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center text-lg"><i class="fa-solid fa-code-merge"></i></div>
+                <div><div class="text-[11px] text-slate-500 font-bold">智能聚合實習紀錄</div><div class="text-xl font-black text-slate-800" id="count-record">0 <span class="text-xs font-bold text-slate-400">筆待審核</span></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 審查表格區 -->
+    <div class="flex-1 overflow-hidden px-6 pb-6 flex flex-col fade-in">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col flex-1 overflow-hidden">
+            
+            <div class="px-5 py-3 bg-slate-50 border-b border-slate-200 flex justify-between items-center shrink-0">
+                <h3 class="text-sm font-black text-slate-700 flex items-center gap-2"><i class="fa-solid fa-list-check text-amber-500"></i> 待審核紀錄區</h3>
+                <button onclick="window.approveAll()" class="text-xs bg-emerald-100 hover:bg-emerald-500 text-emerald-700 hover:text-white border border-emerald-200 px-3 py-1.5 rounded-lg transition-colors font-bold shadow-sm">
+                    <i class="fa-solid fa-check-double mr-1"></i>批次核准全部
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-auto custom-scrollbar relative">
+                <table class="w-full text-left table-fixed border-collapse min-w-[2000px]">
+                    <thead class="bg-white border-b-2 border-slate-200 sticky top-0 z-10 shadow-sm">
+                        <tr>
+                            <!-- 唯讀區 -->
+                            <th class="px-3 py-3 text-center text-xs font-black text-slate-400 w-[60px] bg-slate-50">狀態</th>
+                            <th class="px-3 py-3 text-left text-xs font-black text-slate-400 w-[140px] bg-slate-50">實習學生 (唯讀)</th>
+                            <th class="px-3 py-3 text-left text-xs font-black text-slate-400 w-[180px] bg-slate-50">聚合課程 (唯讀)</th>
+                            <th class="px-3 py-3 text-left text-xs font-black text-slate-400 w-[100px] bg-slate-50 border-r border-slate-200">負責系所</th>
+                            
+                            <!-- 機構審核區 -->
+                            <th class="px-3 py-3 text-left text-xs font-black text-emerald-600 w-[100px] bg-emerald-50/30">國別 <span class="text-rose-500">*</span></th>
+                            <th class="px-3 py-3 text-left text-xs font-black text-emerald-600 w-[200px] bg-emerald-50/30">機構名稱 <span class="text-rose-500">*</span></th>
+                            <th class="px-3 py-3 text-left text-xs font-black text-emerald-600 w-[120px] bg-emerald-50/30">統編</th>
+                            <th class="px-3 py-3 text-left text-xs font-black text-emerald-600 w-[100px] bg-emerald-50/30">縣市別</th>
+                            <th class="px-3 py-3 text-left text-xs font-black text-emerald-600 min-w-[200px] bg-emerald-50/30 border-r border-slate-200">地址 <span class="text-rose-500">*</span></th>
+                            
+                            <!-- 紀錄審核區 -->
+                            <th class="px-3 py-3 text-left text-xs font-black text-amber-600 w-[200px] bg-amber-50/30">起訖時間 (Y/M/D-Y/M/D) <span class="text-rose-500">*</span></th>
+                            <th class="px-3 py-3 text-left text-xs font-black text-amber-600 w-[100px] bg-amber-50/30">總時數 <span class="text-rose-500">*</span></th>
+                            <th class="px-3 py-3 text-left text-xs font-black text-amber-600 w-[130px] bg-amber-50/30">時間分類 <span class="text-rose-500">*</span></th>
+                            <th class="px-3 py-3 text-left text-xs font-black text-amber-600 w-[130px] bg-amber-50/30">證明文件 <span class="text-rose-500">*</span></th>
+                            <th class="px-3 py-3 text-left text-xs font-black text-amber-600 w-[130px] bg-amber-50/30">投保情形 <span class="text-rose-500">*</span></th>
+                            <th class="px-3 py-3 text-left text-xs font-black text-amber-600 w-[100px] bg-amber-50/30">勞雇關係 <span class="text-rose-500">*</span></th>
+                            
+                            <th class="px-3 py-3 text-center text-xs font-black text-slate-400 w-[100px] bg-slate-50 border-l border-slate-200">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="staging-table-body" class="text-[13px]">
+                        <tr><td colspan="16" class="px-6 py-20 text-center text-slate-400 font-bold bg-white">請先上傳 CSV 總表，資料將顯示於此供您逐筆審核。</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, getDocs, doc, setDoc, addDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY", authDomain: "thu-isac-review.firebaseapp.com", projectId: "thu-isac-review", storageBucket: "thu-isac-review.firebasestorage.app", messagingSenderId: "453299876735", appId: "1:453299876735:web:1d8babca3315423161a04a" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app); 
+        const db = getFirestore(app);
+
+        let existingStudents = [];
+        let existingCourses = [];
+        let existingInstitutions = [];
+        
+        let stagingData = []; // 存放解析且聚合後的待審查紀錄
+        
+        const CITIES = ["臺北市","新北市","基隆市","桃園市","新竹縣","新竹市","苗栗縣","臺中市","彰化縣","南投縣","雲林縣","嘉義縣","嘉義市","臺南市","高雄市","屏東縣","宜蘭縣","花蓮縣","臺東縣","澎湖縣","金門縣","連江縣"];
+
+        // 載入現有資料庫供比對
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const sSnap = await getDocs(collection(db, "internship_students"));
+                existingStudents = sSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                
+                const cSnap = await getDocs(collection(db, "internship_courses"));
+                existingCourses = cSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+                const iSnap = await getDocs(collection(db, "internship_institutions"));
+                existingInstitutions = iSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+            }
+        });
+
+        // 建立選單 HTML 工具函數
+        const makeSelect = (val, options, key, idx) => {
+            let html = `<select class="cell-input cell-select font-bold" onchange="stagingData[${idx}].${key}=this.value">`;
+            options.forEach(opt => {
+                html += `<option value="${opt}" ${val === opt ? 'selected' : ''}>${opt}</option>`;
+            });
+            html += `</select>`;
+            return html;
+        };
+
+        window.processImport = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const rows = event.target.result.split('\n').map(row => row.trim()).filter(row => row);
+                    
+                    let newStudentsCount = 0;
+                    let newCoursesCount = 0;
+                    let aggregatedRecordsMap = new Map(); // 用來做智能聚合的 Map
+                    
+                    const batch = writeBatch(db); // 使用批次寫入提升效能
+
+                    for (let i = 1; i < rows.length; i++) {
+                        let cols = []; let inQuotes = false; let currentVal = '';
+                        for (let char of rows[i]) {
+                            if (char === '"') { inQuotes = !inQuotes; }
+                            else if (char === ',' && !inQuotes) { cols.push(currentVal.trim()); currentVal = ''; }
+                            else { currentVal += char; }
+                        }
+                        cols.push(currentVal.trim());
+
+                        // 預期 CSV 有 28 欄
+                        if (cols.length >= 28) {
+                            // --- 1. 學生資料萃取 ---
+                            const stu_college = cols[0]; const stu_dept = cols[1];
+                            const stu_id = (cols[2] || '').toUpperCase(); const stu_name = cols[3];
+                            const stu_gender = cols[4] || '男'; const stu_nat = cols[5] || '本國籍';
+                            const grade = cols[6];
+
+                            if (stu_id && stu_name) {
+                                const isStuExist = existingStudents.some(s => s.college === stu_college && s.department === stu_dept && s.student_id === stu_id && s.name === stu_name && s.gender === stu_gender && s.nationality === stu_nat);
+                                if (!isStuExist) {
+                                    const stuRef = doc(collection(db, "internship_students"));
+                                    const newStu = { college: stu_college, department: stu_dept, student_id: stu_id, name: stu_name, gender: stu_gender, nationality: stu_nat, created_at: serverTimestamp() };
+                                    batch.set(stuRef, newStu);
+                                    existingStudents.push({ id: stuRef.id, ...newStu }); // 更新本地暫存
+                                    newStudentsCount++;
+                                }
+                            }
+
+                            // --- 2. 課程資料萃取 ---
+                            const c_year = cols[12]; const c_term = cols[13];
+                            const c_col = cols[14]; const c_dept = cols[15];
+                            const c_code = cols[16]; const c_name = cols[17];
+                            const c_edu = cols[18]; const c_type = cols[19];
+                            const c_credits = Number(cols[20]) || 0;
+                            
+                            if (c_year && c_term && c_code && c_name) {
+                                const isCourseExist = existingCourses.some(c => c.academic_year === c_year && c.term === c_term && c.college === c_col && c.department === c_dept && c.course_code === c_code && c.course_name === c_name && c.edu_system === c_edu && c.course_type === c_type && c.credits === c_credits);
+                                if (!isCourseExist) {
+                                    const courseRef = doc(collection(db, "internship_courses"));
+                                    const newCourse = { academic_year: c_year, term: c_term, semester: `${c_year}-${c_term}`, college: c_col, department: c_dept, course_code: c_code, course_name: c_name, edu_system: c_edu, course_type: c_type, credits: c_credits, sortOrder: 999, created_at: serverTimestamp() };
+                                    batch.set(courseRef, newCourse);
+                                    existingCourses.push({ id: courseRef.id, ...newCourse });
+                                    newCoursesCount++;
+                                }
+                            }
+
+                            // --- 3. 聚合實習紀錄與機構資料 ---
+                            const inst_country = cols[7]; const inst_name = cols[8];
+                            const inst_tax = cols[9]; const inst_city = cols[10]; const inst_addr = cols[11];
+                            const duration = cols[21]; const hours = Number(cols[22]) || 0;
+                            const period_type = cols[23]; const proof_type = cols[24];
+                            const insurance = cols[25]; const employment = cols[26];
+                            const resp_dept = cols[27];
+
+                            // 聚合 Key：學號 + 機構名稱 + 時間
+                            if (stu_id && inst_name && duration) {
+                                const aggKey = `${stu_id}_${inst_name}_${duration}`;
+                                
+                                // 找尋對應的課程ID
+                                const matchCourse = existingCourses.find(c => c.academic_year === c_year && c.term === c_term && c.course_code === c_code);
+                                const courseIdObj = matchCourse ? { id: matchCourse.id, code: c_code, name: c_name } : null;
+
+                                if (aggregatedRecordsMap.has(aggKey)) {
+                                    // 已存在，將時數累加，並把新的課程推進陣列
+                                    let existingRecord = aggregatedRecordsMap.get(aggKey);
+                                    existingRecord.hours += hours;
+                                    if (courseIdObj && !existingRecord.coursesInfo.some(c => c.id === courseIdObj.id)) {
+                                        existingRecord.coursesInfo.push(courseIdObj);
+                                    }
+                                } else {
+                                    // 建立新聚合主體
+                                    aggregatedRecordsMap.set(aggKey, {
+                                        id: 'temp_' + Math.random().toString(36).substr(2, 9),
+                                        status: 'pending', // pending, approved
+                                        stuId: stu_id, stuName: stu_name, grade: grade,
+                                        resp_dept: resp_dept,
+                                        
+                                        // 可編輯機構資料
+                                        inst_country: inst_country || '中華民國', inst_name: inst_name, inst_tax: inst_tax || '', inst_city: inst_city || '', inst_addr: inst_addr || '',
+                                        
+                                        // 可編輯紀錄資料
+                                        duration: duration, hours: hours, period_type: period_type, proof_type: proof_type, insurance: insurance, employment: employment,
+                                        
+                                        coursesInfo: courseIdObj ? [courseIdObj] : []
+                                    });
+                                }
+                            }
+                        }
+                    }
+
+                    // 執行學生與課程的寫入
+                    if (newStudentsCount > 0 || newCoursesCount > 0) {
+                        await batch.commit();
+                    }
+
+                    // 將聚合後的 Map 轉換成陣列顯示於 UI
+                    stagingData = Array.from(aggregatedRecordsMap.values());
+                    
+                    document.getElementById('summary-cards').classList.remove('hidden');
+                    document.getElementById('count-student').innerHTML = `${newStudentsCount} <span class="text-xs font-bold text-slate-400">筆新資料</span>`;
+                    document.getElementById('count-course').innerHTML = `${newCoursesCount} <span class="text-xs font-bold text-slate-400">門新課程</span>`;
+                    document.getElementById('count-record').innerHTML = `${stagingData.length} <span class="text-xs font-bold text-slate-400">筆待審核 (已智能聚合)</span>`;
+
+                    renderStagingTable();
+
+                } catch (error) { 
+                    alert("解析匯入檔發生錯誤：\n" + error.message); 
+                } finally {
+                    e.target.value = '';
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        function renderStagingTable() {
+            const tbody = document.getElementById('staging-table-body');
+            if (stagingData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="16" class="px-6 py-20 text-center text-slate-400 font-bold bg-white">目前無待審查紀錄。</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            stagingData.forEach((row, idx) => {
+                if (row.status === 'approved') return; // 已核准的從清單隱藏
+
+                const courseBadges = row.coursesInfo.map(c => `<span class="inline-block bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded text-[10px] mb-1 mr-1">${c.code} ${c.name}</span>`).join('');
+                const courseIds = row.coursesInfo.map(c => c.id);
+                
+                // 定義 Select 的選項
+                const periodOptions = ['寒假實習', '暑假實習', '學期期間實習', '單一學期實習', '全學年'];
+                const proofOptions = ['合約', '公函', '其他證明文件'];
+                const insOptions = ['僅校外實習保險', '僅勞保', '兩者皆有', '兩者皆無'];
+                const empOptions = ['是', '否'];
+                const countryOptions = ["中華民國","大陸地區","日本","美國","越南","泰國","澳大利亞","香港","澳門","馬來西亞","菲律賓","印尼","印度"]; // 簡化展示
+
+                html += `
+                <tr class="bg-white hover:bg-slate-50 transition-colors border-b border-slate-100" id="tr-${row.id}">
+                    <td class="px-3 py-2 align-middle text-center border-r border-slate-100">
+                        <div class="w-2 h-2 rounded-full bg-amber-400 mx-auto shadow-[0_0_8px_rgba(251,191,36,0.6)] animate-pulse"></div>
+                    </td>
+                    <td class="px-3 py-2 align-middle border-r border-slate-100 bg-slate-50/30">
+                        <div class="font-black text-slate-700 leading-tight">${row.stuName}</div>
+                        <div class="text-[10px] text-slate-500 font-mono mt-0.5">${row.stuId} | ${row.grade}年級</div>
+                    </td>
+                    <td class="px-3 py-2 align-middle border-r border-slate-100 bg-slate-50/30 leading-tight">
+                        <div class="max-w-[160px] truncate hover:text-clip hover:whitespace-normal" title="${row.coursesInfo.map(c=>c.name).join(', ')}">${courseBadges || '<span class="text-rose-400 text-xs">查無課程</span>'}</div>
+                    </td>
+                    <td class="px-3 py-2 align-middle border-r border-slate-200 bg-slate-50/30">
+                        <input type="text" class="cell-input text-[11px]" value="${row.resp_dept}" oninput="stagingData[${idx}].resp_dept=this.value">
+                    </td>
+
+                    <!-- 機構區 -->
+                    <td class="px-2 py-2 align-middle border-r border-slate-100">
+                        ${makeSelect(row.inst_country, countryOptions, 'inst_country', idx)}
+                    </td>
+                    <td class="px-2 py-2 align-middle border-r border-slate-100">
+                        <input type="text" class="cell-input font-black text-emerald-700" value="${row.inst_name}" oninput="stagingData[${idx}].inst_name=this.value">
+                    </td>
+                    <td class="px-2 py-2 align-middle border-r border-slate-100">
+                        <input type="text" class="cell-input font-mono" value="${row.inst_tax}" oninput="stagingData[${idx}].inst_tax=this.value" placeholder="統一編號">
+                    </td>
+                    <td class="px-2 py-2 align-middle border-r border-slate-100">
+                        ${makeSelect(row.inst_city, CITIES, 'inst_city', idx)}
+                    </td>
+                    <td class="px-2 py-2 align-middle border-r border-slate-200">
+                        <input type="text" class="cell-input" value="${row.inst_addr}" oninput="stagingData[${idx}].inst_addr=this.value">
+                    </td>
+
+                    <!-- 紀錄區 -->
+                    <td class="px-2 py-2 align-middle border-r border-slate-100">
+                        <input type="text" class="cell-input font-mono text-center font-bold text-amber-700" value="${row.duration}" oninput="stagingData[${idx}].duration=this.value" placeholder="YY/MM/DD-YY/MM/DD">
+                    </td>
+                    <td class="px-2 py-2 align-middle border-r border-slate-100">
+                        <input type="number" class="cell-input text-center font-black text-amber-700 bg-amber-50" value="${row.hours}" oninput="stagingData[${idx}].hours=Number(this.value)">
+                    </td>
+                    <td class="px-2 py-2 align-middle border-r border-slate-100">
+                        ${makeSelect(row.period_type, periodOptions, 'period_type', idx)}
+                    </td>
+                    <td class="px-2 py-2 align-middle border-r border-slate-100">
+                        ${makeSelect(row.proof_type, proofOptions, 'proof_type', idx)}
+                    </td>
+                    <td class="px-2 py-2 align-middle border-r border-slate-100">
+                        ${makeSelect(row.insurance, insOptions, 'insurance', idx)}
+                    </td>
+                    <td class="px-2 py-2 align-middle border-r border-slate-100">
+                        ${makeSelect(row.employment, empOptions, 'employment', idx)}
+                    </td>
+
+                    <td class="px-3 py-2 align-middle text-center bg-slate-50 border-l border-slate-200">
+                        <button onclick="window.approveRow(${idx})" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-1.5 rounded-lg shadow-sm transition-all text-[11px] active:scale-95">
+                            <i class="fa-solid fa-check mr-1"></i>放行
+                        </button>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+
+        window.approveRow = async (idx) => {
+            const row = stagingData[idx];
+            if (row.status === 'approved') return;
+
+            // 基礎驗證
+            if (!row.inst_name || !row.duration || !row.hours) {
+                alert(`請確認「機構名稱」、「起訖時間」、「總時數」皆已填寫完整！`);
+                return;
+            }
+
+            try {
+                // 1. 處理機構 (嚴格全匹配，否則新建)
+                const isMatchInst = existingInstitutions.find(i => i.country === row.inst_country && i.name === row.inst_name && i.tax_id === row.inst_tax && i.city === row.inst_city && i.address === row.inst_addr);
+                
+                if (!isMatchInst) {
+                    const instRef = await addDoc(collection(db, "internship_institutions"), {
+                        country: row.inst_country, name: row.inst_name, tax_id: row.inst_tax, city: row.inst_city, address: row.inst_addr, created_at: serverTimestamp()
+                    });
+                    existingInstitutions.push({ id: instRef.id, country: row.inst_country, name: row.inst_name, tax_id: row.inst_tax, city: row.inst_city, address: row.inst_addr });
+                }
+
+                // 2. 寫入實習紀錄
+                const courseIds = row.coursesInfo.map(c => c.id).filter(Boolean);
+                
+                await addDoc(collection(db, "internship_records"), {
+                    student_raw: `${row.stuId} - ${row.stuName}`, grade: row.grade,
+                    inst_raw: row.inst_name,
+                    courses: courseIds,
+                    duration: row.duration, hours: row.hours,
+                    period_type: row.period_type, proof_type: row.proof_type,
+                    insurance: row.insurance, employment: row.employment,
+                    resp_dept: row.resp_dept,
+                    created_at: serverTimestamp()
+                });
+
+                // 3. UI 標記完成並隱藏
+                stagingData[idx].status = 'approved';
+                document.getElementById(`tr-${row.id}`).classList.add('hidden');
+                
+                // 更新數字
+                const remaining = stagingData.filter(d => d.status === 'pending').length;
+                document.getElementById('count-record').innerHTML = `${remaining} <span class="text-xs font-bold text-slate-400">筆待審核</span>`;
+                
+                if (remaining === 0) {
+                    alert("✅ 恭喜！所有紀錄皆已核准放行完畢。");
+                }
+
+            } catch(e) {
+                alert("寫入資料庫時發生錯誤: " + e.message);
+            }
+        };
+
+        window.approveAll = async () => {
+            const pendings = stagingData.filter(d => d.status === 'pending');
+            if(pendings.length === 0) { alert("沒有待審核的紀錄！"); return; }
+            
+            if(!confirm(`確定要將畫面上所有 ${pendings.length} 筆資料全部放行寫入系統嗎？\n請確保您已核閱過內容無誤。`)) return;
+
+            // 為了避免迴圈中 await 阻塞太久，實務上可改用 writeBatch，這裡為求邏輯獨立沿用 approveRow 的邏輯依次處理
+            for (let i = 0; i < stagingData.length; i++) {
+                if(stagingData[i].status === 'pending') {
+                    await window.approveRow(i);
+                }
+            }
+        };
+
+    </script>
+</body>
+</html>
