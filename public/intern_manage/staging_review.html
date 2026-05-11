@@ -12,7 +12,6 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        /* 讓表格內的輸入框更服貼 */
         .cell-input { width: 100%; border: 1px solid transparent; background: transparent; padding: 4px 8px; border-radius: 6px; outline: none; transition: all 0.2s; }
         .cell-input:hover { border-color: #cbd5e1; background: #f8fafc; }
         .cell-input:focus { border-color: #3b82f6; background: #fff; box-shadow: 0 0 0 2px rgba(59,130,246,0.1); }
@@ -37,14 +36,18 @@
             </div>
             
             <div class="flex gap-2 relative z-10">
-                <button onclick="document.getElementById('import-file').click()" class="h-10 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 rounded-xl text-sm transition-all shadow-md shadow-indigo-500/20 flex items-center gap-2 active:scale-95">
-                    <i class="fa-solid fa-cloud-arrow-up text-base"></i> 上傳系所總表 (CSV)
+                <!-- 下載範本按鈕 -->
+                <button onclick="window.downloadTemplate()" class="h-10 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-4 rounded-xl text-sm transition-all shadow-sm flex items-center gap-2 active:scale-95">
+                    <i class="fa-solid fa-download text-emerald-600"></i> 下載匯入範本
+                </button>
+                <button id="btn-upload" onclick="document.getElementById('import-file').click()" class="h-10 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 rounded-xl text-sm transition-all shadow-md shadow-indigo-500/20 flex items-center gap-2 active:scale-95">
+                    <i class="fa-solid fa-cloud-arrow-up text-base"></i> 上傳總表 (CSV)
                 </button>
                 <input type="file" id="import-file" accept=".csv" class="hidden" onchange="window.processImport(event)">
             </div>
         </div>
 
-        <!-- 處理結果摘要卡片 (預設隱藏) -->
+        <!-- 處理結果摘要卡片 -->
         <div id="summary-cards" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4 fade-in">
             <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4 border-l-4 border-l-blue-500">
                 <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center text-lg"><i class="fa-solid fa-user-graduate"></i></div>
@@ -101,7 +104,7 @@
                         </tr>
                     </thead>
                     <tbody id="staging-table-body" class="text-[13px]">
-                        <tr><td colspan="16" class="px-6 py-20 text-center text-slate-400 font-bold bg-white">請先上傳 CSV 總表，資料將顯示於此供您逐筆審核。</td></tr>
+                        <tr><td colspan="16" class="px-6 py-20 text-center text-slate-400 font-bold bg-white">請先下載並填寫 CSV 總表，資料將顯示於此供您逐筆審核。</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -111,7 +114,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, getDocs, doc, setDoc, addDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, addDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY", authDomain: "thu-isac-review.firebaseapp.com", projectId: "thu-isac-review", storageBucket: "thu-isac-review.firebasestorage.app", messagingSenderId: "453299876735", appId: "1:453299876735:web:1d8babca3315423161a04a" };
         const app = initializeApp(firebaseConfig);
@@ -121,12 +124,10 @@
         let existingStudents = [];
         let existingCourses = [];
         let existingInstitutions = [];
-        
-        let stagingData = []; // 存放解析且聚合後的待審查紀錄
+        let stagingData = []; 
         
         const CITIES = ["臺北市","新北市","基隆市","桃園市","新竹縣","新竹市","苗栗縣","臺中市","彰化縣","南投縣","雲林縣","嘉義縣","嘉義市","臺南市","高雄市","屏東縣","宜蘭縣","花蓮縣","臺東縣","澎湖縣","金門縣","連江縣"];
 
-        // 載入現有資料庫供比對
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const sSnap = await getDocs(collection(db, "internship_students"));
@@ -140,7 +141,6 @@
             }
         });
 
-        // 建立選單 HTML 工具函數
         const makeSelect = (val, options, key, idx) => {
             let html = `<select class="cell-input cell-select font-bold" onchange="stagingData[${idx}].${key}=this.value">`;
             options.forEach(opt => {
@@ -150,9 +150,25 @@
             return html;
         };
 
+        // 💡 提供下載標準範本
+        window.downloadTemplate = () => {
+            const header = "學生學院,學生學系,學號,姓名,性別,國籍,當學年年級,機構國別,機構名稱,統一編號,縣市別,完整實習地址,學年度,學期,開課學院,開課學系,選課代號,課程名稱,開課學制,實習課程屬性,實習學分數,實習起訖時間,核定時數,實習時間分類,證明文件類型,投保情形,勞雇關係,負責填報系所\n";
+            const example = "工學院,工業工程與企業資訊學系,S1101234,王小明,男,本國籍,3,中華民國,台灣積體電路製造股份有限公司,12345678,臺中市,臺灣大道四段1727號,114,1,工學院,工業工程與企業資訊學系,1234,企業實習,日間學士班,必修,3,114/07/01-114/08/31,160,暑假實習,合約,兩者皆有,是,工業工程與企業資訊學系\n";
+            const blob = new Blob(['\uFEFF' + header + example], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = "批次匯入審查_標準範本.csv";
+            link.click();
+        };
+
         window.processImport = async (e) => {
             const file = e.target.files[0];
             if (!file) return;
+
+            const btn = document.getElementById('btn-upload');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> 處理中...';
+            btn.disabled = true;
 
             const reader = new FileReader();
             reader.onload = async (event) => {
@@ -161,9 +177,10 @@
                     
                     let newStudentsCount = 0;
                     let newCoursesCount = 0;
-                    let aggregatedRecordsMap = new Map(); // 用來做智能聚合的 Map
+                    let aggregatedRecordsMap = new Map(); 
                     
-                    const batch = writeBatch(db); // 使用批次寫入提升效能
+                    const batch = writeBatch(db); 
+                    let errorLog = [];
 
                     for (let i = 1; i < rows.length; i++) {
                         let cols = []; let inQuotes = false; let currentVal = '';
@@ -174,93 +191,89 @@
                         }
                         cols.push(currentVal.trim());
 
-                        // 預期 CSV 有 28 欄
-                        if (cols.length >= 28) {
-                            // --- 1. 學生資料萃取 ---
-                            const stu_college = cols[0]; const stu_dept = cols[1];
-                            const stu_id = (cols[2] || '').toUpperCase(); const stu_name = cols[3];
-                            const stu_gender = cols[4] || '男'; const stu_nat = cols[5] || '本國籍';
-                            const grade = cols[6];
+                        // 補齊欄位，避免因為最後一欄是空的被裁掉
+                        while(cols.length < 28) cols.push('');
 
-                            if (stu_id && stu_name) {
-                                const isStuExist = existingStudents.some(s => s.college === stu_college && s.department === stu_dept && s.student_id === stu_id && s.name === stu_name && s.gender === stu_gender && s.nationality === stu_nat);
-                                if (!isStuExist) {
-                                    const stuRef = doc(collection(db, "internship_students"));
-                                    const newStu = { college: stu_college, department: stu_dept, student_id: stu_id, name: stu_name, gender: stu_gender, nationality: stu_nat, created_at: serverTimestamp() };
-                                    batch.set(stuRef, newStu);
-                                    existingStudents.push({ id: stuRef.id, ...newStu }); // 更新本地暫存
-                                    newStudentsCount++;
-                                }
+                        const stu_college = cols[0]; const stu_dept = cols[1];
+                        const stu_id = (cols[2] || '').toUpperCase(); const stu_name = cols[3];
+                        const stu_gender = cols[4] || '男'; const stu_nat = cols[5] || '本國籍';
+                        const grade = cols[6];
+
+                        const inst_country = cols[7]; const inst_name = cols[8];
+                        const inst_tax = cols[9]; const inst_city = cols[10]; const inst_addr = cols[11];
+                        
+                        const c_year = cols[12]; const c_term = cols[13];
+                        const c_col = cols[14]; const c_dept = cols[15];
+                        const c_code = cols[16]; const c_name = cols[17];
+                        const c_edu = cols[18]; const c_type = cols[19];
+                        const c_credits = Number(cols[20]) || 0;
+                        
+                        const duration = cols[21]; const hours = Number(cols[22]) || 0;
+                        const period_type = cols[23]; const proof_type = cols[24];
+                        const insurance = cols[25]; const employment = cols[26];
+                        const resp_dept = cols[27];
+
+                        // 💡 防呆：如果必要欄位完全空著，跳過並記錄
+                        if (!stu_id || !inst_name || !duration) {
+                            errorLog.push(`第 ${i+1} 列缺少關鍵資料(學號/機構/時間)，已略過。`);
+                            continue;
+                        }
+
+                        // --- 1. 學生資料萃取 ---
+                        const isStuExist = existingStudents.some(s => s.college === stu_college && s.department === stu_dept && s.student_id === stu_id && s.name === stu_name && s.gender === stu_gender && s.nationality === stu_nat);
+                        if (!isStuExist) {
+                            const stuRef = doc(collection(db, "internship_students"));
+                            const newStu = { college: stu_college, department: stu_dept, student_id: stu_id, name: stu_name, gender: stu_gender, nationality: stu_nat, created_at: serverTimestamp() };
+                            batch.set(stuRef, newStu);
+                            existingStudents.push({ id: stuRef.id, ...newStu }); 
+                            newStudentsCount++;
+                        }
+
+                        // --- 2. 課程資料萃取 ---
+                        if (c_year && c_term && c_code && c_name) {
+                            const isCourseExist = existingCourses.some(c => c.academic_year === c_year && c.term === c_term && c.college === c_col && c.department === c_dept && c.course_code === c_code && c.course_name === c_name && c.edu_system === c_edu && c.course_type === c_type && c.credits === c_credits);
+                            if (!isCourseExist) {
+                                const courseRef = doc(collection(db, "internship_courses"));
+                                const newCourse = { academic_year: c_year, term: c_term, semester: `${c_year}-${c_term}`, college: c_col, department: c_dept, course_code: c_code, course_name: c_name, edu_system: c_edu, course_type: c_type, credits: c_credits, sortOrder: 999, created_at: serverTimestamp() };
+                                batch.set(courseRef, newCourse);
+                                existingCourses.push({ id: courseRef.id, ...newCourse });
+                                newCoursesCount++;
                             }
+                        }
 
-                            // --- 2. 課程資料萃取 ---
-                            const c_year = cols[12]; const c_term = cols[13];
-                            const c_col = cols[14]; const c_dept = cols[15];
-                            const c_code = cols[16]; const c_name = cols[17];
-                            const c_edu = cols[18]; const c_type = cols[19];
-                            const c_credits = Number(cols[20]) || 0;
-                            
-                            if (c_year && c_term && c_code && c_name) {
-                                const isCourseExist = existingCourses.some(c => c.academic_year === c_year && c.term === c_term && c.college === c_col && c.department === c_dept && c.course_code === c_code && c.course_name === c_name && c.edu_system === c_edu && c.course_type === c_type && c.credits === c_credits);
-                                if (!isCourseExist) {
-                                    const courseRef = doc(collection(db, "internship_courses"));
-                                    const newCourse = { academic_year: c_year, term: c_term, semester: `${c_year}-${c_term}`, college: c_col, department: c_dept, course_code: c_code, course_name: c_name, edu_system: c_edu, course_type: c_type, credits: c_credits, sortOrder: 999, created_at: serverTimestamp() };
-                                    batch.set(courseRef, newCourse);
-                                    existingCourses.push({ id: courseRef.id, ...newCourse });
-                                    newCoursesCount++;
-                                }
+                        // --- 3. 聚合實習紀錄與機構資料 ---
+                        const aggKey = `${stu_id}_${inst_name}_${duration}`;
+                        const matchCourse = existingCourses.find(c => c.academic_year === c_year && c.term === c_term && c.course_code === c_code);
+                        const courseIdObj = matchCourse ? { id: matchCourse.id, code: c_code, name: c_name } : null;
+
+                        if (aggregatedRecordsMap.has(aggKey)) {
+                            let existingRecord = aggregatedRecordsMap.get(aggKey);
+                            existingRecord.hours += hours;
+                            if (courseIdObj && !existingRecord.coursesInfo.some(c => c.id === courseIdObj.id)) {
+                                existingRecord.coursesInfo.push(courseIdObj);
                             }
-
-                            // --- 3. 聚合實習紀錄與機構資料 ---
-                            const inst_country = cols[7]; const inst_name = cols[8];
-                            const inst_tax = cols[9]; const inst_city = cols[10]; const inst_addr = cols[11];
-                            const duration = cols[21]; const hours = Number(cols[22]) || 0;
-                            const period_type = cols[23]; const proof_type = cols[24];
-                            const insurance = cols[25]; const employment = cols[26];
-                            const resp_dept = cols[27];
-
-                            // 聚合 Key：學號 + 機構名稱 + 時間
-                            if (stu_id && inst_name && duration) {
-                                const aggKey = `${stu_id}_${inst_name}_${duration}`;
-                                
-                                // 找尋對應的課程ID
-                                const matchCourse = existingCourses.find(c => c.academic_year === c_year && c.term === c_term && c.course_code === c_code);
-                                const courseIdObj = matchCourse ? { id: matchCourse.id, code: c_code, name: c_name } : null;
-
-                                if (aggregatedRecordsMap.has(aggKey)) {
-                                    // 已存在，將時數累加，並把新的課程推進陣列
-                                    let existingRecord = aggregatedRecordsMap.get(aggKey);
-                                    existingRecord.hours += hours;
-                                    if (courseIdObj && !existingRecord.coursesInfo.some(c => c.id === courseIdObj.id)) {
-                                        existingRecord.coursesInfo.push(courseIdObj);
-                                    }
-                                } else {
-                                    // 建立新聚合主體
-                                    aggregatedRecordsMap.set(aggKey, {
-                                        id: 'temp_' + Math.random().toString(36).substr(2, 9),
-                                        status: 'pending', // pending, approved
-                                        stuId: stu_id, stuName: stu_name, grade: grade,
-                                        resp_dept: resp_dept,
-                                        
-                                        // 可編輯機構資料
-                                        inst_country: inst_country || '中華民國', inst_name: inst_name, inst_tax: inst_tax || '', inst_city: inst_city || '', inst_addr: inst_addr || '',
-                                        
-                                        // 可編輯紀錄資料
-                                        duration: duration, hours: hours, period_type: period_type, proof_type: proof_type, insurance: insurance, employment: employment,
-                                        
-                                        coursesInfo: courseIdObj ? [courseIdObj] : []
-                                    });
-                                }
-                            }
+                        } else {
+                            aggregatedRecordsMap.set(aggKey, {
+                                id: 'temp_' + Math.random().toString(36).substr(2, 9),
+                                status: 'pending', 
+                                stuId: stu_id, stuName: stu_name, grade: grade,
+                                resp_dept: resp_dept,
+                                inst_country: inst_country || '中華民國', inst_name: inst_name, inst_tax: inst_tax || '', inst_city: inst_city || '', inst_addr: inst_addr || '',
+                                duration: duration, hours: hours, period_type: period_type, proof_type: proof_type, insurance: insurance, employment: employment,
+                                coursesInfo: courseIdObj ? [courseIdObj] : []
+                            });
                         }
                     }
 
-                    // 執行學生與課程的寫入
+                    if (errorLog.length > 0) {
+                        console.warn("匯入警告紀錄：\n" + errorLog.join('\n'));
+                        alert(`有 ${errorLog.length} 列資料因為缺少關鍵欄位(學號、機構名稱或實習起訖時間)而被系統略過，請開啟開發者工具(F12)查看詳細日誌。`);
+                    }
+
                     if (newStudentsCount > 0 || newCoursesCount > 0) {
                         await batch.commit();
                     }
 
-                    // 將聚合後的 Map 轉換成陣列顯示於 UI
                     stagingData = Array.from(aggregatedRecordsMap.values());
                     
                     document.getElementById('summary-cards').classList.remove('hidden');
@@ -274,6 +287,8 @@
                     alert("解析匯入檔發生錯誤：\n" + error.message); 
                 } finally {
                     e.target.value = '';
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
                 }
             };
             reader.readAsText(file);
@@ -288,17 +303,15 @@
 
             let html = '';
             stagingData.forEach((row, idx) => {
-                if (row.status === 'approved') return; // 已核准的從清單隱藏
+                if (row.status === 'approved') return;
 
                 const courseBadges = row.coursesInfo.map(c => `<span class="inline-block bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded text-[10px] mb-1 mr-1">${c.code} ${c.name}</span>`).join('');
-                const courseIds = row.coursesInfo.map(c => c.id);
                 
-                // 定義 Select 的選項
                 const periodOptions = ['寒假實習', '暑假實習', '學期期間實習', '單一學期實習', '全學年'];
                 const proofOptions = ['合約', '公函', '其他證明文件'];
                 const insOptions = ['僅校外實習保險', '僅勞保', '兩者皆有', '兩者皆無'];
                 const empOptions = ['是', '否'];
-                const countryOptions = ["中華民國","大陸地區","日本","美國","越南","泰國","澳大利亞","香港","澳門","馬來西亞","菲律賓","印尼","印度"]; // 簡化展示
+                const countryOptions = ["中華民國","大陸地區","日本","美國","越南","泰國","澳大利亞","香港","澳門","馬來西亞","菲律賓","印尼","印度"];
 
                 html += `
                 <tr class="bg-white hover:bg-slate-50 transition-colors border-b border-slate-100" id="tr-${row.id}">
@@ -316,7 +329,6 @@
                         <input type="text" class="cell-input text-[11px]" value="${row.resp_dept}" oninput="stagingData[${idx}].resp_dept=this.value">
                     </td>
 
-                    <!-- 機構區 -->
                     <td class="px-2 py-2 align-middle border-r border-slate-100">
                         ${makeSelect(row.inst_country, countryOptions, 'inst_country', idx)}
                     </td>
@@ -333,7 +345,6 @@
                         <input type="text" class="cell-input" value="${row.inst_addr}" oninput="stagingData[${idx}].inst_addr=this.value">
                     </td>
 
-                    <!-- 紀錄區 -->
                     <td class="px-2 py-2 align-middle border-r border-slate-100">
                         <input type="text" class="cell-input font-mono text-center font-bold text-amber-700" value="${row.duration}" oninput="stagingData[${idx}].duration=this.value" placeholder="YY/MM/DD-YY/MM/DD">
                     </td>
@@ -367,14 +378,12 @@
             const row = stagingData[idx];
             if (row.status === 'approved') return;
 
-            // 基礎驗證
             if (!row.inst_name || !row.duration || !row.hours) {
                 alert(`請確認「機構名稱」、「起訖時間」、「總時數」皆已填寫完整！`);
                 return;
             }
 
             try {
-                // 1. 處理機構 (嚴格全匹配，否則新建)
                 const isMatchInst = existingInstitutions.find(i => i.country === row.inst_country && i.name === row.inst_name && i.tax_id === row.inst_tax && i.city === row.inst_city && i.address === row.inst_addr);
                 
                 if (!isMatchInst) {
@@ -384,7 +393,6 @@
                     existingInstitutions.push({ id: instRef.id, country: row.inst_country, name: row.inst_name, tax_id: row.inst_tax, city: row.inst_city, address: row.inst_addr });
                 }
 
-                // 2. 寫入實習紀錄
                 const courseIds = row.coursesInfo.map(c => c.id).filter(Boolean);
                 
                 await addDoc(collection(db, "internship_records"), {
@@ -398,11 +406,9 @@
                     created_at: serverTimestamp()
                 });
 
-                // 3. UI 標記完成並隱藏
                 stagingData[idx].status = 'approved';
                 document.getElementById(`tr-${row.id}`).classList.add('hidden');
                 
-                // 更新數字
                 const remaining = stagingData.filter(d => d.status === 'pending').length;
                 document.getElementById('count-record').innerHTML = `${remaining} <span class="text-xs font-bold text-slate-400">筆待審核</span>`;
                 
@@ -421,7 +427,6 @@
             
             if(!confirm(`確定要將畫面上所有 ${pendings.length} 筆資料全部放行寫入系統嗎？\n請確保您已核閱過內容無誤。`)) return;
 
-            // 為了避免迴圈中 await 阻塞太久，實務上可改用 writeBatch，這裡為求邏輯獨立沿用 approveRow 的邏輯依次處理
             for (let i = 0; i < stagingData.length; i++) {
                 if(stagingData[i].status === 'pending') {
                     await window.approveRow(i);
