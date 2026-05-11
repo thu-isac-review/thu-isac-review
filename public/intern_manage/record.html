@@ -918,19 +918,21 @@
                         }
                         cols.push(currentVal.trim());
 
-                        if (cols.length >= 11) {
+                        // 判斷條件改為 12，對應新的必填結構
+                        if (cols.length >= 12) {
                             const stuId = (cols[0] || '').trim().toUpperCase();
                             const stuName = (cols[1] || '').trim();
                             const grade = cols[2];
                             const inst_raw = cols[3];
                             const coursesRaw = cols[4];
-                            const duration = cols[5];
-                            const hours = Number(cols[6]) || 0;
-                            const period_type = cols[7];
-                            const proof_type = cols[8];
-                            const insurance = cols[9];
-                            const employment = cols[10];
-                            const notes = cols[11] || '';
+                            const resp_dept = cols[5] || ''; // 新增：負責填報系所
+                            const duration = cols[6];        // 索引延後
+                            const hours = Number(cols[7]) || 0; // 索引延後
+                            const period_type = cols[8];     // 索引延後
+                            const proof_type = cols[9];      // 索引延後
+                            const insurance = cols[10];      // 索引延後
+                            const employment = cols[11];     // 索引延後
+                            const notes = cols[12] || '';    // 索引延後
 
                             if (!stuId || !inst_raw || !duration || !period_type || !proof_type || !insurance || !employment || !grade) {
                                 errorCount++;
@@ -943,7 +945,7 @@
                             if (!recordsMap.has(key)) {
                                 recordsMap.set(key, {
                                     student_raw: `${stuId} - ${stuName}`, stuId: stuId, stuName: stuName, grade, inst_raw, duration, hours: 0, 
-                                    period_type, proof_type, insurance, employment, notes, coursesRawList: [], courseIds: [], sourceRows: [] 
+                                    period_type, proof_type, insurance, employment, notes, resp_dept, coursesRawList: [], courseIds: [], sourceRows: [] 
                                 });
                             }
 
@@ -997,7 +999,8 @@
                             student_raw: record.student_raw, grade: record.grade, inst_raw: record.inst_raw, courses: record.courseIds, duration: record.duration,
                             hours: record.hours, period_type: record.period_type, proof_type: record.proof_type, insurance: record.insurance,
                             employment: record.employment, notes: record.notes, 
-                            resp_dept: studentMatch ? studentMatch.department : '', // 預設使用學生所屬系所作為負責填報系所
+                            // 優先使用 Excel 中的「負責填報系所」，若無則退回使用學生的系所
+                            resp_dept: record.resp_dept || (studentMatch ? studentMatch.department : ''), 
                             created_at: serverTimestamp()
                         };
 
