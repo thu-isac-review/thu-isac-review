@@ -82,9 +82,8 @@
             const [userData, setUserData] = useState(null); 
             const [loading, setLoading] = useState(true);
             const [currentHash, setCurrentHash] = useState(''); 
-            const [isSidebarOpen, setIsSidebarOpen] = useState(false); // 新增：控制手機版側邊欄
+            const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
             
-            // 解除網址參數強制綁定：只附加快取清除參數
             const getCacheBustedUrl = (url) => {
                 if (!url) return '';
                 const [path, queryStr] = url.split('?');
@@ -141,7 +140,7 @@
 
             const navigate = (path) => {
                 window.location.hash = path;
-                setIsSidebarOpen(false); // 新增：點擊選單後，在手機版自動關閉側邊欄
+                setIsSidebarOpen(false); 
             };
 
             const handleLogout = () => {
@@ -198,7 +197,6 @@
             return (
                 <div className="flex h-full overflow-hidden text-slate-800 relative">
                     
-                    {/* 手機版遮罩 Overlay */}
                     {isSidebarOpen && (
                         <div 
                             className="fixed inset-0 bg-black/50 z-30 md:hidden transition-opacity"
@@ -206,13 +204,11 @@
                         ></div>
                     )}
 
-                    {/* 側邊欄 - 加上 RWD 樣式與 transform 控制滑動 */}
                     <aside className={`
                         fixed md:relative top-0 left-0 h-full w-72 bg-sidebar text-slate-300 flex flex-col shrink-0 z-40 shadow-xl 
                         transform transition-transform duration-300 ease-in-out
                         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
                     `}>
-                        {/* 系統標題品牌區塊 */}
                         <div className="h-auto py-4 flex items-center px-6 border-b border-slate-700/50 cursor-pointer shrink-0">
                             <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center mr-3 shadow-md shrink-0">
                                 <i className="fa-solid fa-shield-halved text-white text-xl"></i>
@@ -221,7 +217,6 @@
                                 <span className="text-blue-300 font-bold text-[10px] tracking-widest mb-0.5">東海大學 實習與學生成就中心</span>
                                 <span className="text-white font-bold text-sm tracking-wide leading-tight">實習課程書面審查作業系統</span>
                             </div>
-                            {/* 手機版側邊欄內的關閉按鈕 */}
                             <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-slate-400 hover:text-white ml-2">
                                 <i className="fa-solid fa-xmark text-xl"></i>
                             </button>
@@ -280,7 +275,6 @@
                     <main className="flex-1 flex flex-col h-full relative overflow-hidden bg-slate-50">
                         <header className="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-4 md:px-8 shrink-0 z-10 sticky top-0 shadow-sm w-full">
                             <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
-                                {/* 漢堡選單按鈕 */}
                                 <button 
                                     onClick={() => setIsSidebarOpen(true)}
                                     className="md:hidden p-2 -ml-2 text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition-colors shrink-0"
@@ -299,12 +293,16 @@
                             </div>
                         </header>
 
-                        <div className="flex-1 overflow-hidden relative">
+                        {/* 💡 修改這裡：將 overflow-hidden 改成 overflow-y-auto，並加上 WebkitOverflowScrolling 以支援 iOS 順暢滑動 */}
+                        <div 
+                            className="flex-1 overflow-y-auto relative w-full h-full custom-scrollbar" 
+                            style={{ WebkitOverflowScrolling: 'touch' }}
+                        >
                             {currentHash && (
                                 <iframe 
                                     src={getCacheBustedUrl(currentHash)} 
                                     key={currentHash}
-                                    className="animate-fade w-full h-full"
+                                    className="animate-fade w-full h-full block border-0"
                                     title="Content View"
                                 />
                             )}
