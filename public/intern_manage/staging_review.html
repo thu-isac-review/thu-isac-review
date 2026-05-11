@@ -3,156 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>匯入資料審查中心</title>
+    <title>批次匯入審查中心</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        body { background-color: #f8fafc; margin: 0; padding: 0; font-family: "SF Pro TC", "Noto Sans TC", sans-serif; -webkit-font-smoothing: antialiased; }
+        /* 基礎字體與背景 */
+        body { background-color: #F4F5F8; margin: 0; padding: 0; font-family: "Inter", "SF Pro TC", "Noto Sans TC", sans-serif; -webkit-font-smoothing: antialiased; }
         
         /* 優雅的滾動條 */
         .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; border: 2px solid #F4F5F8; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
         
         /* -------------------------------------------
-           SaaS Datatable 核心樣式
+           SaaS DataTable 核心樣式 (Airtable 風格)
         ------------------------------------------- */
-        .saas-table { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; }
+        table { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; }
         
-        /* 嚴格的儲存格邊框 */
-        .saas-table th, .saas-table td {
-            border-bottom: 1px solid #e2e8f0;
-            border-right: 1px solid #e2e8f0;
-            padding: 0; /* 取消原生 padding，交給內部的 input 控制 */
+        /* 乾淨的底線，沒有直立邊框 */
+        th, td {
+            border-bottom: 1px solid #f3f4f6;
             vertical-align: middle;
             background-color: #ffffff;
-            transition: background-color 0.15s ease;
+            transition: background-color 0.2s ease;
         }
-        .saas-table th { background-color: #f8fafc; border-bottom: 2px solid #e2e8f0; }
+        th { background-color: #ffffff; border-bottom: 2px solid #f3f4f6; color: #6b7280; font-weight: 700; font-size: 13px; }
         
-        /* 滑鼠懸停整列變色 (包含凍結區) */
-        .saas-table tbody tr:hover td { background-color: #f1f5f9; }
+        /* 滑鼠懸停整列變色 */
+        tbody tr:hover td { background-color: #f9fafb; }
 
-        /* --- 凍結窗格 (Sticky Columns) 設定 --- */
+        /* --- 高質感凍結窗格 --- */
         .sticky-col-1 { position: sticky; left: 0; z-index: 10; }
-        .sticky-col-2 { position: sticky; left: 70px; z-index: 10; }
-        .sticky-col-3 { position: sticky; left: 250px; z-index: 10; }
-        /* 凍結區陰影邊界 */
+        .sticky-col-2 { position: sticky; left: 50px; z-index: 10; }
+        .sticky-col-3 { position: sticky; left: 300px; z-index: 10; }
+        /* 右側陰影區隔 */
         .sticky-shadow::after {
-            content: ''; position: absolute; top: 0; right: -5px; bottom: 0; width: 5px;
-            background: linear-gradient(to right, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0) 100%); pointer-events: none; z-index: 15;
+            content: ''; position: absolute; top: 0; right: -6px; bottom: 0; width: 6px;
+            background: linear-gradient(to right, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0) 100%); pointer-events: none; z-index: 15;
         }
-        /* 表頭的凍結區層級需更高 */
-        .saas-table thead .sticky-col-1, .saas-table thead .sticky-col-2, .saas-table thead .sticky-col-3 { z-index: 20; background-color: #f8fafc; }
+        thead .sticky-col-1, thead .sticky-col-2, thead .sticky-col-3 { z-index: 20; background-color: #ffffff; }
 
-        /* --- 無縫試算表輸入框 (Borderless Inputs) --- */
-        .cell-input { 
-            width: 100%; height: 100%; min-height: 48px; 
-            background: transparent; border: 2px solid transparent; 
-            padding: 8px 12px; font-size: 13px; font-weight: 600; color: #334155; 
-            outline: none; transition: all 0.15s; border-radius: 0;
+        /* --- 無縫輸入體驗 (Borderless Inputs) --- */
+        /* 平時看起來像純文字，Hover/Focus 才變為輸入框 */
+        .clean-input { 
+            width: 100%; height: auto; min-height: 36px;
+            background: transparent; border: 1px solid transparent; 
+            padding: 6px 10px; font-size: 14px; font-weight: 600; color: #1f2937; 
+            outline: none; transition: all 0.15s; border-radius: 8px;
         }
-        /* 只有 Hover 和 Focus 時才顯示框線 */
-        .cell-input:hover:not(:disabled) { background-color: rgba(255,255,255,0.5); border-color: #cbd5e1; border-radius: 4px; }
-        .cell-input:focus:not(:disabled) { background-color: #ffffff; border-color: #6366f1; box-shadow: inset 0 0 0 1px #6366f1; border-radius: 4px; z-index: 5; position: relative;}
-        .cell-input:disabled { color: #94a3b8; cursor: not-allowed; opacity: 0.8; }
+        .clean-input:hover:not(:disabled) { background-color: #f3f4f6; border-color: #e5e7eb; }
+        .clean-input:focus:not(:disabled) { background-color: #ffffff; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); z-index: 5; position: relative; }
+        .clean-input:disabled { color: #9ca3af; cursor: not-allowed; opacity: 0.8; }
         
-        /* 移除原生數字箭頭 */
-        .cell-input[type="number"]::-webkit-inner-spin-button, .cell-input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        .clean-input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         
-        .cell-select { 
+        .clean-select { 
             appearance: none; cursor: pointer;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); 
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); 
             background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.2em 1.2em; 
             padding-right: 2rem; 
         }
 
-        .animate-fade { animation: fadeIn 0.3s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden text-slate-800">
 
-    <div class="shrink-0 px-8 pt-8 pb-4 z-20 animate-fade">
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden">
-            <div class="absolute -top-24 -right-24 w-64 h-64 bg-indigo-50 rounded-full blur-3xl pointer-events-none"></div>
-            
-            <div class="flex items-center gap-5 relative z-10">
-                <div class="w-12 h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-500/20 shrink-0">
-                    <i class="fa-solid fa-table-list text-xl"></i>
-                </div>
-                <div>
-                    <h2 class="text-xl font-black text-slate-800 tracking-tight">批次匯入審查中心 (Staging Area)</h2>
-                    <p class="text-sm text-slate-500 mt-1 font-medium leading-relaxed">
-                        像操作 Excel 一樣，直接點擊表格欄位即可修改。<span class="text-rose-500 font-bold ml-1">* 為必填欄位</span>
-                    </p>
-                </div>
-            </div>
-            
-            <div class="flex flex-wrap gap-3 relative z-10">
-                <button onclick="window.downloadTemplate()" class="h-10 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-4 rounded-xl text-sm transition-all shadow-sm flex items-center gap-2 active:scale-95">
-                    <i class="fa-solid fa-download text-emerald-500"></i> 下載匯入範本
-                </button>
-                <button id="btn-upload" onclick="document.getElementById('import-file').click()" class="h-10 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 rounded-xl text-sm transition-all shadow-md shadow-indigo-600/20 flex items-center gap-2 active:scale-95">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> 上傳資料總表 (CSV)
-                </button>
-                <input type="file" id="import-file" accept=".csv" class="hidden" onchange="window.processImport(event)">
-            </div>
+    <div class="shrink-0 px-10 pt-10 pb-6 z-20 animate-fade flex justify-between items-end">
+        <div>
+            <h1 class="text-3xl font-black text-slate-900 tracking-tight">批次匯入審查中心</h1>
+            <p class="text-slate-500 mt-2 font-medium text-sm">像 Airtable 一樣的現代化 SaaS DataTable 設計，直接點擊表格欄位即可編輯。</p>
+        </div>
+        <div class="flex gap-3">
+            <button onclick="window.downloadTemplate()" class="h-11 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-6 rounded-xl text-sm transition-all shadow-sm flex items-center gap-2 active:scale-95">
+                下載範本
+            </button>
+            <button onclick="document.getElementById('import-file').click()" class="h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 rounded-xl text-sm transition-all shadow-md shadow-indigo-600/20 flex items-center gap-2 active:scale-95">
+                上傳資料總表
+            </button>
+            <input type="file" id="import-file" accept=".csv" class="hidden" onchange="window.processImport(event)">
         </div>
     </div>
 
-    <div class="flex-1 overflow-hidden px-8 pb-8 flex flex-col animate-fade" style="animation-delay: 0.1s;">
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col flex-1 overflow-hidden relative">
+    <div class="shrink-0 px-10 pb-6 grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade" style="animation-delay: 0.1s;">
+        <div class="bg-white p-6 rounded-3xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-100 flex justify-between items-center">
+            <div>
+                <div class="text-sm text-slate-500 font-bold mb-1">待審核資料</div>
+                <div class="text-4xl font-black text-slate-800" id="stat-pending">0</div>
+            </div>
+            <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center text-2xl"><i class="fa-solid fa-file-lines"></i></div>
+        </div>
+        <div class="bg-white p-6 rounded-3xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-100 flex justify-between items-center">
+            <div>
+                <div class="text-sm text-slate-500 font-bold mb-1">本次登入已核准</div>
+                <div class="text-4xl font-black text-slate-800" id="stat-approved">0</div>
+            </div>
+            <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-500 flex items-center justify-center text-2xl"><i class="fa-solid fa-check"></i></div>
+        </div>
+        <div class="bg-white p-6 rounded-3xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-100 flex justify-between items-center">
+            <div>
+                <div class="text-sm text-slate-500 font-bold mb-1">匯入阻擋 (缺漏必填)</div>
+                <div class="text-4xl font-black text-slate-800" id="stat-error">0</div>
+            </div>
+            <div class="w-14 h-14 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center text-2xl"><i class="fa-solid fa-exclamation"></i></div>
+        </div>
+    </div>
+
+    <div class="flex-1 overflow-hidden px-10 pb-10 flex flex-col animate-fade" style="animation-delay: 0.2s;">
+        <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col flex-1 overflow-hidden relative">
             
-            <div class="px-6 py-3 bg-white border-b border-slate-200 flex justify-between items-center shrink-0 z-20">
-                <div class="flex items-center gap-3">
-                    <span id="staging-count" class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-md text-sm font-black border border-indigo-100">載入中...</span>
+            <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center shrink-0 z-20 bg-white">
+                <div class="flex items-center gap-4">
+                    <div class="relative w-72">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="search-input" oninput="window.renderStagingTable()" placeholder="搜尋學生、機構..." class="w-full bg-slate-50 border border-slate-100 pl-11 pr-4 py-2.5 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+                    </div>
+                    <button class="bg-white border border-slate-200 text-slate-600 px-4 py-2.5 rounded-xl text-sm font-bold shadow-sm hover:bg-slate-50 transition-all">篩選條件</button>
+                    <div class="h-6 w-px bg-slate-200 mx-2"></div>
+                    <span class="bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg text-xs font-bold" id="badge-count">0 筆待審核</span>
                 </div>
-                <div class="flex gap-2">
-                    <button onclick="window.clearAllStaging()" class="h-9 text-xs bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 border border-slate-200 px-4 rounded-lg transition-colors font-bold shadow-sm flex items-center gap-1.5">
-                        <i class="fa-solid fa-trash-can"></i> 清空暫存
+                <div class="flex gap-3">
+                    <button onclick="window.clearAllStaging()" class="text-sm bg-white hover:bg-rose-50 text-slate-500 hover:text-rose-600 border border-slate-200 px-5 py-2.5 rounded-xl transition-colors font-bold shadow-sm">
+                        <i class="fa-solid fa-trash-can mr-1.5"></i> 清空
                     </button>
-                    <button onclick="window.approveAll()" class="h-9 text-xs bg-emerald-500 hover:bg-emerald-600 text-white px-4 rounded-lg transition-colors font-bold shadow-sm shadow-emerald-500/20 flex items-center gap-1.5">
-                        <i class="fa-solid fa-check-double"></i> 批次核准放行
+                    <button onclick="window.approveAll()" class="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl transition-colors font-bold shadow-md shadow-indigo-600/20 active:scale-95">
+                        批次核准全部
                     </button>
                 </div>
             </div>
 
-            <div class="flex-1 overflow-auto custom-scrollbar relative bg-slate-50">
-                <table class="saas-table text-left">
+            <div class="flex-1 overflow-auto custom-scrollbar relative bg-white">
+                <table class="saas-table">
                     <colgroup>
-                        <col style="width: 70px;">  <col style="width: 180px;"> <col style="width: 220px;"> <col style="width: 130px;"> <col style="width: 220px;"> <col style="width: 120px;"> <col style="width: 130px;"> <col style="width: 260px;"> <col style="width: 180px;"> <col style="width: 90px;">  <col style="width: 140px;"> <col style="width: 140px;"> <col style="width: 140px;"> <col style="width: 100px;"> <col style="width: 160px;"> </colgroup>
+                        <col style="width: 50px;">  <col style="width: 250px;"> <col style="width: 220px;"> <col style="width: 140px;"> <col style="width: 240px;"> <col style="width: 150px;"> <col style="width: 140px;"> <col style="width: 280px;"> <col style="width: 200px;"> <col style="width: 100px;">  <col style="width: 160px;"> <col style="width: 160px;"> <col style="width: 160px;"> <col style="width: 120px;"> <col style="width: 180px;"> </colgroup>
 
                     <thead class="sticky top-0 z-30">
                         <tr>
-                            <th colspan="3" class="px-4 py-2 text-center text-[11px] font-black text-slate-500 uppercase tracking-widest sticky-col-1 sticky-shadow" style="background-color: #f8fafc; border-right: none;">🎓 學生與課程 (唯讀)</th>
-                            <th colspan="5" class="px-4 py-2 text-center text-[11px] font-black text-indigo-600 bg-indigo-50/50 uppercase tracking-widest">🏢 實習機構資訊核實</th>
-                            <th colspan="7" class="px-4 py-2 text-center text-[11px] font-black text-amber-600 bg-amber-50/50 uppercase tracking-widest border-right-0">📝 實習條件紀錄核實</th>
-                        </tr>
-                        <tr>
-                            <th class="px-4 py-3 text-center text-xs font-bold text-slate-600 sticky-col-1 border-t border-slate-200">操作</th>
-                            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 sticky-col-2 border-t border-slate-200">學生身分</th>
-                            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 sticky-col-3 sticky-shadow border-t border-slate-200">聚合課程標籤</th>
+                            <th class="px-4 py-5 text-center sticky-col-1">
+                                <input type="checkbox" id="selectAll" class="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                            </th>
+                            <th class="px-4 py-5 text-left sticky-col-2">學生資訊</th>
+                            <th class="px-4 py-5 text-left sticky-col-3 sticky-shadow">課程標籤</th>
                             
-                            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 border-t border-slate-200">國別 <span class="text-rose-500">*</span></th>
-                            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 border-t border-slate-200">機構名稱 <span class="text-rose-500">*</span></th>
-                            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 border-t border-slate-200">統一編號</th>
-                            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 border-t border-slate-200">縣市別</th>
-                            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 border-t border-slate-200">完整地址 <span class="text-rose-500">*</span></th>
+                            <th class="px-4 py-5 text-left pl-8">國別 <span class="text-rose-400">*</span></th>
+                            <th class="px-4 py-5 text-left">機構名稱 <span class="text-rose-400">*</span></th>
+                            <th class="px-4 py-5 text-left">機構統編</th>
+                            <th class="px-4 py-5 text-left">縣市別</th>
+                            <th class="px-4 py-5 text-left">完整地址 <span class="text-rose-400">*</span></th>
                             
-                            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 border-t border-slate-200">起訖時間 (Y/M/D) <span class="text-rose-500">*</span></th>
-                            <th class="px-4 py-3 text-center text-xs font-bold text-slate-600 border-t border-slate-200">總時數 <span class="text-rose-500">*</span></th>
-                            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 border-t border-slate-200">時間分類 <span class="text-rose-500">*</span></th>
-                            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 border-t border-slate-200">證明文件 <span class="text-rose-500">*</span></th>
-                            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 border-t border-slate-200">投保情形 <span class="text-rose-500">*</span></th>
-                            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 border-t border-slate-200">勞雇 <span class="text-rose-500">*</span></th>
-                            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 border-t border-slate-200 border-right-0">負責系所</th>
+                            <th class="px-4 py-5 text-left pl-8">起訖時間 (Y/M/D) <span class="text-rose-400">*</span></th>
+                            <th class="px-4 py-5 text-center">總時數 <span class="text-rose-400">*</span></th>
+                            <th class="px-4 py-5 text-left">時間分類 <span class="text-rose-400">*</span></th>
+                            <th class="px-4 py-5 text-left">證明文件 <span class="text-rose-400">*</span></th>
+                            <th class="px-4 py-5 text-left">投保情形 <span class="text-rose-400">*</span></th>
+                            <th class="px-4 py-5 text-left">勞雇 <span class="text-rose-400">*</span></th>
+                            <th class="px-4 py-5 text-left">負責系所</th>
                         </tr>
                     </thead>
                     <tbody id="staging-table-body">
                         <tr>
-                            <td colspan="15" class="py-32 text-center text-slate-400 bg-white border-none">
+                            <td colspan="15" class="py-32 text-center text-slate-400 border-none">
                                 <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-4 text-indigo-400"></i>
                                 <p class="font-bold text-sm tracking-wide">與資料庫連線中...</p>
                             </td>
@@ -160,6 +172,16 @@
                     </tbody>
                 </table>
             </div>
+            
+            <div class="bg-white border-t border-slate-100 px-8 py-4 flex justify-between items-center shrink-0 rounded-b-[2rem]">
+                <div id="pagination-info" class="text-sm font-bold text-slate-500">顯示 0 - 0 筆，共 0 筆資料</div>
+                <div class="flex gap-2">
+                    <button class="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 transition-colors"><i class="fa-solid fa-arrow-left"></i></button>
+                    <button class="w-10 h-10 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center shadow-md">1</button>
+                    <button class="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 transition-colors"><i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -177,6 +199,8 @@
         let existingCourses = [];
         let existingInstitutions = [];
         let stagingData = []; 
+        let sessionApprovedCount = 0; // 記錄本次登入核准數量
+        let importErrorCount = 0;
         
         const CITIES = ["臺北市","新北市","基隆市","桃園市","新竹縣","新竹市","苗栗縣","臺中市","彰化縣","南投縣","雲林縣","嘉義縣","嘉義市","臺南市","高雄市","屏東縣","宜蘭縣","花蓮縣","臺東縣","澎湖縣","金門縣","連江縣"];
         const periodOptions = ['寒假實習', '暑假實習', '學期期間實習', '單一學期實習', '全學年'];
@@ -184,6 +208,17 @@
         const insOptions = ['僅校外實習保險', '僅勞保', '兩者皆有', '兩者皆無'];
         const empOptions = ['是', '否'];
         const countryOptions = ["中華民國","大陸地區","日本","美國","越南","泰國","澳大利亞","香港","澳門","馬來西亞","菲律賓","印尼","印度"];
+
+        // 隨機產生頭像顏色的 Helper
+        const getAvatarClass = (name) => {
+            const colors = [
+                'bg-indigo-100 text-indigo-600', 'bg-emerald-100 text-emerald-600', 
+                'bg-amber-100 text-amber-600', 'bg-rose-100 text-rose-600', 
+                'bg-sky-100 text-sky-600', 'bg-purple-100 text-purple-600'
+            ];
+            const charCode = name.charCodeAt(0) || 0;
+            return colors[charCode % colors.length];
+        };
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -198,15 +233,22 @@
 
                 onSnapshot(collection(db, "internship_staging"), (snapshot) => {
                     stagingData = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                    document.getElementById('staging-count').innerText = `${stagingData.length} 筆資料待審核`;
-                    renderStagingTable();
+                    updateDashboard();
+                    window.renderStagingTable();
                 });
             }
         });
 
-        // 產生 Select 元件 (無邊框樣式)
+        function updateDashboard() {
+            document.getElementById('stat-pending').innerText = stagingData.length;
+            document.getElementById('stat-approved').innerText = sessionApprovedCount;
+            document.getElementById('stat-error').innerText = importErrorCount;
+            document.getElementById('badge-count').innerText = `${stagingData.length} 筆待審核`;
+        }
+
+        // 產生無邊框 Select 元件
         const makeSelect = (val, options, fieldName, docId) => {
-            let html = `<select id="${fieldName}_${docId}" class="cell-input cell-select" onblur="window.autoSave('${docId}', '${fieldName}', this.value)">`;
+            let html = `<select id="${fieldName}_${docId}" class="clean-input clean-select" onblur="window.autoSave('${docId}', '${fieldName}', this.value)">`;
             html += `<option value="">請選擇</option>`;
             options.forEach(opt => {
                 html += `<option value="${opt}" ${val === opt ? 'selected' : ''}>${opt}</option>`;
@@ -226,11 +268,7 @@
             const file = e.target.files[0];
             if (!file) return;
 
-            const btn = document.getElementById('btn-upload');
-            const originalHtml = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> 解析並寫入中...';
-            btn.disabled = true;
-
+            importErrorCount = 0; // Reset error count
             const reader = new FileReader();
             reader.onload = async (event) => {
                 try {
@@ -252,7 +290,10 @@
                         const inst_country = cols[7] || '中華民國'; const inst_name = cols[8];
                         const duration = cols[21]; const hours = Number(cols[22]) || 0;
 
-                        if (!stu_id || !inst_name || !duration) continue;
+                        if (!stu_id || !inst_name || !duration) {
+                            importErrorCount++;
+                            continue;
+                        }
 
                         // 1. 學生檢查
                         if (!existingStudents.some(s => s.student_id === stu_id)) {
@@ -296,13 +337,12 @@
                     });
 
                     await batch.commit();
+                    updateDashboard();
 
                 } catch (error) { 
                     alert("處理發生錯誤：\n" + error.message); 
                 } finally {
                     e.target.value = '';
-                    btn.innerHTML = originalHtml;
-                    btn.disabled = false;
                 }
             };
             reader.readAsText(file);
@@ -325,7 +365,6 @@
             window.autoSave(docId, 'inst_city', cityEl.value);
         };
 
-        // DOM 失去焦點時自動存檔
         window.autoSave = (docId, field, value) => {
             const record = stagingData.find(d => d.id === docId);
             if(record && record[field] !== value) {
@@ -333,74 +372,98 @@
             }
         };
 
-        function renderStagingTable() {
+        window.renderStagingTable = () => {
             const tbody = document.getElementById('staging-table-body');
-            if (stagingData.length === 0) {
+            const searchTerm = (document.getElementById('search-input').value || '').toLowerCase();
+            
+            const filteredData = stagingData.filter(d => 
+                (d.stuName || '').toLowerCase().includes(searchTerm) || 
+                (d.inst_name || '').toLowerCase().includes(searchTerm)
+            );
+
+            document.getElementById('pagination-info').innerText = `顯示 1 - ${filteredData.length} 筆，共 ${filteredData.length} 筆資料`;
+
+            if (filteredData.length === 0) {
                 tbody.innerHTML = `<tr>
                     <td colspan="15" class="py-32 text-center border-none">
                         <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-slate-100 text-slate-300 mb-4">
                             <i class="fa-solid fa-inbox text-3xl"></i>
                         </div>
-                        <p class="text-slate-500 font-bold text-base">暫存區淨空，無待審查紀錄。</p>
-                        <p class="text-slate-400 text-sm mt-1 font-medium">請由右上方點擊「上傳資料總表」匯入 CSV。</p>
+                        <p class="text-slate-500 font-bold text-base">目前暫存區淨空或查無結果。</p>
                     </td>
                 </tr>`;
                 return;
             }
 
             let html = '';
-            stagingData.forEach(row => {
+            filteredData.forEach(row => {
                 const id = row.id;
-                const courseBadges = row.coursesInfo.map(c => `<span class="inline-block bg-white border border-slate-200 text-slate-600 px-2 py-0.5 rounded text-[11px] font-bold mr-1 mb-1 shadow-sm">${c.code} ${c.name}</span>`).join('');
+                // 課程標籤 (Pill Badges)
+                const courseBadges = row.coursesInfo.map(c => `<span class="inline-flex items-center bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-full text-[11px] font-bold mr-1.5 mb-1.5"><span class="mr-1.5 text-indigo-400 font-mono">${c.code}</span>${c.name}</span>`).join('');
                 
                 const isOverseas = row.inst_country !== '中華民國';
                 const taxDisabled = isOverseas ? 'disabled' : '';
                 const cityDisabled = isOverseas ? 'disabled' : '';
+                const avatarClass = getAvatarClass(row.stuName || '');
 
                 html += `
                 <tr id="tr-${id}">
-                    <td class="sticky-col-1">
-                        <div class="flex flex-col gap-1 px-2 py-2 items-center justify-center">
-                            <button onclick="window.approveRow('${id}')" class="w-full h-7 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded flex items-center justify-center transition-colors shadow-sm" title="核准放行">
-                                <i class="fa-solid fa-check text-xs"></i>
-                            </button>
-                            <button onclick="window.deleteStaging('${id}')" class="w-full h-7 bg-slate-50 text-slate-400 hover:bg-rose-500 hover:text-white rounded flex items-center justify-center transition-colors shadow-sm" title="刪除捨棄">
-                                <i class="fa-solid fa-xmark text-xs"></i>
-                            </button>
+                    <td class="px-4 py-4 align-middle text-center sticky-col-1">
+                        <input type="checkbox" class="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                    </td>
+                    
+                    <td class="px-4 py-4 align-middle sticky-col-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center font-black text-sm shrink-0 ${avatarClass}">
+                                ${(row.stuName || 'U').charAt(0)}
+                            </div>
+                            <div class="min-w-0">
+                                <div class="font-black text-slate-800 text-[14px] leading-tight truncate">${row.stuName}</div>
+                                <div class="text-[12px] text-slate-500 font-medium mt-0.5 tracking-wide truncate">${row.stuId} • ${row.grade}年級</div>
+                            </div>
                         </div>
                     </td>
                     
-                    <td class="sticky-col-2 px-4">
-                        <div class="font-black text-slate-800 text-[13px] leading-tight truncate" title="${row.stuName}">${row.stuName}</div>
-                        <div class="text-[11px] text-slate-400 font-bold mt-1 uppercase tracking-wide">${row.stuId} <span class="mx-1">|</span> ${row.grade}年級</div>
+                    <td class="px-4 py-4 align-middle sticky-col-3 sticky-shadow">
+                        <div class="w-full flex flex-wrap pt-1">${courseBadges || '-'}</div>
                     </td>
                     
-                    <td class="sticky-col-3 sticky-shadow px-4">
-                        <div class="max-w-[200px] flex flex-wrap gap-y-1 py-2" title="${row.coursesInfo.map(c=>c.name).join(', ')}">${courseBadges || '-'}</div>
+                    <td class="px-4 pl-8 py-4 align-middle">
+                        ${makeSelect(row.inst_country, countryOptions, 'inst_country', id)}
                     </td>
-                    
-                    <td>${makeSelect(row.inst_country, countryOptions, 'inst_country', id)}</td>
-                    <td><input type="text" id="inst_name_${id}" class="cell-input text-indigo-700" value="${row.inst_name}" onblur="window.autoSave('${id}', 'inst_name', this.value)"></td>
-                    <td><input type="text" id="inst_tax_${id}" class="cell-input font-mono uppercase" value="${row.inst_tax}" ${taxDisabled} placeholder="${isOverseas?'海外免填':'統一編號'}" onblur="window.autoSave('${id}', 'inst_tax', this.value)"></td>
-                    <td>
-                        <select id="inst_city_${id}" class="cell-input cell-select" ${cityDisabled} onchange="window.autoSave('${id}', 'inst_city', this.value)">
+                    <td class="px-4 py-4 align-middle">
+                        <input type="text" id="inst_name_${id}" class="clean-input text-indigo-900" value="${row.inst_name}" onblur="window.autoSave('${id}', 'inst_name', this.value)">
+                    </td>
+                    <td class="px-4 py-4 align-middle">
+                        <input type="text" id="inst_tax_${id}" class="clean-input font-mono uppercase" value="${row.inst_tax}" ${taxDisabled} placeholder="${isOverseas?'海外免填':'統一編號'}" onblur="window.autoSave('${id}', 'inst_tax', this.value)">
+                    </td>
+                    <td class="px-4 py-4 align-middle">
+                        <select id="inst_city_${id}" class="clean-input clean-select" ${cityDisabled} onchange="window.autoSave('${id}', 'inst_city', this.value)">
                             <option value="">${isOverseas?'免填':'請選擇'}</option>
                             ${CITIES.map(o => `<option value="${o}" ${row.inst_city === o ? 'selected' : ''}>${o}</option>`).join('')}
                         </select>
                     </td>
-                    <td><input type="text" id="inst_addr_${id}" class="cell-input" value="${row.inst_addr}" onblur="window.autoSave('${id}', 'inst_addr', this.value)"></td>
+                    <td class="px-4 py-4 align-middle">
+                        <input type="text" id="inst_addr_${id}" class="clean-input" value="${row.inst_addr}" onblur="window.autoSave('${id}', 'inst_addr', this.value)">
+                    </td>
 
-                    <td><input type="text" id="duration_${id}" class="cell-input font-mono text-center text-slate-600" value="${row.duration}" onblur="window.autoSave('${id}', 'duration', this.value)" placeholder="YY/MM/DD-YY/MM/DD"></td>
-                    <td><input type="number" id="hours_${id}" class="cell-input text-center text-emerald-600 font-black bg-emerald-50/50" value="${row.hours}" onblur="window.autoSave('${id}', 'hours', Number(this.value))"></td>
-                    <td>${makeSelect(row.period_type, periodOptions, 'period_type', id)}</td>
-                    <td>${makeSelect(row.proof_type, proofOptions, 'proof_type', id)}</td>
-                    <td>${makeSelect(row.insurance, insOptions, 'insurance', id)}</td>
-                    <td>${makeSelect(row.employment, empOptions, 'employment', id)}</td>
-                    <td class="border-r-0"><input type="text" id="resp_dept_${id}" class="cell-input" value="${row.resp_dept}" onblur="window.autoSave('${id}', 'resp_dept', this.value)"></td>
+                    <td class="px-4 pl-8 py-4 align-middle">
+                        <input type="text" id="duration_${id}" class="clean-input font-mono text-slate-700 tracking-wide" value="${row.duration}" onblur="window.autoSave('${id}', 'duration', this.value)" placeholder="YY/MM/DD-YY/MM/DD">
+                    </td>
+                    <td class="px-4 py-4 align-middle">
+                        <input type="number" id="hours_${id}" class="clean-input text-center text-emerald-700 font-black" value="${row.hours}" onblur="window.autoSave('${id}', 'hours', Number(this.value))">
+                    </td>
+                    <td class="px-4 py-4 align-middle">${makeSelect(row.period_type, periodOptions, 'period_type', id)}</td>
+                    <td class="px-4 py-4 align-middle">${makeSelect(row.proof_type, proofOptions, 'proof_type', id)}</td>
+                    <td class="px-4 py-4 align-middle">${makeSelect(row.insurance, insOptions, 'insurance', id)}</td>
+                    <td class="px-4 py-4 align-middle">${makeSelect(row.employment, empOptions, 'employment', id)}</td>
+                    <td class="px-4 py-4 align-middle">
+                        <input type="text" id="resp_dept_${id}" class="clean-input" value="${row.resp_dept}" onblur="window.autoSave('${id}', 'resp_dept', this.value)">
+                    </td>
                 </tr>`;
             });
             tbody.innerHTML = html;
-        }
+        };
 
         window.approveRow = async (id) => {
             const inst_country = document.getElementById(`inst_country_${id}`).value;
@@ -418,7 +481,7 @@
             const resp_dept = document.getElementById(`resp_dept_${id}`).value.trim();
 
             if (!inst_name || !duration || !hours || !period_type || !proof_type || !insurance || !employment) {
-                alert(`資料不完整！請確認必填欄位 (包含下拉選單) 皆已填寫。`); return;
+                alert(`資料不完整！請確認必填欄位皆已填寫。`); return;
             }
 
             const rowData = stagingData.find(d => d.id === id);
@@ -445,15 +508,10 @@
                 });
 
                 await deleteDoc(doc(db, "internship_staging", id));
+                sessionApprovedCount++;
                 
             } catch(e) {
                 alert("寫入資料庫時發生錯誤: " + e.message);
-            }
-        };
-
-        window.deleteStaging = async (id) => {
-            if(confirm("確定要刪除這筆暫存紀錄嗎？此操作不會影響已建立的學生與課程主檔。")) {
-                await deleteDoc(doc(db, "internship_staging", id));
             }
         };
 
@@ -461,15 +519,8 @@
             if(stagingData.length === 0) return;
             if(!confirm(`確定要將畫面上的 ${stagingData.length} 筆資料全部放行寫入系統嗎？`)) return;
 
-            const btn = document.querySelector('button[onclick="window.approveAll()"]');
-            const oriHtml = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-1"></i> 處理中...';
-            btn.disabled = true;
-
             for (let row of stagingData) { await window.approveRow(row.id); }
-            
-            btn.innerHTML = oriHtml;
-            btn.disabled = false;
+            updateDashboard();
         };
 
         window.clearAllStaging = async () => {
