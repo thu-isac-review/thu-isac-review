@@ -83,7 +83,7 @@
             const [loading, setLoading] = useState(true);
             const [currentHash, setCurrentHash] = useState(''); 
             
-            // 💡 解除網址參數強制綁定：只附加快取清除參數
+            // 解除網址參數強制綁定：只附加快取清除參數
             const getCacheBustedUrl = (url) => {
                 if (!url) return '';
                 const [path, queryStr] = url.split('?');
@@ -175,10 +175,12 @@
                 if (currentHash.includes('intern_view/institution')) return '實習資料瀏覽 / 實習機構清單';
                 if (currentHash.includes('intern_view/intern')) return '實習資料瀏覽 / 實習記錄清單';
                 
+                // 💡 新增的頁面標題判定
+                if (currentHash.includes('intern_manage/staging_review')) return '實習資料管理 / 批次匯入審查中心';
                 if (currentHash.includes('intern_manage/course')) return '實習資料管理 / 實習課程管理';
                 if (currentHash.includes('intern_manage/students')) return '實習資料管理 / 實習學生管理';
                 if (currentHash.includes('intern_manage/institution')) return '實習資料管理 / 實習機構管理';
-                if (currentHash.includes('intern_manage/intern')) return '實習資料管理 / 實習記錄管理';
+                if (currentHash.includes('intern_manage/record')) return '實習資料管理 / 實習記錄管理';
 
                 if (currentHash.includes('moe-indicators')) return '審查項目設定 / 教育部審查指標設定';
                 if (currentHash.includes('administrative_files')) return '審查項目設定 / 行政文件審查設定';
@@ -206,8 +208,6 @@
                             </div>
                         </div>
 
-                        {/* 💡 已移除原先的全域學期切換區塊 */}
-
                         <div className="flex-1 overflow-y-auto py-4 custom-scrollbar">
                             <MenuBtn active={currentHash === '/dashboard-content.html'} label="首頁" icon="fa-solid fa-house" onClick={() => navigate('/dashboard-content.html')} />
                             
@@ -223,6 +223,8 @@
                             <MenuBtn active={currentHash === '/intern_view/record.html'} label="實習記錄清單" icon="fa-solid fa-clipboard-list" onClick={() => navigate('/intern_view/record.html')} />
                             
                             <div className="px-6 mt-6 mb-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">實習資料管理</div>
+                            {/* 💡 新增的匯入審查中心 */}
+                            <MenuBtn active={currentHash === '/intern_manage/staging_review.html'} label="批次匯入審查中心" icon="fa-solid fa-cloud-arrow-up" onClick={() => navigate('/intern_manage/staging_review.html')} />
                             <MenuBtn active={currentHash === '/intern_manage/course.html'} label="實習課程管理" icon="fa-solid fa-book" onClick={() => navigate('/intern_manage/course.html')} />
                             <MenuBtn active={currentHash === '/intern_manage/students.html'} label="實習學生管理" icon="fa-solid fa-user-gear" onClick={() => navigate('/intern_manage/students.html')} />
                             <MenuBtn active={currentHash === '/intern_manage/institution.html'} label="實習機構管理" icon="fa-solid fa-building" onClick={() => navigate('/intern_manage/institution.html')} />
@@ -412,6 +414,7 @@
                             <div className="relative">
                                 <input 
                                     name="password" 
+                                    type="text" // 這裡修正回 type={showPassword ? "text" : "password"} 才會有切換效果
                                     type={showPassword ? "text" : "password"} 
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
