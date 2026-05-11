@@ -36,12 +36,24 @@
         .sticky-col-1 { position: sticky; left: 0; z-index: 10; }
         .sticky-col-2 { position: sticky; left: 50px; z-index: 10; }
         .sticky-col-3 { position: sticky; left: 210px; z-index: 10; }
+        
         /* 右側陰影區隔 */
         .sticky-shadow::after {
             content: ''; position: absolute; top: 0; right: -6px; bottom: 0; width: 6px;
             background: linear-gradient(to right, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0) 100%); pointer-events: none; z-index: 15;
         }
         thead .sticky-col-1, thead .sticky-col-2, thead .sticky-col-3 { z-index: 20; background-color: #ffffff; }
+
+        /* 手機版 RWD 凍結窗格調整：解除 2, 3 的凍結，保留更多橫向滾動空間 */
+        @media (max-width: 768px) {
+            .sticky-col-2, .sticky-col-3 { position: static; left: auto; z-index: auto; }
+            thead .sticky-col-2, thead .sticky-col-3 { z-index: auto; }
+            .sticky-col-3.sticky-shadow::after { display: none; }
+            .sticky-col-1::after {
+                content: ''; position: absolute; top: 0; right: -6px; bottom: 0; width: 6px;
+                background: linear-gradient(to right, rgba(0,0,0,0.06) 0%, rgba(0,0,0,0) 100%); pointer-events: none; z-index: 15;
+            }
+        }
 
         /* --- 無縫輸入體驗 --- */
         .clean-input { 
@@ -70,64 +82,66 @@
 </head>
 <body class="h-screen flex flex-col overflow-hidden text-slate-800">
 
-    <div class="shrink-0 px-10 pt-10 pb-6 z-20 animate-fade flex justify-between items-end">
-        <div>
-            <h1 class="text-3xl font-black text-slate-900 tracking-tight">批次匯入審查中心</h1>
-            <p class="text-slate-500 mt-2 font-bold text-sm">上傳總表後資料將安全暫存於雲端。請核實下方機構與紀錄細節，確認無誤後點擊放行。</p>
+    <div class="shrink-0 px-4 md:px-10 pt-6 md:pt-10 pb-4 md:pb-6 z-20 animate-fade flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 lg:gap-0">
+        <div class="w-full">
+            <h1 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">批次匯入審查中心</h1>
+            <p class="text-slate-500 mt-2 font-bold text-xs md:text-sm">上傳總表後資料將安全暫存於雲端。請核實下方機構與紀錄細節，確認無誤後點擊放行。</p>
         </div>
-        <div class="flex gap-3">
-            <button onclick="window.downloadTemplate()" class="h-11 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-6 rounded-xl text-sm transition-all shadow-sm flex items-center gap-2 active:scale-95">
+        <div class="flex flex-row flex-wrap gap-2 w-full lg:w-auto">
+            <button onclick="window.downloadTemplate()" class="flex-1 md:flex-none justify-center whitespace-nowrap h-11 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-6 rounded-xl text-sm transition-all shadow-sm flex items-center gap-2 active:scale-95">
                 下載範本
             </button>
-            <button onclick="document.getElementById('import-file').click()" class="h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 rounded-xl text-sm transition-all shadow-md shadow-indigo-600/20 flex items-center gap-2 active:scale-95">
+            <button onclick="document.getElementById('import-file').click()" class="flex-1 md:flex-none justify-center whitespace-nowrap h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 rounded-xl text-sm transition-all shadow-md shadow-indigo-600/20 flex items-center gap-2 active:scale-95">
                 上傳資料總表
             </button>
             <input type="file" id="import-file" accept=".csv" class="hidden" onchange="window.processImport(event)">
         </div>
     </div>
 
-    <div class="shrink-0 px-10 pb-6 grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade" style="animation-delay: 0.1s;">
-        <div class="bg-white p-6 rounded-3xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-100 flex justify-between items-center">
+    <div class="shrink-0 px-4 md:px-10 pb-4 md:pb-6 grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-6 animate-fade" style="animation-delay: 0.1s;">
+        <div class="bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-100 flex justify-between items-center">
             <div>
-                <div class="text-sm text-slate-500 font-bold mb-1">待審核資料</div>
-                <div class="text-4xl font-black text-slate-800" id="stat-pending">0</div>
+                <div class="text-xs md:text-sm text-slate-500 font-bold mb-1">待審核資料</div>
+                <div class="text-3xl md:text-4xl font-black text-slate-800" id="stat-pending">0</div>
             </div>
-            <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center text-2xl"><i class="fa-solid fa-file-lines"></i></div>
+            <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center text-xl md:text-2xl"><i class="fa-solid fa-file-lines"></i></div>
         </div>
-        <div class="bg-white p-6 rounded-3xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-100 flex justify-between items-center">
+        <div class="bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-100 flex justify-between items-center">
             <div>
-                <div class="text-sm text-slate-500 font-bold mb-1">本次登入已核准</div>
-                <div class="text-4xl font-black text-slate-800" id="stat-approved">0</div>
+                <div class="text-xs md:text-sm text-slate-500 font-bold mb-1">本次登入已核准</div>
+                <div class="text-3xl md:text-4xl font-black text-slate-800" id="stat-approved">0</div>
             </div>
-            <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-500 flex items-center justify-center text-2xl"><i class="fa-solid fa-check"></i></div>
+            <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-emerald-50 text-emerald-500 flex items-center justify-center text-xl md:text-2xl"><i class="fa-solid fa-check"></i></div>
         </div>
-        <div class="bg-white p-6 rounded-3xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-100 flex justify-between items-center">
+        <div class="bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-100 flex justify-between items-center">
             <div>
-                <div class="text-sm text-slate-500 font-bold mb-1">匯入阻擋 (缺漏必填)</div>
-                <div class="text-4xl font-black text-slate-800" id="stat-error">0</div>
+                <div class="text-xs md:text-sm text-slate-500 font-bold mb-1">匯入阻擋 (缺必填)</div>
+                <div class="text-3xl md:text-4xl font-black text-slate-800" id="stat-error">0</div>
             </div>
-            <div class="w-14 h-14 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center text-2xl"><i class="fa-solid fa-exclamation"></i></div>
+            <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center text-xl md:text-2xl"><i class="fa-solid fa-exclamation"></i></div>
         </div>
     </div>
 
-    <div class="flex-1 overflow-hidden px-10 pb-10 flex flex-col animate-fade" style="animation-delay: 0.2s;">
-        <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col flex-1 overflow-hidden relative">
+    <div class="flex-1 overflow-hidden px-4 md:px-10 pb-4 md:pb-10 flex flex-col animate-fade" style="animation-delay: 0.2s;">
+        <div class="bg-white rounded-2xl md:rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col flex-1 overflow-hidden relative">
             
-            <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center shrink-0 z-20 bg-white">
-                <div class="flex items-center gap-4">
-                    <div class="relative w-72">
+            <div class="px-4 md:px-8 py-4 md:py-5 border-b border-slate-100 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 shrink-0 z-20 bg-white">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full lg:w-auto">
+                    <div class="relative w-full sm:w-72">
                         <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
                         <input type="text" id="search-input" oninput="window.renderStagingTable()" placeholder="搜尋學生、機構..." class="w-full bg-slate-50 border border-slate-100 pl-11 pr-4 py-2.5 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
                     </div>
-                    <button class="bg-white border border-slate-200 text-slate-600 px-4 py-2.5 rounded-xl text-sm font-bold shadow-sm hover:bg-slate-50 transition-all">篩選條件</button>
-                    <div class="h-6 w-px bg-slate-200 mx-2"></div>
-                    <span class="bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg text-xs font-bold" id="badge-count">0 筆待審核</span>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <button class="flex-1 sm:flex-none whitespace-nowrap bg-white border border-slate-200 text-slate-600 px-4 py-2.5 rounded-xl text-sm font-bold shadow-sm hover:bg-slate-50 transition-all">篩選條件</button>
+                        <div class="hidden sm:block h-6 w-px bg-slate-200 mx-2"></div>
+                        <span class="hidden sm:inline-block bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap" id="badge-count">0 筆待審核</span>
+                    </div>
                 </div>
-                <div class="flex gap-3">
-                    <button onclick="window.clearAllStaging()" class="text-sm bg-white hover:bg-rose-50 text-slate-500 hover:text-rose-600 border border-slate-200 px-5 py-2.5 rounded-xl transition-colors font-bold shadow-sm">
-                        <i class="fa-solid fa-trash-can mr-1.5"></i> 清空
+                <div class="flex flex-row gap-2 w-full lg:w-auto">
+                    <button onclick="window.clearAllStaging()" class="flex-1 lg:flex-none justify-center whitespace-nowrap text-sm bg-white hover:bg-rose-50 text-slate-500 hover:text-rose-600 border border-slate-200 px-5 py-2.5 rounded-xl transition-colors font-bold shadow-sm flex items-center gap-1.5">
+                        <i class="fa-solid fa-trash-can"></i> 清空
                     </button>
-                    <button onclick="window.approveAll()" class="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl transition-colors font-bold shadow-md shadow-indigo-600/20 active:scale-95">
+                    <button onclick="window.approveAll()" class="flex-1 lg:flex-none justify-center whitespace-nowrap text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl transition-colors font-bold shadow-md shadow-indigo-600/20 active:scale-95">
                         批次核准全部
                     </button>
                 </div>
@@ -141,7 +155,7 @@
                     <thead class="sticky top-0 z-30">
                         <tr>
                             <th class="px-4 py-5 text-center sticky-col-1">
-                                <input type="checkbox" id="selectAll" class="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                                <i class="fa-solid fa-bolt text-slate-300"></i>
                             </th>
                             <th class="px-4 py-5 text-left sticky-col-2">學生資訊</th>
                             <th class="px-4 py-5 text-left sticky-col-3 sticky-shadow">課程標籤</th>
@@ -172,7 +186,7 @@
                 </table>
             </div>
             
-            <div class="bg-white border-t border-slate-100 px-8 py-4 flex justify-between items-center shrink-0 rounded-b-[2rem]">
+            <div class="bg-white border-t border-slate-100 px-4 md:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0 md:rounded-b-[2rem]">
                 <div id="pagination-info" class="text-sm font-bold text-slate-500">顯示 0 - 0 筆，共 0 筆資料</div>
                 <div class="flex gap-2">
                     <button class="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 transition-colors"><i class="fa-solid fa-arrow-left"></i></button>
@@ -382,26 +396,33 @@
             let html = '';
             filteredData.forEach(row => {
                 const id = row.id;
-                // 取消膠囊字體的 mono 屬性，改為標準黑體
+                // 純淨的 Pill Badge
                 const courseBadges = row.coursesInfo.map(c => `<span class="inline-flex items-center bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md text-[12px] font-bold mr-1.5 mb-1.5"><span class="mr-1.5 text-indigo-500">${c.code}</span>${c.name}</span>`).join('');
                 
                 const isOverseas = row.inst_country !== '中華民國';
                 const taxDisabled = isOverseas ? 'disabled' : '';
                 const cityDisabled = isOverseas ? 'disabled' : '';
 
-                // 完全移除 truncate 與 nowrap，讓文字自然換行
+                // 文字自然斷行，移除 nowrap
                 html += `
                 <tr id="tr-${id}">
-                    <td class="px-4 py-4 align-middle text-center sticky-col-1">
-                        <input type="checkbox" class="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                    <td class="px-2 py-2 align-middle text-center sticky-col-1 bg-white group-hover:bg-slate-50/80 transition-colors">
+                        <div class="flex flex-col gap-1.5 px-1 items-center justify-center">
+                            <button onclick="window.approveRow('${id}')" class="w-full h-8 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-md flex items-center justify-center transition-colors shadow-sm text-xs font-bold" title="核准放行">
+                                放行
+                            </button>
+                            <button onclick="window.deleteStaging('${id}')" class="w-full h-7 bg-white text-slate-400 hover:bg-rose-500 hover:text-white rounded-md flex items-center justify-center transition-colors shadow-sm border border-slate-200 hover:border-rose-500 text-xs font-bold" title="刪除捨棄">
+                                刪除
+                            </button>
+                        </div>
                     </td>
                     
-                    <td class="px-4 py-4 align-middle sticky-col-2">
+                    <td class="px-4 py-4 align-middle sticky-col-2 bg-white group-hover:bg-slate-50/80 transition-colors">
                         <div class="font-black text-slate-800 text-[14px] leading-relaxed">${row.stuName}</div>
                         <div class="text-[12px] text-slate-500 font-medium mt-0.5">${row.stuId} • ${row.grade}年級</div>
                     </td>
                     
-                    <td class="px-4 py-4 align-middle sticky-col-3 sticky-shadow">
+                    <td class="px-4 py-4 align-middle sticky-col-3 sticky-shadow bg-white group-hover:bg-slate-50/80 transition-colors">
                         <div class="w-full flex flex-wrap pt-1">${courseBadges || '-'}</div>
                     </td>
                     
@@ -428,7 +449,7 @@
                         <input type="text" id="duration_${id}" class="clean-input text-slate-700" value="${row.duration}" onblur="window.autoSave('${id}', 'duration', this.value)" placeholder="YY/MM/DD-YY/MM/DD">
                     </td>
                     <td class="px-4 py-4 align-middle">
-                        <input type="number" id="hours_${id}" class="clean-input text-center text-emerald-700 font-black" value="${row.hours}" onblur="window.autoSave('${id}', 'hours', Number(this.value))">
+                        <input type="number" id="hours_${id}" class="clean-input text-center text-emerald-700 font-black bg-emerald-50 focus:bg-white" value="${row.hours}" onblur="window.autoSave('${id}', 'hours', Number(this.value))">
                     </td>
                     <td class="px-4 py-4 align-middle">${makeSelect(row.period_type, periodOptions, 'period_type', id)}</td>
                     <td class="px-4 py-4 align-middle">${makeSelect(row.proof_type, proofOptions, 'proof_type', id)}</td>
