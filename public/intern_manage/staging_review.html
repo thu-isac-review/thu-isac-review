@@ -8,68 +8,100 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         body { background-color: #f8fafc; margin: 0; padding: 0; font-family: "SF Pro TC", "Noto Sans TC", sans-serif; -webkit-font-smoothing: antialiased; }
+        
+        /* 優雅的滾動條 */
         .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; border: 2px solid transparent; background-clip: padding-box;}
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; border: 2px solid #ffffff; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
         
-        /* 試算表風格輸入框 */
-        .cell-input { width: 100%; height: 100%; min-height: 36px; border: 1px solid transparent; background: transparent; padding: 4px 8px; border-radius: 6px; outline: none; transition: all 0.2s; font-size: 13px; color: #334155; font-weight: 700;}
-        .cell-input:hover:not(:disabled) { background: #f1f5f9; border-color: #cbd5e1; }
-        .cell-input:focus:not(:disabled) { background: #ffffff; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
-        .cell-input:disabled { color: #94a3b8; background-color: #f8fafc; cursor: not-allowed; text-decoration: line-through; }
+        /* 現代 SaaS 輸入框風格 */
+        .modern-input { 
+            width: 100%; min-height: 38px; 
+            background-color: #f1f5f9; border: 1px solid transparent; 
+            padding: 6px 12px; border-radius: 8px; 
+            font-size: 13px; font-weight: 600; color: #334155; 
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        .modern-input:hover:not(:disabled) { background-color: #e2e8f0; }
+        .modern-input:focus:not(:disabled) { 
+            background-color: #ffffff; border-color: #818cf8; 
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); outline: none; 
+        }
+        .modern-input:disabled { 
+            color: #94a3b8; background-color: #f8fafc; 
+            cursor: not-allowed; opacity: 0.7;
+        }
         
-        .cell-select { appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.2rem center; background-repeat: no-repeat; background-size: 1.2em 1.2em; padding-right: 1.5rem; }
+        /* 下拉選單箭頭優化 */
+        .modern-select { 
+            appearance: none; 
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); 
+            background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.2em 1.2em; 
+            padding-right: 2rem; cursor: pointer;
+        }
 
-        /* 凍結窗格設定 */
-        .sticky-col-1 { position: sticky; left: 0; z-index: 10; background-color: white; border-right: 2px solid #e2e8f0; }
-        .sticky-col-2 { position: sticky; left: 60px; z-index: 10; background-color: white; border-right: 2px solid #e2e8f0; }
-        .sticky-col-3 { position: sticky; left: 200px; z-index: 10; background-color: white; border-right: 2px solid #e2e8f0; box-shadow: 4px 0 6px -2px rgba(0,0,0,0.05); }
+        /* 高質感凍結窗格 (解決滾動破圖) */
+        .sticky-col { position: sticky; z-index: 10; background-color: inherit; }
+        .sticky-col::after {
+            content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 1px;
+            background-color: #e2e8f0; pointer-events: none;
+        }
+        .sticky-shadow::after {
+            content: ''; position: absolute; top: 0; right: -5px; bottom: 0; width: 5px;
+            background: linear-gradient(to right, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0) 100%); pointer-events: none;
+        }
         
-        thead .sticky-col-1, thead .sticky-col-2, thead .sticky-col-3 { z-index: 30; background-color: #f8fafc; }
-        tr:hover .sticky-col-1, tr:hover .sticky-col-2, tr:hover .sticky-col-3 { background-color: #f1f5f9; }
+        thead th.sticky-col { z-index: 30; background-color: #f8fafc; }
+        
+        .animate-fade { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="h-screen flex flex-col overflow-hidden">
+<body class="h-screen flex flex-col overflow-hidden text-slate-800">
 
-    <div class="shrink-0 px-6 pt-6 pb-4 space-y-4 z-20 animate-fade">
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
+    <div class="shrink-0 px-8 pt-8 pb-4 z-20 animate-fade">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden">
+            <div class="absolute -top-24 -right-24 w-64 h-64 bg-indigo-50/50 rounded-full blur-3xl pointer-events-none"></div>
             
-            <div class="flex items-center gap-4 relative z-10">
-                <div class="w-12 h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-600/20 shrink-0">
+            <div class="flex items-center gap-5 relative z-10">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20 shrink-0">
                     <i class="fa-solid fa-layer-group text-2xl"></i>
                 </div>
                 <div>
-                    <h2 class="text-xl font-black text-slate-800 tracking-tight">批次匯入審查中心 (Staging Area)</h2>
-                    <p class="text-xs text-slate-500 mt-1 font-bold">上傳總表後系統會將資料暫存於此，您可以隨時離開頁面，重新登入後仍可接續審查作業。</p>
+                    <h2 class="text-2xl font-black text-slate-800 tracking-tight">批次匯入審查中心</h2>
+                    <p class="text-sm text-slate-500 mt-1 font-medium leading-relaxed">
+                        上傳總表後資料將安全暫存於雲端。請核實下方機構與紀錄細節，確認無誤後點擊放行。
+                    </p>
                 </div>
             </div>
             
-            <div class="flex gap-2 relative z-10">
-                <button onclick="window.downloadTemplate()" class="h-10 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-4 rounded-xl text-sm transition-all shadow-sm flex items-center gap-2 active:scale-95">
-                    <i class="fa-solid fa-download text-emerald-600"></i> 下載匯入範本
+            <div class="flex flex-wrap gap-3 relative z-10">
+                <button onclick="window.downloadTemplate()" class="h-11 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-5 rounded-xl text-sm transition-all shadow-sm flex items-center gap-2 active:scale-95">
+                    <i class="fa-solid fa-download text-emerald-500 text-base"></i> 下載匯入範本
                 </button>
-                <button id="btn-upload" onclick="document.getElementById('import-file').click()" class="h-10 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 rounded-xl text-sm transition-all shadow-md shadow-indigo-500/20 flex items-center gap-2 active:scale-95">
-                    <i class="fa-solid fa-cloud-arrow-up text-base"></i> 上傳總表 (CSV)
+                <button id="btn-upload" onclick="document.getElementById('import-file').click()" class="h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 rounded-xl text-sm transition-all shadow-md shadow-indigo-600/20 flex items-center gap-2 active:scale-95">
+                    <i class="fa-solid fa-cloud-arrow-up text-base"></i> 上傳資料總表 (CSV)
                 </button>
                 <input type="file" id="import-file" accept=".csv" class="hidden" onchange="window.processImport(event)">
             </div>
         </div>
     </div>
 
-    <div class="flex-1 overflow-hidden px-6 pb-6 flex flex-col animate-fade">
+    <div class="flex-1 overflow-hidden px-8 pb-8 flex flex-col animate-fade" style="animation-delay: 0.1s;">
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col flex-1 overflow-hidden">
             
-            <div class="px-5 py-3 bg-white border-b border-slate-200 flex justify-between items-center shrink-0 z-20 relative shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)]">
-                <h3 class="text-sm font-black text-slate-700 flex items-center gap-2">
-                    <i class="fa-solid fa-list-check text-indigo-500"></i> 待審核暫存列表
-                    <span id="staging-count" class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-md text-xs ml-2">載入中...</span>
-                </h3>
-                <div class="flex gap-2">
-                    <button onclick="window.clearAllStaging()" class="text-xs bg-white hover:bg-rose-50 text-slate-500 hover:text-rose-600 border border-slate-200 px-3 py-2 rounded-lg transition-colors font-bold shadow-sm flex items-center gap-1">
-                        <i class="fa-solid fa-trash-can"></i> 清空暫存區
+            <div class="px-6 py-4 bg-white border-b border-slate-200 flex justify-between items-center shrink-0 z-20">
+                <div class="flex items-center gap-3">
+                    <div class="w-2 h-6 bg-indigo-500 rounded-full"></div>
+                    <h3 class="text-base font-black text-slate-800">待核實紀錄</h3>
+                    <span id="staging-count" class="bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-md text-xs font-bold border border-indigo-100/50">載入中...</span>
+                </div>
+                <div class="flex gap-2.5">
+                    <button onclick="window.clearAllStaging()" class="h-9 text-xs bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 border border-slate-200 px-4 rounded-lg transition-colors font-bold shadow-sm flex items-center gap-1.5">
+                        <i class="fa-solid fa-trash-can"></i> 清空全部暫存
                     </button>
-                    <button onclick="window.approveAll()" class="text-xs bg-emerald-500 hover:bg-emerald-600 text-white border border-emerald-600 px-4 py-2 rounded-lg transition-colors font-bold shadow-sm flex items-center gap-1">
+                    <button onclick="window.approveAll()" class="h-9 text-xs bg-emerald-500 hover:bg-emerald-600 text-white px-4 rounded-lg transition-colors font-bold shadow-sm shadow-emerald-500/20 flex items-center gap-1.5">
                         <i class="fa-solid fa-check-double"></i> 批次核准全部
                     </button>
                 </div>
@@ -77,34 +109,39 @@
 
             <div class="flex-1 overflow-auto custom-scrollbar relative">
                 <table class="w-full text-left table-fixed border-collapse min-w-[2100px]">
-                    <thead class="sticky top-0 z-20">
-                        <tr>
-                            <th colspan="3" class="px-3 py-2 text-center text-xs font-black text-slate-600 bg-slate-100 border-b-2 border-r-2 border-white tracking-widest sticky top-0 z-30 sticky-col-1" style="left: 0;">🎓 學生與課程 (自動帶入唯讀)</th>
-                            <th colspan="5" class="px-3 py-2 text-center text-xs font-black text-emerald-700 bg-emerald-50 border-b-2 border-r-2 border-white tracking-widest">🏢 實習機構資訊 (需核實)</th>
-                            <th colspan="7" class="px-3 py-2 text-center text-xs font-black text-amber-700 bg-amber-50 border-b-2 border-white tracking-widest">📝 實習條件紀錄 (需核實)</th>
+                    <thead class="sticky top-0 z-30 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+                        <tr class="bg-slate-50">
+                            <th colspan="3" class="px-4 py-2.5 text-center text-[11px] font-black text-slate-500 uppercase tracking-widest sticky-col sticky-shadow" style="left: 0; background-color: #f8fafc;">學生與課程 (唯讀區)</th>
+                            <th colspan="5" class="px-4 py-2.5 text-center text-[11px] font-black text-indigo-500 uppercase tracking-widest border-l border-slate-200">實習機構資訊核實</th>
+                            <th colspan="7" class="px-4 py-2.5 text-center text-[11px] font-black text-emerald-600 uppercase tracking-widest border-l border-slate-200">實習條件紀錄核實</th>
                         </tr>
-                        <tr class="bg-slate-50 border-b border-slate-300">
-                            <th class="px-2 py-3 text-center text-[11px] font-black text-slate-500 w-[60px] sticky-col-1">操作</th>
-                            <th class="px-3 py-3 text-left text-[11px] font-black text-slate-500 w-[140px] sticky-col-2">學生身分</th>
-                            <th class="px-3 py-3 text-left text-[11px] font-black text-slate-500 w-[180px] sticky-col-3">聚合課程</th>
+                        <tr class="bg-white border-b border-slate-200">
+                            <th class="px-4 py-3 text-center text-[13px] font-bold text-slate-600 w-[100px] sticky-col" style="left: 0;">操作</th>
+                            <th class="px-4 py-3 text-left text-[13px] font-bold text-slate-600 w-[160px] sticky-col" style="left: 100px;">學生身分</th>
+                            <th class="px-4 py-3 text-left text-[13px] font-bold text-slate-600 w-[220px] sticky-col sticky-shadow" style="left: 260px;">聚合課程標籤</th>
                             
-                            <th class="px-2 py-3 text-left text-[11px] font-black text-slate-500 w-[110px] border-l border-slate-200">國別 <span class="text-rose-500">*</span></th>
-                            <th class="px-2 py-3 text-left text-[11px] font-black text-slate-500 w-[200px]">機構名稱 <span class="text-rose-500">*</span></th>
-                            <th class="px-2 py-3 text-left text-[11px] font-black text-slate-500 w-[120px]">統一編號</th>
-                            <th class="px-2 py-3 text-left text-[11px] font-black text-slate-500 w-[110px]">縣市別</th>
-                            <th class="px-2 py-3 text-left text-[11px] font-black text-slate-500 min-w-[200px]">完整地址 <span class="text-rose-500">*</span></th>
+                            <th class="px-4 py-3 text-left text-[13px] font-bold text-slate-600 w-[130px] border-l border-slate-200">國別 <span class="text-rose-500 ml-0.5">*</span></th>
+                            <th class="px-4 py-3 text-left text-[13px] font-bold text-slate-600 w-[240px]">機構名稱 <span class="text-rose-500 ml-0.5">*</span></th>
+                            <th class="px-4 py-3 text-left text-[13px] font-bold text-slate-600 w-[140px]">統一編號</th>
+                            <th class="px-4 py-3 text-left text-[13px] font-bold text-slate-600 w-[130px]">縣市別</th>
+                            <th class="px-4 py-3 text-left text-[13px] font-bold text-slate-600 min-w-[240px]">完整地址 <span class="text-rose-500 ml-0.5">*</span></th>
                             
-                            <th class="px-2 py-3 text-left text-[11px] font-black text-slate-500 w-[180px] border-l border-slate-200">起訖時間 (Y/M/D-Y/M/D) <span class="text-rose-500">*</span></th>
-                            <th class="px-2 py-3 text-center text-[11px] font-black text-slate-500 w-[80px]">總時數 <span class="text-rose-500">*</span></th>
-                            <th class="px-2 py-3 text-left text-[11px] font-black text-slate-500 w-[130px]">時間分類 <span class="text-rose-500">*</span></th>
-                            <th class="px-2 py-3 text-left text-[11px] font-black text-slate-500 w-[130px]">證明文件 <span class="text-rose-500">*</span></th>
-                            <th class="px-2 py-3 text-left text-[11px] font-black text-slate-500 w-[130px]">投保情形 <span class="text-rose-500">*</span></th>
-                            <th class="px-2 py-3 text-left text-[11px] font-black text-slate-500 w-[90px]">勞雇關係 <span class="text-rose-500">*</span></th>
-                            <th class="px-2 py-3 text-left text-[11px] font-black text-slate-500 w-[150px]">負責填報系所</th>
+                            <th class="px-4 py-3 text-left text-[13px] font-bold text-slate-600 w-[200px] border-l border-slate-200">起訖時間 (Y/M/D) <span class="text-rose-500 ml-0.5">*</span></th>
+                            <th class="px-4 py-3 text-center text-[13px] font-bold text-slate-600 w-[100px]">總時數 <span class="text-rose-500 ml-0.5">*</span></th>
+                            <th class="px-4 py-3 text-left text-[13px] font-bold text-slate-600 w-[150px]">時間分類 <span class="text-rose-500 ml-0.5">*</span></th>
+                            <th class="px-4 py-3 text-left text-[13px] font-bold text-slate-600 w-[150px]">證明文件 <span class="text-rose-500 ml-0.5">*</span></th>
+                            <th class="px-4 py-3 text-left text-[13px] font-bold text-slate-600 w-[150px]">投保情形 <span class="text-rose-500 ml-0.5">*</span></th>
+                            <th class="px-4 py-3 text-left text-[13px] font-bold text-slate-600 w-[110px]">勞雇關係 <span class="text-rose-500 ml-0.5">*</span></th>
+                            <th class="px-4 py-3 text-left text-[13px] font-bold text-slate-600 w-[160px]">負責系所</th>
                         </tr>
                     </thead>
                     <tbody id="staging-table-body" class="bg-white">
-                        <tr><td colspan="15" class="px-6 py-20 text-center text-slate-400 font-bold"><i class="fa-solid fa-circle-notch fa-spin text-2xl mb-3 text-blue-500"></i><br>資料載入中...</td></tr>
+                        <tr>
+                            <td colspan="15" class="px-6 py-32 text-center text-slate-400">
+                                <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-4 text-indigo-400"></i>
+                                <p class="font-bold text-sm tracking-wide">與伺服器連線中...</p>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -135,7 +172,6 @@
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // 載入比對用主檔
                 const [sSnap, cSnap, iSnap] = await Promise.all([
                     getDocs(collection(db, "internship_students")),
                     getDocs(collection(db, "internship_courses")),
@@ -145,18 +181,16 @@
                 existingCourses = cSnap.docs.map(d => ({ id: d.id, ...d.data() }));
                 existingInstitutions = iSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-                // 💡 監聽 staging 暫存區資料
                 onSnapshot(collection(db, "internship_staging"), (snapshot) => {
                     stagingData = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                    document.getElementById('staging-count').innerText = `${stagingData.length} 筆待審`;
+                    document.getElementById('staging-count').innerText = `${stagingData.length} 筆資料`;
                     renderStagingTable();
                 });
             }
         });
 
-        // 產生 Select 元件字串 (加入 id 以供直讀 DOM)
         const makeSelect = (val, options, fieldName, docId) => {
-            let html = `<select id="${fieldName}_${docId}" class="cell-input cell-select" onblur="window.autoSave('${docId}', '${fieldName}', this.value)">`;
+            let html = `<select id="${fieldName}_${docId}" class="modern-input modern-select" onblur="window.autoSave('${docId}', '${fieldName}', this.value)">`;
             html += `<option value="">請選擇</option>`;
             options.forEach(opt => {
                 html += `<option value="${opt}" ${val === opt ? 'selected' : ''}>${opt}</option>`;
@@ -178,7 +212,7 @@
 
             const btn = document.getElementById('btn-upload');
             const originalHtml = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> 處理並寫入暫存...';
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> 處理中...';
             btn.disabled = true;
 
             const reader = new FileReader();
@@ -202,9 +236,8 @@
                         const inst_country = cols[7] || '中華民國'; const inst_name = cols[8];
                         const duration = cols[21]; const hours = Number(cols[22]) || 0;
 
-                        if (!stu_id || !inst_name || !duration) continue; // 略過無效列
+                        if (!stu_id || !inst_name || !duration) continue;
 
-                        // 1. 學生主檔檢查與建立
                         const isStuExist = existingStudents.some(s => s.student_id === stu_id);
                         if (!isStuExist) {
                             const stuRef = doc(collection(db, "internship_students"));
@@ -212,7 +245,6 @@
                             existingStudents.push({ id: stuRef.id, student_id: stu_id }); 
                         }
 
-                        // 2. 課程主檔檢查與建立
                         const c_code = cols[16]; const c_name = cols[17];
                         if (c_code && c_name) {
                             const isCourseExist = existingCourses.some(c => c.academic_year === cols[12] && c.term === cols[13] && c.course_code === c_code);
@@ -223,8 +255,6 @@
                             }
                         }
 
-                        // 3. 準備寫入暫存區 (聚合邏輯)
-                        // 建立不會含有斜線的 Document ID
                         const safeKey = `${stu_id}_${inst_name}_${duration}`.replace(/[\/\\]/g, ''); 
                         const matchCourse = existingCourses.find(c => c.academic_year === cols[12] && c.term === cols[13] && c.course_code === c_code);
                         const courseIdObj = matchCourse ? { id: matchCourse.id, code: c_code, name: c_name } : { id: 'new', code: c_code, name: c_name };
@@ -245,14 +275,13 @@
                         }
                     }
 
-                    // 將聚合好的資料用 set (merge:true) 寫入 staging 集合
                     aggregatedRecordsMap.forEach((data, key) => {
                         const stagingRef = doc(db, 'internship_staging', key);
-                        batch.set(stagingRef, data, { merge: true }); // 若重複上傳則覆蓋更新
+                        batch.set(stagingRef, data, { merge: true }); 
                     });
 
                     await batch.commit();
-                    alert("✅ 檔案解析並成功寫入暫存區！");
+                    alert("✅ 檔案解析完畢！資料已存入雲端暫存區，請接續進行審查。");
 
                 } catch (error) { 
                     alert("處理發生錯誤：\n" + error.message); 
@@ -265,7 +294,6 @@
             reader.readAsText(file);
         };
 
-        // 💡 獨立處理海外機構邏輯
         window.handleRowCountryChange = (docId) => {
             const countryEl = document.getElementById(`inst_country_${docId}`);
             const taxEl = document.getElementById(`inst_tax_${docId}`);
@@ -283,9 +311,7 @@
             window.autoSave(docId, 'inst_city', cityEl.value);
         };
 
-        // 💡 自動草稿儲存
         window.autoSave = (docId, field, value) => {
-            // 避免頻繁且無意義的更新
             const record = stagingData.find(d => d.id === docId);
             if(record && record[field] !== value) {
                 setDoc(doc(db, 'internship_staging', docId), { [field]: value }, { merge: true });
@@ -295,66 +321,79 @@
         function renderStagingTable() {
             const tbody = document.getElementById('staging-table-body');
             if (stagingData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="15" class="px-6 py-20 text-center text-slate-400 font-bold bg-white">目前暫存區淨空，無待審查紀錄。</td></tr>`;
+                tbody.innerHTML = `<tr>
+                    <td colspan="15" class="px-6 py-24 text-center">
+                        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-slate-100 text-slate-300 mb-4">
+                            <i class="fa-solid fa-inbox text-3xl"></i>
+                        </div>
+                        <p class="text-slate-500 font-bold text-base">目前暫存區淨空，尚無待審查紀錄。</p>
+                        <p class="text-slate-400 text-sm mt-1">請由右上方點擊「上傳資料總表」匯入 CSV。</p>
+                    </td>
+                </tr>`;
                 return;
             }
 
             let html = '';
             stagingData.forEach(row => {
                 const id = row.id;
-                const courseBadges = row.coursesInfo.map(c => `<span class="inline-block bg-indigo-50 border border-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded text-[10px] mb-1 mr-1">${c.code} ${c.name}</span>`).join('');
+                const courseBadges = row.coursesInfo.map(c => `<span class="inline-block bg-indigo-50 border border-indigo-200 text-indigo-700 px-2 py-0.5 rounded text-[11px] font-bold mr-1 mb-1">${c.code} ${c.name}</span>`).join('');
                 
                 const isOverseas = row.inst_country !== '中華民國';
                 const taxDisabled = isOverseas ? 'disabled' : '';
                 const cityDisabled = isOverseas ? 'disabled' : '';
 
+                // 行區塊背景設定 (透過 hover 變色提升現代感)
                 html += `
-                <tr class="border-b border-slate-200" id="tr-${id}">
-                    <td class="px-2 py-2 align-middle text-center sticky-col-1">
-                        <button onclick="window.approveRow('${id}')" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-1.5 rounded-md shadow-sm transition-all text-[11px] mb-1"><i class="fa-solid fa-check"></i> 放行</button>
-                        <button onclick="window.deleteStaging('${id}')" class="w-full bg-slate-100 hover:bg-rose-500 text-slate-500 hover:text-white font-bold py-1 rounded-md transition-all text-[10px]"><i class="fa-solid fa-trash"></i> 捨棄</button>
+                <tr class="bg-white hover:bg-slate-50/80 transition-colors border-b border-slate-100 group" id="tr-${id}">
+                    <td class="px-3 py-3 align-middle text-center sticky-col bg-white group-hover:bg-slate-50/80 transition-colors" style="left: 0;">
+                        <button onclick="window.approveRow('${id}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-1.5 rounded-md shadow-sm transition-all text-[11px] mb-1.5 active:scale-95">
+                            <i class="fa-solid fa-check mr-0.5"></i> 放行
+                        </button>
+                        <button onclick="window.deleteStaging('${id}')" class="w-full bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-slate-200 hover:border-rose-200 font-bold py-1 rounded-md transition-all text-[10px]">
+                            <i class="fa-solid fa-xmark mr-0.5"></i> 刪除
+                        </button>
                     </td>
-                    <td class="px-3 py-2 align-middle sticky-col-2">
-                        <div class="font-black text-slate-700 leading-tight truncate" title="${row.stuName}">${row.stuName}</div>
-                        <div class="text-[10px] text-slate-500 font-mono mt-0.5">${row.stuId} | ${row.grade}年級</div>
+                    <td class="px-4 py-3 align-middle sticky-col bg-white group-hover:bg-slate-50/80 transition-colors" style="left: 100px;">
+                        <div class="font-black text-slate-800 text-sm leading-tight truncate" title="${row.stuName}">${row.stuName}</div>
+                        <div class="text-[11px] text-slate-400 font-medium mt-1 uppercase tracking-wide">${row.stuId} <span class="mx-1">|</span> ${row.grade}年級</div>
                     </td>
-                    <td class="px-3 py-2 align-middle sticky-col-3">
-                        <div class="max-w-[160px] truncate hover:text-clip hover:whitespace-normal h-8 flex flex-wrap items-center" title="${row.coursesInfo.map(c=>c.name).join(', ')}">${courseBadges || '-'}</div>
+                    <td class="px-4 py-3 align-middle sticky-col sticky-shadow bg-white group-hover:bg-slate-50/80 transition-colors" style="left: 260px;">
+                        <div class="max-w-[200px] flex flex-wrap gap-y-1" title="${row.coursesInfo.map(c=>c.name).join(', ')}">${courseBadges || '-'}</div>
                     </td>
                     
-                    <td class="px-2 py-2 align-middle border-l border-slate-200">
-                        <select id="inst_country_${id}" class="cell-input cell-select" onchange="window.handleRowCountryChange('${id}')">
+                    <td class="px-3 py-3 align-middle border-l border-slate-200">
+                        <select id="inst_country_${id}" class="modern-input modern-select" onchange="window.handleRowCountryChange('${id}')">
                             ${countryOptions.map(o => `<option value="${o}" ${row.inst_country === o ? 'selected' : ''}>${o}</option>`).join('')}
                         </select>
                     </td>
-                    <td class="px-2 py-2 align-middle">
-                        <input type="text" id="inst_name_${id}" class="cell-input" value="${row.inst_name}" onblur="window.autoSave('${id}', 'inst_name', this.value)">
+                    <td class="px-3 py-3 align-middle">
+                        <input type="text" id="inst_name_${id}" class="modern-input text-indigo-700" value="${row.inst_name}" onblur="window.autoSave('${id}', 'inst_name', this.value)">
                     </td>
-                    <td class="px-2 py-2 align-middle">
-                        <input type="text" id="inst_tax_${id}" class="cell-input font-mono" value="${row.inst_tax}" ${taxDisabled} placeholder="${isOverseas?'海外免填':'統一編號'}" onblur="window.autoSave('${id}', 'inst_tax', this.value)">
+                    <td class="px-3 py-3 align-middle">
+                        <input type="text" id="inst_tax_${id}" class="modern-input font-mono" value="${row.inst_tax}" ${taxDisabled} placeholder="${isOverseas?'海外免填':'統一編號'}" onblur="window.autoSave('${id}', 'inst_tax', this.value)">
                     </td>
-                    <td class="px-2 py-2 align-middle">
-                        <select id="inst_city_${id}" class="cell-input cell-select" ${cityDisabled} onchange="window.autoSave('${id}', 'inst_city', this.value)">
+                    <td class="px-3 py-3 align-middle">
+                        <select id="inst_city_${id}" class="modern-input modern-select" ${cityDisabled} onchange="window.autoSave('${id}', 'inst_city', this.value)">
                             <option value="">${isOverseas?'免填':'請選擇'}</option>
                             ${CITIES.map(o => `<option value="${o}" ${row.inst_city === o ? 'selected' : ''}>${o}</option>`).join('')}
                         </select>
                     </td>
-                    <td class="px-2 py-2 align-middle">
-                        <input type="text" id="inst_addr_${id}" class="cell-input" value="${row.inst_addr}" onblur="window.autoSave('${id}', 'inst_addr', this.value)">
+                    <td class="px-3 py-3 align-middle">
+                        <input type="text" id="inst_addr_${id}" class="modern-input" value="${row.inst_addr}" onblur="window.autoSave('${id}', 'inst_addr', this.value)">
                     </td>
 
-                    <td class="px-2 py-2 align-middle border-l border-slate-200">
-                        <input type="text" id="duration_${id}" class="cell-input font-mono text-center" value="${row.duration}" onblur="window.autoSave('${id}', 'duration', this.value)" placeholder="YY/MM/DD-YY/MM/DD">
+                    <td class="px-3 py-3 align-middle border-l border-slate-200">
+                        <input type="text" id="duration_${id}" class="modern-input font-mono text-center text-slate-600" value="${row.duration}" onblur="window.autoSave('${id}', 'duration', this.value)" placeholder="YY/MM/DD-YY/MM/DD">
                     </td>
-                    <td class="px-2 py-2 align-middle">
-                        <input type="number" id="hours_${id}" class="cell-input text-center text-amber-700 bg-amber-50/50" value="${row.hours}" onblur="window.autoSave('${id}', 'hours', Number(this.value))">
+                    <td class="px-3 py-3 align-middle">
+                        <input type="number" id="hours_${id}" class="modern-input text-center text-emerald-700 bg-emerald-50 focus:bg-white" value="${row.hours}" onblur="window.autoSave('${id}', 'hours', Number(this.value))">
                     </td>
-                    <td class="px-2 py-2 align-middle">${makeSelect(row.period_type, periodOptions, 'period_type', id)}</td>
-                    <td class="px-2 py-2 align-middle">${makeSelect(row.proof_type, proofOptions, 'proof_type', id)}</td>
-                    <td class="px-2 py-2 align-middle">${makeSelect(row.insurance, insOptions, 'insurance', id)}</td>
-                    <td class="px-2 py-2 align-middle">${makeSelect(row.employment, empOptions, 'employment', id)}</td>
-                    <td class="px-2 py-2 align-middle">
-                        <input type="text" id="resp_dept_${id}" class="cell-input" value="${row.resp_dept}" onblur="window.autoSave('${id}', 'resp_dept', this.value)">
+                    <td class="px-3 py-3 align-middle">${makeSelect(row.period_type, periodOptions, 'period_type', id)}</td>
+                    <td class="px-3 py-3 align-middle">${makeSelect(row.proof_type, proofOptions, 'proof_type', id)}</td>
+                    <td class="px-3 py-3 align-middle">${makeSelect(row.insurance, insOptions, 'insurance', id)}</td>
+                    <td class="px-3 py-3 align-middle">${makeSelect(row.employment, empOptions, 'employment', id)}</td>
+                    <td class="px-3 py-3 align-middle">
+                        <input type="text" id="resp_dept_${id}" class="modern-input" value="${row.resp_dept}" onblur="window.autoSave('${id}', 'resp_dept', this.value)">
                     </td>
                 </tr>`;
             });
@@ -362,7 +401,6 @@
         }
 
         window.approveRow = async (id) => {
-            // 💡 核心修正：直接從畫面上的 DOM 讀取最新輸入框的值，不依賴可能尚未更新的 Array state
             const inst_country = document.getElementById(`inst_country_${id}`).value;
             const inst_name = document.getElementById(`inst_name_${id}`).value.trim();
             const inst_tax = document.getElementById(`inst_tax_${id}`).value.trim();
@@ -385,7 +423,6 @@
             const rowData = stagingData.find(d => d.id === id);
             
             try {
-                // 1. 處理機構
                 const isMatchInst = existingInstitutions.find(i => i.country === inst_country && i.name === inst_name && i.tax_id === inst_tax && i.city === inst_city && i.address === inst_addr);
                 if (!isMatchInst) {
                     const instRef = await addDoc(collection(db, "internship_institutions"), {
@@ -394,7 +431,6 @@
                     existingInstitutions.push({ id: instRef.id, country: inst_country, name: inst_name, tax_id: inst_tax, city: inst_city, address: inst_addr });
                 }
 
-                // 2. 寫入實習紀錄
                 const courseIds = rowData.coursesInfo.map(c => {
                     const match = existingCourses.find(xc => xc.course_code === c.code);
                     return match ? match.id : null;
@@ -411,7 +447,6 @@
                     created_at: serverTimestamp()
                 });
 
-                // 3. 放行後刪除暫存區資料
                 await deleteDoc(doc(db, "internship_staging", id));
                 
             } catch(e) {
@@ -420,24 +455,25 @@
         };
 
         window.deleteStaging = async (id) => {
-            if(confirm("確定要捨棄並刪除此筆暫存資料嗎？\n(注意：學生與課程主檔若已建立則不會被刪除)")) {
+            if(confirm("確定要刪除這筆暫存紀錄嗎？此操作不會影響已建立的學生與課程主檔。")) {
                 await deleteDoc(doc(db, "internship_staging", id));
             }
         };
 
         window.approveAll = async () => {
             if(stagingData.length === 0) return;
-            if(!confirm(`確定要將畫面上所有 ${stagingData.length} 筆資料全部放行寫入系統嗎？`)) return;
+            if(!confirm(`確定要將畫面上的 ${stagingData.length} 筆資料全部放行寫入系統嗎？`)) return;
 
             const btn = document.querySelector('button[onclick="window.approveAll()"]');
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> 處理中';
+            const oriHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-1"></i> 處理中...';
             btn.disabled = true;
 
             for (let row of stagingData) {
                 await window.approveRow(row.id);
             }
             
-            btn.innerHTML = '<i class="fa-solid fa-check-double"></i> 批次核准全部';
+            btn.innerHTML = oriHtml;
             btn.disabled = false;
         };
 
