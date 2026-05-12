@@ -9,26 +9,22 @@
     <style>
         body { background-color: #F4F5F8; margin: 0; padding: 0; font-family: "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif; -webkit-font-smoothing: antialiased; }
         
-        /* 滾動條樣式 */
         .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; border: 2px solid #F4F5F8; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
         
-        /* 表格樣式 */
         table { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; }
         th, td { border-bottom: 1px solid #f3f4f6; vertical-align: middle; background-color: #ffffff; transition: background-color 0.2s ease; }
         th { background-color: #ffffff; border-bottom: 2px solid #f3f4f6; color: #6b7280; font-weight: 700; font-size: 13px; }
         tbody tr:hover td { background-color: #f9fafb; }
 
-        /* 凍結窗格設定 */
         .sticky-col-1 { position: sticky; left: 0; z-index: 10; }
         .sticky-col-2 { position: sticky; left: 50px; z-index: 10; }
         .sticky-col-3 { position: sticky; left: 210px; z-index: 10; }
         .sticky-shadow::after { content: ''; position: absolute; top: 0; right: -6px; bottom: 0; width: 6px; background: linear-gradient(to right, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0) 100%); pointer-events: none; z-index: 15; }
         thead .sticky-col-1, thead .sticky-col-2, thead .sticky-col-3 { z-index: 20; background-color: #ffffff; }
 
-        /* 手機版解除過多凍結，保留橫向滑動空間 */
         @media (max-width: 768px) {
             .sticky-col-2, .sticky-col-3 { position: static; left: auto; z-index: auto; }
             thead .sticky-col-2, thead .sticky-col-3 { z-index: auto; }
@@ -36,7 +32,6 @@
             .sticky-col-1::after { content: ''; position: absolute; top: 0; right: -6px; bottom: 0; width: 6px; background: linear-gradient(to right, rgba(0,0,0,0.06) 0%, rgba(0,0,0,0) 100%); pointer-events: none; z-index: 15; }
         }
 
-        /* 無縫輸入框 (Borderless Inputs) */
         .clean-input { width: 100%; height: auto; min-height: 36px; background: transparent; border: 1px solid transparent; padding: 6px 10px; font-size: 14px; font-weight: 600; color: #1f2937; outline: none; transition: all 0.15s; border-radius: 8px; }
         .clean-input:hover:not(:disabled) { background-color: #f3f4f6; border-color: #e5e7eb; }
         .clean-input:focus:not(:disabled) { background-color: #ffffff; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); z-index: 5; position: relative; }
@@ -57,7 +52,7 @@
                 <h1 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">批次匯入審查中心</h1>
                 <p class="text-slate-500 mt-2 font-bold text-xs md:text-sm">上傳總表後資料將安全暫存於雲端。請核實下方機構與紀錄細節，確認無誤後點擊放行。</p>
             </div>
-            <div class="flex flex-row w-full lg:w-auto gap-2 md:gap-3">
+            <div class="flex flex-row flex-wrap gap-2 w-full lg:w-auto">
                 <button onclick="window.downloadTemplate()" class="flex-1 lg:flex-none flex items-center justify-center whitespace-nowrap h-11 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-4 md:px-6 rounded-xl text-sm transition-all shadow-sm active:scale-95">
                     下載範本
                 </button>
@@ -118,7 +113,22 @@
                 <div class="flex-1 overflow-auto custom-scrollbar relative bg-white min-h-0">
                     <table class="saas-table">
                         <colgroup>
-                            <col style="width: 50px;">  <col style="width: 160px;"> <col style="width: 240px;"> <col style="width: 140px;"> <col style="width: 240px;"> <col style="width: 150px;"> <col style="width: 140px;"> <col style="width: 280px;"> <col style="width: 200px;"> <col style="width: 100px;"> <col style="width: 160px;"> <col style="width: 160px;"> <col style="width: 160px;"> <col style="width: 120px;"> <col style="width: 180px;"> </colgroup>
+                            <col style="width: 50px;">  
+                            <col style="width: 160px;"> 
+                            <col style="width: 240px;"> 
+                            <col style="width: 140px;"> 
+                            <col style="width: 240px;"> 
+                            <col style="width: 150px;"> 
+                            <col style="width: 140px;"> 
+                            <col style="width: 280px;"> 
+                            <col style="width: 200px;"> 
+                            <col style="width: 100px;"> 
+                            <col style="width: 160px;"> 
+                            <col style="width: 160px;"> 
+                            <col style="width: 160px;"> 
+                            <col style="width: 120px;"> 
+                            <col style="width: 180px;"> 
+                        </colgroup>
 
                         <thead class="sticky top-0 z-30">
                             <tr>
@@ -156,7 +166,9 @@
 
             </div>
         </div>
-    </div> <script type="module">
+    </div> 
+
+    <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, addDoc, serverTimestamp, writeBatch, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -216,9 +228,10 @@
             return html;
         };
 
+        // 💡 下載範本更新為新欄位順序
         window.downloadTemplate = () => {
-            const header = "學生學院,學生學系,學號,姓名,性別,國籍,當學年年級,機構國別,機構名稱,統一編號,縣市別,完整實習地址,學年度,學期,開課學院,開課學系,選課代號,課程名稱,開課學制,實習課程屬性,實習學分數,實習起訖時間,核定時數,實習時間分類,證明文件類型,投保情形,勞雇關係,負責填報系所\n";
-            const example = "工學院,工工系,S1101234,王小明,男,本國籍,3,中華民國,台灣積體電路製造股份有限公司,12345678,臺中市,臺灣大道四段1727號,114,1,工學院,工工系,1234,企業實習,日間學士班,必修,3,114/07/01-114/08/31,160,暑假實習,合約,兩者皆有,是,工工系\n";
+            const header = "學年度,學期,開課學制,開課學院,開課學系,選課代號,課程名稱,實習課程屬性,實習學分數,學生學院,學生學系,學號,姓名,當學年年級,性別,實習時間分類,實習起訖時間,機構國別,證明文件類型,核定時數,投保情形,勞雇關係,機構名稱,統一編號,縣市別,完整實習地址,國籍,負責填報系所\n";
+            const example = "114,1,日間學士班,工學院,工工系,1234,企業實習,必修,3,工學院,工工系,S1101234,王小明,3,男,暑假實習,114/07/01-114/08/31,中華民國,合約,160,兩者皆有,是,台灣積體電路製造股份有限公司,12345678,臺中市,臺灣大道四段1727號,本國籍,工工系\n";
             const blob = new Blob(['\uFEFF' + header + example], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = "批次匯入審查_標準範本.csv"; link.click();
         };
@@ -228,6 +241,11 @@
             if (!file) return;
 
             importErrorCount = 0; 
+            const btn = document.getElementById('btn-upload');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> 解析並寫入中...';
+            btn.disabled = true;
+
             const reader = new FileReader();
             reader.onload = async (event) => {
                 try {
@@ -245,9 +263,39 @@
                         cols.push(currentVal.trim());
                         while(cols.length < 28) cols.push('');
 
-                        const stu_id = (cols[2] || '').toUpperCase(); const stu_name = cols[3];
-                        const inst_country = cols[7] || '中華民國'; const inst_name = cols[8];
-                        const duration = cols[21]; const hours = Number(cols[22]) || 0;
+                        // 💡 依據全新欄位順序對應變數
+                        const c_year = cols[0]; 
+                        const c_term = cols[1];
+                        const c_edu = cols[2]; 
+                        const c_col = cols[3]; 
+                        const c_dept = cols[4];
+                        const c_code = cols[5]; 
+                        const c_name = cols[6];
+                        const c_type = cols[7]; 
+                        const c_credits = Number(cols[8]) || 0;
+
+                        const stu_college = cols[9]; 
+                        const stu_dept = cols[10];
+                        const stu_id = (cols[11] || '').toUpperCase(); 
+                        const stu_name = cols[12];
+                        const grade = cols[13]; 
+                        const stu_gender = cols[14] || '男';
+                        
+                        const period_type = cols[15]; 
+                        const duration = cols[16];
+                        const inst_country = cols[17] || '中華民國';
+                        const proof_type = cols[18]; 
+                        const hours = Number(cols[19]) || 0;
+                        const insurance = cols[20]; 
+                        const employment = cols[21];
+                        
+                        const inst_name = cols[22]; 
+                        const inst_tax = cols[23];
+                        const inst_city = cols[24]; 
+                        const inst_addr = cols[25];
+                        
+                        const stu_nat = cols[26] || '本國籍';
+                        const resp_dept = cols[27];
 
                         if (!stu_id || !inst_name || !duration) {
                             importErrorCount++;
@@ -256,21 +304,20 @@
 
                         if (!existingStudents.some(s => s.student_id === stu_id)) {
                             const stuRef = doc(collection(db, "internship_students"));
-                            batch.set(stuRef, { college: cols[0], department: cols[1], student_id: stu_id, name: stu_name, gender: cols[4] || '男', nationality: cols[5] || '本國籍', created_at: serverTimestamp() });
+                            batch.set(stuRef, { college: stu_college, department: stu_dept, student_id: stu_id, name: stu_name, gender: stu_gender, nationality: stu_nat, created_at: serverTimestamp() });
                             existingStudents.push({ id: stuRef.id, student_id: stu_id }); 
                         }
 
-                        const c_code = cols[16]; const c_name = cols[17];
                         if (c_code && c_name) {
-                            if (!existingCourses.some(c => c.academic_year === cols[12] && c.term === cols[13] && c.course_code === c_code)) {
+                            if (!existingCourses.some(c => c.academic_year === c_year && c.term === c_term && c.course_code === c_code)) {
                                 const courseRef = doc(collection(db, "internship_courses"));
-                                batch.set(courseRef, { academic_year: cols[12], term: cols[13], semester: `${cols[12]}-${cols[13]}`, college: cols[14], department: cols[15], course_code: c_code, course_name: c_name, edu_system: cols[18], course_type: cols[19], credits: Number(cols[20])||0, sortOrder: 999, created_at: serverTimestamp() });
-                                existingCourses.push({ id: courseRef.id, academic_year: cols[12], term: cols[13], course_code: c_code });
+                                batch.set(courseRef, { academic_year: c_year, term: c_term, semester: `${c_year}-${c_term}`, college: c_col, department: c_dept, course_code: c_code, course_name: c_name, edu_system: c_edu, course_type: c_type, credits: c_credits, sortOrder: 999, created_at: serverTimestamp() });
+                                existingCourses.push({ id: courseRef.id, academic_year: c_year, term: c_term, course_code: c_code });
                             }
                         }
 
                         const safeKey = `${stu_id}_${inst_name}_${duration}`.replace(/[\/\\]/g, ''); 
-                        const matchCourse = existingCourses.find(c => c.academic_year === cols[12] && c.term === cols[13] && c.course_code === c_code);
+                        const matchCourse = existingCourses.find(c => c.academic_year === c_year && c.term === c_term && c.course_code === c_code);
                         const courseIdObj = matchCourse ? { id: matchCourse.id, code: c_code, name: c_name } : { id: 'new', code: c_code, name: c_name };
 
                         if (aggregatedRecordsMap.has(safeKey)) {
@@ -279,9 +326,9 @@
                             if (!existingRecord.coursesInfo.some(c => c.code === courseIdObj.code)) existingRecord.coursesInfo.push(courseIdObj);
                         } else {
                             aggregatedRecordsMap.set(safeKey, {
-                                stuId: stu_id, stuName: stu_name, grade: cols[6],
-                                inst_country, inst_name, inst_tax: cols[9], inst_city: cols[10], inst_addr: cols[11],
-                                duration, hours, period_type: cols[23], proof_type: cols[24], insurance: cols[25], employment: cols[26], resp_dept: cols[27],
+                                stuId: stu_id, stuName: stu_name, grade: grade,
+                                inst_country, inst_name, inst_tax, inst_city, inst_addr,
+                                duration, hours, period_type, proof_type, insurance, employment, resp_dept,
                                 coursesInfo: [courseIdObj], created_at: serverTimestamp()
                             });
                         }
@@ -299,6 +346,8 @@
                     alert("處理發生錯誤：\n" + error.message); 
                 } finally {
                     e.target.value = '';
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
                 }
             };
             reader.readAsText(file);
