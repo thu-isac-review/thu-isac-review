@@ -56,7 +56,7 @@
                 <button onclick="window.downloadTemplate()" class="flex-1 lg:flex-none flex items-center justify-center whitespace-nowrap h-11 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-4 md:px-6 rounded-xl text-sm transition-all shadow-sm active:scale-95">
                     下載範本
                 </button>
-                <button onclick="document.getElementById('import-file').click()" class="flex-1 lg:flex-none flex items-center justify-center whitespace-nowrap h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 md:px-6 rounded-xl text-sm transition-all shadow-md shadow-indigo-600/20 active:scale-95">
+                <button id="btn-upload" onclick="document.getElementById('import-file').click()" class="flex-1 lg:flex-none flex items-center justify-center whitespace-nowrap h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 md:px-6 rounded-xl text-sm transition-all shadow-md shadow-indigo-600/20 active:scale-95">
                     上傳資料總表
                 </button>
                 <input type="file" id="import-file" accept=".csv" class="hidden" onchange="window.processImport(event)">
@@ -80,7 +80,7 @@
             </div>
             <div class="bg-white p-5 md:p-6 rounded-2xl md:rounded-3xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-100 flex justify-between items-center">
                 <div>
-                    <div class="text-xs md:text-sm text-slate-500 font-bold mb-1">匯入阻擋 (缺必填)</div>
+                    <div class="text-xs md:text-sm text-slate-500 font-bold mb-1">匯入阻擋 (缺漏關鍵值)</div>
                     <div class="text-3xl md:text-4xl font-black text-slate-800" id="stat-error">0</div>
                 </div>
                 <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center text-xl md:text-2xl"><i class="fa-solid fa-exclamation"></i></div>
@@ -228,7 +228,6 @@
             return html;
         };
 
-        // 💡 下載範本更新為新欄位順序
         window.downloadTemplate = () => {
             const header = "學年度,學期,開課學制,開課學院,開課學系,選課代號,課程名稱,實習課程屬性,實習學分數,學生學院,學生學系,學號,姓名,當學年年級,性別,實習時間分類,實習起訖時間,機構國別,證明文件類型,核定時數,投保情形,勞雇關係,機構名稱,統一編號,縣市別,完整實習地址,國籍,負責填報系所\n";
             const example = "114,1,日間學士班,工學院,工工系,1234,企業實習,必修,3,工學院,工工系,S1101234,王小明,3,男,暑假實習,114/07/01-114/08/31,中華民國,合約,160,兩者皆有,是,台灣積體電路製造股份有限公司,12345678,臺中市,臺灣大道四段1727號,本國籍,工工系\n";
@@ -243,7 +242,7 @@
             importErrorCount = 0; 
             const btn = document.getElementById('btn-upload');
             const originalHtml = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> 解析並寫入中...';
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-1"></i> 解析中';
             btn.disabled = true;
 
             const reader = new FileReader();
@@ -263,7 +262,6 @@
                         cols.push(currentVal.trim());
                         while(cols.length < 28) cols.push('');
 
-                        // 💡 依據全新欄位順序對應變數
                         const c_year = cols[0]; 
                         const c_term = cols[1];
                         const c_edu = cols[2]; 
@@ -403,6 +401,7 @@
             let html = '';
             filteredData.forEach(row => {
                 const id = row.id;
+                // 純淨膠囊標籤
                 const courseBadges = row.coursesInfo.map(c => `<span class="inline-flex items-center bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md text-[12px] font-bold mr-1.5 mb-1.5"><span class="mr-1.5 text-indigo-500">${c.code}</span>${c.name}</span>`).join('');
                 
                 const isOverseas = row.inst_country !== '中華民國';
@@ -528,8 +527,15 @@
             if(stagingData.length === 0) return;
             if(!confirm(`確定要將畫面上的 ${stagingData.length} 筆資料全部放行寫入系統嗎？`)) return;
 
+            const btn = document.querySelector('button[onclick="window.approveAll()"]');
+            const oriHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-1"></i> 處理中...';
+            btn.disabled = true;
+
             for (let row of stagingData) { await window.approveRow(row.id); }
-            updateDashboard();
+            
+            btn.innerHTML = oriHtml;
+            btn.disabled = false;
         };
 
         window.clearAllStaging = async () => {
