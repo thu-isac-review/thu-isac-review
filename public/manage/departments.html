@@ -1,209 +1,502 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>系所清單管理內容</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script>
-        tailwind.config = { theme: { extend: { colors: { brand: { 50: '#f0f5fa', 500: '#2c75b3', 600: '#1a5c96', 700: '#004785' } } } } }
-    </script>
-    <style>
-        body { background-color: transparent; margin: 0; padding: 0; font-family: "SF Pro TC", "Noto Sans TC", sans-serif; -webkit-font-smoothing: antialiased; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .modal-enter { animation: modalFadeIn 0.2s ease-out forwards; }
-        @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.97) translateY(-5px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-        table { table-layout: fixed; width: 100%; } td { word-break: break-word; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>系所清單管理內容</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<!-- Tabler Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --brand: #1a56db;
+  --brand-hover: #1649c0;
+  --brand-light: #eff4ff;
+  --brand-border: #c3d2f9;
+  --bg: #f8f9fc;
+  --surface: #ffffff;
+  --border: #e5e7ef;
+  --border-strong: #cdd0dd;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #9ca3af;
+  --success: #059669;
+  --success-bg: #ecfdf5;
+  --success-border: #a7f3d0;
+  --warning: #d97706;
+  --warning-bg: #fffbeb;
+  --danger: #dc2626;
+  --danger-bg: #fef2f2;
+  --danger-border: #fecaca;
+  --indigo: #4f46e5;
+  --indigo-bg: #e0e7ff;
+  --indigo-border: #c7d2fe;
+  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.04);
+  --transition: 150ms cubic-bezier(0.4,0,0.2,1);
+}
+
+html, body { 
+  height: 100%; overflow: hidden; 
+  font-family: 'Noto Sans TC', sans-serif; font-size: 14px; 
+  color: var(--text-primary); background: var(--bg); 
+  -webkit-font-smoothing: antialiased; 
+  display: flex; flex-direction: column;
+}
+
+/* ─── SCROLLBAR ─── */
+.custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.custom-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
+
+/* ─── 動畫 ─── */
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.ti-spin { animation: spin 1s linear infinite; display: inline-block; }
+
+/* ─── TOOLBAR ─── */
+.toolbar {
+  padding: 12px 24px; background: var(--surface); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0; flex-wrap: wrap;
+}
+.search-wrap { position: relative; flex: 0 0 260px; }
+.search-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px; }
+.search-input {
+  width: 100%; height: 34px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface); padding: 0 10px 0 34px; font-size: 13px; font-family: inherit;
+  color: var(--text-primary); outline: none; transition: border-color var(--transition), box-shadow var(--transition);
+}
+.search-input::placeholder { color: var(--text-muted); }
+.search-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
+
+.flex-spacer { flex: 1; }
+.v-divider { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; margin: 0 4px; }
+.toolbar-actions { display: flex; align-items: center; gap: 8px; }
+
+/* ─── BUTTONS ─── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 0 14px; height: 34px; border-radius: var(--radius);
+  font-size: 13px; font-weight: 600; font-family: inherit;
+  cursor: pointer; border: none; white-space: nowrap;
+  transition: all var(--transition); text-decoration: none;
+}
+.btn-primary { background: var(--brand); color: white; }
+.btn-primary:hover { background: var(--brand-hover); }
+.btn-secondary { background: var(--surface); color: var(--text-secondary); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--bg); border-color: var(--border-strong); color: var(--text-primary); }
+.btn-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
+.btn-danger:hover { background: #fee2e2; }
+.btn-icon { width: 34px; padding: 0; justify-content: center; background: transparent; border: none; color: var(--text-muted); transition: all var(--transition); }
+.btn-icon:hover { color: var(--brand); background: var(--brand-light); border-radius: var(--radius-sm); }
+.btn-icon.sm { width: 28px; height: 28px; }
+.btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn i { font-size: 16px; }
+
+/* ─── FILTER ROW & BATCH BAR ─── */
+.filter-row {
+  padding: 10px 24px; background: var(--bg); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; position: relative;
+}
+.filter-pill-wrap { position: relative; }
+.filter-pill {
+  display: inline-flex; align-items: center; gap: 5px; padding: 0 10px; height: 28px;
+  border: 1px solid var(--border); border-radius: 99px; background: var(--surface);
+  font-size: 12px; font-weight: 500; color: var(--text-secondary);
+  cursor: pointer; transition: all var(--transition); white-space: nowrap;
+}
+.filter-pill:hover { border-color: var(--border-strong); color: var(--text-primary); }
+.filter-pill.active { border-color: var(--brand); background: var(--brand-light); color: var(--brand); }
+.filter-pill .pill-count { background: var(--brand); color: white; border-radius: 99px; font-size: 10px; font-weight: 700; padding: 0 5px; min-width: 16px; text-align: center; }
+.filter-pill i { font-size: 14px; transition: transform 0.2s; }
+.filter-pill-wrap.open .filter-pill i { transform: rotate(180deg); }
+
+.filter-dropdown {
+  position: absolute; top: calc(100% + 6px); left: 0; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-md); min-width: 200px; z-index: 100;
+  display: none; flex-direction: column; overflow: hidden;
+}
+.filter-dropdown.show { display: flex; }
+.filter-dropdown-list { max-height: 200px; overflow-y: auto; padding: 4px; }
+.filter-option {
+  display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: var(--radius-sm);
+  cursor: pointer; font-size: 12px; color: var(--text-secondary); transition: background var(--transition);
+}
+.filter-option:hover { background: var(--bg); color: var(--text-primary); }
+.filter-option input[type=checkbox] { accent-color: var(--brand); flex-shrink: 0; }
+.filter-dropdown-footer { padding: 6px 8px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; }
+.filter-dropdown-footer button { font-size: 11px; font-weight: 600; color: var(--danger); background: none; border: none; cursor: pointer; padding: 2px 4px; border-radius: var(--radius-sm); }
+.filter-dropdown-footer button:hover { background: var(--danger-bg); }
+
+/* Batch Action Bar */
+#batch-bar {
+  display: none; align-items: center; gap: 12px; padding: 8px 24px;
+  background: var(--brand-light); border-bottom: 1px solid var(--brand-border); flex-shrink: 0;
+  position: absolute; top: 0; left: 0; right: 0; height: 100%; z-index: 20;
+}
+#batch-bar.visible { display: flex; animation: slideDown 0.2s ease-out; }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+.batch-info { font-size: 13px; font-weight: 600; color: var(--brand); display: flex; align-items: center; gap: 8px; }
+.batch-info span { font-size: 16px; font-weight: 700; }
+
+/* ─── TABLE ─── */
+.table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; }
+.table-scroll { flex: 1; overflow: auto; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 960px; }
+thead { position: sticky; top: 0; z-index: 10; background: var(--surface); }
+thead tr { border-bottom: 2px solid var(--border); }
+th {
+  padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
+}
+th[data-sort] { cursor: pointer; user-select: none; transition: color var(--transition); }
+th[data-sort]:hover { color: var(--text-secondary); }
+th .sort-icon { margin-left: 4px; font-size: 14px; opacity: 0.4; vertical-align: middle; }
+th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand); }
+
+td { padding: 12px 16px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); }
+tr:hover td { background: #fafbff; }
+tr.selected td { background: #f0f4ff; }
+tr.disabled td { opacity: 0.6; filter: grayscale(40%); background: var(--bg); }
+
+.cell-primary { font-size: 13px; color: var(--text-primary); line-height: 1.4; }
+.cell-primary.bold { font-weight: 600; }
+.cell-secondary { font-size: 11px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; font-family: inherit; }
+
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.badge-blue { background: var(--brand-light); color: var(--brand); border: 1px solid var(--brand-border); }
+.badge-gray { background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; }
+
+/* ─── TOGGLE SWITCH ─── */
+.toggle { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
+.toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+.toggle-slider { width: 34px; height: 18px; background: var(--border-strong); border-radius: 20px; transition: 0.3s; position: relative; }
+.toggle-slider::before { content: ""; position: absolute; width: 12px; height: 12px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; box-shadow: var(--shadow-sm); }
+.toggle input:checked + .toggle-slider { background: var(--success); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(16px); }
+.toggle-label { margin-left: 8px; font-size: 11px; font-weight: 700; }
+.toggle-label.active { color: var(--success); }
+.toggle-label.inactive { color: var(--text-muted); }
+
+/* Row actions */
+.row-actions { display: flex; align-items: center; justify-content: center; gap: 4px; opacity: 1; }
+
+/* ─── PAGINATION ─── */
+.pagination-bar {
+  display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; gap: 10px;
+}
+.pagination-info { font-size: 12px; color: var(--text-muted); }
+.pagination-info strong { color: var(--text-primary); }
+.pagination-bar-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.per-page-select { height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 12px; font-family: inherit; color: var(--text-secondary); padding: 0 6px; cursor: pointer; outline: none; }
+.pagination-controls { display: flex; align-items: center; gap: 4px; }
+.page-btn {
+  min-width: 30px; height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface);
+  font-size: 12px; font-weight: 500; color: var(--text-secondary);
+  cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0 8px; transition: all var(--transition);
+}
+.page-btn:hover:not(:disabled) { background: var(--bg); border-color: var(--border-strong); }
+.page-btn.active { background: var(--brand); color: white; border-color: var(--brand); font-weight: 700; }
+.page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.page-btn i { font-size: 14px; }
+
+/* ─── UNIFIED DIALOG MODALS ─── */
+.dialog-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+  display: none; align-items: center; justify-content: center; padding: 24px;
+}
+.dialog-overlay.open { display: flex; }
+.dialog-box {
+  background: var(--surface); border-radius: var(--radius-xl); box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  width: 100%; display: flex; flex-direction: column; overflow: hidden;
+  animation: dialogIn 0.25s cubic-bezier(0.16,1,0.3,1);
+}
+@keyframes dialogIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } }
+
+.dialog-header {
+  padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; background: var(--surface);
+}
+.dialog-header h3 { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: var(--text-primary); }
+.dialog-header h3 i { font-size: 20px; color: var(--brand); }
+.dialog-close {
+  background: none; border: none; color: var(--text-muted); cursor: pointer;
+  font-size: 20px; padding: 4px; display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-sm); transition: all var(--transition);
+}
+.dialog-close:hover { color: var(--danger); background: var(--danger-bg); }
+
+.dialog-body { padding: 24px; overflow-y: auto; max-height: calc(85vh - 130px); }
+.dialog-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg); }
+
+/* ─── FORM ELEMENTS INSIDE DIALOG ─── */
+.form-section-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+.form-section-title i { color: var(--text-muted); font-size: 16px; margin-right: 6px; }
+.form-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.field-label .req { color: var(--danger); margin-left: 2px; }
+.field-input, .field-select {
+  width: 100%; height: 36px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--bg); padding: 0 12px; font-size: 13px; font-family: inherit; color: var(--text-primary);
+  outline: none; transition: border-color var(--transition), box-shadow var(--transition);
+}
+.field-input:focus, .field-select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); background: var(--surface); }
+select.field-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; }
+
+/* ─── ROLE LIST (Used for College List) ─── */
+.role-list { display: flex; flex-direction: column; gap: 8px; }
+.role-item {
+  display: flex; justify-content: space-between; align-items: center;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 8px 12px; transition: border-color var(--transition);
+}
+.role-item:hover { border-color: var(--brand-border); }
+.role-item .reorder-btns { opacity: 0.3; transition: opacity var(--transition); display: flex; flex-direction: column; gap: 2px; margin-right: 8px; }
+.role-item:hover .reorder-btns { opacity: 1; }
+.role-item-name { font-size: 13px; font-weight: 600; color: var(--text-secondary); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 8px; }
+.role-item-input { flex: 1; display: none; gap: 8px; }
+.role-item.editing .role-item-name { display: none; }
+.role-item.editing .role-item-input { display: flex; }
+.role-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.role-actions .btn-icon.save { display: none; color: var(--success); }
+.role-item.editing .btn-icon.edit { display: none; }
+.role-item.editing .btn-icon.save { display: flex; }
+.role-item.editing .reorder-btns { visibility: hidden; }
+
+/* Dynamic Contact Entry */
+.contact-entry {
+  display: flex; align-items: flex-start; gap: 10px; background: var(--bg);
+  padding: 12px; border-radius: var(--radius); border: 1px solid var(--border);
+}
+
+/* Empty state */
+.empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
+.empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
+.empty-text { font-size: 13px; font-weight: 600; }
+
+/* ─── MOBILE RESPONSIVE ─── */
+@media (max-width: 768px) {
+  .toolbar { padding: 12px 16px; justify-content: flex-end; }
+  .search-wrap { flex: 0 0 100%; order: 1; margin-bottom: 8px; }
+  .flex-spacer { display: none; }
+  .toolbar-actions { order: 2; width: 100%; justify-content: space-between; }
+  .toolbar-actions .btn { flex: 1; justify-content: center; }
+  .v-divider { display: none; }
+  .filter-row { padding: 10px 16px; }
+  .pagination-bar { flex-direction: column; align-items: flex-start; padding: 12px 16px; gap: 12px; }
+  .pagination-bar-right { width: 100%; justify-content: space-between; }
+  .dialog-overlay { padding: 12px; }
+  .form-grid-2 { grid-template-columns: 1fr; gap: 12px; margin-bottom: 16px; }
+}
+</style>
 </head>
-<body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden">
+<body>
 
-    <div class="shrink-0 px-6 pt-6 pb-4 space-y-4 animate-fade">
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shrink-0">
-                    <i class="fa-solid fa-graduation-cap text-xl"></i>
-                </div>
-                <div>
-                    <h2 class="text-xl font-bold text-slate-800 tracking-tight">管理學系清單與承辦窗口</h2>
-                    <p class="text-xs text-slate-500 mt-1">設定參與查核的單位開放狀態。建議先匯出清單，於 Excel 編輯後再批次匯入。</p>
+    <!-- ─── TOOLBAR ─── -->
+    <div class="toolbar">
+        <div class="search-wrap">
+            <i class="ti ti-search"></i>
+            <input type="text" id="search-input" placeholder="搜尋學系名稱或代碼..." class="search-input">
+        </div>
+        
+        <div class="flex-spacer"></div>
+        
+        <div class="toolbar-actions">
+            <button onclick="exportToCSV()" class="btn btn-secondary">
+                <i class="ti ti-file-export" style="color:var(--success)"></i> 匯出清單
+            </button>
+            <button id="btn-import" onclick="document.getElementById('import-file').click()" class="btn btn-secondary">
+                <i class="ti ti-file-import" style="color:var(--brand)"></i> 批次匯入
+            </button>
+            <input type="file" id="import-file" accept=".csv" style="display:none;" onchange="handleImport(event)">
+            <div class="v-divider"></div>
+            <button onclick="openCollegeModal()" class="btn btn-secondary">
+                <i class="ti ti-building-bank"></i> 學院設定
+            </button>
+            <button onclick="openDeptModal()" class="btn btn-primary">
+                <i class="ti ti-plus"></i> 新增系所
+            </button>
+        </div>
+    </div>
+
+    <!-- ─── FILTER ROW & BATCH BAR ─── -->
+    <div class="filter-row">
+        <!-- 學院篩選 -->
+        <div class="filter-pill-wrap" id="pill-wrap-college">
+            <button class="filter-pill" id="pill-college" onclick="toggleDropdown('college')">
+                全部學院 <i class="ti ti-chevron-down"></i>
+            </button>
+            <div class="filter-dropdown" id="drop-college">
+                <div class="filter-dropdown-list" id="college-options-container"></div>
+                <div class="filter-dropdown-footer">
+                    <button onclick="clearFilter('college')">清除此篩選</button>
                 </div>
             </div>
+        </div>
+
+        <!-- 狀態篩選 -->
+        <div class="filter-pill-wrap" id="pill-wrap-status">
+            <button class="filter-pill" id="pill-status" onclick="toggleDropdown('status')">
+                系統狀態 <i class="ti ti-chevron-down"></i>
+            </button>
+            <div class="filter-dropdown" id="drop-status">
+                <div class="filter-dropdown-list">
+                    <label class="filter-option">
+                        <input type="checkbox" class="filter-chk-status" value="active" onchange="toggleFilterCheck('status', 'active')">
+                        <span>啟用中</span>
+                    </label>
+                    <label class="filter-option">
+                        <input type="checkbox" class="filter-chk-status" value="inactive" onchange="toggleFilterCheck('status', 'inactive')">
+                        <span>已停用</span>
+                    </label>
+                </div>
+                <div class="filter-dropdown-footer">
+                    <button onclick="clearFilter('status')">清除此篩選</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 批次操作列 (覆蓋在 Filter Row 上) -->
+        <div id="batch-bar">
+            <div class="batch-info">
+                <i class="ti ti-checks" style="font-size:18px;"></i> 已選 <span id="selected-count">0</span> 筆系所
+            </div>
+            <button id="btn-select-all-filtered" class="btn btn-sm btn-secondary" onclick="selectAllFiltered()">選取全部符合條件</button>
+            <button class="btn btn-sm btn-secondary" onclick="clearSelection()">取消選取</button>
             
-            <div class="flex flex-wrap gap-2">
-                <button onclick="exportToCSV()" class="h-9 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-3 rounded-lg text-sm transition-all flex items-center gap-1.5 shadow-sm">
-                    <i class="fa-solid fa-file-export text-emerald-600"></i> 匯出清單
-                </button>
-                <button id="btn-import" onclick="document.getElementById('import-file').click()" class="h-9 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-3 rounded-lg text-sm transition-all flex items-center gap-1.5 shadow-sm">
-                    <i class="fa-solid fa-file-import text-blue-600"></i> 批次匯入
-                </button>
-                <input type="file" id="import-file" accept=".csv" class="hidden" onchange="handleImport(event)">
-                
-                <div class="w-px h-6 bg-slate-200 self-center mx-1"></div>
-                
-                <button onclick="openCollegeModal()" class="h-9 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-3 rounded-lg text-sm transition-all flex items-center gap-1.5 shadow-sm">
-                    <i class="fa-solid fa-university text-slate-500"></i> 學院設定
-                </button>
-                <button onclick="openDeptModal()" class="h-9 bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 rounded-lg text-sm transition-all flex items-center gap-1.5 shadow-sm shadow-blue-500/20">
-                    <i class="fa-solid fa-plus text-base"></i> 新增系所
-                </button>
-            </div>
-        </div>
-
-        <div class="flex flex-col md:flex-row justify-between items-center gap-4 w-full relative">
-            <div class="flex gap-2 w-full md:w-auto">
-                <select id="filter-college" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 h-10 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
-                    <option value="all">全部學院</option>
-                </select>
-                <select id="filter-status" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 h-10 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
-                    <option value="all">狀態：全部</option>
-                    <option value="active">狀態：啟用中</option>
-                    <option value="inactive">狀態：已停用</option>
-                </select>
-            </div>
-
-            <!-- 批次操作懸浮列 -->
-            <div id="batch-action-bar" class="hidden absolute -inset-3 bg-slate-50 px-3 flex items-center justify-between z-20 animate-fade">
-                <div class="flex items-center text-blue-700">
-                    <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-                        <i class="fa-solid fa-check-double text-blue-600"></i>
-                    </div>
-                    <span class="text-sm font-bold">已選擇 <span id="selected-count" class="text-lg mx-1 font-black text-blue-600">0</span> 個系所</span>
-                    
-                    <button id="btn-select-all-filtered" onclick="selectAllFiltered()" class="hidden ml-4 text-xs font-bold text-blue-600 hover:text-white bg-blue-50 hover:bg-blue-600 border border-blue-200 hover:border-blue-600 px-3 py-1.5 rounded-lg transition-all shadow-sm">
-                        選取全部符合條件的 <span id="filtered-total-count">0</span> 筆
-                    </button>
-                    <button id="btn-clear-selection" onclick="clearSelection()" class="ml-2 text-xs font-bold text-slate-500 hover:text-white bg-slate-100 hover:bg-slate-500 border border-slate-200 hover:border-slate-500 px-3 py-1.5 rounded-lg transition-all shadow-sm">
-                        取消選取
-                    </button>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="batchUpdateStatus(true)" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"><i class="fa-solid fa-play"></i> 批次啟用</button>
-                    <button onclick="batchUpdateStatus(false)" class="bg-slate-500 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"><i class="fa-solid fa-pause"></i> 批次停用</button>
-                    <button onclick="batchDelete()" class="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"><i class="fa-solid fa-trash-can"></i> 批次刪除</button>
-                </div>
-            </div>
-
-            <div class="relative w-full md:w-72 shadow-sm rounded-lg">
-                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                <input type="text" id="search-input" placeholder="搜尋學系或代碼..." class="w-full bg-white border border-slate-200 rounded-lg pl-9 pr-3 h-10 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-            </div>
-        </div>
-    </div>
-
-    <div class="flex-1 overflow-hidden px-6 pb-6 flex flex-col animate-fade">
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col flex-1 overflow-hidden">
-            <div class="flex-1 overflow-auto custom-scrollbar relative">
-                <table class="w-full text-left table-fixed">
-                    <thead class="bg-slate-50 sticky top-0 z-10 shadow-sm border-b border-slate-200">
-                        <tr>
-                            <th class="px-4 py-3.5 text-center w-[5%]">
-                                <input type="checkbox" id="selectAll" onchange="toggleSelectPage(event)" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shadow-sm transition-all">
-                            </th>
-                            <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[10%]">學院</th>
-                            <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[15%]">學系</th>
-                            <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[10%]">系所代碼</th>
-                            <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[32%]">承辦窗口</th>
-                            <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[10%] whitespace-nowrap">系統狀態</th>
-                            <th class="px-4 py-3.5 text-center text-xs font-bold text-slate-500 w-[18%]">操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="dept-table-body" class="divide-y divide-slate-100 text-sm">
-                        <tr><td colspan="7" class="px-6 py-16 text-center text-slate-400"><i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-blue-500"></i><p class="font-bold">資料載入中...</p></td></tr>
-                    </tbody>
-                </table>
-            </div>
+            <div class="flex-spacer"></div>
             
-            <div class="bg-slate-50 border-t border-slate-200 px-6 py-3 flex justify-between items-center shrink-0">
-                <div id="pagination-info" class="text-xs font-bold text-slate-500">顯示 0 到 0 筆，共 0 筆</div>
-                <div id="pagination-buttons" class="flex gap-1"></div>
+            <button class="btn btn-sm btn-secondary" style="color:var(--success);" onclick="batchUpdateStatus(true)"><i class="ti ti-play"></i> 批次啟用</button>
+            <button class="btn btn-sm btn-secondary" style="color:var(--warning);" onclick="batchUpdateStatus(false)"><i class="ti ti-player-pause"></i> 批次停用</button>
+            <button class="btn btn-sm btn-danger" onclick="batchDelete()"><i class="ti ti-trash"></i> 批次刪除</button>
+        </div>
+    </div>
+
+    <!-- ─── TABLE AREA ─── -->
+    <div class="table-wrap">
+        <div class="table-scroll custom-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 5%; text-align: center;">
+                            <input type="checkbox" id="selectAll" onchange="toggleSelectPage(event)" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px;">
+                        </th>
+                        <th style="width: 12%; text-align: center;">學院</th>
+                        <th data-sort="name" style="width: 25%">學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="code" style="width: 12%; text-align: center;">系所代碼 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th style="width: 20%; text-align: left;">承辦窗口</th>
+                        <th style="width: 12%; text-align: center;">系統狀態</th>
+                        <th style="width: 14%; text-align: center;">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="dept-table-body">
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i>
+                            <div class="empty-text">資料載入中...</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- 分頁列 -->
+        <div class="pagination-bar">
+            <div class="pagination-info" id="pagination-info">共 0 筆</div>
+            <div class="pagination-bar-right">
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="font-size:12px; color:var(--text-muted)">每頁顯示</span>
+                    <select class="per-page-select" id="per-page-select" onchange="window.changePerPage(this.value)">
+                        <option value="10">10 筆</option>
+                        <option value="25">25 筆</option>
+                        <option value="50">50 筆</option>
+                    </select>
+                </div>
+                <div class="pagination-controls" id="pagination-controls"></div>
             </div>
         </div>
     </div>
 
-    <!-- 學院設定 Modal -->
-    <div id="college-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeCollegeModal()"></div>
-        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-xl overflow-hidden modal-enter relative flex flex-col max-h-[90vh]">
-            <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center shrink-0 bg-slate-50">
-                <h3 class="font-black text-slate-800 text-lg flex items-center gap-2">
-                    <i class="fa-solid fa-university text-blue-600"></i> 學院設定管理
-                </h3>
-                <button onclick="closeCollegeModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 bg-white shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors shrink-0"><i class="fa-solid fa-xmark text-lg"></i></button>
+    <!-- ─── UNIFIED DIALOG MODAL: 學院設定 ─── -->
+    <div id="college-modal" class="dialog-overlay">
+        <div class="dialog-box" style="max-width: 540px;">
+            <div class="dialog-header">
+                <h3><i class="ti ti-building-bank"></i> 學院設定管理</h3>
+                <button type="button" class="dialog-close" onclick="closeCollegeModal()"><i class="ti ti-x"></i></button>
             </div>
-            <div class="p-8 space-y-5 overflow-y-auto custom-scrollbar flex-1 bg-white">
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-2">新增學院</label>
-                    <div class="flex gap-3">
-                        <div class="flex flex-1 gap-2">
-                            <div class="relative flex-1">
-                                <i class="fa-solid fa-university absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                                <input type="text" id="new-college-name" placeholder="學院全名 (如: 管理學院)" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all shadow-sm font-bold text-slate-700">
-                            </div>
-                            <div class="relative w-1/3">
-                                <input type="text" id="new-college-short" placeholder="簡稱 (如: 管院)" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all shadow-sm font-bold text-slate-700">
-                            </div>
-                        </div>
-                        <button onclick="addCollege()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md shadow-blue-500/20 whitespace-nowrap">新增</button>
-                    </div>
+            <div class="dialog-body custom-scroll">
+                <div class="form-section-title" style="border:none; padding:0; margin-bottom:8px;">新增學院</div>
+                <div style="display:flex; gap:10px; margin-bottom:24px;">
+                    <input type="text" id="new-college-name" placeholder="學院全名 (如: 管理學院)" class="field-input">
+                    <input type="text" id="new-college-short" placeholder="簡稱 (如: 管院)" class="field-input" style="width: 120px;">
+                    <button onclick="addCollege()" class="btn btn-primary" style="white-space:nowrap;">新增</button>
                 </div>
-                <div class="pt-5 border-t border-slate-100">
-                    <div class="flex items-center justify-between mb-3">
-                        <label class="block text-xs font-bold text-slate-600">現有學院清單 (可排序與編輯)</label>
-                    </div>
-                    <ul id="college-list-container" class="space-y-3"></ul>
-                </div>
+                
+                <div class="form-section-title" style="margin-bottom:8px;">現有學院清單 (可排序與編輯)</div>
+                <div id="college-list-container" class="role-list"></div>
             </div>
-            <div class="p-6 border-t border-slate-100 shrink-0 flex gap-4 bg-slate-50">
-                <button type="button" onclick="closeCollegeModal()" class="w-full py-3 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-all shadow-sm">關閉設定</button>
+            <div class="dialog-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeCollegeModal()">關閉設定</button>
             </div>
         </div>
     </div>
 
-    <!-- 系所設定 Modal -->
-    <div id="dept-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeDeptModal()"></div>
-        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden modal-enter relative max-h-[90vh] flex flex-col">
-            <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center shrink-0 bg-slate-50">
-                <h3 id="modal-title" class="font-black text-slate-800 text-lg flex items-center gap-2">
-                    <i class="fa-solid fa-graduation-cap text-blue-600"></i> 新增系所單位
-                </h3>
-                <button onclick="closeDeptModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 bg-white shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors shrink-0"><i class="fa-solid fa-xmark text-lg"></i></button>
+    <!-- ─── UNIFIED DIALOG MODAL: 新增/編輯系所單位 ─── -->
+    <div id="dept-modal" class="dialog-overlay">
+        <div class="dialog-box" style="max-width: 640px;">
+            <div class="dialog-header">
+                <h3 id="dept-modal-title"><i class="ti ti-school"></i> 新增系所單位</h3>
+                <button type="button" class="dialog-close" onclick="closeDeptModal()"><i class="ti ti-x"></i></button>
             </div>
-            <form id="dept-form" class="p-8 space-y-6 overflow-y-auto custom-scrollbar flex-1 bg-white">
-                <div class="grid grid-cols-2 gap-5">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-2">所屬學院 <span class="text-rose-500">*</span></label>
-                        <select id="input-college" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm"></select>
+            <form id="dept-form" class="dialog-body custom-scroll">
+                
+                <div class="form-section-title"><i class="ti ti-info-circle"></i> 基本資訊</div>
+                <div class="form-grid-2">
+                    <div class="field">
+                        <label class="field-label">所屬學院 <span class="req">*</span></label>
+                        <select id="input-college" required class="field-select"></select>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-2">系所代碼 <span class="text-rose-500">*</span></label>
-                        <input type="text" id="input-code" required placeholder="例如：IM" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none uppercase font-mono font-bold text-slate-700 shadow-sm">
-                    </div>
-                </div>
-                <div class="grid grid-cols-3 gap-5">
-                    <div class="col-span-2">
-                        <label class="block text-xs font-bold text-slate-600 mb-2">學系全名 <span class="text-rose-500">*</span></label>
-                        <input type="text" id="input-name" required placeholder="例如：資訊管理學系" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm">
-                    </div>
-                    <div class="col-span-1">
-                        <label class="block text-xs font-bold text-slate-600 mb-2">簡稱 (選填)</label>
-                        <input type="text" id="input-short-name" placeholder="例如：資管系" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm">
+                    <div class="field">
+                        <label class="field-label">系所代碼 <span class="req">*</span></label>
+                        <input type="text" id="input-code" required placeholder="例如：IM" class="field-input" style="text-transform:uppercase; font-family:monospace; font-weight:600;">
                     </div>
                 </div>
-                <div class="pt-6 border-t border-slate-100">
-                    <div class="flex justify-between items-center mb-4">
-                        <label class="block text-xs font-bold text-slate-600">承辦窗口 (可多位)</label>
-                        <button type="button" onclick="addContactField()" class="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors border border-blue-100"><i class="fa-solid fa-plus"></i> 新增窗口</button>
+                <div class="form-grid-2">
+                    <div class="field">
+                        <label class="field-label">學系全名 <span class="req">*</span></label>
+                        <input type="text" id="input-name" required placeholder="例如：資訊管理學系" class="field-input">
                     </div>
-                    <div id="contacts-container" class="space-y-3"></div>
+                    <div class="field">
+                        <label class="field-label">簡稱 (選填)</label>
+                        <input type="text" id="input-short-name" placeholder="例如：資管系" class="field-input">
+                    </div>
                 </div>
+                
+                <div class="divider"></div>
+                
+                <div class="form-section-title" style="border:none; padding:0; margin-bottom:4px;">
+                    <span><i class="ti ti-users"></i> 承辦窗口 (可多位)</span>
+                    <button type="button" onclick="addContactField()" class="btn btn-secondary btn-sm"><i class="ti ti-plus"></i> 新增窗口</button>
+                </div>
+                <div id="contacts-container" style="display:flex; flex-direction:column; gap:12px; margin-top:12px;"></div>
+
             </form>
-            <div class="p-6 border-t border-slate-100 shrink-0 flex gap-4 bg-slate-50">
-                <button type="button" onclick="closeDeptModal()" class="flex-1 py-3 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-all shadow-sm">取消</button>
-                <button type="button" id="btn-submit" onclick="submitDeptForm()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2">儲存系所</button>
+            <div class="dialog-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeDeptModal()">取消</button>
+                <button type="button" id="btn-submit" class="btn btn-primary" onclick="submitDeptForm()">
+                    <i class="ti ti-check"></i> 確認儲存
+                </button>
             </div>
         </div>
     </div>
@@ -225,153 +518,161 @@
         let collegeList = []; 
         let editingId = null; 
         let currentPage = 1; 
-        const itemsPerPage = 10;
+        let itemsPerPage = 10;
         
         let selectedIds = [];
         let filteredDepts = [];
+        
+        let filterCollegeSet = new Set();
+        let filterStatusSet = new Set();
+        let sortCol = 'sortOrder'; let sortDir = 'asc';
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 onSnapshot(collegeDocRef, (docSnap) => {
                     if (docSnap.exists()) {
                         const rawList = docSnap.data().list || [];
-                        // 確保資料結構升級為物件 {name, shortName}
                         collegeList = rawList.map(c => typeof c === 'string' ? { name: c, shortName: c } : c);
                     } else {
                         collegeList = [
-                            {name: "文學院", shortName: "文院"},
-                            {name: "理學院", shortName: "理院"},
-                            {name: "工學院", shortName: "工院"},
-                            {name: "管理學院", shortName: "管院"},
-                            {name: "農學院", shortName: "農院"}
+                            {name: "文學院", shortName: "文院"}, {name: "理學院", shortName: "理院"},
+                            {name: "工學院", shortName: "工院"}, {name: "管理學院", shortName: "管院"}
                         ];
                         setDoc(collegeDocRef, { list: collegeList }); 
                     }
                     renderCollegeUI(); renderTable();
                 });
+                
                 onSnapshot(deptCollection, (snapshot) => {
                     allDepts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     selectedIds = [];
                     updateBatchActionBar();
                     renderTable();
                 }, (error) => {
-                    document.getElementById('dept-table-body').innerHTML = `<tr><td colspan="7" class="px-6 py-16 text-center text-rose-500 font-bold"><i class="fa-solid fa-lock text-3xl mb-3"></i><p>資料讀取失敗，權限不足。</p></td></tr>`;
+                    document.getElementById('dept-table-body').innerHTML = `<tr><td colspan="7" class="empty-state"><i class="ti ti-lock empty-icon" style="color:var(--danger); opacity:1;"></i><div class="empty-text">資料讀取失敗，權限不足。</div></td></tr>`;
                 });
             } else {
-                document.getElementById('dept-table-body').innerHTML = `<tr><td colspan="7" class="px-6 py-16 text-center text-slate-400 font-bold"><i class="fa-solid fa-shield-halved text-3xl mb-3 text-slate-300"></i><p>請先登入系統以存取資料。</p></td></tr>`;
+                document.getElementById('dept-table-body').innerHTML = `<tr><td colspan="7" class="empty-state"><i class="ti ti-shield-half empty-icon"></i><div class="empty-text">請先登入系統以存取資料。</div></td></tr>`;
             }
         });
 
-        window.toggleSelectPage = (e) => {
-            const isChecked = e.target.checked;
-            const startIndex = (currentPage - 1) * itemsPerPage;
-            const currentPaginatedIds = filteredDepts.slice(startIndex, startIndex + itemsPerPage).map(d => d.id);
-            
-            if (isChecked) {
-                currentPaginatedIds.forEach(id => {
-                    if (!selectedIds.includes(id)) selectedIds.push(id);
-                });
-            } else {
-                selectedIds = selectedIds.filter(id => !currentPaginatedIds.includes(id));
-            }
-            updateBatchActionBar();
-            renderTable();
-        };
-
-        window.toggleSelect = (id) => {
-            const index = selectedIds.indexOf(id);
-            if (index === -1) selectedIds.push(id);
-            else selectedIds.splice(index, 1);
-            updateBatchActionBar();
-            renderTable();
-        };
-
-        window.selectAllFiltered = () => {
-            selectedIds = filteredDepts.map(d => d.id);
-            updateBatchActionBar();
-            renderTable();
-        };
-
-        window.clearSelection = () => {
-            selectedIds = [];
-            updateBatchActionBar();
-            renderTable();
-        };
-
-        function updateBatchActionBar() {
-            const bar = document.getElementById('batch-action-bar');
-            const count = document.getElementById('selected-count');
-            const btnSelectAll = document.getElementById('btn-select-all-filtered');
-            
-            if (selectedIds.length > 0) {
-                bar.classList.remove('hidden');
-                count.innerText = selectedIds.length;
-                
-                if (selectedIds.length < filteredDepts.length) {
-                    btnSelectAll.classList.remove('hidden');
-                    document.getElementById('filtered-total-count').innerText = filteredDepts.length;
-                } else {
-                    btnSelectAll.classList.add('hidden');
+        // ─── SORTING LOGIC ───
+        document.querySelectorAll('th[data-sort]').forEach(th => {
+            th.onclick = () => {
+                const col = th.dataset.sort;
+                if (sortCol === col) {
+                    sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+                } else { 
+                    sortCol = col; sortDir = 'asc'; 
                 }
+                
+                document.querySelectorAll('th[data-sort]').forEach(t => {
+                    t.classList.remove('sort-asc', 'sort-desc');
+                    t.querySelector('.sort-icon').className = 'ti ti-arrows-sort sort-icon';
+                });
+                
+                th.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+                th.querySelector('.sort-icon').className = `ti ti-sort-${sortDir === 'asc' ? 'ascending' : 'descending'} sort-icon`;
+                
+                renderTable();
+            };
+        });
+
+        // ─── DROPDOWN & FILTER LOGIC ───
+        window.toggleDropdown = (type) => {
+            const drop = document.getElementById(`drop-${type}`);
+            const wrap = document.getElementById(`pill-wrap-${type}`);
+            const isOpen = drop.classList.contains('show');
+            document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
+            document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
+            if (!isOpen) { drop.classList.add('show'); wrap.classList.add('open'); }
+        };
+
+        window.toggleFilterCheck = (type, val) => {
+            const chk = document.querySelector(`.filter-chk-${type}[value="${val}"]`);
+            if(chk) chk.checked = !chk.checked;
+            
+            const set = type === 'college' ? filterCollegeSet : filterStatusSet;
+            if (set.has(val)) set.delete(val); else set.add(val);
+            
+            document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
+            
+            currentPage = 1;
+            updatePillActive(type); renderTable();
+        };
+
+        function updatePillActive(type) {
+            const set = type === 'college' ? filterCollegeSet : filterStatusSet;
+            const pill = document.getElementById(`pill-${type}`);
+            let typeName = type === 'college' ? '學院' : '系統狀態';
+            
+            if (set.size > 0) {
+                pill.classList.add('active');
+                pill.innerHTML = `${typeName} <span class="pill-count">${set.size}</span> <i class="ti ti-chevron-down"></i>`;
             } else {
-                bar.classList.add('hidden');
+                pill.classList.remove('active');
+                pill.innerHTML = `全部${typeName} <i class="ti ti-chevron-down"></i>`;
             }
         }
 
-        window.batchUpdateStatus = async (status) => {
-            if (!confirm(`確定要將選取的 ${selectedIds.length} 個系所全部${status ? '啟用' : '停用'}嗎？`)) return;
-            try {
-                for (let id of selectedIds) {
-                    await updateDoc(doc(db, "departments", id), { is_active: status });
-                }
-            } catch (e) { alert("批次更新發生錯誤: " + e.message); }
+        window.clearFilter = (type) => {
+            const set = type === 'college' ? filterCollegeSet : filterStatusSet;
+            set.clear();
+            document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = false);
+            currentPage = 1;
+            updatePillActive(type); renderTable();
         };
 
-        window.batchDelete = async () => {
-            if (!confirm(`警告：確定要刪除選取的 ${selectedIds.length} 個系所嗎？\n此操作無法復原！`)) return;
-            try {
-                for (let id of selectedIds) {
-                    await deleteDoc(doc(db, "departments", id));
-                }
-            } catch (e) { alert("批次刪除發生錯誤: " + e.message); }
-        };
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.filter-pill-wrap')) {
+                document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
+                document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
+            }
+        });
 
-        window.openCollegeModal = () => document.getElementById('college-modal').classList.remove('hidden');
-        window.closeCollegeModal = () => document.getElementById('college-modal').classList.add('hidden');
-
+        // ─── COLLEGE MANAGEMENT ───
         function renderCollegeUI() {
+            // Dropdown filter
+            const container = document.getElementById('college-options-container');
+            container.innerHTML = collegeList.map(c => `
+                <label class="filter-option">
+                    <input type="checkbox" class="filter-chk-college" value="${c.name}" onchange="toggleFilterCheck('college', '${c.name}')"> 
+                    <span>${c.shortName || c.name}</span>
+                </label>
+            `).join('');
+            document.querySelectorAll(`.filter-chk-college`).forEach(c => c.checked = filterCollegeSet.has(c.value));
+
+            // Select in form
+            const optionsHtml = collegeList.map(c => `<option value="${c.name}">${c.shortName || c.name}</option>`).join('');
+            document.getElementById('input-college').innerHTML = `<option value="">請選擇學院...</option>` + optionsHtml;
+
+            // Modal List
             const listContainer = document.getElementById('college-list-container');
             listContainer.innerHTML = collegeList.map((c, index) => `
-                <li class="flex justify-between items-center bg-white border border-slate-200 shadow-sm rounded-xl p-3 text-sm group hover:border-blue-300 transition-all">
-                    <div class="flex items-center gap-3 flex-1 overflow-hidden">
-                        <div class="flex flex-col opacity-20 group-hover:opacity-100 transition-opacity">
-                            <button onclick="moveCollege(${index}, -1)" class="w-6 h-5 rounded hover:bg-slate-100 text-slate-400 hover:text-blue-600 disabled:opacity-0 transition-colors flex items-center justify-center shrink-0" ${index === 0 ? 'disabled' : ''}><i class="fa-solid fa-chevron-up text-[10px]"></i></button>
-                            <button onclick="moveCollege(${index}, 1)" class="w-6 h-5 rounded hover:bg-slate-100 text-slate-400 hover:text-blue-600 disabled:opacity-0 transition-colors flex items-center justify-center shrink-0" ${index === collegeList.length - 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-down text-[10px]"></i></button>
-                        </div>
-                        
-                        <div id="col-display-${index}" class="flex items-center gap-2 flex-1">
-                            <span class="font-bold text-slate-700 truncate pl-1">${c.name}</span>
-                            <span class="text-xs text-slate-400 font-medium">(${c.shortName})</span>
-                        </div>
-
-                        <div id="col-edit-group-${index}" class="hidden flex-1 flex gap-2">
-                            <input type="text" id="col-name-input-${index}" value="${c.name}" placeholder="全名" class="flex-1 border border-blue-400 bg-blue-50 rounded-lg px-3 py-1.5 text-sm font-bold text-blue-900 outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-inner">
-                            <input type="text" id="col-short-input-${index}" value="${c.shortName}" placeholder="簡稱" class="w-1/3 border border-blue-400 bg-blue-50 rounded-lg px-3 py-1.5 text-sm font-bold text-blue-900 outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-inner">
-                        </div>
+                <div class="role-item" id="col-item-${index}">
+                    <div class="reorder-btns">
+                        <button type="button" class="btn-icon sm" style="height:14px; width:18px;" onclick="moveCollege(${index}, -1)" ${index === 0 ? 'disabled' : ''}><i class="ti ti-chevron-up" style="font-size:12px;"></i></button>
+                        <button type="button" class="btn-icon sm" style="height:14px; width:18px;" onclick="moveCollege(${index}, 1)" ${index === collegeList.length - 1 ? 'disabled' : ''}><i class="ti ti-chevron-down" style="font-size:12px;"></i></button>
                     </div>
-                    <div class="flex items-center ml-3 gap-1.5 shrink-0">
-                        <button id="col-edit-btn-${index}" onclick="editCollege(${index})" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors border border-transparent hover:border-blue-100 shrink-0"><i class="fa-solid fa-pen text-sm"></i></button>
-                        <button id="col-save-btn-${index}" onclick="saveCollege(${index})" class="hidden w-8 h-8 rounded-lg flex items-center justify-center text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors shadow-sm shrink-0"><i class="fa-solid fa-check text-base"></i></button>
-                        <div class="w-px h-4 bg-slate-200 mx-0.5"></div>
-                        <button onclick="removeCollege(${index})" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors border border-transparent hover:border-rose-100 shrink-0"><i class="fa-solid fa-trash-can text-sm"></i></button>
+                    <div class="role-item-name">
+                        <span style="font-weight:700;">${c.name}</span>
+                        <span class="cell-secondary">(${c.shortName})</span>
                     </div>
-                </li>
+                    <div class="role-item-input">
+                        <input type="text" id="col-name-input-${index}" value="${c.name}" class="field-input" style="height:28px; padding:0 8px;">
+                        <input type="text" id="col-short-input-${index}" value="${c.shortName}" class="field-input" style="height:28px; padding:0 8px; width:100px;">
+                    </div>
+                    <div class="role-actions">
+                        <button type="button" class="btn-icon edit" onclick="editCollege(${index})" title="編輯"><i class="ti ti-edit"></i></button>
+                        <button type="button" class="btn-icon save" onclick="saveCollege(${index})" title="儲存"><i class="ti ti-check"></i></button>
+                        <button type="button" class="btn-icon delete" onclick="removeCollege(${index})" title="刪除"><i class="ti ti-trash"></i></button>
+                    </div>
+                </div>
             `).join('');
-
-            const optionsHtml = collegeList.map(c => `<option value="${c.name}">${c.shortName || c.name}</option>`).join('');
-            document.getElementById('filter-college').innerHTML = `<option value="all">全部學院</option>` + optionsHtml;
-            document.getElementById('input-college').innerHTML = `<option value="">請選擇學院...</option>` + optionsHtml;
         }
+
+        window.openCollegeModal = () => document.getElementById('college-modal').classList.add('open');
+        window.closeCollegeModal = () => document.getElementById('college-modal').classList.remove('open');
 
         window.addCollege = async () => {
             const nameVal = document.getElementById('new-college-name').value.trim();
@@ -384,11 +685,8 @@
         };
         
         window.editCollege = (index) => {
-            document.getElementById(`col-display-${index}`).classList.add('hidden');
-            document.getElementById(`col-edit-group-${index}`).classList.remove('hidden');
+            document.getElementById(`col-item-${index}`).classList.add('editing');
             document.getElementById(`col-name-input-${index}`).focus();
-            document.getElementById(`col-edit-btn-${index}`).classList.add('hidden');
-            document.getElementById(`col-save-btn-${index}`).classList.remove('hidden');
         };
         
         window.saveCollege = async (index) => {
@@ -413,136 +711,294 @@
             }
         };
 
+        // ─── DEPARTMENT MANAGEMENT ───
         window.openDeptModal = () => {
             if (!editingId) { 
                 document.getElementById('dept-form').reset();
                 document.getElementById('contacts-container').innerHTML = '';
                 addContactField();
-                document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-graduation-cap text-blue-600"></i> 新增系所單位';
+                document.getElementById('dept-modal-title').innerHTML = '<i class="ti ti-school" style="color:var(--brand)"></i> 新增系所單位';
             }
-            document.getElementById('dept-modal').classList.remove('hidden');
+            document.getElementById('dept-modal').classList.add('open');
         };
-        window.closeDeptModal = () => { document.getElementById('dept-modal').classList.add('hidden'); editingId = null; };
+        window.closeDeptModal = () => { document.getElementById('dept-modal').classList.remove('open'); editingId = null; };
 
         window.addContactField = (name = '', email = '') => {
             const container = document.getElementById('contacts-container');
             const div = document.createElement('div');
-            div.className = 'contact-entry flex gap-3 items-start animate-[fadeIn_0.3s_ease-out]';
+            div.className = 'contact-entry';
             div.innerHTML = `
-                <div class="flex-1 space-y-2 bg-slate-50 p-3 rounded-lg border border-slate-200 shadow-sm">
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs font-bold text-slate-400 w-12 shrink-0">姓名：</span>
-                        <input type="text" placeholder="例如：陳助教" value="${name}" class="contact-name w-full bg-transparent text-sm focus:outline-none font-bold text-slate-700">
+                <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:12px; font-weight:700; color:var(--text-muted); width:48px; flex-shrink:0;">姓名</span>
+                        <input type="text" placeholder="例如：陳助教" value="${name}" class="contact-name field-input" style="height:30px;">
                     </div>
-                    <div class="h-px bg-slate-200"></div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs font-bold text-slate-400 w-12 shrink-0">Email：</span>
-                        <input type="email" placeholder="example@thu.edu.tw" value="${email}" class="contact-email w-full bg-transparent text-sm focus:outline-none text-slate-500 font-bold">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:12px; font-weight:700; color:var(--text-muted); width:48px; flex-shrink:0;">Email</span>
+                        <input type="email" placeholder="example@thu.edu.tw" value="${email}" class="contact-email field-input" style="height:30px; font-family:monospace;">
                     </div>
                 </div>
-                <button type="button" onclick="this.parentElement.remove()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-all mt-1 shrink-0"><i class="fa-solid fa-trash-can text-sm"></i></button>
+                <button type="button" onclick="this.parentElement.remove()" class="btn-icon sm" style="align-self:center; color:var(--text-muted); transition:color 0.2s;" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-muted)'"><i class="ti ti-trash"></i></button>
             `;
             container.appendChild(div);
         };
 
-        window.changePage = (page) => { 
-            currentPage = page; 
-            renderTable(); 
+        window.submitDeptForm = async () => {
+            const btn = document.getElementById('btn-submit');
+            const contacts = Array.from(document.querySelectorAll('.contact-entry')).map(entry => ({
+                name: entry.querySelector('.contact-name').value.trim(), email: entry.querySelector('.contact-email').value.trim()
+            })).filter(c => c.name || c.email);
+
+            const payload = {
+                college: document.getElementById('input-college').value.trim(), 
+                code: document.getElementById('input-code').value.toUpperCase().trim(),
+                name: document.getElementById('input-name').value.trim(), 
+                shortName: document.getElementById('input-short-name').value.trim(), 
+                contacts
+            };
+
+            if(!payload.college || !payload.code || !payload.name) { alert("請填寫必填欄位！"); return; }
+            btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 儲存中...';
+
+            try {
+                if (editingId) await updateDoc(doc(db, "departments", editingId), { ...payload, updated_at: serverTimestamp() });
+                else {
+                    const maxOrder = allDepts.length > 0 ? Math.max(...allDepts.map(d => d.sortOrder || 0)) : 0;
+                    await addDoc(deptCollection, { ...payload, sortOrder: maxOrder + 10, is_active: true, created_at: serverTimestamp() });
+                }
+                closeDeptModal();
+            } catch (err) { alert(err.message); }
+            finally { btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> 確認儲存'; }
         };
+
+        window.editDept = (id) => {
+            const dept = allDepts.find(d => d.id === id);
+            if (!dept) return;
+            editingId = id;
+            document.getElementById('input-college').value = dept.college; 
+            document.getElementById('input-code').value = dept.code;
+            document.getElementById('input-name').value = dept.name; 
+            document.getElementById('input-short-name').value = dept.shortName || '';
+            
+            document.getElementById('contacts-container').innerHTML = '';
+            if (dept.contacts && dept.contacts.length > 0) {
+                dept.contacts.forEach(c => addContactField(c.name, c.email));
+            } else {
+                addContactField();
+            }
+            
+            document.getElementById('dept-modal-title').innerHTML = '<i class="ti ti-edit" style="color:var(--brand)"></i> 編輯系所單位';
+            document.getElementById('dept-modal').classList.add('open');
+        };
+
+        // ─── BATCH SELECTION & TABLE ───
+        window.toggleSelectPage = (e) => {
+            const isChecked = e.target.checked;
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const currentPaginatedIds = filteredDepts.slice(startIndex, startIndex + itemsPerPage).map(d => d.id);
+            
+            if (isChecked) {
+                currentPaginatedIds.forEach(id => { if (!selectedIds.includes(id)) selectedIds.push(id); });
+            } else {
+                selectedIds = selectedIds.filter(id => !currentPaginatedIds.includes(id));
+            }
+            updateBatchActionBar(); renderTable();
+        };
+
+        window.toggleSelect = (id) => {
+            const index = selectedIds.indexOf(id);
+            if (index === -1) selectedIds.push(id); else selectedIds.splice(index, 1);
+            updateBatchActionBar(); renderTable();
+        };
+
+        window.selectAllFiltered = () => {
+            selectedIds = filteredDepts.map(d => d.id);
+            updateBatchActionBar(); renderTable();
+        };
+
+        window.clearSelection = () => {
+            selectedIds = [];
+            updateBatchActionBar(); renderTable();
+        };
+
+        function updateBatchActionBar() {
+            const bar = document.getElementById('batch-bar');
+            const count = document.getElementById('selected-count');
+            const btnSelectAll = document.getElementById('btn-select-all-filtered');
+            
+            if (selectedIds.length > 0) {
+                bar.classList.add('visible');
+                count.innerText = selectedIds.length;
+                if (selectedIds.length < filteredDepts.length) {
+                    btnSelectAll.style.display = 'inline-flex';
+                    btnSelectAll.innerText = `選取全部符合條件 (${filteredDepts.length})`;
+                } else {
+                    btnSelectAll.style.display = 'none';
+                }
+            } else {
+                bar.classList.remove('visible');
+            }
+        }
+
+        window.batchUpdateStatus = async (status) => {
+            if (!confirm(`確定要將選取的 ${selectedIds.length} 個系所全部${status ? '啟用' : '停用'}嗎？`)) return;
+            try {
+                for (let id of selectedIds) await updateDoc(doc(db, "departments", id), { is_active: status });
+                clearSelection();
+            } catch (e) { alert("批次更新發生錯誤: " + e.message); }
+        };
+
+        window.batchDelete = async () => {
+            if (!confirm(`警告：確定要刪除選取的 ${selectedIds.length} 個系所嗎？\n此操作無法復原！`)) return;
+            try {
+                for (let id of selectedIds) await deleteDoc(doc(db, "departments", id));
+                clearSelection();
+            } catch (e) { alert("批次刪除發生錯誤: " + e.message); }
+        };
+
+        window.changePage = (page) => { currentPage = page; renderTable(); };
+        window.changePerPage = (val) => { itemsPerPage = Number(val); currentPage = 1; renderTable(); };
 
         function renderTable() {
             const tbody = document.getElementById('dept-table-body');
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
-            const filterCollege = document.getElementById('filter-college').value;
-            const filterStatus = document.getElementById('filter-status').value;
 
             filteredDepts = allDepts.filter(d => {
                 const matchSearch = d.name.toLowerCase().includes(searchTerm) || (d.shortName && d.shortName.toLowerCase().includes(searchTerm)) || d.code.toLowerCase().includes(searchTerm) || (d.contacts && d.contacts.some(c => c.name.includes(searchTerm)));
-                const matchCollege = filterCollege === 'all' || d.college === filterCollege;
-                const matchStatus = filterStatus === 'all' || (filterStatus === 'active' ? d.is_active : !d.is_active);
+                const matchCollege = filterCollegeSet.size === 0 || filterCollegeSet.has(d.college);
+                const statusStr = d.is_active ? 'active' : 'inactive';
+                const matchStatus = filterStatusSet.size === 0 || filterStatusSet.has(statusStr);
                 return matchSearch && matchCollege && matchStatus;
             });
 
-            filteredDepts.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
+            if (sortCol) {
+                filteredDepts.sort((a, b) => {
+                    let valA = a[sortCol] || ''; let valB = b[sortCol] || '';
+                    if (sortCol === 'sortOrder') {
+                        valA = a.sortOrder || 999; valB = b.sortOrder || 999;
+                    } else if (sortCol === 'name') {
+                        valA = (a.shortName || a.name).toString().toLowerCase();
+                        valB = (b.shortName || b.name).toString().toLowerCase();
+                    } else {
+                        valA = valA.toString().toLowerCase(); valB = valB.toString().toLowerCase();
+                    }
+                    if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+                    if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+                    return 0;
+                });
+            }
 
-            const totalItems = filteredDepts.length;
-            const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
-            if (currentPage > totalPages) currentPage = totalPages || 1;
-            const startIndex = (currentPage - 1) * itemsPerPage;
-            const paginatedItems = filteredDepts.slice(startIndex, startIndex + itemsPerPage);
+            const total = filteredDepts.length;
+            const totalPages = Math.max(1, Math.ceil(total / itemsPerPage));
+            if (currentPage > totalPages) currentPage = totalPages;
+            const start = (currentPage - 1) * itemsPerPage;
+            const items = filteredDepts.slice(start, start + itemsPerPage);
 
-            document.getElementById('pagination-info').innerText = totalItems > 0 ? `顯示 ${startIndex + 1} 到 ${Math.min(startIndex + itemsPerPage, totalItems)} 筆，共 ${totalItems} 筆` : '尚無資料';
+            if (total > 0) {
+                document.getElementById('pagination-info').innerHTML = `共 <strong>${total}</strong> 筆，顯示第 ${start + 1}–${Math.min(start + itemsPerPage, total)} 筆`;
+            } else {
+                document.getElementById('pagination-info').innerHTML = `共 <strong>0</strong> 筆`;
+            }
             
-            let btnHtml = '';
-            btnHtml += `<button onclick="changePage(${currentPage - 1})" class="px-3 py-1 border border-slate-200 rounded-md text-sm font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-40 transition-colors" ${currentPage === 1 ? 'disabled' : ''}>上一頁</button>`;
-            btnHtml += `<span class="px-4 py-1 text-sm font-bold text-blue-600 bg-blue-50 rounded-md mx-1">${currentPage} / ${totalPages}</span>`;
-            btnHtml += `<button onclick="changePage(${currentPage + 1})" class="px-3 py-1 border border-slate-200 rounded-md text-sm font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-40 transition-colors" ${currentPage === totalPages ? 'disabled' : ''}>下一頁</button>`;
-            document.getElementById('pagination-buttons').innerHTML = btnHtml;
+            let pHtml = `<button class="page-btn" onclick="window.changePage(${currentPage-1})" ${currentPage<=1?'disabled':''}><i class="ti ti-chevron-left"></i></button>`;
+            const pages = [];
+            for (let p=1; p<=totalPages; p++) {
+                if (p===1 || p===totalPages || Math.abs(p-currentPage)<=1) pages.push(p);
+                else if (pages[pages.length-1] !== '…') pages.push('…');
+            }
+            pages.forEach(p => {
+                if (p === '…') pHtml += `<span class="page-btn" style="cursor:default;border:none">…</span>`;
+                else pHtml += `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="window.changePage(${p})">${p}</button>`;
+            });
+            pHtml += `<button class="page-btn" onclick="window.changePage(${currentPage+1})" ${currentPage>=totalPages?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
+            document.getElementById('pagination-controls').innerHTML = pHtml;
 
-            const currentPaginatedIds = paginatedItems.map(d => d.id);
+            const currentPaginatedIds = items.map(d => d.id);
             const isAllVisibleSelected = currentPaginatedIds.length > 0 && currentPaginatedIds.every(id => selectedIds.includes(id));
             document.getElementById('selectAll').checked = isAllVisibleSelected;
 
-            if (totalItems === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-16 text-center text-slate-400 font-bold bg-white">找不到符合條件的系所。</td></tr>`;
+            if (total === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">找不到符合條件的系所。</div></td></tr>`;
                 return;
             }
 
             let html = '';
-            paginatedItems.forEach((data, idx) => {
-                const globalIndex = startIndex + idx; 
+            items.forEach((data, idx) => {
+                const globalIndex = start + idx; 
                 
                 let contactsHtml = '';
-                let contactParentClass = '';
                 if (data.contacts && data.contacts.length > 0) {
                     contactsHtml = data.contacts.map(c => `
-                        <div class="text-xs mb-1 last:mb-0">
-                            <span class="font-bold text-slate-700">${c.name || '未填寫'}</span>
-                            <span class="text-slate-300 mx-1">/</span>
-                            <span class="text-slate-500 font-bold">${c.email || ''}</span>
+                        <div style="margin-bottom:4px; line-height:1.4;">
+                            <span class="cell-primary bold">${c.name || '未填寫'}</span>
+                            <span class="cell-secondary" style="margin-left:4px;">${c.email || ''}</span>
                         </div>`).join('');
-                    contactParentClass = "flex flex-col items-start text-left pl-4";
                 } else {
-                    contactsHtml = `<span class="text-slate-400 text-xs font-bold bg-slate-100 border border-slate-200 px-3 py-1 rounded-md">- 尚未設定 -</span>`;
-                    contactParentClass = "flex justify-center items-center w-full";
+                    contactsHtml = `<span class="badge badge-gray">- 尚未設定 -</span>`;
                 }
 
-                // 💡 取得學院簡稱
                 const colObj = collegeList.find(c => c.name === data.college);
                 const colDispName = colObj && colObj.shortName ? colObj.shortName : data.college;
-
                 const isChecked = selectedIds.includes(data.id) ? 'checked' : '';
 
                 html += `
-                <tr class="group bg-white hover:bg-blue-50/40 transition-all duration-150 ${!data.is_active ? 'opacity-60 grayscale-[20%] bg-slate-50/50' : ''}">
-                    <td class="px-4 py-4 align-middle text-center">
-                        <input type="checkbox" class="row-checkbox w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shadow-sm transition-all" value="${data.id}" onchange="toggleSelect('${data.id}')" ${isChecked}>
+                <tr class="${isChecked ? 'selected' : ''} ${!data.is_active ? 'disabled' : ''}">
+                    <td style="text-align: center;">
+                        <input type="checkbox" value="${data.id}" onchange="toggleSelect('${data.id}')" ${isChecked} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px;">
                     </td>
-                    <td class="px-4 py-4 align-middle text-center"><span class="text-slate-700 font-bold text-sm">${colDispName}</span></td>
-                    <td class="px-4 py-4 align-middle text-center"><div class="text-sm font-bold text-slate-800 break-words leading-tight">${data.shortName || data.name}</div></td>
-                    <td class="px-4 py-4 align-middle text-center"><div class="inline-block px-2.5 py-1 rounded-md bg-slate-100 border border-slate-300 font-mono text-xs font-bold text-slate-600 tracking-widest shadow-inner">${data.code}</div></td>
-                    <td class="px-4 py-4 align-middle"><div class="${contactParentClass}">${contactsHtml}</div></td>
-                    <td class="px-4 py-4 align-middle text-center whitespace-nowrap">
-                        <div class="flex items-center justify-center">
-                            <label class="relative inline-flex items-center cursor-pointer group/toggle whitespace-nowrap">
-                                <input type="checkbox" class="sr-only peer" ${data.is_active ? 'checked' : ''} onchange="window.toggleStatus('${data.id}', ${data.is_active})">
-                                <div class="relative w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-[20px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner shrink-0 min-w-[44px]"></div>
-                                <span class="ml-3 text-sm font-bold ${data.is_active ? 'text-emerald-600' : 'text-slate-400'} whitespace-nowrap">${data.is_active ? '啟用' : '停用'}</span>
+                    <td style="text-align: center;"><span class="badge badge-blue">${colDispName}</span></td>
+                    <td style="text-align: left;">
+                        <div class="cell-primary bold">${data.shortName || data.name}</div>
+                        ${data.shortName ? `<div class="cell-secondary">${data.name}</div>` : ''}
+                    </td>
+                    <td style="text-align: center;"><div class="cell-secondary" style="font-family:monospace; font-size:12px;">${data.code}</div></td>
+                    <td style="text-align: left;">${contactsHtml}</td>
+                    <td style="text-align: center;">
+                        <div style="display:flex; justify-content:center;">
+                            <label class="toggle">
+                                <input type="checkbox" ${data.is_active ? 'checked' : ''} onchange="window.toggleStatus('${data.id}', ${data.is_active})">
+                                <span class="toggle-slider"></span>
+                                <span class="toggle-label ${data.is_active ? 'active' : 'inactive'}">${data.is_active ? '啟用' : '停用'}</span>
                             </label>
                         </div>
                     </td>
-                    <td class="px-4 py-4 align-middle text-center">
-                        <div class="flex items-center justify-center gap-2 opacity-100 transition-opacity">
-                            <button onclick="window.moveOrder('${data.id}', 'up')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all disabled:opacity-20 shrink-0" ${globalIndex === 0 ? 'disabled' : ''}><i class="fa-solid fa-chevron-up text-xs"></i></button>
-                            <button onclick="window.moveOrder('${data.id}', 'down')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all disabled:opacity-20 shrink-0" ${globalIndex === filteredDepts.length - 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-down text-xs"></i></button>
-                            <button onclick="window.editDept('${data.id}')" class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all shrink-0"><i class="fa-solid fa-pen text-sm"></i></button>
-                            <button onclick="window.deleteDept('${data.id}', '${data.name}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all shrink-0"><i class="fa-solid fa-trash-can text-sm"></i></button>
+                    <td style="text-align: center;">
+                        <div class="row-actions">
+                            <button onclick="window.moveOrder('${data.id}', 'up')" class="btn-icon sm" title="上移" ${globalIndex === 0 ? 'disabled' : ''}><i class="ti ti-chevron-up"></i></button>
+                            <button onclick="window.moveOrder('${data.id}', 'down')" class="btn-icon sm" title="下移" ${globalIndex === filteredDepts.length - 1 ? 'disabled' : ''}><i class="ti ti-chevron-down"></i></button>
+                            <button onclick="window.editDept('${data.id}')" class="btn-icon sm" title="編輯"><i class="ti ti-edit"></i></button>
+                            <button onclick="window.deleteDept('${data.id}', '${data.name}')" class="btn-icon sm" style="color:var(--danger);" title="刪除"><i class="ti ti-trash"></i></button>
                         </div>
                     </td>
                 </tr>`;
             });
             tbody.innerHTML = html;
         }
+
+        window.moveOrder = async (id, direction) => {
+            let sorted = [...allDepts].sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
+            const currentIndex = sorted.findIndex(d => d.id === id);
+            
+            if (direction === 'up' && currentIndex > 0) {
+                const targetOrder = sorted[currentIndex - 1].sortOrder || (currentIndex-1)*10;
+                const currentOrder = sorted[currentIndex].sortOrder || currentIndex*10;
+                await updateDoc(doc(db, "departments", sorted[currentIndex].id), { sortOrder: targetOrder });
+                await updateDoc(doc(db, "departments", sorted[currentIndex - 1].id), { sortOrder: currentOrder });
+            } else if (direction === 'down' && currentIndex < sorted.length - 1) {
+                const targetOrder = sorted[currentIndex + 1].sortOrder || (currentIndex+1)*10;
+                const currentOrder = sorted[currentIndex].sortOrder || currentIndex*10;
+                await updateDoc(doc(db, "departments", sorted[currentIndex].id), { sortOrder: targetOrder });
+                await updateDoc(doc(db, "departments", sorted[currentIndex + 1].id), { sortOrder: currentOrder });
+            }
+        };
+
+        window.toggleStatus = async (id, status) => await updateDoc(doc(db, "departments", id), { is_active: !status });
+        
+        window.deleteDept = async (id, name) => {
+            if (confirm(`確定要刪除「${name}」嗎？此操作無法復原。`)) {
+                await deleteDoc(doc(db, "departments", id));
+            }
+        };
 
         window.exportToCSV = () => {
             if (allDepts.length === 0) { alert("沒有資料可供匯出！"); return; }
@@ -551,8 +1007,7 @@
             sorted.forEach(d => {
                 let status = d.is_active ? '啟用' : '停用';
                 let contactsStr = d.contacts && d.contacts.length > 0 
-                    ? d.contacts.map(c => `${c.name || ''}(${c.email || ''})`).join(', ') 
-                    : '';
+                    ? d.contacts.map(c => `${c.name || ''}(${c.email || ''})`).join(', ') : '';
                 csv += [d.college, d.code, d.name, d.shortName || '', contactsStr, status].map(v => `"${(v+'').replace(/"/g, '""')}"`).join(',') + '\n';
             });
             const link = document.createElement('a');
@@ -566,7 +1021,7 @@
             if (!file) return;
             const btn = document.getElementById('btn-import');
             const originalHtml = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-base text-blue-600"></i> 匯入中...';
+            btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 匯入中...';
             btn.disabled = true;
 
             const reader = new FileReader();
@@ -601,16 +1056,12 @@
                             if (contactsRaw) {
                                 contacts = contactsRaw.split(',').map(str => {
                                     const match = str.trim().match(/^(.*?)\s*\((.*?)\)$/);
-                                    if (match) {
-                                        return { name: match[1].trim(), email: match[2].trim() };
-                                    } else {
-                                        return { name: str.trim(), email: '' };
-                                    }
+                                    if (match) { return { name: match[1].trim(), email: match[2].trim() }; } 
+                                    else { return { name: str.trim(), email: '' }; }
                                 }).filter(c => c.name || c.email);
                             }
 
                             const is_active = (statusStr.trim() !== '停用');
-                            
                             maxOrder += 10;
                             await addDoc(deptCollection, { college, code, name, shortName, contacts, is_active, sortOrder: maxOrder, created_at: serverTimestamp() });
                             addedCount++;
@@ -623,68 +1074,7 @@
             reader.readAsText(file);
         };
 
-        window.submitDeptForm = async () => {
-            const btn = document.getElementById('btn-submit');
-            const contacts = Array.from(document.querySelectorAll('.contact-entry')).map(entry => ({
-                name: entry.querySelector('.contact-name').value.trim(), email: entry.querySelector('.contact-email').value.trim()
-            })).filter(c => c.name || c.email);
-
-            const payload = {
-                college: document.getElementById('input-college').value.trim(), code: document.getElementById('input-code').value.toUpperCase().trim(),
-                name: document.getElementById('input-name').value.trim(), shortName: document.getElementById('input-short-name').value.trim(), contacts
-            };
-
-            if(!payload.college || !payload.code || !payload.name) { alert("請填寫必填欄位！"); return; }
-            btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> 儲存中...';
-
-            try {
-                if (editingId) await updateDoc(doc(db, "departments", editingId), { ...payload, updated_at: serverTimestamp() });
-                else {
-                    const maxOrder = allDepts.length > 0 ? Math.max(...allDepts.map(d => d.sortOrder || 0)) : 0;
-                    await addDoc(deptCollection, { ...payload, sortOrder: maxOrder + 10, is_active: true, created_at: serverTimestamp() });
-                }
-                closeDeptModal();
-            } catch (err) { alert(err.message); }
-            finally { btn.disabled = false; btn.innerText = '儲存系所'; }
-        };
-
-        window.editDept = (id) => {
-            const dept = allDepts.find(d => d.id === id);
-            if (!dept) return;
-            editingId = id;
-            document.getElementById('input-college').value = dept.college; document.getElementById('input-code').value = dept.code;
-            document.getElementById('input-name').value = dept.name; document.getElementById('input-short-name').value = dept.shortName || '';
-            document.getElementById('contacts-container').innerHTML = '';
-            if (dept.contacts && dept.contacts.length > 0) dept.contacts.forEach(c => addContactField(c.name, c.email));
-            else addContactField();
-            document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-pen text-blue-600"></i> 編輯系所單位';
-            document.getElementById('dept-modal').classList.remove('hidden');
-        };
-
-        window.moveOrder = async (id, direction) => {
-            let sorted = [...allDepts].sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
-            const currentIndex = sorted.findIndex(d => d.id === id);
-            if (direction === 'up' && currentIndex > 0) {
-                await updateDoc(doc(db, "departments", sorted[currentIndex].id), { sortOrder: sorted[currentIndex - 1].sortOrder || (currentIndex-1)*10 });
-                await updateDoc(doc(db, "departments", sorted[currentIndex - 1].id), { sortOrder: sorted[currentIndex].sortOrder || currentIndex*10 });
-            } else if (direction === 'down' && currentIndex < sorted.length - 1) {
-                await updateDoc(doc(db, "departments", sorted[currentIndex].id), { sortOrder: sorted[currentIndex + 1].sortOrder || (currentIndex+1)*10 });
-                await updateDoc(doc(db, "departments", sorted[currentIndex + 1].id), { sortOrder: sorted[currentIndex].sortOrder || currentIndex*10 });
-            }
-        };
-
-        window.toggleStatus = async (id, status) => await updateDoc(doc(db, "departments", id), { is_active: !status });
-        window.deleteDept = async (id, name) => {
-            if (confirm(`確定要刪除「${name}」嗎？此操作無法復原。`)) {
-                await deleteDoc(doc(db, "departments", id));
-                if (currentPage > Math.ceil((allDepts.length - 1) / itemsPerPage) || 1) currentPage = Math.ceil((allDepts.length - 1) / itemsPerPage) || 1;
-                renderTable();
-            }
-        };
-        
         document.getElementById('search-input').addEventListener('input', () => { currentPage = 1; renderTable(); });
-        document.getElementById('filter-college').addEventListener('change', () => { currentPage = 1; renderTable(); });
-        document.getElementById('filter-status').addEventListener('change', () => { currentPage = 1; renderTable(); });
     </script>
 </body>
 </html>
