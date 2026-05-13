@@ -1,281 +1,359 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>用戶權限管理內容</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            50: 'var(--brand-light)',
-                            500: 'var(--brand)',
-                            600: 'var(--brand-hover)',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    
-    <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>用戶權限管理內容</title>
 
-        :root {
-            --brand: #1a56db;
-            --brand-hover: #1649c0;
-            --brand-light: #eff4ff;
-            --brand-border: #c3d2f9;
-            --bg: #f8f9fc;
-            --surface: #ffffff;
-            --border: #e5e7ef;
-            --border-strong: #cdd0dd;
-            --text-primary: #111827;
-            --text-secondary: #4b5563;
-            --text-muted: #9ca3af;
-            --success: #059669;
-            --success-bg: #ecfdf5;
-            --success-border: #a7f3d0;
-            --danger: #dc2626;
-            --danger-bg: #fef2f2;
-            --danger-border: #fecaca;
-            --radius-sm: 6px;
-            --radius: 8px;
-            --radius-lg: 12px;
-            --radius-xl: 16px;
-            --radius-2xl: 2rem;
-            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-            --transition: 150ms cubic-bezier(0.4,0,0.2,1);
-        }
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<!-- 替換為 Tabler Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 
-        body { 
-            background-color: var(--bg); 
-            margin: 0; padding: 0; 
-            font-family: 'Noto Sans TC', sans-serif; 
-            color: var(--text-primary);
-            -webkit-font-smoothing: antialiased; 
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .custom-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 99px; }
+:root {
+  --brand: #1a56db;
+  --brand-hover: #1649c0;
+  --brand-light: #eff4ff;
+  --brand-border: #c3d2f9;
+  --bg: #f8f9fc;
+  --surface: #ffffff;
+  --border: #e5e7ef;
+  --border-strong: #cdd0dd;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #9ca3af;
+  --success: #059669;
+  --success-bg: #ecfdf5;
+  --success-border: #a7f3d0;
+  --danger: #dc2626;
+  --danger-bg: #fef2f2;
+  --danger-border: #fecaca;
+  --indigo: #4f46e5;
+  --indigo-bg: #e0e7ff;
+  --indigo-border: #c7d2fe;
+  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.04);
+  --transition: 150ms cubic-bezier(0.4,0,0.2,1);
+}
 
-        /* ─── TOP TOOLBAR ─── */
-        .toolbar {
-            padding: 12px 24px;
-            background: var(--surface);
-            border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: space-between;
-            gap: 16px; flex-shrink: 0;
-        }
-        .search-wrap { position: relative; flex: 0 0 280px; }
-        .search-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px; }
-        .search-input {
-            width: 100%; height: 38px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            background: var(--bg);
-            padding: 0 12px 0 38px;
-            font-size: 13px; outline: none;
-            transition: all var(--transition);
-        }
-        .search-input:focus { border-color: var(--brand); background: var(--surface); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
+html, body { 
+  height: 100%; overflow: hidden; 
+  font-family: 'Noto Sans TC', sans-serif; font-size: 14px; 
+  color: var(--text-primary); background: var(--bg); 
+  -webkit-font-smoothing: antialiased; 
+  display: flex; flex-direction: column;
+}
 
-        /* ─── FILTER ROW (Pills) ─── */
-        .filter-row {
-            padding: 10px 24px;
-            background: var(--bg);
-            border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; gap: 8px;
-            flex-shrink: 0;
-        }
-        .filter-pill-wrap { position: relative; }
-        .filter-pill {
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 0 14px; height: 32px;
-            border: 1px solid var(--border);
-            border-radius: 99px;
-            background: var(--surface);
-            font-size: 12px; font-weight: 500; color: var(--text-secondary);
-            cursor: pointer; transition: all var(--transition);
-            user-select: none;
-        }
-        .filter-pill:hover { border-color: var(--border-strong); color: var(--text-primary); }
-        .filter-pill.active { border-color: var(--brand); background: var(--brand-light); color: var(--brand); }
-        .filter-pill i { font-size: 10px; color: var(--text-muted); transition: transform 0.2s; }
-        .filter-pill-wrap.open i { transform: rotate(180deg); }
+/* ─── SCROLLBAR ─── */
+.custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.custom-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
 
-        /* ─── FILTER DROPDOWN ─── */
-        .filter-dropdown {
-            position: absolute; top: calc(100% + 6px); left: 0;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-md);
-            min-width: 200px; z-index: 100;
-            display: none; flex-direction: column;
-            padding: 8px 0;
-            animation: dropdownIn 0.2s cubic-bezier(0.16,1,0.3,1);
-        }
-        .filter-dropdown.show { display: flex; }
-        @keyframes dropdownIn { from { opacity: 0; transform: translateY(-4px); } }
-        
-        .filter-option {
-            display: flex; align-items: center; gap: 10px;
-            padding: 8px 16px; font-size: 13px; color: var(--text-secondary);
-            cursor: pointer; transition: background var(--transition);
-        }
-        .filter-option:hover { background: var(--bg); color: var(--text-primary); }
-        .filter-option input[type=checkbox] { accent-color: var(--brand); width: 15px; height: 15px; cursor: pointer; border-radius: 4px; }
-        
-        .filter-dropdown-footer {
-            margin-top: 4px; padding: 8px 16px 4px; border-top: 1px solid var(--border);
-            display: flex; justify-content: flex-end;
-        }
-        .clear-filter-btn { font-size: 12px; font-weight: 600; color: var(--danger); background: none; border: none; cursor: pointer; padding: 2px 4px; border-radius: 4px; }
-        .clear-filter-btn:hover { background: var(--danger-bg); }
+/* ─── 動畫與通用 ─── */
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.ti-spin { animation: spin 1s linear infinite; display: inline-block; }
 
-        /* ─── BUTTONS ─── */
-        .btn {
-            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-            padding: 0 14px; height: 34px;
-            border-radius: var(--radius);
-            font-size: 13px; font-weight: 600;
-            cursor: pointer; border: 1px solid transparent;
-            transition: all var(--transition);
-            white-space: nowrap;
-        }
-        .btn-primary { background: var(--brand); color: white; }
-        .btn-primary:hover { background: var(--brand-hover); box-shadow: 0 4px 12px rgba(26, 86, 219, 0.2); }
-        .btn-secondary { background: var(--surface); color: var(--text-secondary); border-color: var(--border); }
-        .btn-secondary:hover { background: var(--bg); border-color: var(--border-strong); color: var(--text-primary); }
+/* ─── TOOLBAR ─── */
+.toolbar {
+  padding: 12px 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0;
+}
+.search-wrap { position: relative; flex: 0 0 260px; }
+.search-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px; }
+.search-input {
+  width: 100%; height: 34px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 0 10px 0 34px;
+  font-size: 13px; font-family: inherit;
+  color: var(--text-primary); outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.search-input::placeholder { color: var(--text-muted); }
+.search-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
 
-        /* ─── TABLE ─── */
-        .table-container { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); }
-        .table-scroll { flex: 1; overflow: auto; }
-        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        thead { position: sticky; top: 0; z-index: 10; background: var(--surface); }
-        th {
-            padding: 12px 24px; text-align: left; font-size: 11px; font-weight: 700;
-            color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;
-            border-bottom: 1px solid var(--border);
-        }
-        td { padding: 14px 24px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-        tr:hover td { background: #fafbff; }
+.flex-spacer { flex: 1; }
+.v-divider { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; margin: 0 4px; }
 
-        /* ─── TOGGLE ─── */
-        .toggle { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
-        .toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
-        .toggle-slider { width: 38px; height: 20px; background: #e2e8f0; border-radius: 20px; transition: 0.3s; position: relative; }
-        .toggle-slider::before { content: ""; position: absolute; width: 14px; height: 14px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; box-shadow: var(--shadow-sm); }
-        .toggle input:checked + .toggle-slider { background: var(--success); }
-        .toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
-        
-        .row-actions { display: flex; align-items: center; gap: 4px; opacity: 0; transition: opacity var(--transition); }
-        tr:hover .row-actions { opacity: 1; }
+/* ─── BUTTONS ─── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 0 14px; height: 34px;
+  border-radius: var(--radius);
+  font-size: 13px; font-weight: 600; font-family: inherit;
+  cursor: pointer; border: none; white-space: nowrap;
+  transition: all var(--transition); text-decoration: none;
+}
+.btn-primary { background: var(--brand); color: white; }
+.btn-primary:hover { background: var(--brand-hover); }
+.btn-secondary { background: var(--surface); color: var(--text-secondary); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--bg); border-color: var(--border-strong); color: var(--text-primary); }
+.btn-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
+.btn-danger:hover { background: #fee2e2; }
+.btn-icon { width: 34px; padding: 0; justify-content: center; }
+.btn-icon.sm { width: 28px; height: 28px; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn i { font-size: 16px; } /* Tabler icons look best slightly larger */
 
-        /* ─── MODAL ─── */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
-        .modal-overlay.open { display: flex; }
-        .modal-card { background: var(--surface); border-radius: var(--radius-2xl); width: 100%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; animation: modalIn 0.3s cubic-bezier(0.16,1,0.3,1); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
-        @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(20px); } }
-        .modal-header { padding: 20px 32px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--bg); }
-        .modal-body { padding: 32px; overflow-y: auto; flex: 1; }
-        .modal-footer { padding: 20px 32px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 12px; background: var(--bg); }
-        
-        .input-field {
-            width: 100%; padding: 10px 14px; border-radius: var(--radius);
-            border: 1px solid var(--border); background: var(--bg);
-            outline: none; font-size: 13px; transition: all var(--transition);
-        }
-        .input-field:focus { border-color: var(--brand); background: var(--surface); box-shadow: 0 0 0 3px var(--brand-light); }
-    </style>
+/* ─── FILTER ROW ─── */
+.filter-row {
+  padding: 10px 24px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+  flex-shrink: 0; flex-wrap: wrap;
+}
+.filter-pill-wrap { position: relative; }
+.filter-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 0 10px; height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 99px; background: var(--surface);
+  font-size: 12px; font-weight: 500; color: var(--text-secondary);
+  cursor: pointer; transition: all var(--transition);
+  white-space: nowrap;
+}
+.filter-pill:hover { border-color: var(--border-strong); color: var(--text-primary); }
+.filter-pill.active { border-color: var(--brand); background: var(--brand-light); color: var(--brand); }
+.filter-pill .pill-count { background: var(--brand); color: white; border-radius: 99px; font-size: 10px; font-weight: 700; padding: 0 5px; min-width: 16px; text-align: center; }
+.filter-pill i { font-size: 14px; transition: transform 0.2s; }
+.filter-pill-wrap.open .filter-pill i { transform: rotate(180deg); }
+
+.filter-dropdown {
+  position: absolute; top: calc(100% + 6px); left: 0;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-md);
+  min-width: 200px; z-index: 100;
+  display: none; flex-direction: column; overflow: hidden;
+}
+.filter-dropdown.show { display: flex; }
+.filter-dropdown-list { max-height: 200px; overflow-y: auto; padding: 4px; }
+.filter-option {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 8px; border-radius: var(--radius-sm);
+  cursor: pointer; font-size: 12px; color: var(--text-secondary);
+  transition: background var(--transition);
+}
+.filter-option:hover { background: var(--bg); color: var(--text-primary); }
+.filter-option input[type=checkbox] { accent-color: var(--brand); flex-shrink: 0; }
+.filter-dropdown-footer { padding: 6px 8px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; }
+.filter-dropdown-footer button { font-size: 11px; font-weight: 600; color: var(--danger); background: none; border: none; cursor: pointer; padding: 2px 4px; border-radius: var(--radius-sm); }
+.filter-dropdown-footer button:hover { background: var(--danger-bg); }
+
+/* ─── TABLE ─── */
+.table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; }
+.table-scroll { flex: 1; overflow: auto; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 800px; }
+thead { position: sticky; top: 0; z-index: 10; background: var(--surface); }
+thead tr { border-bottom: 2px solid var(--border); }
+th {
+  padding: 12px 16px; text-align: left;
+  font-size: 11px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
+}
+td { padding: 12px 16px; vertical-align: top; word-break: break-word; border-bottom: 1px solid var(--border); }
+tr:hover td { background: #fafbff; }
+tr.disabled td { opacity: 0.6; filter: grayscale(40%); background: var(--bg); }
+
+.cell-primary { font-size: 13px; font-weight: 600; color: var(--text-primary); line-height: 1.4; }
+.cell-secondary { font-size: 11px; color: var(--text-muted); margin-top: 2px; line-height: 1.5; font-family: monospace; }
+.cell-flex { display: flex; align-items: center; gap: 10px; }
+.user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--brand-light); border: 1px solid var(--brand-border); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--brand); flex-shrink: 0; }
+.user-avatar.admin { background: var(--indigo-bg); border-color: var(--indigo-border); color: var(--indigo); }
+
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.badge i { font-size: 14px; }
+.badge-blue { background: var(--brand-light); color: var(--brand); border: 1px solid var(--brand-border); }
+.badge-indigo { background: var(--indigo-bg); color: var(--indigo); border: 1px solid var(--indigo-border); }
+.badge-green { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+.badge-gray { background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; }
+
+/* ─── TOGGLE SWITCH ─── */
+.toggle { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
+.toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+.toggle-slider { width: 34px; height: 18px; background: var(--border-strong); border-radius: 20px; transition: 0.3s; position: relative; }
+.toggle-slider::before { content: ""; position: absolute; width: 12px; height: 12px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; box-shadow: var(--shadow-sm); }
+.toggle input:checked + .toggle-slider { background: var(--success); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(16px); }
+.toggle.disabled { opacity: 0.5; cursor: not-allowed; }
+.toggle-label { margin-left: 8px; font-size: 11px; font-weight: 700; }
+.toggle-label.active { color: var(--success); }
+.toggle-label.inactive { color: var(--text-muted); }
+
+/* Row actions */
+.row-actions { display: flex; align-items: center; justify-content: center; gap: 4px; opacity: 0; transition: opacity var(--transition); }
+tr:hover .row-actions { opacity: 1; }
+
+/* ─── PAGINATION ─── */
+.pagination-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 24px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0;
+}
+.pagination-info { font-size: 12px; color: var(--text-muted); }
+.pagination-info strong { color: var(--text-primary); }
+.pagination-controls { display: flex; align-items: center; gap: 4px; }
+.page-btn {
+  min-width: 30px; height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface);
+  font-size: 12px; font-weight: 500; color: var(--text-secondary);
+  cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0 8px; transition: all var(--transition);
+}
+.page-btn:hover:not(:disabled) { background: var(--bg); border-color: var(--border-strong); }
+.page-btn.active { background: var(--brand); color: white; border-color: var(--brand); font-weight: 700; }
+.page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.page-btn i { font-size: 14px; }
+
+/* ─── MODAL ─── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+  display: none; align-items: center; justify-content: center; padding: 24px;
+}
+.modal-overlay.open { display: flex; }
+.modal-card {
+  background: var(--surface); border-radius: var(--radius-xl); box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  width: 100%; max-width: 600px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden;
+  animation: modalIn 0.25s cubic-bezier(0.16,1,0.3,1);
+}
+@keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } }
+
+.modal-header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--bg); }
+.modal-header h3 { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.modal-header h3 i { font-size: 18px; }
+.modal-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px; transition: color var(--transition); padding: 0; }
+.modal-close:hover { color: var(--text-primary); }
+.modal-body { flex: 1; overflow-y: auto; padding: 24px; }
+.modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg); }
+
+/* ─── FORM ELEMENTS ─── */
+.form-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.field-label .req { color: var(--danger); margin-left: 2px; }
+.field-input, .field-select {
+  width: 100%; height: 34px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--bg); padding: 0 10px; font-size: 13px; font-family: inherit; color: var(--text-primary);
+  outline: none; transition: border-color var(--transition), box-shadow var(--transition);
+}
+.field-input:focus, .field-select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); background: var(--surface); }
+select.field-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; padding-right: 28px; }
+.divider { height: 1px; background: var(--border); margin: 8px 0 20px; }
+
+/* ─── ROLE LIST ─── */
+.role-list-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+.role-list { display: flex; flex-direction: column; gap: 8px; }
+.role-item {
+  display: flex; justify-content: space-between; align-items: center;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 8px 12px; transition: border-color var(--transition);
+}
+.role-item:hover { border-color: var(--brand-border); }
+.role-item-name { font-size: 13px; font-weight: 600; color: var(--text-secondary); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.role-item-input { flex: 1; height: 28px; border: 1px solid var(--brand); border-radius: var(--radius-sm); padding: 0 8px; font-size: 12px; outline: none; display: none; }
+.role-item.editing .role-item-name { display: none; }
+.role-item.editing .role-item-input { display: block; }
+.role-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.role-actions .btn-icon { width: 28px; height: 28px; font-size: 16px; color: var(--text-muted); border: none; background: transparent; }
+.role-actions .btn-icon.edit:hover { color: var(--brand); background: var(--brand-light); }
+.role-actions .btn-icon.save { display: none; color: var(--success); }
+.role-actions .btn-icon.save:hover { background: var(--success-bg); }
+.role-actions .btn-icon.delete:hover { color: var(--danger); background: var(--danger-bg); }
+.role-item.editing .btn-icon.edit { display: none; }
+.role-item.editing .btn-icon.save { display: flex; }
+
+/* Empty state */
+.empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
+.empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
+.empty-text { font-size: 13px; font-weight: 600; }
+</style>
 </head>
 <body>
 
-    <!-- 工具列：搜尋與主按鈕 -->
+    <!-- ─── TOOLBAR ─── -->
     <div class="toolbar">
         <div class="search-wrap">
             <i class="ti ti-search"></i>
-            <input type="text" id="search-input" placeholder="搜尋學號、姓名、單位..." class="search-input">
+            <input type="text" id="search-input" placeholder="搜尋姓名、信箱、單位..." class="search-input">
         </div>
         
-        <div class="flex items-center gap-2">
-            <button onclick="exportToCSV()" class="btn btn-secondary">
-                <i class="ti ti-file-export text-emerald-600"></i> 匯出
-            </button>
-            <div class="w-px h-6 bg-slate-200 mx-1"></div>
-            <button onclick="openRoleModal()" class="btn btn-secondary">
-                <i class="ti ti-tags"></i> 角色設定
-            </button>
-            <button onclick="openUserModal()" class="btn btn-primary">
-                <i class="ti ti-user-plus"></i> 新增授權用戶
-            </button>
-        </div>
+        <div class="flex-spacer"></div>
+        
+        <button onclick="exportToCSV()" class="btn btn-secondary">
+            <i class="ti ti-file-export" style="color:var(--success)"></i> 匯出
+        </button>
+        <div class="v-divider"></div>
+        <button onclick="openRoleModal()" class="btn btn-secondary">
+            <i class="ti ti-tags"></i> 角色設定
+        </button>
+        <button onclick="openUserModal()" class="btn btn-primary">
+            <i class="ti ti-user-plus"></i> 新增授權用戶
+        </button>
     </div>
 
-    <!-- 篩選列：膠囊樣式 -->
+    <!-- ─── FILTER ROW ─── -->
     <div class="filter-row">
         <div class="filter-pill-wrap" id="pill-wrap-role">
-            <div class="filter-pill" id="pill-role" onclick="toggleDropdown('role')">
+            <button class="filter-pill" id="pill-role" onclick="toggleDropdown('role')">
                 權限角色 <i class="ti ti-chevron-down"></i>
-            </div>
+            </button>
             <div class="filter-dropdown" id="drop-role">
-                <div id="role-options-container"></div>
+                <div class="filter-dropdown-list" id="role-options-container"></div>
                 <div class="filter-dropdown-footer">
-                    <button class="clear-filter-btn" onclick="clearFilter('role')">清除此篩選</button>
+                    <button onclick="clearFilter('role')">清除此篩選</button>
                 </div>
             </div>
         </div>
 
         <div class="filter-pill-wrap" id="pill-wrap-status">
-            <div class="filter-pill" id="pill-status" onclick="toggleDropdown('status')">
+            <button class="filter-pill" id="pill-status" onclick="toggleDropdown('status')">
                 帳號狀態 <i class="ti ti-chevron-down"></i>
-            </div>
+            </button>
             <div class="filter-dropdown" id="drop-status">
-                <div class="filter-option" onclick="toggleFilterCheck('status', 'active')">
-                    <input type="checkbox" class="filter-chk-status" value="active"> 啟用中
-                </div>
-                <div class="filter-option" onclick="toggleFilterCheck('status', 'inactive')">
-                    <input type="checkbox" class="filter-chk-status" value="inactive"> 已停權
+                <div class="filter-dropdown-list">
+                    <label class="filter-option">
+                        <input type="checkbox" class="filter-chk-status" value="active" onchange="toggleFilterCheck('status', 'active')">
+                        <span>啟用中</span>
+                    </label>
+                    <label class="filter-option">
+                        <input type="checkbox" class="filter-chk-status" value="inactive" onchange="toggleFilterCheck('status', 'inactive')">
+                        <span>已停權</span>
+                    </label>
                 </div>
                 <div class="filter-dropdown-footer">
-                    <button class="clear-filter-btn" onclick="clearFilter('status')">清除此篩選</button>
+                    <button onclick="clearFilter('status')">清除此篩選</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 表格區域 -->
-    <div class="table-container">
+    <!-- ─── TABLE AREA ─── -->
+    <div class="table-wrap">
         <div class="table-scroll custom-scroll">
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 25%">使用者資訊</th>
+                        <th style="width: 28%">使用者資訊</th>
                         <th style="width: 25%; text-align: center;">所屬單位與職稱</th>
                         <th style="width: 18%; text-align: center;">權限角色</th>
                         <th style="width: 15%; text-align: center;">帳號狀態</th>
-                        <th style="width: 17%; text-align: center;">操作</th>
+                        <th style="width: 14%; text-align: center;">操作</th>
                     </tr>
                 </thead>
-                <tbody id="user-table-body" class="text-sm">
+                <tbody id="user-table-body">
                     <tr>
-                        <td colspan="5" class="py-20 text-center">
-                            <i class="ti ti-loader-2 animate-spin text-3xl text-brand-500 mb-2 inline-block"></i>
-                            <p class="font-bold text-slate-400">同步雲端資料中...</p>
+                        <td colspan="5" class="empty-state">
+                            <i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i>
+                            <div class="empty-text">同步雲端資料中...</div>
                         </td>
                     </tr>
                 </tbody>
@@ -283,76 +361,78 @@
         </div>
         
         <!-- 分頁列 -->
-        <div class="px-6 py-3 border-t border-slate-100 flex justify-between items-center bg-slate-50/50">
-            <div id="pagination-info" class="text-xs font-bold text-slate-500 uppercase tracking-wider"></div>
-            <div id="pagination-buttons" class="flex gap-1"></div>
+        <div class="pagination-bar">
+            <div class="pagination-info" id="pagination-info"></div>
+            <div class="pagination-controls" id="pagination-buttons"></div>
         </div>
     </div>
 
-    <!-- 彈窗：新增/編輯用戶 -->
+    <!-- ─── USER MODAL ─── -->
     <div id="user-modal" class="modal-overlay">
         <div class="modal-card">
             <div class="modal-header">
-                <h3 id="modal-title" class="font-bold text-slate-800 flex items-center gap-2">
-                    <i class="ti ti-user-plus text-brand-500"></i> 授權新用戶
-                </h3>
-                <button onclick="closeUserModal()" class="text-slate-400 hover:text-slate-600"><i class="ti ti-x text-xl"></i></button>
+                <h3 id="modal-title"><i class="ti ti-user-plus" style="color:var(--brand)"></i> 授權新用戶</h3>
+                <button onclick="closeUserModal()" class="modal-close"><i class="ti ti-x"></i></button>
             </div>
-            <form id="user-form" class="modal-body space-y-6">
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-1.5">
-                        <label class="text-xs font-bold text-slate-500 uppercase">一級單位</label>
-                        <input type="text" id="input-level1" required placeholder="例如：教務處" class="input-field">
+            <form id="user-form" class="modal-body custom-scroll">
+                <div class="form-grid-2">
+                    <div class="field">
+                        <label class="field-label">一級單位 <span class="req">*</span></label>
+                        <input type="text" id="input-level1" required placeholder="例如：教務處" class="field-input">
                     </div>
-                    <div class="space-y-1.5">
-                        <label class="text-xs font-bold text-slate-500 uppercase">二級單位</label>
-                        <input type="text" id="input-level2" required placeholder="例如：實習中心" class="input-field">
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-1.5">
-                        <label class="text-xs font-bold text-slate-500 uppercase">職務名稱</label>
-                        <input type="text" id="input-job-title" required placeholder="例如：組員" class="input-field">
-                    </div>
-                    <div class="space-y-1.5">
-                        <label class="text-xs font-bold text-slate-500 uppercase">權限角色</label>
-                        <select id="input-role" required class="input-field cursor-pointer"></select>
+                    <div class="field">
+                        <label class="field-label">二級單位 <span class="req">*</span></label>
+                        <input type="text" id="input-level2" required placeholder="例如：實習中心" class="field-input">
                     </div>
                 </div>
-                <div class="h-px bg-slate-100"></div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-1.5">
-                        <label class="text-xs font-bold text-slate-500 uppercase">姓名</label>
-                        <input type="text" id="input-name" required placeholder="姓名" class="input-field">
+                <div class="form-grid-2">
+                    <div class="field">
+                        <label class="field-label">職務名稱 <span class="req">*</span></label>
+                        <input type="text" id="input-job-title" required placeholder="例如：組員" class="field-input">
                     </div>
-                    <div class="space-y-1.5">
-                        <label class="text-xs font-bold text-slate-500 uppercase">Email (登入帳號)</label>
-                        <input type="email" id="input-email" required placeholder="@thu.edu.tw" class="input-field font-mono">
+                    <div class="field">
+                        <label class="field-label">權限角色 <span class="req">*</span></label>
+                        <select id="input-role" required class="field-select"></select>
+                    </div>
+                </div>
+                
+                <div class="divider"></div>
+                
+                <div class="form-grid-2" style="margin-bottom:0;">
+                    <div class="field">
+                        <label class="field-label">姓名 <span class="req">*</span></label>
+                        <input type="text" id="input-name" required placeholder="姓名" class="field-input">
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Email (登入帳號) <span class="req">*</span></label>
+                        <input type="email" id="input-email" required placeholder="@thu.edu.tw" class="field-input" style="font-family:monospace">
                     </div>
                 </div>
             </form>
             <div class="modal-footer">
-                <button type="button" onclick="closeUserModal()" class="btn btn-secondary px-8">取消</button>
-                <button type="button" id="btn-submit" onclick="submitUserForm()" class="btn btn-primary px-8">確認儲存</button>
+                <button type="button" onclick="closeUserModal()" class="btn btn-secondary">取消</button>
+                <button type="button" id="btn-submit" onclick="submitUserForm()" class="btn btn-primary">
+                    <i class="ti ti-check"></i> 確認儲存
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- 彈窗：角色管理 -->
+    <!-- ─── ROLE MODAL ─── -->
     <div id="role-modal" class="modal-overlay">
-        <div class="modal-card !max-w-md">
+        <div class="modal-card" style="max-width: 480px;">
             <div class="modal-header">
-                <h3 class="font-bold text-slate-800 flex items-center gap-2"><i class="ti ti-tags text-brand-500"></i> 角色設定管理</h3>
-                <button onclick="closeRoleModal()" class="text-slate-400 hover:text-slate-600"><i class="ti ti-x text-xl"></i></button>
+                <h3><i class="ti ti-tags" style="color:var(--brand)"></i> 角色設定管理</h3>
+                <button onclick="closeRoleModal()" class="modal-close"><i class="ti ti-x"></i></button>
             </div>
-            <div class="modal-body space-y-6">
-                <div class="flex gap-2">
-                    <input type="text" id="new-role-input" placeholder="輸入新角色名稱..." class="input-field flex-1">
+            <div class="modal-body custom-scroll">
+                <div style="display:flex; gap:10px; margin-bottom:20px;">
+                    <input type="text" id="new-role-input" placeholder="輸入新角色名稱..." class="field-input">
                     <button onclick="addRole()" class="btn btn-primary">新增</button>
                 </div>
                 <div>
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">現有權限清單</p>
-                    <ul id="role-list-container" class="space-y-2"></ul>
+                    <div class="role-list-label">現有權限清單</div>
+                    <div id="role-list-container" class="role-list"></div>
                 </div>
             </div>
         </div>
@@ -408,7 +488,7 @@
                     }
                     renderTable();
                 }, (error) => {
-                    document.getElementById('user-table-body').innerHTML = `<tr><td colspan="5" class="py-20 text-center text-rose-500 font-bold"><i class="ti ti-lock text-3xl mb-2 inline-block"></i><p>資料讀取失敗，權限不足。</p></td></tr>`;
+                    document.getElementById('user-table-body').innerHTML = `<tr><td colspan="5" class="empty-state"><i class="ti ti-lock empty-icon" style="color:var(--danger); opacity:1;"></i><div class="empty-text">資料讀取失敗，權限不足。</div></td></tr>`;
                 });
             }
         });
@@ -425,9 +505,15 @@
 
         window.toggleFilterCheck = (type, val) => {
             const chk = document.querySelector(`.filter-chk-${type}[value="${val}"]`);
-            chk.checked = !chk.checked;
+            if(chk) chk.checked = !chk.checked; // Handle programmatic toggles
             const set = type === 'role' ? filterRoleSet : filterStatusSet;
-            if (chk.checked) set.add(val); else set.delete(val);
+            if (set.has(val)) set.delete(val); else set.add(val);
+            
+            // Sync UI checkboxes
+            document.querySelectorAll(`.filter-chk-${type}`).forEach(c => {
+                c.checked = set.has(c.value);
+            });
+            
             updatePillActive(type); renderTable();
         };
 
@@ -436,7 +522,7 @@
             const pill = document.getElementById(`pill-${type}`);
             if (set.size > 0) {
                 pill.classList.add('active');
-                pill.innerHTML = `${type==='role'?'權限角色':'帳號狀態'} (${set.size}) <i class="ti ti-chevron-down"></i>`;
+                pill.innerHTML = `${type==='role'?'權限角色':'帳號狀態'} <span class="pill-count">${set.size}</span> <i class="ti ti-chevron-down"></i>`;
             } else {
                 pill.classList.remove('active');
                 pill.innerHTML = `${type==='role'?'權限角色':'帳號狀態'} <i class="ti ti-chevron-down"></i>`;
@@ -460,28 +546,34 @@
         function renderRoleUI() {
             const container = document.getElementById('role-options-container');
             container.innerHTML = roleList.map(r => `
-                <div class="filter-option" onclick="toggleFilterCheck('role', '${r}')">
-                    <input type="checkbox" class="filter-chk-role" value="${r}"> ${r}
-                </div>
+                <label class="filter-option">
+                    <input type="checkbox" class="filter-chk-role" value="${r}" onchange="toggleFilterCheck('role', '${r}')"> 
+                    <span>${r}</span>
+                </label>
             `).join('');
+            
+            // Re-sync checked state
+            document.querySelectorAll(`.filter-chk-role`).forEach(c => c.checked = filterRoleSet.has(c.value));
 
             const roleListContainer = document.getElementById('role-list-container');
             roleListContainer.innerHTML = roleList.map((r, index) => `
-                <li class="flex justify-between items-center bg-white border border-slate-200 rounded-xl p-2 group hover:border-brand-500 transition-all">
-                    <div class="flex items-center gap-2 flex-1 min-w-0 pl-1">
-                        <span id="role-text-${index}" class="font-bold text-slate-700 truncate">${r}</span>
-                        <input type="text" id="role-input-${index}" value="${r}" class="hidden flex-1 input-field !h-7 !text-xs">
+                <div class="role-item" id="role-item-${index}">
+                    <div class="role-item-name" title="${r}">${r}</div>
+                    <input type="text" class="role-item-input" id="role-input-${index}" value="${r}">
+                    <div class="role-actions">
+                        <button class="btn-icon edit" onclick="editRole(${index})" title="編輯"><i class="ti ti-edit"></i></button>
+                        <button class="btn-icon save" onclick="saveRole(${index})" title="儲存"><i class="ti ti-check"></i></button>
+                        <button class="btn-icon delete" onclick="removeRole(${index})" title="刪除"><i class="ti ti-trash"></i></button>
                     </div>
-                    <div class="flex items-center gap-1 shrink-0">
-                        <button id="role-edit-btn-${index}" onclick="editRole(${index})" class="w-8 h-8 rounded-lg text-slate-400 hover:text-brand-500 hover:bg-brand-50"><i class="ti ti-edit text-base"></i></button>
-                        <button id="role-save-btn-${index}" onclick="saveRole(${index})" class="hidden w-8 h-8 rounded-lg text-emerald-500 hover:bg-emerald-50"><i class="ti ti-check text-base"></i></button>
-                        <button onclick="removeRole(${index})" class="w-8 h-8 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50"><i class="ti ti-trash text-base"></i></button>
-                    </div>
-                </li>
+                </div>
             `).join('');
 
             document.getElementById('input-role').innerHTML = `<option value="">請選擇...</option>` + roleList.map(r => `<option value="${r}">${r}</option>`).join('');
         }
+
+        // ─── ROLE MODAL ACTIONS ───
+        window.openRoleModal = () => { document.getElementById('role-modal').classList.add('open'); };
+        window.closeRoleModal = () => { document.getElementById('role-modal').classList.remove('open'); };
 
         window.addRole = async () => {
             const input = document.getElementById('new-role-input');
@@ -492,15 +584,17 @@
         };
 
         window.editRole = (index) => {
-            document.getElementById(`role-text-${index}`).classList.add('hidden');
-            document.getElementById(`role-input-${index}`).classList.remove('hidden').focus();
-            document.getElementById(`role-edit-btn-${index}`).classList.add('hidden');
-            document.getElementById(`role-save-btn-${index}`).classList.remove('hidden');
+            const item = document.getElementById(`role-item-${index}`);
+            item.classList.add('editing');
+            document.getElementById(`role-input-${index}`).focus();
         };
 
         window.saveRole = async (index) => {
             const newVal = document.getElementById(`role-input-${index}`).value.trim();
-            if (!newVal) return;
+            if (!newVal) {
+                document.getElementById(`role-item-${index}`).classList.remove('editing');
+                return;
+            }
             const newList = [...roleList]; newList[index] = newVal;
             await updateDoc(roleDocRef, { list: newList });
         };
@@ -511,10 +605,11 @@
             }
         };
 
+        // ─── USER MODAL ACTIONS ───
         window.openUserModal = () => {
             if (!editingId) { 
                 document.getElementById('user-form').reset();
-                document.getElementById('modal-title').innerHTML = '<i class="ti ti-user-plus text-brand-500"></i> 授權新用戶';
+                document.getElementById('modal-title').innerHTML = '<i class="ti ti-user-plus" style="color:var(--brand)"></i> 授權新用戶';
                 document.getElementById('input-email').readOnly = false;
                 document.getElementById('input-email').style.background = 'var(--bg)';
             }
@@ -544,54 +639,63 @@
             const start = (currentPage - 1) * itemsPerPage;
             const items = filtered.slice(start, start + itemsPerPage);
 
-            document.getElementById('pagination-info').innerText = total > 0 ? `共 ${total} 筆，顯示第 ${start + 1} - ${Math.min(start + itemsPerPage, total)} 筆` : '查無資料';
+            if (total > 0) {
+                document.getElementById('pagination-info').innerHTML = `共 <strong>${total}</strong> 筆，顯示第 ${start + 1}–${Math.min(start + itemsPerPage, total)} 筆`;
+            } else {
+                document.getElementById('pagination-info').innerHTML = `共 <strong>0</strong> 筆`;
+            }
             
-            let btnHtml = `<button onclick="changePage(${currentPage-1})" class="btn btn-secondary !h-8 !px-3" ${currentPage === 1 ? 'disabled' : ''}><i class="ti ti-chevron-left"></i></button>`;
-            btnHtml += `<span class="flex items-center px-4 text-xs font-bold text-brand-500 bg-brand-50 rounded-lg">${currentPage} / ${totalPages}</span>`;
-            btnHtml += `<button onclick="changePage(${currentPage+1})" class="btn btn-secondary !h-8 !px-3" ${currentPage === totalPages ? 'disabled' : ''}><i class="ti ti-chevron-right"></i></button>`;
+            let btnHtml = `<button onclick="changePage(${currentPage-1})" class="page-btn" ${currentPage === 1 ? 'disabled' : ''}><i class="ti ti-chevron-left"></i></button>`;
+            
+            // Render specific page numbers logic omitted for brevity, keeping simple current/total
+            btnHtml += `<span class="page-btn active" style="pointer-events:none; border-color:transparent">${currentPage} / ${totalPages}</span>`;
+            
+            btnHtml += `<button onclick="changePage(${currentPage+1})" class="page-btn" ${currentPage === totalPages ? 'disabled' : ''}><i class="ti ti-chevron-right"></i></button>`;
             document.getElementById('pagination-buttons').innerHTML = btnHtml;
 
-            if (total === 0) { tbody.innerHTML = `<tr><td colspan="5" class="py-20 text-center text-slate-400 font-bold">沒有符合搜尋或篩選條件的用戶。</td></tr>`; return; }
+            if (total === 0) { 
+                tbody.innerHTML = `<tr><td colspan="5" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">沒有符合搜尋或篩選條件的用戶。</div></td></tr>`; 
+                return; 
+            }
 
             tbody.innerHTML = items.map(data => {
                 const isSuper = (data.role || '').includes('管理');
                 const isDefault = data.id === 'default_admin' || data.email === 'thu.isac.review@gmail.com';
+                const initial = data.name ? data.name.charAt(0) : 'U';
 
                 return `
-                <tr class="${!data.is_active ? 'opacity-60 grayscale-[40%] bg-slate-50/50' : ''}">
+                <tr class="${!data.is_active ? 'disabled' : ''}">
                     <td>
-                        <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${isSuper ? 'bg-indigo-100 text-indigo-600' : 'bg-brand-50 text-brand-500'} shadow-sm">
-                                ${data.name ? data.name.charAt(0) : 'U'}
-                            </div>
-                            <div class="flex flex-col min-w-0">
-                                <span class="font-bold text-slate-800 truncate leading-tight">${data.name || '未名'}</span>
-                                <span class="text-[11px] text-slate-400 font-mono truncate mt-0.5">${data.email}</span>
+                        <div class="cell-flex">
+                            <div class="user-avatar ${isSuper ? 'admin' : ''}">${initial}</div>
+                            <div style="min-width:0">
+                                <div class="cell-primary" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${data.name || '未名'}</div>
+                                <div class="cell-secondary" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${data.email}</div>
                             </div>
                         </div>
                     </td>
-                    <td class="text-center">
-                        <div class="font-bold text-slate-700 text-xs">${data.level1Unit || '-'}</div>
-                        <div class="text-[11px] text-slate-400 mt-0.5">${data.level2Unit || ''} · ${data.jobTitle || ''}</div>
+                    <td style="text-align: center;">
+                        <div class="cell-primary">${data.level1Unit || '-'}</div>
+                        <div class="cell-secondary" style="font-family:inherit;">${data.level2Unit || ''} · ${data.jobTitle || ''}</div>
                     </td>
-                    <td class="text-center">
+                    <td style="text-align: center;">
                         <span class="badge ${isSuper ? 'badge-indigo' : 'badge-blue'}">
                             <i class="ti ${isSuper ? 'ti-crown' : 'ti-user-check'}"></i> ${data.role || '未設定'}
                         </span>
                     </td>
-                    <td class="text-center">
-                        <div class="flex justify-center">
-                            <label class="toggle ${isDefault ? 'opacity-50 cursor-not-allowed' : ''}">
+                    <td style="text-align: center;">
+                        <div style="display:flex; justify-content:center;">
+                            <label class="toggle ${isDefault ? 'disabled' : ''}">
                                 <input type="checkbox" ${data.is_active ? 'checked' : ''} ${isDefault ? 'disabled' : `onchange="window.toggleStatus('${data.id}', ${data.is_active})"`}>
                                 <span class="toggle-slider"></span>
-                                <span class="ml-2 text-[11px] font-bold ${data.is_active ? 'text-emerald-600' : 'text-slate-400'}">${data.is_active ? '啟用' : '停權'}</span>
+                                <span class="toggle-label ${data.is_active ? 'active' : 'inactive'}">${data.is_active ? '啟用' : '停權'}</span>
                             </label>
                         </div>
                     </td>
-                    <td class="text-center">
-                        <div class="flex justify-center gap-1 row-actions">
-                            <button onclick="window.editUser('${data.id}')" class="btn btn-secondary !h-7 !w-7 !p-0" title="編輯"><i class="ti ti-edit text-base"></i></button>
-                            <button onclick="window.deleteUser('${data.id}', '${data.name}')" class="btn !h-7 !w-7 !p-0 !bg-rose-50 !text-rose-500 !border-rose-100" ${isDefault ? 'style="visibility:hidden"' : ''} title="刪除"><i class="ti ti-trash text-base"></i></button>
+                    <td style="text-align: center;">
+                        <div class="row-actions">
+                            <button onclick="window.editUser('${data.id}')" class="btn btn-secondary btn-icon sm" title="編輯"><i class="ti ti-edit"></i></button>
+                            <button onclick="window.deleteUser('${data.id}', '${data.name}')" class="btn btn-icon sm" style="color:var(--danger); border-color:var(--danger-border); ${isDefault ? 'visibility:hidden' : ''}" title="刪除"><i class="ti ti-trash"></i></button>
                         </div>
                     </td>
                 </tr>`;
@@ -618,7 +722,7 @@
             };
 
             if(Object.values(payload).some(v => !v)) { alert("請填寫所有欄位"); return; }
-            btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2 animate-spin"></i>';
+            btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 儲存中...';
             try {
                 if (editingId) { await updateDoc(doc(db, "users", editingId), { ...payload, updated_at: serverTimestamp() }); } 
                 else {
@@ -629,7 +733,7 @@
                     alert(`✅ 新增成功！初始密碼：${defaultPwd}`);
                 }
                 closeUserModal();
-            } catch (err) { alert("錯誤: " + err.message); } finally { btn.disabled = false; btn.innerText = '確認儲存'; }
+            } catch (err) { alert("錯誤: " + err.message); } finally { btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> 確認儲存'; }
         };
 
         window.editUser = (id) => {
@@ -643,14 +747,15 @@
             document.getElementById('input-name').value = user.name || ''; 
             document.getElementById('input-email').value = user.email || ''; 
             document.getElementById('input-email').readOnly = true;
-            document.getElementById('modal-title').innerHTML = '<i class="ti ti-edit text-brand-500"></i> 編輯用戶資料';
+            document.getElementById('input-email').style.background = 'var(--surface)';
+            document.getElementById('modal-title').innerHTML = '<i class="ti ti-edit" style="color:var(--brand)"></i> 編輯用戶資料';
             document.getElementById('user-modal').classList.add('open');
         };
 
         window.toggleStatus = async (id, status) => { await updateDoc(doc(db, "users", id), { is_active: !status }); };
         window.deleteUser = async (id, name) => { if (confirm(`確定刪除「${name}」的權限？`)) await deleteDoc(doc(db, "users", id)); };
 
-        document.getElementById('search-input').oninput = renderTable;
+        document.getElementById('search-input').oninput = () => { currentPage = 1; renderTable(); };
     </script>
 </body>
 </html>
