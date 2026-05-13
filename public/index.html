@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
     
-    <!-- Tabler Icons Webfont (修正 CDN 路徑加上 /dist/) -->
+    <!-- Tabler Icons Webfont -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -27,10 +27,12 @@
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
+          /* 預設配色 (經典藍) */
           --brand: #1a56db;
           --brand-hover: #1649c0;
           --brand-light: #eff4ff;
           --brand-border: #c3d2f9;
+          
           --sidebar-w: 240px;
           --topbar-h: 56px;
           --bg: #f8f9fc;
@@ -50,7 +52,6 @@
           --transition: 150ms cubic-bezier(0.4,0,0.2,1);
         }
 
-        /* 加入 #root 確保高度 100% */
         html, body, #root { height: 100%; overflow: hidden; font-family: 'Noto Sans TC', sans-serif; font-size: 14px; color: var(--text-primary); background: var(--bg); -webkit-font-smoothing: antialiased; }
 
         /* ─── LAYOUT ─── */
@@ -84,6 +85,7 @@
           color: white;
           font-size: 18px;
           flex-shrink: 0;
+          transition: background var(--transition);
         }
         .sidebar-logo .logo-text { font-size: 13px; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
         .sidebar-logo .logo-sub { font-size: 10px; color: var(--text-muted); font-weight: 400; }
@@ -119,7 +121,7 @@
           transition: background var(--transition);
         }
         .user-row:hover { background: var(--bg); }
-        .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--brand-light); border: 1.5px solid var(--brand-border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--brand); flex-shrink: 0; }
+        .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--brand-light); border: 1.5px solid var(--brand-border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--brand); flex-shrink: 0; transition: all var(--transition); }
         .user-info { flex: 1; min-width: 0; }
         .user-name { font-size: 12px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .user-role { font-size: 10px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -182,6 +184,17 @@
         .animate-fade { animation: fadeIn 0.4s ease-out forwards; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         .icon-spin { animation: spin 1.2s linear infinite; display: inline-block; }
+        
+        /* 表單元素通用 */
+        .input-field {
+            width: 100%; padding: 12px 16px; border-radius: var(--radius);
+            border: 1px solid var(--border); background: var(--bg);
+            outline: none; font-size: 13px; font-family: inherit; color: var(--text-primary);
+            transition: border-color var(--transition), box-shadow var(--transition);
+        }
+        .input-field:focus {
+            border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-light); background: var(--surface);
+        }
     </style>
 </head>
 <body>
@@ -194,6 +207,24 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, updatePassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // 全域主題設定
+        const THEMES = {
+            blue: { name: '經典藍', brand: '#1a56db', hover: '#1649c0', light: '#eff4ff', border: '#c3d2f9' },
+            emerald: { name: '翡翠綠', brand: '#059669', hover: '#047857', light: '#ecfdf5', border: '#a7f3d0' },
+            violet: { name: '羅蘭紫', brand: '#7c3aed', hover: '#6d28d9', light: '#f5f3ff', border: '#ddd6fe' },
+            rose: { name: '玫瑰紅', brand: '#e11d48', hover: '#be123c', light: '#fff1f2', border: '#fecdd3' },
+            slate: { name: '沉穩灰', brand: '#475569', hover: '#334155', light: '#f8fafc', border: '#cbd5e1' }
+        };
+
+        const applyTheme = (themeKey) => {
+            const t = THEMES[themeKey] || THEMES.blue;
+            const root = document.documentElement;
+            root.style.setProperty('--brand', t.brand);
+            root.style.setProperty('--brand-hover', t.hover);
+            root.style.setProperty('--brand-light', t.light);
+            root.style.setProperty('--brand-border', t.border);
+        };
 
         const firebaseConfig = {
             apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY",
@@ -230,15 +261,21 @@
                         try {
                             const userDoc = await getDoc(doc(db, "users", u.uid));
                             if(userDoc.exists()) {
-                                setUserData(userDoc.data());
+                                const data = userDoc.data();
+                                setUserData(data);
+                                if (data.theme) applyTheme(data.theme);
                             } else if (u.email === 'thu.isac.review@gmail.com') {
+                                // 預設管理員 (無 Firestore 文件)
                                 setUserData({
                                     level1Unit: '系統管理中心',
                                     level2Unit: '核心維運組',
                                     jobTitle: '管理員',
                                     name: '預設管理者',
-                                    isFirstLogin: false
+                                    isFirstLogin: false,
+                                    theme: 'blue',
+                                    isDefaultAdmin: true
                                 });
+                                applyTheme('blue');
                             }
                         } catch (err) {
                             console.error("載入資料失敗", err);
@@ -247,6 +284,7 @@
                     } else {
                         setUser(null);
                         setUserData(null);
+                        applyTheme('blue'); // 登出恢復預設
                         setLoading(false);
                     }
                 });
@@ -295,35 +333,38 @@
                 return <FirstTimeSetupView user={user} onComplete={() => setUserData({...userData, isFirstLogin: false})} />;
             }
 
-            const getPageTitle = () => {
-                if (currentHash.includes('dashboard')) return '首頁';
-                if (currentHash.includes('list')) return '審查作業 > 學生待查核名單';
+            const getBreadcrumbs = () => {
+                if (currentHash === 'profile-settings') return ['系統設定', '個人資料與偏好設定'];
+                if (currentHash.includes('dashboard')) return ['首頁'];
+                if (currentHash.includes('list')) return ['審查作業', '學生待查核名單'];
                 
-                if (currentHash.includes('review/department')) return '審查作業 > 系所審查作業';
-                if (currentHash.includes('review/school')) return '審查作業 > 校級審查作業';
+                if (currentHash.includes('review/department')) return ['審查作業', '系所審查作業'];
+                if (currentHash.includes('review/school')) return ['審查作業', '校級審查作業'];
                 
-                if (currentHash.includes('intern_view/course')) return '實習資料瀏覽 > 實習課程清單';
-                if (currentHash.includes('intern_view/students')) return '實習資料瀏覽 > 實習學生清單';
-                if (currentHash.includes('intern_view/institution')) return '實習資料瀏覽 > 實習機構清單';
-                if (currentHash.includes('intern_view/record')) return '實習資料瀏覽 > 實習記錄清單';
+                if (currentHash.includes('intern_view/course')) return ['實習資料瀏覽', '實習課程清單'];
+                if (currentHash.includes('intern_view/students')) return ['實習資料瀏覽', '實習學生清單'];
+                if (currentHash.includes('intern_view/institution')) return ['實習資料瀏覽', '實習機構清單'];
+                if (currentHash.includes('intern_view/record')) return ['實習資料瀏覽', '實習記錄清單'];
                 
-                if (currentHash.includes('intern_manage/staging_review')) return '實習資料管理 > 批次匯入審查中心';
-                if (currentHash.includes('intern_manage/course')) return '實習資料管理 > 實習課程管理';
-                if (currentHash.includes('intern_manage/students')) return '實習資料管理 > 實習學生管理';
-                if (currentHash.includes('intern_manage/institution')) return '實習資料管理 > 實習機構管理';
-                if (currentHash.includes('intern_manage/record')) return '實習資料管理 > 實習記錄管理';
+                if (currentHash.includes('intern_manage/staging_review')) return ['實習資料管理', '批次匯入審查中心'];
+                if (currentHash.includes('intern_manage/course')) return ['實習資料管理', '實習課程管理'];
+                if (currentHash.includes('intern_manage/students')) return ['實習資料管理', '實習學生管理'];
+                if (currentHash.includes('intern_manage/institution')) return ['實習資料管理', '實習機構管理'];
+                if (currentHash.includes('intern_manage/record')) return ['實習資料管理', '實習記錄管理'];
 
-                if (currentHash.includes('moe-indicators')) return '審查項目設定 > 教育部審查指標設定';
-                if (currentHash.includes('administrative_files')) return '審查項目設定 > 行政文件審查設定';
-                if (currentHash.includes('students_files')) return '審查項目設定 > 學生文件審查設定';
-                if (currentHash.includes('institution_files')) return '審查項目設定 > 機構文件審查設定';
-                if (currentHash.includes('other_files')) return '審查項目設定 > 其他文件審查設定';
+                if (currentHash.includes('moe-indicators')) return ['審查項目設定', '教育部審查指標設定'];
+                if (currentHash.includes('administrative_files')) return ['審查項目設定', '行政文件審查設定'];
+                if (currentHash.includes('students_files')) return ['審查項目設定', '學生文件審查設定'];
+                if (currentHash.includes('institution_files')) return ['審查項目設定', '機構文件審查設定'];
+                if (currentHash.includes('other_files')) return ['審查項目設定', '其他文件審查設定'];
                 
-                if (currentHash.includes('departments')) return '系統設定 > 系所清單管理';
-                if (currentHash.includes('roles')) return '系統設定 > 用戶權限管理';
+                if (currentHash.includes('departments')) return ['系統設定', '系所清單管理'];
+                if (currentHash.includes('roles')) return ['系統設定', '用戶權限管理'];
                 
-                return '實習課程書面審查作業系統';
+                return ['實習課程書面審查作業系統'];
             };
+
+            const breadcrumbs = getBreadcrumbs();
 
             return (
                 <div id="app">
@@ -374,13 +415,13 @@
                         </div>
                         
                         <div className="sidebar-footer">
-                            <div className="user-row" onClick={() => alert('個人資料設定即將推出')}>
+                            <div className={`user-row ${currentHash === 'profile-settings' ? 'bg-[color:var(--bg)]' : ''}`} onClick={() => navigate('profile-settings')}>
                                 <div className="user-avatar">{userData?.name ? userData.name.charAt(0) : 'U'}</div>
                                 <div className="user-info">
                                     <div className="user-name">{userData ? `${userData.jobTitle || ''} ${userData.name || '管理員'}` : '使用者'}</div>
                                     <div className="user-role">{userData ? `${userData.level1Unit || ''} | ${userData.level2Unit || ''}` : '資料讀取中...'}</div>
                                 </div>
-                                <i className="ti ti-settings" style={{fontSize:'16px', color:'var(--text-muted)'}}></i>
+                                <i className="ti ti-settings" style={{fontSize:'16px', color: currentHash === 'profile-settings' ? 'var(--brand)' : 'var(--text-muted)'}}></i>
                             </div>
                         </div>
                     </nav>
@@ -393,8 +434,14 @@
                                     <i className="ti ti-menu-2"></i>
                                 </button>
                                 <span className="hidden sm:inline">實習書審</span>
-                                <i className="ti ti-chevron-right hidden sm:inline" style={{fontSize: '14px', margin: '0 2px'}}></i>
-                                <span className="crumb-active">{getPageTitle()}</span>
+                                {breadcrumbs.map((crumb, index) => (
+                                    <React.Fragment key={index}>
+                                        <i className="ti ti-chevron-right hidden sm:inline" style={{fontSize: '14px', margin: '0 2px'}}></i>
+                                        <span className={index === breadcrumbs.length - 1 ? "crumb-active" : "hidden sm:inline"}>
+                                            {crumb}
+                                        </span>
+                                    </React.Fragment>
+                                ))}
                             </div>
                             
                             <div className="topbar-actions">
@@ -409,14 +456,16 @@
                         </header>
 
                         <div id="content" className="custom-scroll" style={{ WebkitOverflowScrolling: 'touch' }}>
-                            {currentHash && (
+                            {currentHash === 'profile-settings' ? (
+                                <ProfileSettingsView user={user} userData={userData} setUserData={setUserData} auth={auth} db={db} />
+                            ) : currentHash ? (
                                 <iframe 
                                     src={getCacheBustedUrl(currentHash)} 
                                     key={currentHash}
                                     className="animate-fade"
                                     title="Content View"
                                 />
-                            )}
+                            ) : null}
                         </div>
                     </div>
                 </div>
@@ -432,6 +481,183 @@
             );
         }
 
+        /* ─── 新增：個人資料與偏好設定視圖 ─── */
+        function ProfileSettingsView({ user, userData, setUserData, auth, db }) {
+            const [isUpdatingPwd, setIsUpdatingPwd] = useState(false);
+            const [pwd, setPwd] = useState('');
+            const [confirmPwd, setConfirmPwd] = useState('');
+            const [showPwd, setShowPwd] = useState(false);
+            const [showConfirmPwd, setShowConfirmPwd] = useState(false);
+
+            const handleUpdatePwd = async (e) => {
+                e.preventDefault();
+                const pwdRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,20}$/;
+                if (!pwdRegex.test(pwd)) {
+                    alert("密碼不符合安全規則！\n請輸入 8~20 個字元，並包含至少一個「大寫字母」、一個「小寫字母」及「數字」。");
+                    return;
+                }
+                if (pwd !== confirmPwd) {
+                    alert("兩次輸入的密碼不相符，請重新確認！");
+                    return;
+                }
+                
+                setIsUpdatingPwd(true);
+                try {
+                    await updatePassword(user, pwd);
+                    alert("✅ 密碼變更成功！下次請使用新密碼登入。");
+                    setPwd('');
+                    setConfirmPwd('');
+                } catch (err) {
+                    if (err.code === 'auth/requires-recent-login') {
+                        alert("基於安全考量，變更密碼需要您最近有登入紀錄。請重新登入後再進行修改。");
+                        signOut(auth);
+                    } else {
+                        alert("密碼變更失敗：" + err.message);
+                    }
+                } finally {
+                    setIsUpdatingPwd(false);
+                }
+            };
+
+            const handleThemeChange = async (themeKey) => {
+                // 1. 即時套用至畫面
+                applyTheme(themeKey);
+                // 2. 更新 React 狀態
+                setUserData(prev => ({ ...prev, theme: themeKey }));
+                // 3. 同步至 Firebase (如果是預設展示帳號則不寫入)
+                if (!userData?.isDefaultAdmin) {
+                    try {
+                        await updateDoc(doc(db, "users", user.uid), { theme: themeKey });
+                    } catch (err) {
+                        console.error("無法儲存主題偏好：", err);
+                    }
+                }
+            };
+
+            return (
+                <div className="w-full max-w-4xl mx-auto p-4 md:p-8 animate-fade">
+                    
+                    {/* 基本資料 (唯讀區塊) */}
+                    <div className="mb-6" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '24px', boxShadow: 'var(--shadow-sm)' }}>
+                        <h3 style={{ fontSize: '15px', fontWeight: '700', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
+                            <i className="ti ti-user-circle text-lg" style={{color: 'var(--brand)'}}></i> 帳號基本資料
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label className="block text-xs font-semibold mb-1" style={{color: 'var(--text-muted)'}}>姓名</label>
+                                <div className="p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: '13px', color: 'var(--text-primary)' }}>
+                                    {userData?.name || '管理員'}
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold mb-1" style={{color: 'var(--text-muted)'}}>登入帳號 (Email)</label>
+                                <div className="p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: '13px', color: 'var(--text-primary)' }}>
+                                    {user.email}
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold mb-1" style={{color: 'var(--text-muted)'}}>所屬一級單位</label>
+                                <div className="p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: '13px', color: 'var(--text-primary)' }}>
+                                    {userData?.level1Unit || '未設定'}
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold mb-1" style={{color: 'var(--text-muted)'}}>所屬二級單位與職稱</label>
+                                <div className="p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: '13px', color: 'var(--text-primary)' }}>
+                                    {userData?.level2Unit || '未設定'} - {userData?.jobTitle || '無職稱'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 系統配色 */}
+                    <div className="mb-6" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '24px', boxShadow: 'var(--shadow-sm)' }}>
+                        <h3 style={{ fontSize: '15px', fontWeight: '700', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
+                            <i className="ti ti-palette text-lg" style={{color: 'var(--brand)'}}></i> 自訂系統配色
+                        </h3>
+                        <p style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '20px'}}>選擇您喜歡的品牌主題色，設定將自動跨裝置同步儲存。</p>
+                        
+                        <div className="flex flex-wrap gap-5">
+                            {Object.entries(THEMES).map(([key, t]) => {
+                                const isActive = (userData?.theme || 'blue') === key;
+                                return (
+                                    <button 
+                                        key={key}
+                                        onClick={() => handleThemeChange(key)}
+                                        className="flex flex-col items-center gap-2 transition-transform hover:-translate-y-1 active:scale-95"
+                                    >
+                                        <div style={{
+                                            width: '44px', height: '44px', borderRadius: '50%', background: t.brand, 
+                                            border: isActive ? '3px solid var(--text-primary)' : '3px solid transparent',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white',
+                                            boxShadow: isActive ? '0 4px 12px rgba(0,0,0,0.1)' : 'var(--shadow-sm)',
+                                            transition: 'all 0.2s'
+                                        }}>
+                                            {isActive && <i className="ti ti-check text-xl"></i>}
+                                        </div>
+                                        <span style={{fontSize: '12px', fontWeight: isActive ? '700' : '500', color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)'}}>
+                                            {t.name}
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* 變更密碼 */}
+                    <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '24px', boxShadow: 'var(--shadow-sm)' }}>
+                        <h3 style={{ fontSize: '15px', fontWeight: '700', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
+                            <i className="ti ti-key text-lg" style={{color: 'var(--brand)'}}></i> 變更登入密碼
+                        </h3>
+                        <p style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '20px'}}>請定期更新您的密碼以確保帳號安全。</p>
+                        
+                        <form onSubmit={handleUpdatePwd} className="max-w-md space-y-4">
+                            <div>
+                                <label className="block text-xs font-semibold mb-1" style={{color: 'var(--text-secondary)'}}>輸入新密碼</label>
+                                <div className="relative">
+                                    <input 
+                                        type={showPwd ? "text" : "password"} 
+                                        value={pwd} onChange={e => setPwd(e.target.value)}
+                                        className="input-field pr-10" placeholder="8~20 碼，含大小寫字母及數字" required 
+                                    />
+                                    <button type="button" onClick={() => setShowPwd(!showPwd)} className="absolute right-3 top-1/2 -translate-y-1/2" style={{color: 'var(--text-muted)', fontSize: '18px'}}>
+                                        <i className={showPwd ? 'ti ti-eye-off' : 'ti ti-eye'}></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold mb-1" style={{color: 'var(--text-secondary)'}}>再次確認新密碼</label>
+                                <div className="relative">
+                                    <input 
+                                        type={showConfirmPwd ? "text" : "password"} 
+                                        value={confirmPwd} onChange={e => setConfirmPwd(e.target.value)}
+                                        className="input-field pr-10" placeholder="請再次輸入相同密碼" required 
+                                    />
+                                    <button type="button" onClick={() => setShowConfirmPwd(!showConfirmPwd)} className="absolute right-3 top-1/2 -translate-y-1/2" style={{color: 'var(--text-muted)', fontSize: '18px'}}>
+                                        <i className={showConfirmPwd ? 'ti ti-eye-off' : 'ti ti-eye'}></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <button 
+                                disabled={isUpdatingPwd || !pwd || !confirmPwd} 
+                                style={{
+                                    width: '100%', background: 'var(--brand)', color: 'white', padding: '10px 16px', 
+                                    borderRadius: 'var(--radius)', fontWeight: '600', border: 'none', 
+                                    cursor: (isUpdatingPwd || !pwd || !confirmPwd) ? 'not-allowed' : 'pointer', 
+                                    opacity: (isUpdatingPwd || !pwd || !confirmPwd) ? 0.6 : 1, 
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                                    transition: 'background var(--transition)', marginTop: '24px'
+                                }}
+                            >
+                                {isUpdatingPwd ? <><i className="ti ti-loader icon-spin"></i> 更新中...</> : "確認變更密碼"}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            );
+        }
+
+        /* ─── 首次登入視圖 (略有精簡重構) ─── */
         function FirstTimeSetupView({ user, onComplete }) {
             const [isUpdating, setIsUpdating] = useState(false);
             const [showPwd, setShowPwd] = useState(false);
@@ -479,16 +705,16 @@
                         <div className="space-y-4">
                             <div>
                                 <div className="relative">
-                                    <input name="password" type={showPwd ? "text" : "password"} placeholder="設定新密碼" style={{width: '100%', padding: '12px 16px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', fontSize: '13px', fontFamily: 'inherit'}} required />
-                                    <button type="button" onClick={() => setShowPwd(!showPwd)} className="absolute right-4 top-1/2 -translate-y-1/2" style={{color: 'var(--text-muted)', fontSize: '18px'}}>
+                                    <input name="password" type={showPwd ? "text" : "password"} placeholder="設定新密碼" className="input-field pr-10" required />
+                                    <button type="button" onClick={() => setShowPwd(!showPwd)} className="absolute right-3 top-1/2 -translate-y-1/2" style={{color: 'var(--text-muted)', fontSize: '18px'}}>
                                         <i className={showPwd ? 'ti ti-eye-off' : 'ti ti-eye'}></i>
                                     </button>
                                 </div>
                                 <p style={{fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px'}}><i className="ti ti-info-circle" style={{color: 'var(--brand)', fontSize: '14px'}}></i> 需為 8~20 碼，並包含大小寫字母與數字。</p>
                             </div>
                             <div className="relative">
-                                <input name="confirmPassword" type={showConfirmPwd ? "text" : "password"} placeholder="再次確認新密碼" style={{width: '100%', padding: '12px 16px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', fontSize: '13px', fontFamily: 'inherit'}} required />
-                                <button type="button" onClick={() => setShowConfirmPwd(!showConfirmPwd)} className="absolute right-4 top-1/2 -translate-y-1/2" style={{color: 'var(--text-muted)', fontSize: '18px'}}>
+                                <input name="confirmPassword" type={showConfirmPwd ? "text" : "password"} placeholder="再次確認新密碼" className="input-field pr-10" required />
+                                <button type="button" onClick={() => setShowConfirmPwd(!showConfirmPwd)} className="absolute right-3 top-1/2 -translate-y-1/2" style={{color: 'var(--text-muted)', fontSize: '18px'}}>
                                     <i className={showConfirmPwd ? 'ti ti-eye-off' : 'ti ti-eye'}></i>
                                 </button>
                             </div>
@@ -501,6 +727,7 @@
             );
         }
 
+        /* ─── 登入視圖 ─── */
         function LoginView() {
             const [isLoggingIn, setIsLoggingIn] = useState(false);
             const [email, setEmail] = useState('');
@@ -542,7 +769,7 @@
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="請輸入帳號或電子郵件 (@thu.edu.tw)" 
-                                style={{width: '100%', padding: '14px 16px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', fontSize: '13px', fontFamily: 'inherit'}}
+                                className="input-field"
                                 required 
                             />
                             <div className="relative">
@@ -552,13 +779,13 @@
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="請輸入密碼" 
-                                    style={{width: '100%', padding: '14px 16px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', fontSize: '13px', fontFamily: 'inherit'}}
+                                    className="input-field pr-10"
                                     required 
                                 />
                                 <button 
                                     type="button" 
                                     onClick={() => setShowPassword(!showPassword)} 
-                                    className="absolute right-4 top-1/2 -translate-y-1/2"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2"
                                     style={{color: 'var(--text-muted)', fontSize: '18px'}}
                                 >
                                     <i className={showPassword ? 'ti ti-eye-off' : 'ti ti-eye'}></i>
