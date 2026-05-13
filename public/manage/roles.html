@@ -4,208 +4,380 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>用戶權限管理內容</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script>
-        tailwind.config = { theme: { extend: { colors: { brand: { 50: '#f0f5fa', 500: '#2c75b3', 600: '#1a5c96', 700: '#004785' } } } } }
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: 'var(--brand-light)',
+                            500: 'var(--brand)',
+                            600: 'var(--brand-hover)',
+                        }
+                    }
+                }
+            }
+        }
     </script>
+    
     <style>
-        body { background-color: transparent; margin: 0; padding: 0; font-family: "SF Pro TC", "Noto Sans TC", sans-serif; -webkit-font-smoothing: antialiased; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .modal-enter { animation: modalFadeIn 0.2s ease-out forwards; }
-        @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.97) translateY(-5px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-        table { table-layout: fixed; width: 100%; } td { word-break: break-word; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --brand: #1a56db;
+            --brand-hover: #1649c0;
+            --brand-light: #eff4ff;
+            --brand-border: #c3d2f9;
+            --bg: #f8f9fc;
+            --surface: #ffffff;
+            --border: #e5e7ef;
+            --border-strong: #cdd0dd;
+            --text-primary: #111827;
+            --text-secondary: #4b5563;
+            --text-muted: #9ca3af;
+            --success: #059669;
+            --success-bg: #ecfdf5;
+            --success-border: #a7f3d0;
+            --danger: #dc2626;
+            --danger-bg: #fef2f2;
+            --danger-border: #fecaca;
+            --radius-sm: 6px;
+            --radius: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --radius-2xl: 2rem;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --transition: 150ms cubic-bezier(0.4,0,0.2,1);
+        }
+
+        body { 
+            background-color: var(--bg); 
+            margin: 0; padding: 0; 
+            font-family: 'Noto Sans TC', sans-serif; 
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased; 
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .custom-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 99px; }
+
+        /* ─── TOP TOOLBAR ─── */
+        .toolbar {
+            padding: 12px 24px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 16px; flex-shrink: 0;
+        }
+        .search-wrap { position: relative; flex: 0 0 280px; }
+        .search-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px; }
+        .search-input {
+            width: 100%; height: 38px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            background: var(--bg);
+            padding: 0 12px 0 38px;
+            font-size: 13px; outline: none;
+            transition: all var(--transition);
+        }
+        .search-input:focus { border-color: var(--brand); background: var(--surface); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
+
+        /* ─── FILTER ROW (Pills) ─── */
+        .filter-row {
+            padding: 10px 24px;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 8px;
+            flex-shrink: 0;
+        }
+        .filter-pill-wrap { position: relative; }
+        .filter-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 0 14px; height: 32px;
+            border: 1px solid var(--border);
+            border-radius: 99px;
+            background: var(--surface);
+            font-size: 12px; font-weight: 500; color: var(--text-secondary);
+            cursor: pointer; transition: all var(--transition);
+            user-select: none;
+        }
+        .filter-pill:hover { border-color: var(--border-strong); color: var(--text-primary); }
+        .filter-pill.active { border-color: var(--brand); background: var(--brand-light); color: var(--brand); }
+        .filter-pill i { font-size: 10px; color: var(--text-muted); transition: transform 0.2s; }
+        .filter-pill-wrap.open i { transform: rotate(180deg); }
+
+        /* ─── FILTER DROPDOWN ─── */
+        .filter-dropdown {
+            position: absolute; top: calc(100% + 6px); left: 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            min-width: 200px; z-index: 100;
+            display: none; flex-direction: column;
+            padding: 8px 0;
+            animation: dropdownIn 0.2s cubic-bezier(0.16,1,0.3,1);
+        }
+        .filter-dropdown.show { display: flex; }
+        @keyframes dropdownIn { from { opacity: 0; transform: translateY(-4px); } }
+        
+        .filter-option {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 16px; font-size: 13px; color: var(--text-secondary);
+            cursor: pointer; transition: background var(--transition);
+        }
+        .filter-option:hover { background: var(--bg); color: var(--text-primary); }
+        .filter-option input[type=checkbox] { accent-color: var(--brand); width: 15px; height: 15px; cursor: pointer; border-radius: 4px; }
+        
+        .filter-dropdown-footer {
+            margin-top: 4px; padding: 8px 16px 4px; border-top: 1px solid var(--border);
+            display: flex; justify-content: flex-end;
+        }
+        .clear-filter-btn { font-size: 12px; font-weight: 600; color: var(--danger); background: none; border: none; cursor: pointer; padding: 2px 4px; border-radius: 4px; }
+        .clear-filter-btn:hover { background: var(--danger-bg); }
+
+        /* ─── BUTTONS ─── */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            padding: 0 14px; height: 34px;
+            border-radius: var(--radius);
+            font-size: 13px; font-weight: 600;
+            cursor: pointer; border: 1px solid transparent;
+            transition: all var(--transition);
+            white-space: nowrap;
+        }
+        .btn-primary { background: var(--brand); color: white; }
+        .btn-primary:hover { background: var(--brand-hover); box-shadow: 0 4px 12px rgba(26, 86, 219, 0.2); }
+        .btn-secondary { background: var(--surface); color: var(--text-secondary); border-color: var(--border); }
+        .btn-secondary:hover { background: var(--bg); border-color: var(--border-strong); color: var(--text-primary); }
+
+        /* ─── TABLE ─── */
+        .table-container { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); }
+        .table-scroll { flex: 1; overflow: auto; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        thead { position: sticky; top: 0; z-index: 10; background: var(--surface); }
+        th {
+            padding: 12px 24px; text-align: left; font-size: 11px; font-weight: 700;
+            color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border);
+        }
+        td { padding: 14px 24px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        tr:hover td { background: #fafbff; }
+
+        /* ─── TOGGLE ─── */
+        .toggle { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
+        .toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+        .toggle-slider { width: 38px; height: 20px; background: #e2e8f0; border-radius: 20px; transition: 0.3s; position: relative; }
+        .toggle-slider::before { content: ""; position: absolute; width: 14px; height: 14px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; box-shadow: var(--shadow-sm); }
+        .toggle input:checked + .toggle-slider { background: var(--success); }
+        .toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+        
+        .row-actions { display: flex; align-items: center; gap: 4px; opacity: 0; transition: opacity var(--transition); }
+        tr:hover .row-actions { opacity: 1; }
+
+        /* ─── MODAL ─── */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .modal-overlay.open { display: flex; }
+        .modal-card { background: var(--surface); border-radius: var(--radius-2xl); width: 100%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; animation: modalIn 0.3s cubic-bezier(0.16,1,0.3,1); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(20px); } }
+        .modal-header { padding: 20px 32px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--bg); }
+        .modal-body { padding: 32px; overflow-y: auto; flex: 1; }
+        .modal-footer { padding: 20px 32px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 12px; background: var(--bg); }
+        
+        .input-field {
+            width: 100%; padding: 10px 14px; border-radius: var(--radius);
+            border: 1px solid var(--border); background: var(--bg);
+            outline: none; font-size: 13px; transition: all var(--transition);
+        }
+        .input-field:focus { border-color: var(--brand); background: var(--surface); box-shadow: 0 0 0 3px var(--brand-light); }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden">
+<body>
 
-    <div class="shrink-0 px-6 pt-6 pb-4 space-y-4 animate-fade">
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 shrink-0">
-                    <i class="fa-solid fa-user-shield text-xl"></i>
-                </div>
-                <div>
-                    <h2 class="text-xl font-bold text-slate-800 tracking-tight">管理系統操作人員</h2>
-                    <p class="text-xs text-slate-500 mt-1">指派人員單位、存取權限級別與建置系統登入帳號。</p>
-                </div>
+    <!-- 工具列：搜尋與主按鈕 -->
+    <div class="toolbar">
+        <div class="search-wrap">
+            <i class="ti ti-search"></i>
+            <input type="text" id="search-input" placeholder="搜尋學號、姓名、單位..." class="search-input">
+        </div>
+        
+        <div class="flex items-center gap-2">
+            <button onclick="exportToCSV()" class="btn btn-secondary">
+                <i class="ti ti-file-export text-emerald-600"></i> 匯出
+            </button>
+            <div class="w-px h-6 bg-slate-200 mx-1"></div>
+            <button onclick="openRoleModal()" class="btn btn-secondary">
+                <i class="ti ti-tags"></i> 角色設定
+            </button>
+            <button onclick="openUserModal()" class="btn btn-primary">
+                <i class="ti ti-user-plus"></i> 新增授權用戶
+            </button>
+        </div>
+    </div>
+
+    <!-- 篩選列：膠囊樣式 -->
+    <div class="filter-row">
+        <div class="filter-pill-wrap" id="pill-wrap-role">
+            <div class="filter-pill" id="pill-role" onclick="toggleDropdown('role')">
+                權限角色 <i class="ti ti-chevron-down"></i>
             </div>
-            
-            <div class="flex flex-wrap gap-2">
-                <button onclick="exportToCSV()" class="h-9 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-3 rounded-lg text-sm transition-all flex items-center gap-1.5 shadow-sm">
-                    <i class="fa-solid fa-file-export text-emerald-600"></i> 匯出清單
-                </button>
-                <div class="w-px h-6 bg-slate-200 self-center mx-1"></div>
-                <button onclick="openRoleModal()" class="h-9 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold px-3 rounded-lg text-sm transition-all flex items-center gap-1.5 shadow-sm">
-                    <i class="fa-solid fa-user-tag text-slate-500"></i> 角色設定
-                </button>
-                <button onclick="openUserModal()" class="h-9 bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 rounded-lg text-sm transition-all flex items-center gap-1.5 shadow-sm shadow-blue-500/20">
-                    <i class="fa-solid fa-user-plus text-base"></i> 新增授權用戶
-                </button>
+            <div class="filter-dropdown" id="drop-role">
+                <div id="role-options-container"></div>
+                <div class="filter-dropdown-footer">
+                    <button class="clear-filter-btn" onclick="clearFilter('role')">清除此篩選</button>
+                </div>
             </div>
         </div>
 
-        <div class="flex flex-col md:flex-row justify-between items-center gap-4 w-full">
-            <div class="flex gap-2 w-full md:w-auto">
-                <select id="filter-role" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 h-10 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
-                    <option value="all">權限角色：全部</option>
-                </select>
-                <select id="filter-status" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 h-10 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
-                    <option value="all">狀態：全部</option>
-                    <option value="active">狀態：啟用中</option>
-                    <option value="inactive">狀態：已停權</option>
-                </select>
+        <div class="filter-pill-wrap" id="pill-wrap-status">
+            <div class="filter-pill" id="pill-status" onclick="toggleDropdown('status')">
+                帳號狀態 <i class="ti ti-chevron-down"></i>
             </div>
-            <div class="relative w-full md:w-72 shadow-sm rounded-lg">
-                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                <input type="text" id="search-input" placeholder="搜尋單位、姓名或信箱..." class="w-full bg-white border border-slate-200 rounded-lg pl-9 pr-3 h-10 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+            <div class="filter-dropdown" id="drop-status">
+                <div class="filter-option" onclick="toggleFilterCheck('status', 'active')">
+                    <input type="checkbox" class="filter-chk-status" value="active"> 啟用中
+                </div>
+                <div class="filter-option" onclick="toggleFilterCheck('status', 'inactive')">
+                    <input type="checkbox" class="filter-chk-status" value="inactive"> 已停權
+                </div>
+                <div class="filter-dropdown-footer">
+                    <button class="clear-filter-btn" onclick="clearFilter('status')">清除此篩選</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 表格滾動區 -->
-    <div class="flex-1 overflow-hidden px-6 pb-6 flex flex-col animate-fade">
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col flex-1 overflow-hidden">
-            <div class="flex-1 overflow-auto custom-scrollbar relative">
-                <table class="w-full text-left table-fixed">
-                    <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
-                        <tr>
-                            <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 w-[25%]">使用者資訊</th>
-                            <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 w-[25%]">所屬單位</th>
-                            <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 w-[15%]">權限角色</th>
-                            <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 w-[15%]">帳號狀態</th>
-                            <th class="px-6 py-3.5 text-center text-xs font-bold text-slate-500 w-[20%]">操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="user-table-body" class="divide-y divide-slate-100 text-sm">
-                        <tr><td colspan="5" class="px-6 py-16 text-center text-slate-400"><i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-blue-500"></i><p class="font-bold">資料載入與驗證中...</p></td></tr>
-                    </tbody>
-                </table>
-            </div>
-            
-            <div class="bg-slate-50 border-t border-slate-200 px-6 py-3 flex justify-between items-center shrink-0">
-                <div id="pagination-info" class="text-xs font-bold text-slate-500">顯示 0 到 0 筆，共 0 筆</div>
-                <div id="pagination-buttons" class="flex gap-1"></div>
-            </div>
+    <!-- 表格區域 -->
+    <div class="table-container">
+        <div class="table-scroll custom-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 25%">使用者資訊</th>
+                        <th style="width: 25%; text-align: center;">所屬單位與職稱</th>
+                        <th style="width: 18%; text-align: center;">權限角色</th>
+                        <th style="width: 15%; text-align: center;">帳號狀態</th>
+                        <th style="width: 17%; text-align: center;">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="user-table-body" class="text-sm">
+                    <tr>
+                        <td colspan="5" class="py-20 text-center">
+                            <i class="ti ti-loader-2 animate-spin text-3xl text-brand-500 mb-2 inline-block"></i>
+                            <p class="font-bold text-slate-400">同步雲端資料中...</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- 分頁列 -->
+        <div class="px-6 py-3 border-t border-slate-100 flex justify-between items-center bg-slate-50/50">
+            <div id="pagination-info" class="text-xs font-bold text-slate-500 uppercase tracking-wider"></div>
+            <div id="pagination-buttons" class="flex gap-1"></div>
         </div>
     </div>
 
-    <!-- ==========================================
-         彈跳視窗 1：新增/編輯用戶
-         ========================================== -->
-    <div id="user-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeUserModal()"></div>
-        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden modal-enter relative max-h-[90vh] flex flex-col">
-            <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center shrink-0 bg-slate-50">
-                <h3 id="modal-title" class="font-black text-slate-800 text-lg flex items-center gap-2">
-                    <i class="fa-solid fa-user-plus text-blue-600"></i> 新增授權用戶
+    <!-- 彈窗：新增/編輯用戶 -->
+    <div id="user-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modal-title" class="font-bold text-slate-800 flex items-center gap-2">
+                    <i class="ti ti-user-plus text-brand-500"></i> 授權新用戶
                 </h3>
-                <button onclick="closeUserModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 bg-white shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <button onclick="closeUserModal()" class="text-slate-400 hover:text-slate-600"><i class="ti ti-x text-xl"></i></button>
             </div>
-            
-            <form id="user-form" class="p-8 space-y-6 overflow-y-auto custom-scrollbar flex-1 bg-white">
-                <div class="grid grid-cols-2 gap-5">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-2">一級單位 <span class="text-rose-500">*</span></label>
-                        <input type="text" id="input-level1" required placeholder="例如：教務處 / 文學院" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm">
+            <form id="user-form" class="modal-body space-y-6">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-500 uppercase">一級單位</label>
+                        <input type="text" id="input-level1" required placeholder="例如：教務處" class="input-field">
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-2">二級單位 <span class="text-rose-500">*</span></label>
-                        <input type="text" id="input-level2" required placeholder="例如：實習與學生成就中心 / 中文系" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-5">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-2">職務名稱 <span class="text-rose-500">*</span></label>
-                        <input type="text" id="input-job-title" required placeholder="例如：組員 / 助教" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-2">系統權限角色 <span class="text-rose-500">*</span></label>
-                        <select id="input-role" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 cursor-pointer shadow-sm">
-                        </select>
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-500 uppercase">二級單位</label>
+                        <input type="text" id="input-level2" required placeholder="例如：實習中心" class="input-field">
                     </div>
                 </div>
-
-                <div class="h-px bg-slate-100 my-2"></div>
-
-                <div class="grid grid-cols-2 gap-5">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-2">使用者姓名 <span class="text-rose-500">*</span></label>
-                        <div class="relative">
-                            <i class="fa-solid fa-id-badge absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input type="text" id="input-name" required placeholder="例如：王小明" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-bold text-slate-700 shadow-sm">
-                        </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-500 uppercase">職務名稱</label>
+                        <input type="text" id="input-job-title" required placeholder="例如：組員" class="input-field">
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-2">電子郵件 (Email登入帳號) <span class="text-rose-500">*</span></label>
-                        <div class="relative">
-                            <i class="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input type="email" id="input-email" required placeholder="example@thu.edu.tw" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none font-mono font-bold text-slate-700 shadow-sm">
-                        </div>
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-500 uppercase">權限角色</label>
+                        <select id="input-role" required class="input-field cursor-pointer"></select>
+                    </div>
+                </div>
+                <div class="h-px bg-slate-100"></div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-500 uppercase">姓名</label>
+                        <input type="text" id="input-name" required placeholder="姓名" class="input-field">
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-500 uppercase">Email (登入帳號)</label>
+                        <input type="email" id="input-email" required placeholder="@thu.edu.tw" class="input-field font-mono">
                     </div>
                 </div>
             </form>
-            
-            <div class="p-6 border-t border-slate-100 shrink-0 flex gap-4 bg-slate-50">
-                <button type="button" onclick="closeUserModal()" class="flex-1 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-all shadow-sm">取消</button>
-                <button type="button" id="btn-submit" onclick="submitUserForm()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2">
-                    儲存設定
-                </button>
+            <div class="modal-footer">
+                <button type="button" onclick="closeUserModal()" class="btn btn-secondary px-8">取消</button>
+                <button type="button" id="btn-submit" onclick="submitUserForm()" class="btn btn-primary px-8">確認儲存</button>
             </div>
         </div>
     </div>
 
-    <!-- ==========================================
-         彈跳視窗 2：角色設定管理
-         ========================================== -->
-    <div id="role-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeRoleModal()"></div>
-        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden modal-enter relative flex flex-col max-h-[80vh]">
-            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
-                    <i class="fa-solid fa-user-tag text-blue-600"></i> 系統角色設定
-                </h3>
-                <button onclick="closeRoleModal()" class="w-8 h-8 rounded-md flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+    <!-- 彈窗：角色管理 -->
+    <div id="role-modal" class="modal-overlay">
+        <div class="modal-card !max-w-md">
+            <div class="modal-header">
+                <h3 class="font-bold text-slate-800 flex items-center gap-2"><i class="ti ti-tags text-brand-500"></i> 角色設定管理</h3>
+                <button onclick="closeRoleModal()" class="text-slate-400 hover:text-slate-600"><i class="ti ti-x text-xl"></i></button>
             </div>
-            
-            <div class="p-6 overflow-y-auto custom-scrollbar flex-1">
-                <div class="flex gap-2 mb-6">
-                    <input type="text" id="new-role-input" placeholder="輸入新角色名稱..." class="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                    <button onclick="addRole()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors whitespace-nowrap shadow-sm">新增</button>
+            <div class="modal-body space-y-6">
+                <div class="flex gap-2">
+                    <input type="text" id="new-role-input" placeholder="輸入新角色名稱..." class="input-field flex-1">
+                    <button onclick="addRole()" class="btn btn-primary">新增</button>
                 </div>
-                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">現有角色清單 (可排序與編輯)</div>
-                <ul id="role-list-container" class="space-y-2"></ul>
+                <div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">現有權限清單</p>
+                    <ul id="role-list-container" class="space-y-2"></ul>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Firebase 邏輯 -->
     <script type="module">
         import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, setDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY", authDomain: "thu-isac-review.firebaseapp.com", projectId: "thu-isac-review", storageBucket: "thu-isac-review.firebasestorage.app", messagingSenderId: "453299876735", appId: "1:453299876735:web:1d8babca3315423161a04a" };
-        
         const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
         const auth = getAuth(app); 
         const db = getFirestore(app);
         
         let adminApp;
         const existingAdminApp = getApps().find(a => a.name === "AdminApp");
-        if (existingAdminApp) {
-            adminApp = existingAdminApp;
-        } else {
-            adminApp = initializeApp(firebaseConfig, "AdminApp");
-        }
+        if (existingAdminApp) { adminApp = existingAdminApp; } else { adminApp = initializeApp(firebaseConfig, "AdminApp"); }
         const adminAuth = getAuth(adminApp);
 
         const usersCollection = collection(db, "users");
         const roleDocRef = doc(db, "settings", "roles");
 
         let allUsers = []; let roleList = []; let editingId = null; let currentPage = 1; const itemsPerPage = 10;
+        let filterRoleSet = new Set(); let filterStatusSet = new Set();
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -226,7 +398,6 @@
                         return { id: doc.id, ...data, createdDate };
                     });
                     
-                    // 💡 修正：不僅在長度為 0 時加入，只要裡面沒有預設管理員，就強制將它加入列表最前方
                     const hasDefaultAdmin = allUsers.some(u => u.email === 'thu.isac.review@gmail.com');
                     if (!hasDefaultAdmin) {
                         allUsers.unshift({ 
@@ -237,54 +408,92 @@
                     }
                     renderTable();
                 }, (error) => {
-                    document.getElementById('user-table-body').innerHTML = `<tr><td colspan="5" class="px-6 py-16 text-center text-rose-500 font-bold"><i class="fa-solid fa-lock text-3xl mb-3"></i><p>資料讀取失敗，權限不足。</p></td></tr>`;
+                    document.getElementById('user-table-body').innerHTML = `<tr><td colspan="5" class="py-20 text-center text-rose-500 font-bold"><i class="ti ti-lock text-3xl mb-2 inline-block"></i><p>資料讀取失敗，權限不足。</p></td></tr>`;
                 });
-            } else {
-                document.getElementById('user-table-body').innerHTML = `<tr><td colspan="5" class="px-6 py-16 text-center text-slate-400 font-bold"><i class="fa-solid fa-shield-halved text-3xl mb-3 text-slate-300"></i><p>請先登入系統以存取資料。</p></td></tr>`;
             }
         });
 
-        window.openRoleModal = () => document.getElementById('role-modal').classList.remove('hidden');
-        window.closeRoleModal = () => document.getElementById('role-modal').classList.add('hidden');
+        // ─── DROPDOWN LOGIC ───
+        window.toggleDropdown = (type) => {
+            const drop = document.getElementById(`drop-${type}`);
+            const wrap = document.getElementById(`pill-wrap-${type}`);
+            const isOpen = drop.classList.contains('show');
+            document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
+            document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
+            if (!isOpen) { drop.classList.add('show'); wrap.classList.add('open'); }
+        };
+
+        window.toggleFilterCheck = (type, val) => {
+            const chk = document.querySelector(`.filter-chk-${type}[value="${val}"]`);
+            chk.checked = !chk.checked;
+            const set = type === 'role' ? filterRoleSet : filterStatusSet;
+            if (chk.checked) set.add(val); else set.delete(val);
+            updatePillActive(type); renderTable();
+        };
+
+        function updatePillActive(type) {
+            const set = type === 'role' ? filterRoleSet : filterStatusSet;
+            const pill = document.getElementById(`pill-${type}`);
+            if (set.size > 0) {
+                pill.classList.add('active');
+                pill.innerHTML = `${type==='role'?'權限角色':'帳號狀態'} (${set.size}) <i class="ti ti-chevron-down"></i>`;
+            } else {
+                pill.classList.remove('active');
+                pill.innerHTML = `${type==='role'?'權限角色':'帳號狀態'} <i class="ti ti-chevron-down"></i>`;
+            }
+        }
+
+        window.clearFilter = (type) => {
+            const set = type === 'role' ? filterRoleSet : filterStatusSet;
+            set.clear();
+            document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = false);
+            updatePillActive(type); renderTable();
+        };
+
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.filter-pill-wrap')) {
+                document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
+                document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
+            }
+        });
 
         function renderRoleUI() {
-            const listContainer = document.getElementById('role-list-container');
-            listContainer.innerHTML = roleList.map((r, index) => `
-                <li class="flex justify-between items-center bg-white border border-slate-200 shadow-sm rounded-lg p-2 text-sm group hover:border-blue-300 transition-all">
-                    <div class="flex items-center gap-2 flex-1 overflow-hidden">
-                        <div class="flex flex-col opacity-20 group-hover:opacity-100 transition-opacity">
-                            <button onclick="moveRole(${index}, -1)" class="w-6 h-6 rounded-md flex items-center justify-center hover:bg-slate-100 text-slate-400 hover:text-blue-600 disabled:opacity-0 transition-colors" ${index === 0 ? 'disabled' : ''}><i class="fa-solid fa-chevron-up text-[10px]"></i></button>
-                            <button onclick="moveRole(${index}, 1)" class="w-6 h-6 rounded-md flex items-center justify-center hover:bg-slate-100 text-slate-400 hover:text-blue-600 disabled:opacity-0 transition-colors" ${index === roleList.length - 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-down text-[10px]"></i></button>
-                        </div>
-                        <span id="role-text-${index}" class="font-bold text-slate-700 truncate pl-1">${r}</span>
-                        <input type="text" id="role-input-${index}" value="${r}" class="hidden flex-1 border border-blue-400 bg-blue-50 rounded-lg px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+            const container = document.getElementById('role-options-container');
+            container.innerHTML = roleList.map(r => `
+                <div class="filter-option" onclick="toggleFilterCheck('role', '${r}')">
+                    <input type="checkbox" class="filter-chk-role" value="${r}"> ${r}
+                </div>
+            `).join('');
+
+            const roleListContainer = document.getElementById('role-list-container');
+            roleListContainer.innerHTML = roleList.map((r, index) => `
+                <li class="flex justify-between items-center bg-white border border-slate-200 rounded-xl p-2 group hover:border-brand-500 transition-all">
+                    <div class="flex items-center gap-2 flex-1 min-w-0 pl-1">
+                        <span id="role-text-${index}" class="font-bold text-slate-700 truncate">${r}</span>
+                        <input type="text" id="role-input-${index}" value="${r}" class="hidden flex-1 input-field !h-7 !text-xs">
                     </div>
-                    <div class="flex items-center ml-2 gap-1">
-                        <button id="role-edit-btn-${index}" onclick="editRole(${index})" class="w-8 h-8 rounded-md flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"><i class="fa-solid fa-pen text-sm"></i></button>
-                        <button id="role-save-btn-${index}" onclick="saveRole(${index})" class="hidden w-8 h-8 rounded-md flex items-center justify-center text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"><i class="fa-solid fa-check text-base"></i></button>
-                        <button onclick="removeRole(${index})" class="w-8 h-8 rounded-md flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors"><i class="fa-solid fa-trash-can text-sm"></i></button>
+                    <div class="flex items-center gap-1 shrink-0">
+                        <button id="role-edit-btn-${index}" onclick="editRole(${index})" class="w-8 h-8 rounded-lg text-slate-400 hover:text-brand-500 hover:bg-brand-50"><i class="ti ti-edit text-base"></i></button>
+                        <button id="role-save-btn-${index}" onclick="saveRole(${index})" class="hidden w-8 h-8 rounded-lg text-emerald-500 hover:bg-emerald-50"><i class="ti ti-check text-base"></i></button>
+                        <button onclick="removeRole(${index})" class="w-8 h-8 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50"><i class="ti ti-trash text-base"></i></button>
                     </div>
                 </li>
             `).join('');
 
-            const optionsHtml = roleList.map(r => `<option value="${r}">${r}</option>`).join('');
-            document.getElementById('filter-role').innerHTML = `<option value="all">權限角色：全部</option>` + optionsHtml;
-            document.getElementById('input-role').innerHTML = `<option value="">請選擇權限角色...</option>` + optionsHtml;
+            document.getElementById('input-role').innerHTML = `<option value="">請選擇...</option>` + roleList.map(r => `<option value="${r}">${r}</option>`).join('');
         }
 
         window.addRole = async () => {
             const input = document.getElementById('new-role-input');
             const val = input.value.trim();
-            if (!val) return;
-            if (roleList.includes(val)) { alert("此角色已存在！"); return; }
+            if (!val || roleList.includes(val)) return;
             await updateDoc(roleDocRef, { list: [...roleList, val] });
             input.value = '';
         };
 
         window.editRole = (index) => {
             document.getElementById(`role-text-${index}`).classList.add('hidden');
-            document.getElementById(`role-input-${index}`).classList.remove('hidden');
-            document.getElementById(`role-input-${index}`).focus();
+            document.getElementById(`role-input-${index}`).classList.remove('hidden').focus();
             document.getElementById(`role-edit-btn-${index}`).classList.add('hidden');
             document.getElementById(`role-save-btn-${index}`).classList.remove('hidden');
         };
@@ -293,13 +502,6 @@
             const newVal = document.getElementById(`role-input-${index}`).value.trim();
             if (!newVal) return;
             const newList = [...roleList]; newList[index] = newVal;
-            await updateDoc(roleDocRef, { list: newList });
-        };
-
-        window.moveRole = async (index, dir) => {
-            if (index + dir < 0 || index + dir >= roleList.length) return;
-            const newList = [...roleList];
-            const temp = newList[index]; newList[index] = newList[index + dir]; newList[index + dir] = temp;
             await updateDoc(roleDocRef, { list: newList });
         };
 
@@ -312,120 +514,100 @@
         window.openUserModal = () => {
             if (!editingId) { 
                 document.getElementById('user-form').reset();
-                document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-user-plus text-blue-600"></i> 新增授權用戶';
+                document.getElementById('modal-title').innerHTML = '<i class="ti ti-user-plus text-brand-500"></i> 授權新用戶';
                 document.getElementById('input-email').readOnly = false;
-                document.getElementById('input-email').classList.remove('bg-slate-100', 'text-slate-500');
+                document.getElementById('input-email').style.background = 'var(--bg)';
             }
-            document.getElementById('user-modal').classList.remove('hidden');
+            document.getElementById('user-modal').classList.add('open');
         };
 
-        window.closeUserModal = () => { document.getElementById('user-modal').classList.add('hidden'); editingId = null; };
+        window.closeUserModal = () => { document.getElementById('user-modal').classList.remove('open'); editingId = null; };
         window.changePage = (page) => { currentPage = page; renderTable(); };
 
         function renderTable() {
             const tbody = document.getElementById('user-table-body');
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
-            const filterRole = document.getElementById('filter-role').value;
-            const filterStatus = document.getElementById('filter-status').value;
 
             let filtered = allUsers.filter(u => {
-                const matchSearch = (u.name || '').toLowerCase().includes(searchTerm) || (u.email || '').toLowerCase().includes(searchTerm) || (u.level1Unit || '').toLowerCase().includes(searchTerm) || (u.level2Unit || '').toLowerCase().includes(searchTerm);
-                const matchRole = filterRole === 'all' || u.role === filterRole;
-                const matchStatus = filterStatus === 'all' || (filterStatus === 'active' ? u.is_active : !u.is_active);
+                const matchSearch = (u.name || '').toLowerCase().includes(searchTerm) || (u.email || '').toLowerCase().includes(searchTerm) || (u.level1Unit || '').toLowerCase().includes(searchTerm);
+                const matchRole = filterRoleSet.size === 0 || filterRoleSet.has(u.role);
+                const statusStr = u.is_active ? 'active' : 'inactive';
+                const matchStatus = filterStatusSet.size === 0 || filterStatusSet.has(statusStr);
                 return matchSearch && matchRole && matchStatus;
             });
 
-            filtered.sort((a, b) => {
-                if(!a.created_at) return 1; if(!b.created_at) return -1;
-                return b.created_at.toMillis() - a.created_at.toMillis();
-            });
+            filtered.sort((a, b) => (b.created_at?.toMillis() || 0) - (a.created_at?.toMillis() || 0));
 
-            const totalItems = filtered.length;
-            const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+            const total = filtered.length;
+            const totalPages = Math.ceil(total / itemsPerPage) || 1;
             if (currentPage > totalPages) currentPage = totalPages;
+            const start = (currentPage - 1) * itemsPerPage;
+            const items = filtered.slice(start, start + itemsPerPage);
 
-            const startIndex = (currentPage - 1) * itemsPerPage;
-            const paginatedItems = filtered.slice(startIndex, startIndex + itemsPerPage);
-
-            document.getElementById('pagination-info').innerText = totalItems > 0 ? `顯示 ${startIndex + 1} 到 ${Math.min(startIndex + itemsPerPage, totalItems)} 筆，共 ${totalItems} 筆` : '尚無資料';
+            document.getElementById('pagination-info').innerText = total > 0 ? `共 ${total} 筆，顯示第 ${start + 1} - ${Math.min(start + itemsPerPage, total)} 筆` : '查無資料';
             
-            let btnHtml = '';
-            btnHtml += `<button onclick="changePage(${currentPage - 1})" class="px-3 py-1 border border-slate-200 rounded-md text-sm font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-40 transition-colors" ${currentPage === 1 ? 'disabled' : ''}>上一頁</button>`;
-            btnHtml += `<span class="px-4 py-1 text-sm font-bold text-blue-600 bg-blue-50 rounded-md mx-1">${currentPage} / ${totalPages}</span>`;
-            btnHtml += `<button onclick="changePage(${currentPage + 1})" class="px-3 py-1 border border-slate-200 rounded-md text-sm font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-40 transition-colors" ${currentPage === totalPages ? 'disabled' : ''}>下一頁</button>`;
+            let btnHtml = `<button onclick="changePage(${currentPage-1})" class="btn btn-secondary !h-8 !px-3" ${currentPage === 1 ? 'disabled' : ''}><i class="ti ti-chevron-left"></i></button>`;
+            btnHtml += `<span class="flex items-center px-4 text-xs font-bold text-brand-500 bg-brand-50 rounded-lg">${currentPage} / ${totalPages}</span>`;
+            btnHtml += `<button onclick="changePage(${currentPage+1})" class="btn btn-secondary !h-8 !px-3" ${currentPage === totalPages ? 'disabled' : ''}><i class="ti ti-chevron-right"></i></button>`;
             document.getElementById('pagination-buttons').innerHTML = btnHtml;
 
-            if (totalItems === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-16 text-center text-slate-400 font-bold bg-white">找不到符合條件的用戶。</td></tr>`;
-                return;
-            }
+            if (total === 0) { tbody.innerHTML = `<tr><td colspan="5" class="py-20 text-center text-slate-400 font-bold">沒有符合搜尋或篩選條件的用戶。</td></tr>`; return; }
 
-            let html = '';
-            paginatedItems.forEach((data) => {
-                let roleStr = data.role || '未設定';
-                let isSuperAdmin = roleStr.includes('管理');
-                
-                let roleBadge = isSuperAdmin
-                    ? `<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold shadow-sm"><i class="fa-solid fa-crown text-indigo-500"></i> ${roleStr}</span>` 
-                    : `<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold shadow-sm"><i class="fa-solid fa-user-check text-blue-500"></i> ${roleStr}</span>`;
+            tbody.innerHTML = items.map(data => {
+                const isSuper = (data.role || '').includes('管理');
+                const isDefault = data.id === 'default_admin' || data.email === 'thu.isac.review@gmail.com';
 
-                const isDefaultAdmin = data.id === 'default_admin' || data.email === 'thu.isac.review@gmail.com';
-
-                html += `
-                <tr class="group bg-white hover:bg-blue-50/40 transition-all duration-150 ${!data.is_active ? 'opacity-60 grayscale-[20%] bg-slate-50/50' : ''}">
-                    <td class="px-6 py-4 align-middle">
+                return `
+                <tr class="${!data.is_active ? 'opacity-60 grayscale-[40%] bg-slate-50/50' : ''}">
+                    <td>
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0 ${isSuperAdmin ? 'bg-indigo-100 text-indigo-600' : 'bg-blue-100 text-blue-600'}">
+                            <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${isSuper ? 'bg-indigo-100 text-indigo-600' : 'bg-brand-50 text-brand-500'} shadow-sm">
                                 ${data.name ? data.name.charAt(0) : 'U'}
                             </div>
-                            <div class="flex flex-col">
-                                <span class="text-sm font-bold text-slate-800 break-words leading-tight">
-                                    ${data.name || '未設定姓名'} 
-                                    <span class="text-xs text-slate-400 font-normal ml-1">(${data.jobTitle || '無職稱'})</span>
-                                </span>
-                                <span class="text-[11px] text-slate-500 font-mono tracking-tight mt-0.5">${data.email}</span>
+                            <div class="flex flex-col min-w-0">
+                                <span class="font-bold text-slate-800 truncate leading-tight">${data.name || '未名'}</span>
+                                <span class="text-[11px] text-slate-400 font-mono truncate mt-0.5">${data.email}</span>
                             </div>
                         </div>
                     </td>
-                    <td class="px-6 py-4 align-middle text-center">
-                        <div class="text-sm font-bold text-slate-700">${data.level1Unit || '-'}</div>
-                        <div class="text-xs text-slate-500 mt-0.5">${data.level2Unit || '-'}</div>
+                    <td class="text-center">
+                        <div class="font-bold text-slate-700 text-xs">${data.level1Unit || '-'}</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5">${data.level2Unit || ''} · ${data.jobTitle || ''}</div>
                     </td>
-                    <td class="px-6 py-4 align-middle text-center">${roleBadge}</td>
-                    <td class="px-6 py-4 align-middle text-center">
-                        <div class="flex items-center justify-center">
-                            <label class="relative inline-flex items-center ${isDefaultAdmin ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} group/toggle" title="${isDefaultAdmin ? '預設管理員無法停用' : '點擊切換狀態'}">
-                                <input type="checkbox" class="sr-only peer" ${data.is_active ? 'checked' : ''} ${isDefaultAdmin ? 'disabled' : `onchange="window.toggleStatus('${data.id}', ${data.is_active})"`}>
-                                <div class="relative w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-[20px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner shrink-0 min-w-[44px]"></div>
-                                <span class="ml-3 text-sm font-bold ${data.is_active ? 'text-emerald-600' : 'text-slate-400'}">${data.is_active ? '啟用' : '停權'}</span>
+                    <td class="text-center">
+                        <span class="badge ${isSuper ? 'badge-indigo' : 'badge-blue'}">
+                            <i class="ti ${isSuper ? 'ti-crown' : 'ti-user-check'}"></i> ${data.role || '未設定'}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <div class="flex justify-center">
+                            <label class="toggle ${isDefault ? 'opacity-50 cursor-not-allowed' : ''}">
+                                <input type="checkbox" ${data.is_active ? 'checked' : ''} ${isDefault ? 'disabled' : `onchange="window.toggleStatus('${data.id}', ${data.is_active})"`}>
+                                <span class="toggle-slider"></span>
+                                <span class="ml-2 text-[11px] font-bold ${data.is_active ? 'text-emerald-600' : 'text-slate-400'}">${data.is_active ? '啟用' : '停權'}</span>
                             </label>
                         </div>
                     </td>
-                    <td class="px-6 py-4 align-middle text-center">
-                        <div class="flex items-center justify-center gap-2 opacity-100 transition-opacity">
-                            <button onclick="window.editUser('${data.id}')" class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all" title="編輯用戶資料"><i class="fa-solid fa-user-pen text-sm"></i></button>
-                            <button onclick="window.deleteUser('${data.id}', '${data.name}', '${data.email}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all disabled:opacity-20 disabled:cursor-not-allowed" ${isDefaultAdmin ? 'disabled' : ''} title="${isDefaultAdmin ? '預設管理員無法刪除' : '移除權限'}"><i class="fa-solid fa-trash-can text-sm"></i></button>
+                    <td class="text-center">
+                        <div class="flex justify-center gap-1 row-actions">
+                            <button onclick="window.editUser('${data.id}')" class="btn btn-secondary !h-7 !w-7 !p-0" title="編輯"><i class="ti ti-edit text-base"></i></button>
+                            <button onclick="window.deleteUser('${data.id}', '${data.name}')" class="btn !h-7 !w-7 !p-0 !bg-rose-50 !text-rose-500 !border-rose-100" ${isDefault ? 'style="visibility:hidden"' : ''} title="刪除"><i class="ti ti-trash text-base"></i></button>
                         </div>
                     </td>
                 </tr>`;
-            });
-            tbody.innerHTML = html;
+            }).join('');
         }
 
         window.exportToCSV = () => {
-            if (allUsers.length === 0) { alert("沒有資料可供匯出！"); return; }
+            if (allUsers.length === 0) return;
             let csv = '\uFEFF一級單位,二級單位,職稱,姓名,電子郵件,權限角色,帳號狀態,加入時間\n';
-            allUsers.forEach(u => {
-                let status = u.is_active ? '啟用' : '停權';
-                csv += [u.level1Unit, u.level2Unit, u.jobTitle, u.name, u.email, u.role, status, u.createdDate].map(v => `"${(v||'').replace(/"/g, '""')}"`).join(',') + '\n';
-            });
+            allUsers.forEach(u => csv += [u.level1Unit, u.level2Unit, u.jobTitle, u.name, u.email, u.role, u.is_active?'啟用':'停權', u.createdDate].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n');
             const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-            link.download = `ISAC系統用戶清單_${new Date().toISOString().split('T')[0]}.csv`; link.click();
+            link.download = `系統用戶清單_${new Date().toISOString().split('T')[0]}.csv`; link.click();
         };
 
         window.submitUserForm = async () => {
             const btn = document.getElementById('btn-submit');
-            
             const payload = { 
                 level1Unit: document.getElementById('input-level1').value.trim(),
                 level2Unit: document.getElementById('input-level2').value.trim(),
@@ -435,44 +617,24 @@
                 email: document.getElementById('input-email').value.trim(), 
             };
 
-            if(!payload.name || !payload.email || !payload.role || !payload.level1Unit || !payload.level2Unit || !payload.jobTitle) { 
-                alert("請填寫所有必填欄位！"); return; 
-            }
-
-            const isValidDomain = payload.email === 'thu.isac.review@gmail.com' || payload.email.endsWith('@thu.edu.tw');
-            if (!isValidDomain) { alert("錯誤：僅允許設定東海大學信箱 (@thu.edu.tw) 為系統操作帳號！"); return; }
-
-            btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> 儲存中...';
+            if(Object.values(payload).some(v => !v)) { alert("請填寫所有欄位"); return; }
+            btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2 animate-spin"></i>';
             try {
-                if (editingId) { 
-                    await updateDoc(doc(db, "users", editingId), { ...payload, updated_at: serverTimestamp() }); 
-                } else {
-                    if(allUsers.some(u => u.email === payload.email)) { 
-                        alert("此電子郵件已經存在於系統中！"); btn.disabled = false; btn.innerHTML = '儲存設定'; return; 
-                    }
-                    
-                    const defaultPassword = "52004800";
-                    const userCredential = await createUserWithEmailAndPassword(adminAuth, payload.email, defaultPassword);
-                    const newUid = userCredential.user.uid;
+                if (editingId) { await updateDoc(doc(db, "users", editingId), { ...payload, updated_at: serverTimestamp() }); } 
+                else {
+                    const defaultPwd = "thu" + Math.random().toString().slice(2,8);
+                    const cred = await createUserWithEmailAndPassword(adminAuth, payload.email, defaultPwd);
                     await signOut(adminAuth);
-
-                    await setDoc(doc(db, "users", newUid), { ...payload, is_active: true, isFirstLogin: true, created_at: serverTimestamp() });
-                    
-                    alert(`✅ 新增成功！\n\n請通知使用者以預設密碼「${defaultPassword}」登入，系統將會引導其設定專屬密碼。`);
+                    await setDoc(doc(db, "users", cred.user.uid), { ...payload, is_active: true, isFirstLogin: true, created_at: serverTimestamp(), theme: 'blue' });
+                    alert(`✅ 新增成功！初始密碼：${defaultPwd}`);
                 }
                 closeUserModal();
-            } catch (err) { 
-                let errorMsg = err.message;
-                if (err.code === 'auth/email-already-in-use') errorMsg = "此信箱已被其他帳號使用！";
-                alert("儲存發生錯誤：" + errorMsg); 
-            } finally { btn.disabled = false; btn.innerText = '儲存設定'; }
+            } catch (err) { alert("錯誤: " + err.message); } finally { btn.disabled = false; btn.innerText = '確認儲存'; }
         };
 
         window.editUser = (id) => {
             const user = allUsers.find(u => u.id === id);
-            if (!user) return;
-            if (id === 'default_admin') { alert("系統預設管理員無法進行修改。"); return; }
-            
+            if (!user || id === 'default_admin') return;
             editingId = id;
             document.getElementById('input-level1').value = user.level1Unit || '';
             document.getElementById('input-level2').value = user.level2Unit || '';
@@ -480,26 +642,15 @@
             document.getElementById('input-role').value = user.role || '';
             document.getElementById('input-name').value = user.name || ''; 
             document.getElementById('input-email').value = user.email || ''; 
-
-            document.getElementById('input-email').readOnly = true; 
-            document.getElementById('input-email').classList.add('bg-slate-100', 'text-slate-500');
-            document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-user-pen text-blue-600"></i> 編輯用戶資料';
-            document.getElementById('user-modal').classList.remove('hidden');
+            document.getElementById('input-email').readOnly = true;
+            document.getElementById('modal-title').innerHTML = '<i class="ti ti-edit text-brand-500"></i> 編輯用戶資料';
+            document.getElementById('user-modal').classList.add('open');
         };
 
         window.toggleStatus = async (id, status) => { await updateDoc(doc(db, "users", id), { is_active: !status }); };
-        
-        window.deleteUser = async (id, name, email) => {
-            if (confirm(`警告：確定要移除用戶「${name} (${email})」的系統存取權限嗎？\n(註：這僅會移除系統內的權限資料，若需徹底刪除登入帳號請至 Firebase 主控台操作)`)) {
-                await deleteDoc(doc(db, "users", id));
-                if (currentPage > Math.ceil((allUsers.length - 1) / itemsPerPage) || 1) currentPage = Math.ceil((allUsers.length - 1) / itemsPerPage) || 1;
-                renderTable();
-            }
-        };
+        window.deleteUser = async (id, name) => { if (confirm(`確定刪除「${name}」的權限？`)) await deleteDoc(doc(db, "users", id)); };
 
-        document.getElementById('search-input').addEventListener('input', renderTable);
-        document.getElementById('filter-role').addEventListener('change', renderTable);
-        document.getElementById('filter-status').addEventListener('change', renderTable);
+        document.getElementById('search-input').oninput = renderTable;
     </script>
 </body>
 </html>
