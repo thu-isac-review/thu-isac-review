@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>實習管理系統</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --brand: #1a56db;
+  --brand-hover: #1649c0;
+  --brand-light: #eff4ff;
+  --brand-border: #c3d2f9;
+  --sidebar-w: 220px;
+  --topbar-h: 56px;
+  --bg: #f8f9fc;
+  --surface: #ffffff;
+  --border: #e5e7ef;
+  --border-strong: #cdd0dd;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #9ca3af;
+  --success: #059669;
+  --success-bg: #ecfdf5;
+  --success-border: #a7f3d0;
+  --warning: #d97706;
+  --warning-bg: #fffbeb;
+  --warning-border: #fcd34d;
+  --danger: #dc2626;
+  --danger-bg: #fef2f2;
+  --danger-border: #fecaca;
+  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.04);
+  --transition: 150ms cubic-bezier(0.4,0,0.2,1);
+}
+
+html, body { height: 100%; overflow: hidden; font-family: 'Noto Sans TC', sans-serif; font-size: 14px; color: var(--text-primary); background: var(--bg); -webkit-font-smoothing: antialiased; }
+
+/* ─── LAYOUT ─── */
+#app { display: flex; height: 100vh; overflow: hidden; }
+
+/* ─── SIDEBAR ─── */
+#sidebar {
+  width: var(--sidebar-w);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  z-index: 30;
+}
+.sidebar-logo {
+  height: var(--topbar-h);
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.sidebar-logo .logo-icon {
+  width: 30px; height: 30px;
+  background: var(--brand);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.sidebar-logo .logo-text { font-size: 13px; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
+.sidebar-logo .logo-sub { font-size: 10px; color: var(--text-muted); font-weight: 400; }
+.sidebar-nav { flex: 1; padding: 12px 8px; overflow-y: auto; }
+.nav-group-label { font-size: 10px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.07em; text-transform: uppercase; padding: 0 8px; margin: 16px 0 4px; }
+.nav-group-label:first-child { margin-top: 4px; }
+.nav-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 13px; font-weight: 500;
+  transition: background var(--transition), color var(--transition);
+  user-select: none;
+  margin-bottom: 1px;
+  position: relative;
+}
+.nav-item i { width: 16px; text-align: center; font-size: 13px; flex-shrink: 0; }
+.nav-item:hover { background: var(--bg); color: var(--text-primary); }
+.nav-item.active { background: var(--brand-light); color: var(--brand); font-weight: 700; }
+.nav-item .nav-badge { margin-left: auto; font-size: 10px; font-weight: 700; background: var(--brand); color: white; padding: 1px 6px; border-radius: 99px; min-width: 18px; text-align: center; }
+.sidebar-footer {
+  padding: 12px 8px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.user-row {
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.user-row:hover { background: var(--bg); }
+.user-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--brand-light); border: 1.5px solid var(--brand-border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--brand); flex-shrink: 0; }
+.user-info { flex: 1; min-width: 0; }
+.user-name { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+.user-role { font-size: 10px; color: var(--text-muted); }
+
+/* ─── MAIN ─── */
+#main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+/* ─── TOPBAR ─── */
+#topbar {
+  height: var(--topbar-h);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 24px;
+  gap: 12px;
+  flex-shrink: 0;
+  z-index: 20;
+}
+.breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); flex: 1; }
+.breadcrumb .crumb-active { color: var(--text-primary); font-weight: 600; }
+.breadcrumb i { font-size: 10px; }
+.topbar-actions { display: flex; align-items: center; gap: 8px; }
+.icon-btn {
+  width: 32px; height: 32px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all var(--transition);
+  position: relative;
+  font-size: 13px;
+}
+.icon-btn:hover { background: var(--bg); border-color: var(--border-strong); color: var(--text-primary); }
+.notif-dot { position: absolute; top: 5px; right: 5px; width: 6px; height: 6px; background: var(--danger); border-radius: 50%; border: 1.5px solid white; }
+
+/* ─── CONTENT AREA ─── */
+#content { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+
+/* ─── VIEWS ─── */
+.view { display: none; flex-direction: column; height: 100%; }
+.view.active { display: flex; }
+
+/* ─── DASHBOARD ─── */
+.page-header { padding: 20px 24px 0; flex-shrink: 0; }
+.page-title { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+.page-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+.dashboard-body { flex: 1; overflow-y: auto; padding: 16px 24px 24px; }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+}
+.kpi-card .kpi-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.kpi-card .kpi-val { font-size: 28px; font-weight: 700; color: var(--text-primary); margin: 4px 0; line-height: 1; }
+.kpi-card .kpi-sub { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+.kpi-card .kpi-icon { float: right; width: 36px; height: 36px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 16px; margin-top: -4px; }
+.kpi-card.blue .kpi-icon { background: var(--brand-light); color: var(--brand); }
+.kpi-card.green .kpi-icon { background: var(--success-bg); color: var(--success); }
+.kpi-card.amber .kpi-icon { background: var(--warning-bg); color: var(--warning); }
+.kpi-card.red .kpi-icon { background: var(--danger-bg); color: var(--danger); }
+.kpi-card .trend { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; padding: 1px 6px; border-radius: 99px; }
+.kpi-card .trend.up { background: var(--success-bg); color: var(--success); }
+.kpi-card .trend.down { background: var(--danger-bg); color: var(--danger); }
+
+.charts-row { display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; margin-bottom: 16px; }
+.chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; box-shadow: var(--shadow-sm); }
+.chart-card .chart-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 14px; }
+
+/* Simple bar chart */
+.bar-chart { display: flex; flex-direction: column; gap: 8px; }
+.bar-row { display: flex; align-items: center; gap: 8px; }
+.bar-row .bar-label { font-size: 11px; color: var(--text-secondary); width: 80px; flex-shrink: 0; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-row .bar-track { flex: 1; height: 8px; background: var(--bg); border-radius: 99px; overflow: hidden; }
+.bar-row .bar-fill { height: 100%; border-radius: 99px; background: var(--brand); transition: width 0.6s cubic-bezier(0.4,0,0.2,1); }
+.bar-row .bar-val { font-size: 11px; font-weight: 700; color: var(--text-secondary); width: 24px; flex-shrink: 0; text-align: right; }
+
+/* Donut */
+.donut-wrap { display: flex; align-items: center; gap: 16px; }
+.donut-legend { display: flex; flex-direction: column; gap: 6px; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* Recent activity */
+.activity-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; box-shadow: var(--shadow-sm); }
+.activity-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.activity-item:last-child { border-bottom: none; padding-bottom: 0; }
+.activity-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--brand); flex-shrink: 0; margin-top: 5px; }
+.activity-dot.green { background: var(--success); }
+.activity-dot.amber { background: var(--warning); }
+.activity-text { flex: 1; min-width: 0; font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+.activity-text strong { color: var(--text-primary); font-weight: 600; }
+.activity-time { font-size: 11px; color: var(--text-muted); flex-shrink: 0; white-space: nowrap; }
+
+/* ─── TABLE VIEW ─── */
+.toolbar {
+  padding: 12px 24px;
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.filter-row {
+  padding: 10px 24px;
+  display: flex; align-items: center; gap: 8px;
+  flex-shrink: 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+/* Search */
+.search-wrap { position: relative; flex: 0 0 260px; }
+.search-wrap i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 12px; }
+.search-input {
+  width: 100%; height: 34px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 0 10px 0 30px;
+  font-size: 13px; font-family: inherit;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.search-input::placeholder { color: var(--text-muted); }
+.search-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 0 14px; height: 34px;
+  border-radius: var(--radius);
+  font-size: 13px; font-weight: 600; font-family: inherit;
+  cursor: pointer; border: none; white-space: nowrap;
+  transition: all var(--transition);
+  text-decoration: none;
+}
+.btn-primary { background: var(--brand); color: white; }
+.btn-primary:hover { background: var(--brand-hover); }
+.btn-secondary { background: var(--surface); color: var(--text-secondary); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--bg); border-color: var(--border-strong); color: var(--text-primary); }
+.btn-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
+.btn-danger:hover { background: #fee2e2; }
+.btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
+.btn-icon { width: 34px; padding: 0; justify-content: center; }
+.btn-icon.sm { width: 28px; height: 28px; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn i { font-size: 12px; }
+
+/* Filter pills */
+.filter-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 0 10px; height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  background: var(--surface);
+  font-size: 12px; font-weight: 500; color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition);
+  position: relative;
+  white-space: nowrap;
+}
+.filter-pill:hover { border-color: var(--border-strong); color: var(--text-primary); }
+.filter-pill.active { border-color: var(--brand); background: var(--brand-light); color: var(--brand); }
+.filter-pill .pill-count { background: var(--brand); color: white; border-radius: 99px; font-size: 10px; font-weight: 700; padding: 0 5px; min-width: 16px; text-align: center; }
+.filter-pill i { font-size: 10px; }
+
+/* Filter dropdown */
+.filter-dropdown {
+  position: absolute; top: calc(100% + 6px); left: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  width: 240px; z-index: 200;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+}
+.filter-dropdown.open { display: flex; }
+.filter-dropdown-search { padding: 8px; border-bottom: 1px solid var(--border); }
+.filter-dropdown-search input {
+  width: 100%; height: 28px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 0 8px; font-size: 12px; font-family: inherit; outline: none;
+  background: var(--bg); color: var(--text-primary);
+}
+.filter-dropdown-search input:focus { border-color: var(--brand); }
+.filter-dropdown-list { max-height: 200px; overflow-y: auto; padding: 4px; }
+.filter-option {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 8px; border-radius: var(--radius-sm);
+  cursor: pointer; font-size: 12px; color: var(--text-secondary);
+  transition: background var(--transition);
+}
+.filter-option:hover { background: var(--bg); color: var(--text-primary); }
+.filter-option input[type=checkbox] { accent-color: var(--brand); flex-shrink: 0; }
+.filter-dropdown-footer { padding: 6px 8px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; }
+.filter-dropdown-footer button { font-size: 11px; font-weight: 600; color: var(--danger); background: none; border: none; cursor: pointer; padding: 2px 4px; }
+
+/* Spacer */
+.flex-spacer { flex: 1; }
+
+/* ─── TABLE ─── */
+.table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
+.table-scroll { flex: 1; overflow: auto; }
+.table-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.table-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
+
+table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 1100px; }
+thead { position: sticky; top: 0; z-index: 10; background: var(--surface); }
+thead tr { border-bottom: 2px solid var(--border); }
+th {
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 11px; font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  background: var(--surface);
+  transition: color var(--transition);
+}
+th:hover { color: var(--text-secondary); }
+th:first-child { width: 44px; cursor: default; }
+th .sort-icon { margin-left: 4px; font-size: 9px; opacity: 0.4; }
+th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand); }
+td {
+  padding: 12px 16px;
+  vertical-align: top;
+  word-break: break-word;
+  border-bottom: 1px solid var(--border);
+}
+tr:hover td { background: #fafbff; }
+tr.selected td { background: #f0f4ff; }
+tr:last-child td { border-bottom: none; }
+
+.cell-primary { font-size: 13px; font-weight: 600; color: var(--text-primary); line-height: 1.4; }
+.cell-secondary { font-size: 11px; color: var(--text-muted); margin-top: 2px; line-height: 1.5; }
+
+/* Badges */
+.badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 2px 7px; border-radius: 99px;
+  font-size: 10px; font-weight: 700;
+  white-space: nowrap;
+}
+.badge-blue { background: var(--brand-light); color: var(--brand); border: 1px solid var(--brand-border); }
+.badge-green { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+.badge-amber { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+.badge-red { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
+.badge-gray { background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; }
+
+.courses-list { display: flex; flex-wrap: wrap; gap: 3px; }
+
+/* Row actions */
+.row-actions { display: flex; align-items: center; gap: 4px; opacity: 0; transition: opacity var(--transition); }
+tr:hover .row-actions { opacity: 1; }
+
+/* ─── PAGINATION ─── */
+.pagination-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 24px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+.pagination-info { font-size: 12px; color: var(--text-muted); }
+.pagination-info strong { color: var(--text-primary); }
+.pagination-controls { display: flex; align-items: center; gap: 4px; }
+.page-btn {
+  min-width: 30px; height: 30px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: 12px; font-weight: 500; font-family: inherit;
+  color: var(--text-secondary);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  padding: 0 8px;
+  transition: all var(--transition);
+}
+.page-btn:hover:not(:disabled) { background: var(--bg); border-color: var(--border-strong); }
+.page-btn.active { background: var(--brand); color: white; border-color: var(--brand); font-weight: 700; }
+.page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.per-page-select { height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 12px; font-family: inherit; color: var(--text-secondary); padding: 0 6px; cursor: pointer; outline: none; }
+
+/* Batch action bar */
+#batch-bar {
+  display: none;
+  align-items: center; gap: 12px;
+  padding: 8px 24px;
+  background: #eff4ff;
+  border-bottom: 1px solid var(--brand-border);
+  flex-shrink: 0;
+}
+#batch-bar.visible { display: flex; }
+.batch-info { font-size: 13px; font-weight: 600; color: var(--brand); }
+.batch-info span { font-size: 16px; font-weight: 700; }
+
+/* ─── FULLSCREEN FORM MODAL ─── */
+#form-modal {
+  position: fixed; inset: 0; z-index: 100;
+  background: var(--bg);
+  display: none; flex-direction: column;
+  animation: slideUp 0.25s cubic-bezier(0.16,1,0.3,1);
+}
+#form-modal.open { display: flex; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+.modal-topbar {
+  height: var(--topbar-h);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+}
+.modal-back-btn { display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-secondary); font-size: 13px; font-weight: 500; background: none; border: none; font-family: inherit; transition: color var(--transition); }
+.modal-back-btn:hover { color: var(--text-primary); }
+.modal-title-area { display: flex; align-items: center; gap: 10px; }
+.modal-title-area h3 { font-size: 15px; font-weight: 700; }
+.modal-step-indicator { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
+
+.form-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
+.form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
+.form-grid-2 { grid-template-columns: repeat(2, 1fr); }
+.form-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex; flex-direction: column;
+}
+.form-section h4 { font-size: 12px; font-weight: 700; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.05em; padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 6px; }
+.form-section h4 i { color: var(--text-muted); font-size: 12px; }
+.field { margin-bottom: 10px; }
+.field:last-child { margin-bottom: 0; }
+.field-label { font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block; }
+.field-label .req { color: var(--danger); margin-left: 2px; }
+.field-input, .field-select, .field-textarea {
+  width: 100%; height: 34px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  padding: 0 10px;
+  font-size: 13px; font-family: inherit;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.field-input::placeholder, .field-textarea::placeholder { color: var(--text-muted); font-size: 12px; }
+.field-input:focus, .field-select:focus, .field-textarea:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); background: var(--surface); }
+.field-input.error, .field-select.error { border-color: var(--danger); }
+.field-error { font-size: 11px; color: var(--danger); margin-top: 3px; display: none; }
+.field-error.show { display: block; }
+.field-select { cursor: pointer; }
+.field-textarea { height: auto; padding: 8px 10px; resize: vertical; min-height: 60px; }
+
+/* Dropdown search components */
+.search-field-wrap { position: relative; }
+.search-result-info { font-size: 11px; padding: 8px 10px; background: #f8f9fc; border: 1px solid var(--border); border-radius: var(--radius); margin-top: 6px; display: none; }
+.search-result-info.show { display: flex; align-items: center; gap: 8px; }
+.search-result-info .res-icon { width: 24px; height: 24px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
+.search-result-info.student .res-icon { background: var(--brand-light); color: var(--brand); }
+.search-result-info.inst .res-icon { background: var(--success-bg); color: var(--success); }
+.search-result-info .res-name { font-weight: 600; color: var(--text-primary); }
+.search-result-info .res-meta { color: var(--text-muted); }
+
+/* Autocomplete dropdown */
+.autocomplete-list {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  z-index: 500;
+  max-height: 200px; overflow-y: auto;
+  display: none;
+}
+.autocomplete-list.open { display: block; }
+.autocomplete-item { padding: 8px 12px; cursor: pointer; transition: background var(--transition); }
+.autocomplete-item:hover, .autocomplete-item.highlighted { background: var(--bg); }
+.autocomplete-item .ac-primary { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.autocomplete-item .ac-secondary { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+.autocomplete-item:not(:last-child) { border-bottom: 1px solid var(--border); }
+.autocomplete-empty { padding: 12px; text-align: center; font-size: 12px; color: var(--text-muted); }
+
+/* Course chips */
+.course-chips { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; min-height: 80px; max-height: 180px; overflow-y: auto; }
+.course-chip {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 10px;
+  background: var(--brand-light);
+  border: 1px solid var(--brand-border);
+  border-radius: var(--radius);
+}
+.course-chip .chip-info { flex: 1; min-width: 0; }
+.course-chip .chip-name { font-size: 12px; font-weight: 600; color: var(--brand); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.course-chip .chip-meta { font-size: 10px; color: #4a7ec7; }
+.course-chip .chip-remove { width: 20px; height: 20px; border-radius: 50%; border: none; background: none; color: var(--brand); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; transition: background var(--transition); flex-shrink: 0; }
+.course-chip .chip-remove:hover { background: rgba(26,86,219,0.15); }
+.course-chips-empty { padding: 16px; text-align: center; font-size: 12px; color: var(--text-muted); border: 1px dashed var(--border); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; height: 60px; }
+
+/* Form footer */
+.modal-footer {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex; align-items: center; justify-content: flex-end; gap: 10px;
+  flex-shrink: 0;
+}
+
+/* ─── EMPTY STATE ─── */
+.empty-state {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 40px;
+  color: var(--text-muted);
+}
+.empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.3; }
+.empty-title { font-size: 15px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
+.empty-desc { font-size: 13px; text-align: center; max-width: 280px; line-height: 1.6; }
+
+/* ─── TOAST ─── */
+#toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.toast {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: var(--text-primary);
+  color: white;
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  font-size: 13px; font-weight: 500;
+  max-width: 340px;
+  pointer-events: all;
+  animation: toastIn 0.25s cubic-bezier(0.16,1,0.3,1);
+  position: relative;
+  overflow: hidden;
+}
+@keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+.toast.leaving { animation: toastOut 0.2s ease forwards; }
+@keyframes toastOut { to { opacity: 0; transform: translateX(20px); } }
+.toast.success { background: #065f46; }
+.toast.warning { background: #92400e; }
+.toast.error { background: #991b1b; }
+.toast .toast-icon { font-size: 14px; margin-top: 1px; flex-shrink: 0; }
+.toast .toast-body { flex: 1; min-width: 0; }
+.toast .toast-title { font-weight: 700; }
+.toast .toast-msg { font-size: 12px; opacity: 0.85; margin-top: 2px; }
+.toast .toast-close { background: none; border: none; color: rgba(255,255,255,0.6); cursor: pointer; font-size: 13px; padding: 0; line-height: 1; flex-shrink: 0; transition: color var(--transition); }
+.toast .toast-close:hover { color: white; }
+.toast .toast-undo { background: none; border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: var(--radius-sm); padding: 3px 8px; font-size: 11px; font-weight: 700; cursor: pointer; margin-top: 6px; font-family: inherit; transition: background var(--transition); }
+.toast .toast-undo:hover { background: rgba(255,255,255,0.15); }
+.toast-progress { position: absolute; bottom: 0; left: 0; height: 2px; background: rgba(255,255,255,0.3); width: 100%; transform-origin: left; }
+
+/* ─── IMPORT REPORT MODAL ─── */
+#import-modal {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  display: none; align-items: center; justify-content: center;
+  padding: 24px;
+}
+#import-modal.open { display: flex; }
+.import-modal-content {
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  width: 100%; max-width: 800px;
+  max-height: 85vh;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.import-modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.import-modal-header h3 { font-size: 16px; font-weight: 700; }
+.import-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 16px 24px; border-bottom: 1px solid var(--border); }
+.import-kpi { text-align: center; padding: 12px; border-radius: var(--radius-lg); }
+.import-kpi.success { background: var(--success-bg); }
+.import-kpi.warning { background: var(--warning-bg); }
+.import-kpi.error { background: var(--danger-bg); }
+.import-kpi .ik-val { font-size: 28px; font-weight: 700; line-height: 1; }
+.import-kpi.success .ik-val { color: var(--success); }
+.import-kpi.warning .ik-val { color: var(--warning); }
+.import-kpi.error .ik-val { color: var(--danger); }
+.import-kpi .ik-label { font-size: 11px; font-weight: 600; margin-top: 4px; }
+.import-kpi.success .ik-label { color: var(--success); }
+.import-kpi.warning .ik-label { color: var(--warning); }
+.import-kpi.error .ik-label { color: var(--danger); }
+.import-detail { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+.import-detail-header { display: grid; grid-template-columns: 80px 1fr 120px 1fr; gap: 12px; padding: 8px 24px; background: var(--bg); border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.import-detail-list { flex: 1; overflow-y: auto; }
+.import-detail-row { display: grid; grid-template-columns: 80px 1fr 120px 1fr; gap: 12px; padding: 10px 24px; border-bottom: 1px solid var(--border); font-size: 12px; align-items: center; }
+.import-detail-row:last-child { border-bottom: none; }
+.import-modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+
+/* Scrollbar */
+.custom-scroll::-webkit-scrollbar { width: 4px; }
+.custom-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 99px; }
+
+/* Loading skeleton */
+.skeleton { background: linear-gradient(90deg, var(--bg) 25%, var(--border) 50%, var(--bg) 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; border-radius: var(--radius); }
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* Divider */
+.v-divider { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+
+/* Checkbox */
+input[type=checkbox] { accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; }
+
+/* Select */
+select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; padding-right: 28px !important; }
+
+/* Number input */
+input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+input[type=number] { -moz-appearance: textfield; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ─── SIDEBAR ─── -->
+  <nav id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+      <div>
+        <div class="logo-text">實習管理系統</div>
+        <div class="logo-sub">逢甲大學</div>
+      </div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-group-label">主選單</div>
+      <div class="nav-item active" data-view="dashboard">
+        <i class="fa-solid fa-chart-pie"></i> 儀表板
+      </div>
+      <div class="nav-item" data-view="records">
+        <i class="fa-solid fa-clipboard-list"></i> 實習紀錄
+        <span class="nav-badge" id="nav-badge-records">0</span>
+      </div>
+      <div class="nav-group-label">主檔管理</div>
+      <div class="nav-item">
+        <i class="fa-solid fa-user-graduate"></i> 學生主檔
+      </div>
+      <div class="nav-item">
+        <i class="fa-solid fa-building"></i> 機構主檔
+      </div>
+      <div class="nav-item">
+        <i class="fa-solid fa-layer-group"></i> 課程主檔
+      </div>
+      <div class="nav-group-label">系統</div>
+      <div class="nav-item">
+        <i class="fa-solid fa-file-export"></i> 報表匯出
+      </div>
+      <div class="nav-item">
+        <i class="fa-solid fa-gear"></i> 系統設定
+      </div>
+    </div>
+    <div class="sidebar-footer">
+      <div class="user-row">
+        <div class="user-avatar">管</div>
+        <div class="user-info">
+          <div class="user-name">系統管理員</div>
+          <div class="user-role">全校管理權限</div>
+        </div>
+        <i class="fa-solid fa-ellipsis" style="font-size:12px;color:var(--text-muted)"></i>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ─── MAIN ─── -->
+  <div id="main">
+    <header id="topbar">
+      <div class="breadcrumb">
+        <span>實習管理系統</span>
+        <i class="fa-solid fa-chevron-right"></i>
+        <span class="crumb-active" id="breadcrumb-active">儀表板</span>
+      </div>
+      <div class="topbar-actions">
+        <div class="icon-btn" title="通知">
+          <i class="fa-solid fa-bell"></i>
+          <span class="notif-dot"></span>
+        </div>
+        <div class="icon-btn" title="說明">
+          <i class="fa-solid fa-circle-question"></i>
+        </div>
+        <div class="v-divider"></div>
+        <div class="user-row" style="padding:4px 8px;border-radius:var(--radius);cursor:pointer;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+          <div class="user-avatar" style="width:28px;height:28px;font-size:11px">管</div>
+          <span style="font-size:12px;font-weight:600;color:var(--text-secondary)">管理員</span>
+        </div>
+      </div>
+    </header>
+
+    <div id="content">
+
+      <!-- ─── DASHBOARD VIEW ─── -->
+      <div id="view-dashboard" class="view active">
+        <div class="page-header" style="margin-bottom:0">
+          <div class="page-title">儀表板</div>
+          <div class="page-subtitle">實習紀錄整體概況一覽</div>
+        </div>
+        <div class="dashboard-body custom-scroll">
+          <div style="margin-top:16px">
+            <div class="kpi-grid">
+              <div class="kpi-card blue">
+                <div class="kpi-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+                <div class="kpi-label">實習紀錄總數</div>
+                <div class="kpi-val" id="kpi-total">—</div>
+                <div class="kpi-sub"><span class="trend up"><i class="fa-solid fa-arrow-up"></i> 12%</span> 較上學期</div>
+              </div>
+              <div class="kpi-card green">
+                <div class="kpi-icon"><i class="fa-solid fa-building"></i></div>
+                <div class="kpi-label">合作實習機構</div>
+                <div class="kpi-val" id="kpi-insts">—</div>
+                <div class="kpi-sub" style="color:var(--text-muted)">已建立主檔</div>
+              </div>
+              <div class="kpi-card amber">
+                <div class="kpi-icon"><i class="fa-solid fa-user-graduate"></i></div>
+                <div class="kpi-label">參與實習學生</div>
+                <div class="kpi-val" id="kpi-students">—</div>
+                <div class="kpi-sub" style="color:var(--text-muted)">不重複人數</div>
+              </div>
+              <div class="kpi-card red">
+                <div class="kpi-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <div class="kpi-label">未綁定課程</div>
+                <div class="kpi-val" id="kpi-unbound">—</div>
+                <div class="kpi-sub" style="color:var(--text-muted)">需人工確認</div>
+              </div>
+            </div>
+
+            <div class="charts-row">
+              <div class="chart-card">
+                <div class="chart-title">各系所實習紀錄數</div>
+                <div class="bar-chart" id="dept-bar-chart">
+                  <div style="display:flex;flex-direction:column;gap:8px">
+                    <div class="skeleton" style="height:14px;width:100%"></div>
+                    <div class="skeleton" style="height:14px;width:85%"></div>
+                    <div class="skeleton" style="height:14px;width:70%"></div>
+                    <div class="skeleton" style="height:14px;width:55%"></div>
+                    <div class="skeleton" style="height:14px;width:40%"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="chart-card">
+                <div class="chart-title">投保情形分布</div>
+                <div class="donut-wrap" id="insurance-donut" style="justify-content:center;padding:8px 0">
+                  <svg width="100" height="100" viewBox="0 0 100 100" id="donut-svg">
+                    <circle cx="50" cy="50" r="36" fill="none" stroke="var(--border)" stroke-width="16"/>
+                  </svg>
+                  <div class="donut-legend" id="donut-legend"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="charts-row" style="grid-template-columns:1fr">
+              <div class="chart-card">
+                <div class="chart-title">近期操作記錄</div>
+                <div id="activity-list">
+                  <div style="display:flex;flex-direction:column;gap:8px">
+                    <div class="skeleton" style="height:40px;"></div>
+                    <div class="skeleton" style="height:40px;"></div>
+                    <div class="skeleton" style="height:40px;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── RECORDS VIEW ─── -->
+      <div id="view-records" class="view" style="background:var(--surface)">
+        <!-- Toolbar -->
+        <div class="toolbar">
+          <div class="search-wrap">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" class="search-input" id="search-input" placeholder="搜尋學號、姓名、機構...">
+          </div>
+          <div class="flex-spacer"></div>
+          <button class="btn btn-secondary" onclick="window.exportCSV()">
+            <i class="fa-solid fa-file-export" style="color:#059669"></i> 匯出
+          </button>
+          <button class="btn btn-secondary" onclick="document.getElementById('import-file-input').click()">
+            <i class="fa-solid fa-file-import" style="color:var(--brand)"></i> 批次匯入
+          </button>
+          <input type="file" id="import-file-input" accept=".csv" style="display:none" onchange="window.handleImport(event)">
+          <div class="v-divider"></div>
+          <button class="btn btn-primary" onclick="window.openForm()">
+            <i class="fa-solid fa-plus"></i> 新增紀錄
+          </button>
+        </div>
+
+        <!-- Filter Row -->
+        <div class="filter-row" id="filter-row"></div>
+
+        <!-- Batch Bar -->
+        <div id="batch-bar">
+          <span class="batch-info">已選 <span id="batch-count">0</span> 筆</span>
+          <button class="btn btn-sm btn-secondary" id="btn-select-all-text" onclick="window.selectAllFiltered()">選取全部符合條件</button>
+          <button class="btn btn-sm btn-secondary" onclick="window.clearSelection()">取消選取</button>
+          <div class="flex-spacer"></div>
+          <button class="btn btn-sm btn-danger" onclick="window.batchDelete()"><i class="fa-solid fa-trash-can"></i> 批次刪除</button>
+        </div>
+
+        <!-- Table -->
+        <div class="table-wrap">
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th><input type="checkbox" id="chk-all" onchange="window.toggleSelectPage(this)"></th>
+                  <th data-sort="student_raw" style="width:190px">實習學生 <i class="fa-solid fa-sort sort-icon"></i></th>
+                  <th data-sort="inst_raw" style="width:220px">實習機構 <i class="fa-solid fa-sort sort-icon"></i></th>
+                  <th style="width:240px">關聯課程</th>
+                  <th data-sort="duration" style="width:200px">實習時間 <i class="fa-solid fa-sort sort-icon"></i></th>
+                  <th style="width:210px">其他資訊</th>
+                  <th style="width:88px;text-align:center">操作</th>
+                </tr>
+              </thead>
+              <tbody id="table-body">
+                <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted)">
+                  <i class="fa-solid fa-circle-notch fa-spin" style="font-size:20px;color:var(--brand)"></i>
+                  <p style="margin-top:8px;font-size:13px">載入中...</p>
+                </td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination-bar">
+            <div class="pagination-info" id="pagination-info">共 0 筆</div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-size:12px;color:var(--text-muted)">每頁顯示</span>
+              <select class="per-page-select" id="per-page-select" onchange="window.changePerPage(this.value)">
+                <option value="10">10 筆</option>
+                <option value="25">25 筆</option>
+                <option value="50">50 筆</option>
+              </select>
+              <div class="pagination-controls" id="pagination-controls"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end #content -->
+  </div><!-- end #main -->
+</div><!-- end #app -->
+
+<!-- ─── FORM MODAL ─── -->
+<div id="form-modal">
+  <div class="modal-topbar">
+    <button class="modal-back-btn" onclick="window.closeForm()">
+      <i class="fa-solid fa-arrow-left"></i> 返回列表
+    </button>
+    <div class="modal-title-area">
+      <h3 id="form-title">建立實習紀錄</h3>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-secondary" onclick="window.closeForm()">取消</button>
+      <button class="btn btn-primary" id="btn-form-submit" onclick="window.submitForm()">
+        <i class="fa-solid fa-check"></i> 儲存紀錄
+      </button>
+    </div>
+  </div>
+
+  <div class="form-body custom-scroll">
+    <div class="form-grid">
+
+      <!-- 學生 -->
+      <div class="form-section">
+        <h4><i class="fa-solid fa-user"></i> 實習學生</h4>
+        <div class="field">
+          <label class="field-label">學生 <span class="req">*</span></label>
+          <div class="search-field-wrap">
+            <input type="text" id="fi-student" class="field-input" placeholder="輸入學號或姓名搜尋..." autocomplete="off">
+            <div class="autocomplete-list" id="ac-student"></div>
+          </div>
+          <div class="search-result-info student" id="stu-info-card">
+            <div class="res-icon"><i class="fa-solid fa-user"></i></div>
+            <div><div class="res-name" id="stu-info-name"></div><div class="res-meta" id="stu-info-meta"></div></div>
+          </div>
+          <div class="field-error" id="err-student">請選擇學生</div>
+        </div>
+        <div class="field">
+          <label class="field-label">當學年年級 <span class="req">*</span></label>
+          <select id="fi-grade" class="field-select">
+            <option value="">請選擇</option>
+            <option value="1">1 年級</option><option value="2">2 年級</option>
+            <option value="3">3 年級</option><option value="4">4 年級</option><option value="5">5 年級</option>
+          </select>
+          <div class="field-error" id="err-grade">請選擇年級</div>
+        </div>
+      </div>
+
+      <!-- 機構 -->
+      <div class="form-section">
+        <h4><i class="fa-solid fa-building"></i> 實習機構</h4>
+        <div class="field">
+          <label class="field-label">機構 <span class="req">*</span></label>
+          <div class="search-field-wrap">
+            <input type="text" id="fi-inst" class="field-input" placeholder="輸入機構名稱或統編..." autocomplete="off">
+            <div class="autocomplete-list" id="ac-inst"></div>
+          </div>
+          <div class="search-result-info inst" id="inst-info-card">
+            <div class="res-icon"><i class="fa-solid fa-building"></i></div>
+            <div><div class="res-name" id="inst-info-name"></div><div class="res-meta" id="inst-info-meta"></div></div>
+          </div>
+          <div class="field-error" id="err-inst">請輸入機構名稱</div>
+        </div>
+      </div>
+
+      <!-- 課程 -->
+      <div class="form-section">
+        <h4><i class="fa-solid fa-layer-group"></i> 關聯課程 <span style="margin-left:auto;font-size:10px;font-weight:400;color:var(--text-muted);text-transform:none;letter-spacing:0" id="course-count-label">已選 0 門</span></h4>
+        <div class="field">
+          <label class="field-label">搜尋課程 <span class="req">*</span></label>
+          <div class="search-field-wrap">
+            <input type="text" id="fi-course" class="field-input" placeholder="課程名稱、代號或系所..." autocomplete="off">
+            <div class="autocomplete-list" id="ac-course"></div>
+          </div>
+          <div class="field-error" id="err-course">請至少選擇一門課程</div>
+        </div>
+        <div id="course-chips-wrap">
+          <div class="course-chips-empty">尚未選擇課程</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-grid form-grid-2">
+      <!-- 實習條件 -->
+      <div class="form-section">
+        <h4><i class="fa-solid fa-clock"></i> 實習條件與保障</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="field" style="margin-bottom:0">
+            <label class="field-label">起訖時間 <span class="req">*</span></label>
+            <input type="text" id="fi-duration" class="field-input" placeholder="YYY/MM/DD-YYY/MM/DD">
+            <div class="field-error" id="err-duration">格式：YYY/MM/DD-YYY/MM/DD</div>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="field-label">核定時數 <span class="req">*</span></label>
+            <input type="number" id="fi-hours" class="field-input" placeholder="小時" min="1" style="text-align:center">
+            <div class="field-error" id="err-hours">請填寫時數</div>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="field-label">實習時間 <span class="req">*</span></label>
+            <select id="fi-period" class="field-select">
+              <option value="">請選擇</option>
+              <option>寒假實習</option><option>暑假實習</option>
+              <option>學期期間實習</option><option>單一學期實習</option><option>全學年</option>
+            </select>
+            <div class="field-error" id="err-period">請選擇</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div class="field" style="margin-bottom:0">
+            <label class="field-label">證明文件 <span class="req">*</span></label>
+            <select id="fi-proof" class="field-select">
+              <option value="">請選擇</option>
+              <option>合約</option><option>公函</option><option>其他證明文件</option>
+            </select>
+            <div class="field-error" id="err-proof">請選擇</div>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="field-label">投保情形 <span class="req">*</span></label>
+            <select id="fi-insurance" class="field-select">
+              <option value="">請選擇</option>
+              <option>僅校外實習保險</option><option>僅勞保</option>
+              <option>兩者皆有</option><option>兩者皆無</option>
+            </select>
+            <div class="field-error" id="err-insurance">請選擇</div>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="field-label">勞雇關係 <span class="req">*</span></label>
+            <select id="fi-employment" class="field-select">
+              <option value="">請選擇</option>
+              <option value="是">是</option><option value="否">否</option>
+            </select>
+            <div class="field-error" id="err-employment">請選擇</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 行政歸屬 -->
+      <div class="form-section">
+        <h4><i class="fa-solid fa-building-user"></i> 行政歸屬與備註</h4>
+        <div class="field">
+          <label class="field-label">負責填報系所 <span class="req">*</span></label>
+          <select id="fi-resp-dept" class="field-select">
+            <option value="">請先選擇學生與課程...</option>
+          </select>
+          <div class="field-error" id="err-resp-dept">請選擇系所</div>
+        </div>
+        <div class="field" style="flex:1;display:flex;flex-direction:column">
+          <label class="field-label">備註</label>
+          <textarea id="fi-notes" class="field-textarea" placeholder="選填備註..." style="flex:1;min-height:80px"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── IMPORT MODAL ─── -->
+<div id="import-modal">
+  <div class="import-modal-content">
+    <div class="import-modal-header">
+      <h3><i class="fa-solid fa-file-invoice" style="color:var(--brand);margin-right:8px"></i>批次匯入結果報告</h3>
+      <button class="btn btn-secondary btn-sm" onclick="document.getElementById('import-modal').classList.remove('open')">關閉</button>
+    </div>
+    <div class="import-kpis">
+      <div class="import-kpi success"><div class="ik-val" id="ir-success">0</div><div class="ik-label">成功匯入</div></div>
+      <div class="import-kpi warning"><div class="ik-val" id="ir-warning">0</div><div class="ik-label">異常綁定</div></div>
+      <div class="import-kpi error"><div class="ik-val" id="ir-error">0</div><div class="ik-label">嚴重錯誤</div></div>
+    </div>
+    <div class="import-detail">
+      <div class="import-detail-header">
+        <div>狀態</div><div>學號 / 姓名</div><div>來源列</div><div>說明</div>
+      </div>
+      <div class="import-detail-list custom-scroll" id="ir-list"></div>
+    </div>
+    <div class="import-modal-footer">
+      <button class="btn btn-secondary" onclick="document.getElementById('import-modal').classList.remove('open')">關閉視窗</button>
+      <button class="btn btn-primary" onclick="window.downloadImportReport()"><i class="fa-solid fa-download"></i> 下載報表</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── TOAST CONTAINER ─── -->
+<div id="toast-container"></div>
+
+<!-- ─── FIREBASE + LOGIC ─── -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc, serverTimestamp, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+const firebaseConfig = { apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY", authDomain: "thu-isac-review.firebaseapp.com", projectId: "thu-isac-review", storageBucket: "thu-isac-review.firebasestorage.app", messagingSenderId: "453299876735", appId: "1:453299876735:web:1d8babca3315423161a04a" };
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const recordsCol = collection(db, "internship_records");
+const studentsCol = collection(db, "internship_students");
+const instsCol = collection(db, "internship_institutions");
+const coursesCol = collection(db, "internship_courses");
+
+let allRecords=[], allStudents=[], allInsts=[], allCourses=[];
+let orderedColleges=[], globalDepts=[];
+let editingId=null, selectedIds=[], filteredRecords=[], selectedCourseIds=[];
+let currentPage=1, itemsPerPage=10;
+let sortCol='', sortDir='asc';
+let filterSelections={ period:new Set(), proof:new Set(), insurance:new Set(), employment:new Set() };
+window.globalImportReportData=[];
+
+// ─ HELPERS ─
+const getTime = ts => ts ? (ts.toMillis ? ts.toMillis() : ts.seconds ? ts.seconds*1000 : new Date(ts).getTime()||0) : 0;
+const getColShort = n => { const c=orderedColleges.find(x=>x.name===n); return c?.shortName||n||''; };
+const getDeptShort = n => { const d=globalDepts.find(x=>x.name===n); return d?.shortName||n||''; };
+
+// ─ TOAST ─
+window.toast = (msg, type='success', subtitle='', undoFn=null) => {
+  const icons = { success:'fa-circle-check', warning:'fa-triangle-exclamation', error:'fa-circle-xmark', info:'fa-circle-info' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `
+    <i class="fa-solid ${icons[type]||icons.info} toast-icon"></i>
+    <div class="toast-body">
+      <div class="toast-title">${msg}</div>
+      ${subtitle ? `<div class="toast-msg">${subtitle}</div>` : ''}
+      ${undoFn ? `<button class="toast-undo">復原操作</button>` : ''}
+    </div>
+    <button class="toast-close" aria-label="關閉"><i class="fa-solid fa-xmark"></i></button>
+    <div class="toast-progress"></div>
+  `;
+  const container = document.getElementById('toast-container');
+  container.appendChild(el);
+  if (undoFn) el.querySelector('.toast-undo').onclick = () => { undoFn(); remove(); };
+  el.querySelector('.toast-close').onclick = remove;
+  const timer = setTimeout(remove, 4500);
+  const bar = el.querySelector('.toast-progress');
+  bar.style.animation = 'none'; bar.style.transition = 'transform 4.5s linear'; bar.style.transform = 'scaleX(1)';
+  requestAnimationFrame(() => { requestAnimationFrame(() => { bar.style.transform = 'scaleX(0)'; }); });
+  function remove() { clearTimeout(timer); el.classList.add('leaving'); setTimeout(() => el.remove(), 200); }
+};
+
+// ─ CONFIRM (inline, non-blocking) ─
+window.showConfirm = (msg, onYes) => {
+  // Simple approach: show toast with confirm buttons
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.style.maxWidth = '360px';
+  el.innerHTML = `
+    <i class="fa-solid fa-triangle-exclamation toast-icon" style="color:#fbbf24"></i>
+    <div class="toast-body">
+      <div class="toast-title">${msg}</div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button class="toast-undo" id="tc-yes" style="background:var(--danger);border-color:transparent">確認刪除</button>
+        <button class="toast-undo" id="tc-no">取消</button>
+      </div>
+    </div>
+  `;
+  const container = document.getElementById('toast-container');
+  container.appendChild(el);
+  const remove = () => { el.classList.add('leaving'); setTimeout(() => el.remove(), 200); };
+  el.querySelector('#tc-yes').onclick = () => { onYes(); remove(); };
+  el.querySelector('#tc-no').onclick = remove;
+};
+
+// ─ NAV ─
+document.querySelectorAll('.nav-item[data-view]').forEach(item => {
+  item.onclick = () => {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    item.classList.add('active');
+    const view = item.dataset.view;
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(`view-${view}`).classList.add('active');
+    document.getElementById('breadcrumb-active').textContent = item.textContent.trim();
+  };
+});
+
+// ─ INIT ─
+onAuthStateChanged(auth, async user => {
+  if (!user) return;
+  const [colSnap, deptDocs, stuDocs, instDocs, courseDocs] = await Promise.all([
+    getDoc(doc(db, "settings", "colleges")),
+    getDocs(collection(db, "departments")),
+    getDocs(studentsCol),
+    getDocs(instsCol),
+    getDocs(coursesCol)
+  ]);
+  if (colSnap.exists()) orderedColleges = colSnap.data().list.map(c => typeof c==='string' ? {name:c,shortName:c} : c);
+  globalDepts = deptDocs.docs.map(d => d.data());
+  allStudents = stuDocs.docs.map(d => ({id:d.id,...d.data()}));
+  allInsts = instDocs.docs.map(d => ({id:d.id,...d.data()}));
+  allCourses = courseDocs.docs.map(d => ({id:d.id,...d.data()}));
+  allCourses.sort((a,b) => (b.academic_year+b.term).localeCompare(a.academic_year+a.term));
+
+  setupAutocomplete();
+  buildFilterRow();
+
+  onSnapshot(recordsCol, snap => {
+    allRecords = snap.docs.map(d => ({id:d.id,...d.data()}));
+    renderTable(); updateDashboard(); updateNavBadge();
+  });
+});
+
+function updateNavBadge() {
+  document.getElementById('nav-badge-records').textContent = allRecords.length;
+}
+
+// ─ DASHBOARD ─
+function updateDashboard() {
+  document.getElementById('kpi-total').textContent = allRecords.length;
+  document.getElementById('kpi-insts').textContent = [...new Set(allRecords.map(r=>r.inst_raw).filter(Boolean))].length;
+  const stuIds = new Set(allRecords.map(r=>(r.student_raw||'').split(' - ')[0]).filter(Boolean));
+  document.getElementById('kpi-students').textContent = stuIds.size;
+  document.getElementById('kpi-unbound').textContent = allRecords.filter(r=>!r.courses||r.courses.length===0).length;
+
+  // Dept bar chart
+  const deptCount = {};
+  allRecords.forEach(r => {
+    const sid = (r.student_raw||'').split(' - ')[0];
+    const stu = allStudents.find(s=>s.student_id===sid);
+    const dept = stu ? getDeptShort(stu.department) : '未知';
+    deptCount[dept] = (deptCount[dept]||0) + 1;
+  });
+  const sorted = Object.entries(deptCount).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  const max = sorted[0]?.[1]||1;
+  const colors = ['#1a56db','#185fa5','#3b82f6','#60a5fa','#93c5fd','#bfdbfe','#dbeafe'];
+  const chartEl = document.getElementById('dept-bar-chart');
+  if (sorted.length === 0) { chartEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:12px;padding:16px">尚無資料</div>'; }
+  else {
+    chartEl.innerHTML = sorted.map(([dept,cnt],i) => `
+      <div class="bar-row">
+        <div class="bar-label" title="${dept}">${dept}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${(cnt/max)*100}%;background:${colors[i]||colors[0]}"></div></div>
+        <div class="bar-val">${cnt}</div>
+      </div>`).join('');
+  }
+
+  // Donut
+  const insMap = {};
+  allRecords.forEach(r => { if (r.insurance) insMap[r.insurance] = (insMap[r.insurance]||0)+1; });
+  const donutData = Object.entries(insMap);
+  const total = donutData.reduce((s,[,v])=>s+v,0)||1;
+  const donutColors = ['#1a56db','#059669','#d97706','#dc2626'];
+  const svg = document.getElementById('donut-svg');
+  const legend = document.getElementById('donut-legend');
+  let offset = 25; // start from top
+  let svgPaths = `<circle cx="50" cy="50" r="36" fill="none" stroke="var(--border)" stroke-width="16"/>`;
+  const circumference = 2 * Math.PI * 36;
+  donutData.forEach(([label, cnt], i) => {
+    const pct = cnt/total;
+    const dash = pct * circumference;
+    const gap = circumference - dash;
+    svgPaths += `<circle cx="50" cy="50" r="36" fill="none" stroke="${donutColors[i%donutColors.length]}" stroke-width="16" stroke-dasharray="${dash} ${gap}" stroke-dashoffset="${-offset*circumference/100}" transform="rotate(-90 50 50)"/>`;
+    offset += pct * 100;
+  });
+  svgPaths += `<text x="50" y="54" text-anchor="middle" font-size="14" font-weight="700" fill="var(--text-primary)">${total}</text>`;
+  svg.innerHTML = svgPaths;
+  legend.innerHTML = donutData.map(([label,cnt],i) => `
+    <div class="legend-item">
+      <div class="legend-dot" style="background:${donutColors[i%donutColors.length]}"></div>
+      <span>${label} (${cnt})</span>
+    </div>`).join('');
+
+  // Activity
+  const recent = [...allRecords].sort((a,b)=>getTime(b.created_at)-getTime(a.created_at)).slice(0,5);
+  const actEl = document.getElementById('activity-list');
+  if (recent.length === 0) { actEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:12px;padding:16px">尚無紀錄</div>'; return; }
+  actEl.innerHTML = recent.map(r => {
+    const sid = (r.student_raw||'').split(' - ')[0];
+    const stu = allStudents.find(s=>s.student_id===sid);
+    const name = stu ? stu.name : (r.student_raw||'未知');
+    const ts = getTime(r.created_at);
+    const timeStr = ts ? new Date(ts).toLocaleDateString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+    return `
+      <div class="activity-item">
+        <div class="activity-dot green"></div>
+        <div class="activity-text">新增 <strong>${name}</strong> 在 <strong>${r.inst_raw||'—'}</strong> 的實習紀錄</div>
+        <div class="activity-time">${timeStr}</div>
+      </div>`;
+  }).join('');
+}
+
+// ─ FILTER ROW ─
+const filterDefs = [
+  { key:'period', label:'實習時間', opts:['寒假實習','暑假實習','學期期間實習','單一學期實習','全學年'] },
+  { key:'proof', label:'證明文件', opts:['合約','公函','其他證明文件'] },
+  { key:'insurance', label:'投保情形', opts:['僅校外實習保險','僅勞保','兩者皆有','兩者皆無'] },
+  { key:'employment', label:'勞雇關係', opts:['是','否'] }
+];
+
+function buildFilterRow() {
+  const row = document.getElementById('filter-row');
+  row.innerHTML = filterDefs.map(def => `
+    <div style="position:relative" class="filter-pill-wrap">
+      <button class="filter-pill" id="fpill-${def.key}" onclick="window.toggleFilterDropdown('${def.key}')">
+        ${def.label} <i class="fa-solid fa-chevron-down"></i>
+      </button>
+      <div class="filter-dropdown" id="fdrop-${def.key}">
+        <div class="filter-dropdown-list">
+          ${def.opts.map(opt => `
+            <label class="filter-option">
+              <input type="checkbox" value="${opt}" data-key="${def.key}" onchange="window.onFilterChange(this)">
+              <span>${opt}</span>
+            </label>`).join('')}
+        </div>
+        <div class="filter-dropdown-footer">
+          <button onclick="window.clearFilter('${def.key}')">清除此篩選</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+window.toggleFilterDropdown = (key) => {
+  const drop = document.getElementById(`fdrop-${key}`);
+  const isOpen = drop.classList.contains('open');
+  document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('open'));
+  if (!isOpen) drop.classList.add('open');
+};
+document.addEventListener('click', e => {
+  if (!e.target.closest('.filter-pill-wrap')) document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('open'));
+});
+window.onFilterChange = (chk) => {
+  const key = chk.dataset.key;
+  if (chk.checked) filterSelections[key].add(chk.value); else filterSelections[key].delete(chk.value);
+  updateFilterPillUI(key); currentPage=1; renderTable();
+};
+function updateFilterPillUI(key) {
+  const pill = document.getElementById(`fpill-${key}`);
+  const set = filterSelections[key];
+  const def = filterDefs.find(d=>d.key===key);
+  if (set.size > 0) {
+    pill.classList.add('active');
+    pill.innerHTML = `${def.label} <span class="pill-count">${set.size}</span>`;
+  } else {
+    pill.classList.remove('active');
+    pill.innerHTML = `${def.label} <i class="fa-solid fa-chevron-down"></i>`;
+  }
+}
+window.clearFilter = (key) => {
+  filterSelections[key].clear();
+  document.querySelectorAll(`input[data-key="${key}"]`).forEach(c => c.checked=false);
+  updateFilterPillUI(key); currentPage=1; renderTable();
+};
+
+// ─ SORT ─
+document.querySelectorAll('th[data-sort]').forEach(th => {
+  th.onclick = () => {
+    const col = th.dataset.sort;
+    if (sortCol === col) sortDir = sortDir==='asc' ? 'desc' : 'asc';
+    else { sortCol=col; sortDir='asc'; }
+    document.querySelectorAll('th[data-sort]').forEach(t => {
+      t.classList.remove('sort-asc','sort-desc');
+      t.querySelector('.sort-icon').className = 'fa-solid fa-sort sort-icon';
+    });
+    th.classList.add(sortDir==='asc' ? 'sort-asc' : 'sort-desc');
+    th.querySelector('.sort-icon').className = `fa-solid fa-sort-${sortDir==='asc'?'up':'down'} sort-icon`;
+    renderTable();
+  };
+});
+
+// ─ SEARCH ─
+document.getElementById('search-input').addEventListener('input', () => { currentPage=1; renderTable(); });
+
+// ─ RENDER TABLE ─
+window.renderTable = () => {
+  const term = document.getElementById('search-input').value.toLowerCase().trim();
+  filteredRecords = allRecords.filter(d => {
+    const s = (d.student_raw||'').toLowerCase(); const ins = (d.inst_raw||'').toLowerCase();
+    if (term && !s.includes(term) && !ins.includes(term)) return false;
+    if (filterSelections.period.size > 0 && !filterSelections.period.has(d.period_type)) return false;
+    if (filterSelections.proof.size > 0 && !filterSelections.proof.has(d.proof_type)) return false;
+    if (filterSelections.insurance.size > 0 && !filterSelections.insurance.has(d.insurance)) return false;
+    if (filterSelections.employment.size > 0 && !filterSelections.employment.has(d.employment)) return false;
+    return true;
+  });
+
+  if (sortCol) {
+    filteredRecords.sort((a,b) => {
+      let av = a[sortCol]||'', bv = b[sortCol]||'';
+      return sortDir==='asc' ? av.localeCompare(bv,'zh-TW') : bv.localeCompare(av,'zh-TW');
+    });
+  } else {
+    filteredRecords.sort((a,b) => getTime(b.created_at)-getTime(a.created_at));
+  }
+
+  const total = filteredRecords.length;
+  const tPages = Math.max(1, Math.ceil(total/itemsPerPage));
+  if (currentPage > tPages) currentPage = tPages;
+  const start = (currentPage-1)*itemsPerPage;
+  const items = filteredRecords.slice(start, start+itemsPerPage);
+
+  // pagination info
+  if (total > 0) document.getElementById('pagination-info').innerHTML = `共 <strong>${total}</strong> 筆，顯示第 ${start+1}–${Math.min(start+itemsPerPage,total)} 筆`;
+  else document.getElementById('pagination-info').innerHTML = `共 <strong>0</strong> 筆`;
+
+  // pagination controls
+  let pHtml = `<button class="page-btn" onclick="window.changePage(${currentPage-1})" ${currentPage<=1?'disabled':''}><i class="fa-solid fa-chevron-left" style="font-size:10px"></i></button>`;
+  const pages = [];
+  for (let p=1;p<=tPages;p++) {
+    if (p===1||p===tPages||Math.abs(p-currentPage)<=1) pages.push(p);
+    else if (pages[pages.length-1]!=='…') pages.push('…');
+  }
+  pages.forEach(p => {
+    if (p==='…') pHtml += `<span class="page-btn" style="cursor:default;border:none">…</span>`;
+    else pHtml += `<button class="page-btn ${p===currentPage?'active':''}" onclick="window.changePage(${p})">${p}</button>`;
+  });
+  pHtml += `<button class="page-btn" onclick="window.changePage(${currentPage+1})" ${currentPage>=tPages?'disabled':''}><i class="fa-solid fa-chevron-right" style="font-size:10px"></i></button>`;
+  document.getElementById('pagination-controls').innerHTML = pHtml;
+
+  // select all checkbox
+  document.getElementById('chk-all').checked = items.length>0 && items.every(i=>selectedIds.includes(i.id));
+  document.getElementById('chk-all').indeterminate = items.some(i=>selectedIds.includes(i.id)) && !items.every(i=>selectedIds.includes(i.id));
+
+  updateBatchBar();
+
+  if (total === 0) {
+    document.getElementById('table-body').innerHTML = `<tr><td colspan="7">
+      <div class="empty-state">
+        <div class="empty-icon"><i class="fa-solid fa-inbox"></i></div>
+        <div class="empty-title">找不到符合的紀錄</div>
+        <div class="empty-desc">請嘗試調整搜尋關鍵字或篩選條件</div>
+      </div>
+    </td></tr>`;
+    return;
+  }
+
+  const proofColors = { '合約':'badge-green','公函':'badge-blue','其他證明文件':'badge-gray' };
+  const insurColors = { '兩者皆有':'badge-green','僅校外實習保險':'badge-blue','僅勞保':'badge-amber','兩者皆無':'badge-red' };
+
+  document.getElementById('table-body').innerHTML = items.map(d => {
+    const sid = (d.student_raw||'').split(' - ')[0];
+    const stu = allStudents.find(s=>s.student_id===sid);
+    const name = stu?.name || d.student_raw || '—';
+    const dept = stu ? getDeptShort(stu.department) : '未綁定';
+    const inst = allInsts.find(i=>i.name===d.inst_raw);
+    const courseTags = (d.courses||[]).slice(0,2).map(cid => {
+      const c = allCourses.find(x=>x.id===cid);
+      return c ? `<span class="badge badge-blue">${c.academic_year}-${c.term} ${c.course_code}</span>` : '';
+    }).join('');
+    const moreCount = (d.courses||[]).length - 2;
+    const moreTag = moreCount > 0 ? `<span class="badge badge-gray">+${moreCount}</span>` : '';
+
+    return `
+      <tr class="${selectedIds.includes(d.id)?'selected':''}">
+        <td style="text-align:center;padding-top:14px"><input type="checkbox" ${selectedIds.includes(d.id)?'checked':''} onchange="window.toggleSelect('${d.id}')"></td>
+        <td>
+          <div class="cell-primary">${name}</div>
+          <div class="cell-secondary">${sid} · ${dept} · ${d.grade||'—'}年級</div>
+        </td>
+        <td>
+          <div class="cell-primary">${d.inst_raw||'—'}</div>
+          <div class="cell-secondary">${inst?.tax_id||'無統編'} · ${inst?.country||'台灣'}</div>
+        </td>
+        <td>
+          <div class="courses-list">${courseTags}${moreTag}</div>
+          ${(d.courses||[]).length===0 ? '<div class="cell-secondary" style="color:var(--danger)">未關聯課程</div>' : ''}
+        </td>
+        <td>
+          <div class="cell-primary">${d.duration||'—'}</div>
+          <div class="cell-secondary">${d.period_type||'—'} · ${d.hours||0} 小時</div>
+        </td>
+        <td>
+          <div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:4px">
+            <span class="badge ${proofColors[d.proof_type]||'badge-gray'}">${d.proof_type||'—'}</span>
+            <span class="badge ${insurColors[d.insurance]||'badge-gray'}">${d.insurance||'—'}</span>
+          </div>
+          <div class="cell-secondary">勞雇：${d.employment||'—'} · 歸屬：${d.resp_dept?getDeptShort(d.resp_dept):'未設定'}</div>
+        </td>
+        <td style="text-align:center">
+          <div class="row-actions">
+            <button class="btn btn-secondary btn-icon sm" onclick="window.editRecord('${d.id}')" title="編輯"><i class="fa-solid fa-pen" style="font-size:11px"></i></button>
+            <button class="btn btn-icon sm" onclick="window.deleteRecord('${d.id}','${name}')" title="刪除" style="color:var(--danger);border-color:var(--danger-border)"><i class="fa-solid fa-trash-can" style="font-size:11px"></i></button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+};
+
+window.changePage = p => { currentPage=p; renderTable(); };
+window.changePerPage = v => { itemsPerPage=Number(v); currentPage=1; renderTable(); };
+
+// ─ SELECTION ─
+window.toggleSelect = id => { const i=selectedIds.indexOf(id); if(i===-1) selectedIds.push(id); else selectedIds.splice(i,1); renderTable(); };
+window.toggleSelectPage = chk => {
+  const start=(currentPage-1)*itemsPerPage;
+  const pageIds=filteredRecords.slice(start,start+itemsPerPage).map(d=>d.id);
+  if(chk.checked) pageIds.forEach(id=>{ if(!selectedIds.includes(id)) selectedIds.push(id); });
+  else selectedIds=selectedIds.filter(id=>!pageIds.includes(id));
+  renderTable();
+};
+window.selectAllFiltered = () => { selectedIds=filteredRecords.map(d=>d.id); renderTable(); };
+window.clearSelection = () => { selectedIds=[]; renderTable(); };
+function updateBatchBar() {
+  const bar = document.getElementById('batch-bar');
+  if (selectedIds.length > 0) {
+    bar.classList.add('visible');
+    document.getElementById('batch-count').textContent = selectedIds.length;
+    const showSelectAll = selectedIds.length < filteredRecords.length;
+    document.getElementById('btn-select-all-text').style.display = showSelectAll ? '' : 'none';
+  } else { bar.classList.remove('visible'); }
+}
+
+// ─ DELETE ─
+window.deleteRecord = (id, name) => {
+  let deleted = false;
+  let undoTimeout;
+  window.showConfirm(`確定刪除「${name}」的實習紀錄？`, async () => {
+    const data = allRecords.find(d=>d.id===id);
+    await deleteDoc(doc(db, "internship_records", id));
+    window.toast('紀錄已刪除', 'warning', name, async () => {
+      // restore
+      const { id: _id, ...payload } = data;
+      await addDoc(recordsCol, payload);
+      window.toast('紀錄已復原', 'success');
+    });
+  });
+};
+
+window.batchDelete = () => {
+  const count = selectedIds.length;
+  window.showConfirm(`確定刪除所選 ${count} 筆紀錄？`, async () => {
+    const toDelete = [...selectedIds];
+    for (const id of toDelete) await deleteDoc(doc(db,"internship_records",id));
+    selectedIds=[];
+    window.toast(`已刪除 ${count} 筆紀錄`, 'warning');
+  });
+};
+
+// ─ EXPORT ─
+window.exportCSV = () => {
+  if (!filteredRecords.length) { window.toast('沒有可匯出的資料', 'error'); return; }
+  let csv = '\uFEFF學號,學生姓名,年級,實習機構,關聯課程,負責系所,起訖時間,時數,實習時間,證明文件,投保情形,勞雇關係,備註\n';
+  filteredRecords.forEach(d => {
+    const parts = (d.student_raw||'').split(' - ');
+    const courses = (d.courses||[]).map(cid=>{ const c=allCourses.find(x=>x.id===cid); return c?`${c.academic_year}-${c.term}_${c.course_code}`:''; }).filter(Boolean).join('、');
+    csv += [parts[0],parts[1],d.grade,d.inst_raw,courses,d.resp_dept||'',d.duration,d.hours,d.period_type,d.proof_type,d.insurance,d.employment,d.notes||''].map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`).join(',')+'\n';
+  });
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+  a.download=`實習紀錄_${new Date().toISOString().split('T')[0]}.csv`; a.click();
+  window.toast('匯出成功', 'success', `共匯出 ${filteredRecords.length} 筆`);
+};
+
+// ─ AUTOCOMPLETE ─
+function setupAutocomplete() {
+  setupAC('fi-student','ac-student',
+    term => allStudents.filter(s=>s.student_id.toLowerCase().includes(term)||s.name.toLowerCase().includes(term)).slice(0,20),
+    s => `<div class="ac-primary">${s.student_id} - ${s.name}</div><div class="ac-secondary">${getColShort(s.college)} / ${getDeptShort(s.department)}</div>`,
+    s => {
+      document.getElementById('fi-student').value = `${s.student_id} - ${s.name}`;
+      const card=document.getElementById('stu-info-card');
+      document.getElementById('stu-info-name').textContent=`${s.name} (${s.student_id})`;
+      document.getElementById('stu-info-meta').textContent=`${getColShort(s.college)} / ${getDeptShort(s.department)}`;
+      card.classList.add('show'); updateRespDeptOptions();
+    }
+  );
+  setupAC('fi-inst','ac-inst',
+    term => allInsts.filter(i=>i.name.toLowerCase().includes(term)||(i.tax_id&&i.tax_id.toLowerCase().includes(term))).slice(0,20),
+    i => `<div class="ac-primary">${i.name}</div><div class="ac-secondary">${i.tax_id||'無統編'} · ${i.address||''}</div>`,
+    i => {
+      document.getElementById('fi-inst').value=i.name;
+      const card=document.getElementById('inst-info-card');
+      document.getElementById('inst-info-name').textContent=i.name;
+      document.getElementById('inst-info-meta').textContent=`${i.tax_id||'無統編'} · ${i.address||''}`;
+      card.classList.add('show');
+    }
+  );
+  setupAC('fi-course','ac-course',
+    term => allCourses.filter(c=>!selectedCourseIds.includes(c.id)&&(c.course_name.toLowerCase().includes(term)||c.course_code.toLowerCase().includes(term)||c.department.toLowerCase().includes(term))).slice(0,20),
+    c => `<div class="ac-primary">${c.academic_year}-${c.term} ${c.course_code} ${c.course_name}</div><div class="ac-secondary">${getDeptShort(c.department)} · ${c.credits}學分</div>`,
+    c => { if(!selectedCourseIds.includes(c.id)) selectedCourseIds.push(c.id); document.getElementById('fi-course').value=''; renderCourseChips(); updateRespDeptOptions(); }
+  );
+}
+
+function setupAC(inputId, dropId, getItems, renderItem, onSelect) {
+  const input = document.getElementById(inputId);
+  const drop = document.getElementById(dropId);
+  input.addEventListener('input', () => {
+    const term = input.value.trim().toLowerCase();
+    if (!term) { drop.classList.remove('open'); return; }
+    const items = getItems(term);
+    if (!items.length) { drop.innerHTML='<div class="autocomplete-empty">查無結果</div>'; drop.classList.add('open'); return; }
+    drop.innerHTML = items.map((it,i) => `<div class="autocomplete-item" data-i="${i}">${renderItem(it)}</div>`).join('');
+    drop.querySelectorAll('.autocomplete-item').forEach((el,i) => el.onclick=()=>{ onSelect(items[i]); drop.classList.remove('open'); });
+    drop.classList.add('open');
+  });
+  input.addEventListener('focus', () => { if(input.value.trim()) input.dispatchEvent(new Event('input')); });
+  document.addEventListener('click', e => { if(!e.target.closest(`#${inputId}`)&&!e.target.closest(`#${dropId}`)) drop.classList.remove('open'); });
+}
+
+function renderCourseChips() {
+  const wrap = document.getElementById('course-chips-wrap');
+  document.getElementById('course-count-label').textContent = `已選 ${selectedCourseIds.length} 門`;
+  if (!selectedCourseIds.length) { wrap.innerHTML='<div class="course-chips-empty">尚未選擇課程</div>'; return; }
+  const chips = document.createElement('div'); chips.className='course-chips';
+  selectedCourseIds.forEach(id => {
+    const c = allCourses.find(x=>x.id===id); if(!c) return;
+    const el = document.createElement('div'); el.className='course-chip';
+    el.innerHTML=`<div class="chip-info"><div class="chip-name">${c.academic_year}-${c.term} ${c.course_code} ${c.course_name}</div><div class="chip-meta">${getDeptShort(c.department)} · ${c.credits}學分</div></div><button class="chip-remove" data-id="${id}"><i class="fa-solid fa-xmark"></i></button>`;
+    el.querySelector('.chip-remove').onclick=()=>{ selectedCourseIds=selectedCourseIds.filter(x=>x!==id); renderCourseChips(); updateRespDeptOptions(); };
+    chips.appendChild(el);
+  });
+  wrap.innerHTML=''; wrap.appendChild(chips);
+}
+
+function updateRespDeptOptions(preselect='') {
+  const sel=document.getElementById('fi-resp-dept');
+  const stuVal=document.getElementById('fi-student').value;
+  const sid=stuVal.split(' - ')[0];
+  const stu=allStudents.find(s=>s.student_id===sid);
+  const depts=new Set();
+  if(stu?.department) depts.add(stu.department);
+  selectedCourseIds.forEach(cid=>{ const c=allCourses.find(x=>x.id===cid); if(c?.department) depts.add(c.department); });
+  if(!depts.size){ sel.innerHTML='<option value="">請先選擇學生與課程...</option>'; return; }
+  const cur=preselect||sel.value;
+  let html='<option value="">請選擇...</option>';
+  depts.forEach(d=>{ const obj=globalDepts.find(x=>x.name===d); html+=`<option value="${d}">${obj?.shortName||d}</option>`; });
+  sel.innerHTML=html;
+  if(cur&&[...depts].includes(cur)) sel.value=cur;
+  else if(depts.size===1) sel.value=[...depts][0];
+  else if(stu?.department&&depts.has(stu.department)) sel.value=stu.department;
+}
+
+// ─ FORM ─
+window.openForm = () => {
+  editingId=null;
+  document.getElementById('form-title').textContent='建立實習紀錄';
+  document.getElementById('data-form-reset')();
+  document.getElementById('form-modal').classList.add('open');
+};
+
+// Reset helper exposed via window
+window['data-form-reset'] = () => {
+  ['fi-student','fi-inst','fi-course','fi-duration','fi-hours','fi-notes'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  ['fi-grade','fi-period','fi-proof','fi-insurance','fi-employment','fi-resp-dept'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('stu-info-card').classList.remove('show');
+  document.getElementById('inst-info-card').classList.remove('show');
+  selectedCourseIds=[];
+  renderCourseChips();
+  document.getElementById('fi-resp-dept').innerHTML='<option value="">請先選擇學生與課程...</option>';
+  clearErrors();
+};
+
+window.closeForm = () => { document.getElementById('form-modal').classList.remove('open'); editingId=null; };
+
+function clearErrors() {
+  document.querySelectorAll('.field-error').forEach(el=>el.classList.remove('show'));
+  document.querySelectorAll('.field-input,.field-select').forEach(el=>el.classList.remove('error'));
+}
+function showError(fieldId, errId) {
+  const f=document.getElementById(fieldId); if(f) f.classList.add('error');
+  const e=document.getElementById(errId); if(e) e.classList.add('show');
+}
+
+window.submitForm = async () => {
+  clearErrors();
+  let ok=true;
+  const get=id=>document.getElementById(id)?.value?.trim();
+
+  if(!get('fi-student')){ showError('fi-student','err-student'); ok=false; }
+  if(!get('fi-grade')){ showError('fi-grade','err-grade'); ok=false; }
+  if(!get('fi-inst')){ showError('fi-inst','err-inst'); ok=false; }
+  if(!selectedCourseIds.length){ showError('fi-course','err-course'); ok=false; }
+
+  const dur=get('fi-duration');
+  if(!/^\d{2,3}\/\d{2}\/\d{2}-\d{2,3}\/\d{2}\/\d{2}$/.test(dur)){ showError('fi-duration','err-duration'); ok=false; }
+  if(!get('fi-hours')){ showError('fi-hours','err-hours'); ok=false; }
+  if(!get('fi-period')){ showError('fi-period','err-period'); ok=false; }
+  if(!get('fi-proof')){ showError('fi-proof','err-proof'); ok=false; }
+  if(!get('fi-insurance')){ showError('fi-insurance','err-insurance'); ok=false; }
+  if(!get('fi-employment')){ showError('fi-employment','err-employment'); ok=false; }
+  if(!get('fi-resp-dept')){ showError('fi-resp-dept','err-resp-dept'); ok=false; }
+
+  if(!ok){ window.toast('請填寫所有必填欄位', 'error'); return; }
+
+  const btn=document.getElementById('btn-form-submit');
+  btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-circle-notch fa-spin"></i> 儲存中...';
+
+  const payload={
+    student_raw: get('fi-student'), grade: get('fi-grade'), inst_raw: get('fi-inst'),
+    courses: selectedCourseIds, duration: dur, hours: Number(get('fi-hours')),
+    period_type: get('fi-period'), proof_type: get('fi-proof'), insurance: get('fi-insurance'),
+    employment: get('fi-employment'), resp_dept: get('fi-resp-dept'), notes: get('fi-notes')
+  };
+
+  try {
+    if(editingId){ await updateDoc(doc(db,"internship_records",editingId),{...payload,updated_at:serverTimestamp()}); window.toast('紀錄更新成功','success'); }
+    else { await addDoc(recordsCol,{...payload,created_at:serverTimestamp()}); window.toast('紀錄建立成功','success'); }
+    window.closeForm();
+  } catch(err){ window.toast('儲存失敗','error',err.message); }
+  finally { btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-check"></i> 儲存紀錄'; }
+};
+
+window.editRecord = id => {
+  const d=allRecords.find(x=>x.id===id); if(!d) return;
+  editingId=id;
+  document.getElementById('form-title').textContent='編輯實習紀錄';
+  window['data-form-reset']();
+
+  document.getElementById('fi-student').value=d.student_raw||'';
+  document.getElementById('fi-inst').value=d.inst_raw||'';
+  document.getElementById('fi-duration').value=d.duration||'';
+  document.getElementById('fi-hours').value=d.hours||'';
+  document.getElementById('fi-notes').value=d.notes||'';
+  ['fi-grade','fi-period','fi-proof','fi-insurance','fi-employment'].forEach(fid=>{
+    const key=fid.replace('fi-','').replace('-','_');
+    const map={'fi-grade':'grade','fi-period':'period_type','fi-proof':'proof_type','fi-insurance':'insurance','fi-employment':'employment'};
+    const el=document.getElementById(fid); if(el) el.value=d[map[fid]]||'';
+  });
+
+  // Autofill student card
+  const sid=(d.student_raw||'').split(' - ')[0];
+  const stu=allStudents.find(s=>s.student_id===sid);
+  if(stu){ document.getElementById('stu-info-name').textContent=`${stu.name} (${stu.student_id})`; document.getElementById('stu-info-meta').textContent=`${getColShort(stu.college)} / ${getDeptShort(stu.department)}`; document.getElementById('stu-info-card').classList.add('show'); }
+  
+  const inst=allInsts.find(i=>i.name===d.inst_raw);
+  if(inst){ document.getElementById('inst-info-name').textContent=inst.name; document.getElementById('inst-info-meta').textContent=`${inst.tax_id||'無統編'} · ${inst.address||''}`; document.getElementById('inst-info-card').classList.add('show'); }
+
+  selectedCourseIds=Array.isArray(d.courses)?[...d.courses]:[];
+  renderCourseChips();
+  updateRespDeptOptions(d.resp_dept||'');
+
+  document.getElementById('form-modal').classList.add('open');
+};
+
+// ─ IMPORT ─
+window.handleImport = async e => {
+  const file=e.target.files[0]; if(!file) return;
+  const btn=document.getElementById('import-file-input');
+  btn.disabled=true;
+  window.toast('匯入處理中...','info','請稍候');
+  window.globalImportReportData=[];
+
+  const reader=new FileReader();
+  reader.onload=async ev=>{
+    try {
+      const rows=ev.target.result.split('\n').map(r=>r.trim()).filter(r=>r);
+      const recordsMap=new Map();
+      let success=0,warning=0,errorCount=0;
+
+      for(let i=1;i<rows.length;i++){
+        let cols=[],inQ=false,cur='';
+        for(const ch of rows[i]){ if(ch==='"'){inQ=!inQ;}else if(ch===','&&!inQ){cols.push(cur.trim());cur='';}else{cur+=ch;} } cols.push(cur.trim());
+        if(cols.length>=12){
+          const [stuId_raw,stuName,grade,inst_raw,coursesRaw,resp_dept,duration,hoursRaw,period_type,proof_type,insurance,employment,notes=''] = cols;
+          const stuId=stuId_raw.trim().toUpperCase();
+          if(!stuId||!inst_raw||!duration||!period_type||!proof_type||!insurance||!employment||!grade){ errorCount++; window.globalImportReportData.push({status:'錯誤',rows:`第${i+1}列`,student:stuName||'未知',message:'缺少必填欄位'}); continue; }
+          const key=`${stuId}|${inst_raw}|${duration}|${grade}|${period_type}|${proof_type}|${insurance}|${employment}`;
+          if(!recordsMap.has(key)) recordsMap.set(key,{student_raw:`${stuId} - ${stuName}`,stuId,stuName,grade,inst_raw,duration,hours:0,period_type,proof_type,insurance,employment,notes:'',resp_dept,coursesRawList:[],courseIds:[],sourceRows:[]});
+          const g=recordsMap.get(key); g.hours+=Number(hoursRaw)||0; g.sourceRows.push(i+1);
+          if(notes&&!g.notes.includes(notes)) g.notes=g.notes?`${g.notes}；${notes}`:notes;
+          if(coursesRaw) g.coursesRawList.push(...coursesRaw.split(/[、,]/).map(s=>s.trim()).filter(Boolean));
+        } else { errorCount++; window.globalImportReportData.push({status:'錯誤',rows:`第${i+1}列`,student:'-',message:'欄位不足'}); }
+      }
+
+      const payloads=[];
+      for(const[,rec] of recordsMap){
+        const warns=[];
+        const stuMatch=allStudents.find(s=>s.student_id.toUpperCase()===rec.stuId);
+        if(!stuMatch) warns.push('未綁定學生主檔');
+        if(!allInsts.find(i=>i.name===rec.inst_raw)) warns.push('未綁定機構主檔');
+        [...new Set(rec.coursesRawList)].forEach(token=>{
+          const m=token.match(/(\d+-\d+)[_：:](.+)/);
+          if(m){ const c=allCourses.find(x=>x.semester===m[1]&&x.course_code===m[2]); if(c){if(!rec.courseIds.includes(c.id))rec.courseIds.push(c.id);}else warns.push(`找不到課程「${token}」`); }
+          else warns.push(`無法識別「${token}」`);
+        });
+        if(!rec.courseIds.length) warns.push('無法綁定任何課程');
+        const payload={student_raw:rec.student_raw,grade:rec.grade,inst_raw:rec.inst_raw,courses:rec.courseIds,duration:rec.duration,hours:rec.hours,period_type:rec.period_type,proof_type:rec.proof_type,insurance:rec.insurance,employment:rec.employment,notes:rec.notes,resp_dept:rec.resp_dept||(stuMatch?.department||''),created_at:serverTimestamp()};
+        if(warns.length){ warning++; window.globalImportReportData.push({status:'警告',rows:`[${rec.sourceRows.join(',')}]`,student:`${rec.stuId}-${rec.stuName}`,message:warns.join('、')}); }
+        else{ success++; window.globalImportReportData.push({status:'成功',rows:`[${rec.sourceRows.join(',')}]`,student:`${rec.stuId}-${rec.stuName}`,message:'完整匯入'}); }
+        payloads.push(payload);
+      }
+
+      for(const p of payloads) await addDoc(recordsCol,p);
+      document.getElementById('ir-success').textContent=success;
+      document.getElementById('ir-warning').textContent=warning;
+      document.getElementById('ir-error').textContent=errorCount;
+      document.getElementById('ir-list').innerHTML=window.globalImportReportData.map(item=>{
+        const cls=item.status==='成功'?'badge-green':item.status==='警告'?'badge-amber':'badge-red';
+        const lbl=item.status==='成功'?'成功':item.status==='警告'?'異常':'錯誤';
+        return `<div class="import-detail-row"><div><span class="badge ${cls}">${lbl}</span></div><div style="font-size:12px;color:var(--text-primary)">${item.student}</div><div style="font-size:11px;color:var(--text-muted);font-family:monospace">${item.rows}</div><div style="font-size:12px;color:var(--text-secondary)">${item.message}</div></div>`;
+      }).join('');
+      document.getElementById('import-modal').classList.add('open');
+      window.toast(`匯入完成：${success} 成功，${warning} 異常，${errorCount} 錯誤`, success>0?'success':'warning');
+    } catch(err){ window.toast('匯入解析失敗','error',err.message); }
+    finally{ btn.disabled=false; e.target.value=''; }
+  };
+  reader.readAsText(file);
+};
+
+window.downloadImportReport = () => {
+  if(!window.globalImportReportData?.length) return;
+  let csv='\uFEFF狀態,學號姓名,來源列,說明\n';
+  window.globalImportReportData.forEach(r=>csv+=`"${r.status}","${r.student}","${r.rows}","${r.message}"\n`);
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+  a.download=`匯入報告_${new Date().toISOString().split('T')[0]}.csv`; a.click();
+};
+
+// ─ KEYBOARD SHORTCUTS ─
+document.addEventListener('keydown', e => {
+  if((e.metaKey||e.ctrlKey)&&e.key==='s'){ e.preventDefault(); if(document.getElementById('form-modal').classList.contains('open')) window.submitForm(); }
+  if(e.key==='Escape'&&document.getElementById('form-modal').classList.contains('open')) window.closeForm();
+});
+</script>
+</body>
+</html>
