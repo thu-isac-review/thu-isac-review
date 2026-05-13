@@ -297,30 +297,30 @@
 
             const getPageTitle = () => {
                 if (currentHash.includes('dashboard')) return '首頁';
-                if (currentHash.includes('list')) return '審查作業 / 學生待查核名單';
+                if (currentHash.includes('list')) return '審查作業 > 學生待查核名單';
                 
-                if (currentHash.includes('review/department')) return '審查作業 / 系所審查作業';
-                if (currentHash.includes('review/school')) return '審查作業 / 校級審查作業';
+                if (currentHash.includes('review/department')) return '審查作業 > 系所審查作業';
+                if (currentHash.includes('review/school')) return '審查作業 > 校級審查作業';
                 
-                if (currentHash.includes('intern_view/course')) return '實習資料瀏覽 / 實習課程清單';
-                if (currentHash.includes('intern_view/students')) return '實習資料瀏覽 / 實習學生清單';
-                if (currentHash.includes('intern_view/institution')) return '實習資料瀏覽 / 實習機構清單';
-                if (currentHash.includes('intern_view/record')) return '實習資料瀏覽 / 實習記錄清單';
+                if (currentHash.includes('intern_view/course')) return '實習資料瀏覽 > 實習課程清單';
+                if (currentHash.includes('intern_view/students')) return '實習資料瀏覽 > 實習學生清單';
+                if (currentHash.includes('intern_view/institution')) return '實習資料瀏覽 > 實習機構清單';
+                if (currentHash.includes('intern_view/record')) return '實習資料瀏覽 > 實習記錄清單';
                 
-                if (currentHash.includes('intern_manage/staging_review')) return '實習資料管理 / 批次匯入審查中心';
-                if (currentHash.includes('intern_manage/course')) return '實習資料管理 / 實習課程管理';
-                if (currentHash.includes('intern_manage/students')) return '實習資料管理 / 實習學生管理';
-                if (currentHash.includes('intern_manage/institution')) return '實習資料管理 / 實習機構管理';
-                if (currentHash.includes('intern_manage/record')) return '實習資料管理 / 實習記錄管理';
+                if (currentHash.includes('intern_manage/staging_review')) return '實習資料管理 > 批次匯入審查中心';
+                if (currentHash.includes('intern_manage/course')) return '實習資料管理 > 實習課程管理';
+                if (currentHash.includes('intern_manage/students')) return '實習資料管理 > 實習學生管理';
+                if (currentHash.includes('intern_manage/institution')) return '實習資料管理 > 實習機構管理';
+                if (currentHash.includes('intern_manage/record')) return '實習資料管理 > 實習記錄管理';
 
-                if (currentHash.includes('moe-indicators')) return '審查項目設定 / 教育部審查指標設定';
-                if (currentHash.includes('administrative_files')) return '審查項目設定 / 行政文件審查設定';
-                if (currentHash.includes('students_files')) return '審查項目設定 / 學生文件審查設定';
-                if (currentHash.includes('institution_files')) return '審查項目設定 / 機構文件審查設定';
-                if (currentHash.includes('other_files')) return '審查項目設定 / 其他文件審查設定';
+                if (currentHash.includes('moe-indicators')) return '審查項目設定 > 教育部審查指標設定';
+                if (currentHash.includes('administrative_files')) return '審查項目設定 > 行政文件審查設定';
+                if (currentHash.includes('students_files')) return '審查項目設定 > 學生文件審查設定';
+                if (currentHash.includes('institution_files')) return '審查項目設定 > 機構文件審查設定';
+                if (currentHash.includes('other_files')) return '審查項目設定 > 其他文件審查設定';
                 
-                if (currentHash.includes('departments')) return '系統設定 / 系所清單管理';
-                if (currentHash.includes('roles')) return '系統設定 / 用戶權限管理';
+                if (currentHash.includes('departments')) return '系統設定 > 系所清單管理';
+                if (currentHash.includes('roles')) return '系統設定 > 用戶權限管理';
                 
                 return '實習課程書面審查作業系統';
             };
@@ -333,10 +333,10 @@
                     {/* Sidebar */}
                     <nav id="sidebar" className={`custom-scroll ${isSidebarOpen ? 'open' : ''}`}>
                         <div className="sidebar-logo">
-                            <div className="logo-icon"><i className="ti ti-shield-half"></i></div>
+                            <div className="logo-icon"><i className="ti ti-briefcase-2"></i></div>
                             <div>
-                                <div className="logo-text">書面審查作業系統</div>
-                                <div className="logo-sub">東海大學 ISAC</div>
+                                <div className="logo-text">東海大學實習中心</div>
+                                <div className="logo-sub">實習課程書面審查作業系統</div>
                             </div>
                         </div>
                         
@@ -392,7 +392,7 @@
                                 <button className="mobile-menu-btn" onClick={() => setIsSidebarOpen(true)}>
                                     <i className="ti ti-menu-2"></i>
                                 </button>
-                                <span className="hidden sm:inline">實習書審系統</span>
+                                <span className="hidden sm:inline">實習書審</span>
                                 <i className="ti ti-chevron-right hidden sm:inline" style={{fontSize: '14px', margin: '0 2px'}}></i>
                                 <span className="crumb-active">{getPageTitle()}</span>
                             </div>
@@ -532,7 +532,7 @@
                             <div style={{width: '56px', height: '56px', borderRadius: 'var(--radius-lg)', background: 'var(--brand)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', fontSize: '28px', boxShadow: 'var(--shadow-sm)'}}>
                                 <i className="ti ti-user-key"></i>
                             </div>
-                            <h1 style={{fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)'}}>東海大學 實習與學生成就中心</h1>
+                            <h1 style={{fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)'}}>東海大學實習中心</h1>
                             <p style={{fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px'}}>實習課程書面審查作業系統</p>
                         </div>
                         <div className="space-y-4">
