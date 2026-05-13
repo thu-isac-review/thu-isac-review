@@ -1,9 +1,14 @@
 <!DOCTYPE html>
-<html lang="zh-TW" class="h-full">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>實習課程書面審查作業系統 - 東海大學實習中心</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="importmap">
@@ -16,41 +21,165 @@
       }
     </script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            50: '#f0f5fa', 100: '#e1ebf4', 500: '#2c75b3', 600: '#1a5c96', 700: '#004785', 800: '#003666', 900: '#002244'
-                        },
-                        sidebar: '#0f172a',
-                    }
-                }
-            }
-        }
-    </script>
 
     <style>
-        html, #root { height: 100%; margin: 0; padding: 0; background-color: #f8fafc; overflow: hidden; }
-        
-        body { 
-            height: 100%; margin: 0; padding: 0; background-color: #f8fafc; overflow: hidden;
-            font-family: "SF Pro TC", "SF Pro Display", "PingFang TC", "Noto Sans TC", sans-serif; 
-            -webkit-font-smoothing: antialiased; 
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+          --brand: #1a56db;
+          --brand-hover: #1649c0;
+          --brand-light: #eff4ff;
+          --brand-border: #c3d2f9;
+          --sidebar-w: 240px;
+          --topbar-h: 56px;
+          --bg: #f8f9fc;
+          --surface: #ffffff;
+          --border: #e5e7ef;
+          --border-strong: #cdd0dd;
+          --text-primary: #111827;
+          --text-secondary: #4b5563;
+          --text-muted: #9ca3af;
+          --success: #059669;
+          --danger: #dc2626;
+          --radius-sm: 6px;
+          --radius: 8px;
+          --radius-lg: 12px;
+          --radius-xl: 16px;
+          --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+          --transition: 150ms cubic-bezier(0.4,0,0.2,1);
         }
 
-        .sidebar-item.active { background-color: rgba(255, 255, 255, 0.1); color: #ffffff; border-left: 3px solid #3b82f6; font-weight: bold;}
-        .sidebar-item { border-left: 3px solid transparent; transition: all 0.2s ease; cursor: pointer; }
-        .sidebar-item:hover:not(.active) { background-color: rgba(255, 255, 255, 0.05); color: #f8fafc; }
+        html, body { height: 100%; overflow: hidden; font-family: 'Noto Sans TC', sans-serif; font-size: 14px; color: var(--text-primary); background: var(--bg); -webkit-font-smoothing: antialiased; }
 
+        /* ─── LAYOUT ─── */
+        #app { display: flex; height: 100vh; overflow: hidden; }
+
+        /* ─── SIDEBAR ─── */
+        #sidebar {
+          width: var(--sidebar-w);
+          background: var(--surface);
+          border-right: 1px solid var(--border);
+          display: flex;
+          flex-direction: column;
+          flex-shrink: 0;
+          z-index: 30;
+          transition: transform 0.3s ease;
+        }
+        .sidebar-logo {
+          height: var(--topbar-h);
+          padding: 0 16px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          border-bottom: 1px solid var(--border);
+          flex-shrink: 0;
+        }
+        .sidebar-logo .logo-icon {
+          width: 30px; height: 30px;
+          background: var(--brand);
+          border-radius: var(--radius-sm);
+          display: flex; align-items: center; justify-content: center;
+          color: white;
+          font-size: 18px;
+          flex-shrink: 0;
+        }
+        .sidebar-logo .logo-text { font-size: 13px; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
+        .sidebar-logo .logo-sub { font-size: 10px; color: var(--text-muted); font-weight: 400; }
+        
+        .sidebar-nav { flex: 1; padding: 12px 8px; overflow-y: auto; }
+        .nav-group-label { font-size: 10px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.07em; text-transform: uppercase; padding: 0 8px; margin: 16px 0 4px; }
+        .nav-group-label:first-child { margin-top: 4px; }
+        .nav-item {
+          display: flex; align-items: center; gap: 9px;
+          padding: 8px 10px;
+          border-radius: var(--radius);
+          cursor: pointer;
+          color: var(--text-secondary);
+          font-size: 13px; font-weight: 500;
+          transition: background var(--transition), color var(--transition);
+          user-select: none;
+          margin-bottom: 1px;
+        }
+        .nav-item i { width: 18px; text-align: center; font-size: 16px; flex-shrink: 0; }
+        .nav-item:hover { background: var(--bg); color: var(--text-primary); }
+        .nav-item.active { background: var(--brand-light); color: var(--brand); font-weight: 700; }
+        
+        .sidebar-footer {
+          padding: 12px 8px;
+          border-top: 1px solid var(--border);
+          flex-shrink: 0;
+        }
+        .user-row {
+          display: flex; align-items: center; gap: 9px;
+          padding: 8px 10px;
+          border-radius: var(--radius);
+          cursor: pointer;
+          transition: background var(--transition);
+        }
+        .user-row:hover { background: var(--bg); }
+        .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--brand-light); border: 1.5px solid var(--brand-border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--brand); flex-shrink: 0; }
+        .user-info { flex: 1; min-width: 0; }
+        .user-name { font-size: 12px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-role { font-size: 10px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* ─── MAIN ─── */
+        #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+        /* ─── TOPBAR ─── */
+        #topbar {
+          height: var(--topbar-h);
+          background: var(--surface);
+          border-bottom: 1px solid var(--border);
+          display: flex; align-items: center;
+          padding: 0 24px;
+          gap: 12px;
+          flex-shrink: 0;
+          z-index: 20;
+        }
+        .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); flex: 1; }
+        .breadcrumb .crumb-active { color: var(--text-primary); font-weight: 600; }
+        .breadcrumb i { font-size: 14px; }
+        .topbar-actions { display: flex; align-items: center; gap: 8px; }
+        
+        .icon-btn {
+          width: 32px; height: 32px;
+          border-radius: var(--radius);
+          border: 1px solid var(--border);
+          background: var(--surface);
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer;
+          color: var(--text-secondary);
+          transition: all var(--transition);
+          position: relative;
+          font-size: 18px;
+        }
+        .icon-btn:hover { background: var(--bg); border-color: var(--border-strong); color: var(--text-primary); }
+        .icon-btn.danger:hover { background: #fef2f2; border-color: #fecaca; color: var(--danger); }
+        .v-divider { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; margin: 0 4px; }
+
+        /* ─── CONTENT AREA ─── */
+        #content { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--bg); }
         iframe { border: none; width: 100%; height: 100%; background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        /* Scrollbar */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
+
+        /* Mobile specific styles */
+        @media (max-width: 768px) {
+            #sidebar { position: fixed; height: 100%; transform: translateX(-100%); }
+            #sidebar.open { transform: translateX(0); }
+            #topbar { padding: 0 16px; }
+            .mobile-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 25; }
+        }
+        .mobile-menu-btn { display: none; background: none; border: none; font-size: 20px; color: var(--text-secondary); cursor: pointer; }
+        @media (max-width: 768px) { .mobile-menu-btn { display: block; margin-right: 8px; } }
+
+        /* Loader & Animations */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .icon-spin { animation: spin 1.2s linear infinite; display: inline-block; }
     </style>
 </head>
 <body>
@@ -150,10 +279,10 @@
             };
 
             if (loading) return (
-                <div className="h-full flex items-center justify-center bg-slate-50">
+                <div className="h-full flex items-center justify-center bg-[#f8f9fc]">
                     <div className="flex flex-col items-center gap-4">
-                        <i className="fa-solid fa-circle-notch fa-spin text-4xl text-blue-600"></i>
-                        <p className="text-slate-400 font-bold text-sm">系統載入中...</p>
+                        <i className="ti ti-loader icon-spin text-4xl" style={{color: 'var(--brand)'}}></i>
+                        <p style={{color: 'var(--text-muted)', fontSize: '13px', fontWeight: 'bold'}}>系統載入中...</p>
                     </div>
                 </div>
             );
@@ -195,128 +324,108 @@
             };
 
             return (
-                <div className="flex h-full overflow-hidden text-slate-800 relative">
-                    
-                    {isSidebarOpen && (
-                        <div 
-                            className="fixed inset-0 bg-black/50 z-30 md:hidden transition-opacity"
-                            onClick={() => setIsSidebarOpen(false)}
-                        ></div>
-                    )}
+                <div id="app">
+                    {/* Mobile Overlay */}
+                    {isSidebarOpen && <div className="mobile-overlay" onClick={() => setIsSidebarOpen(false)}></div>}
 
-                    <aside className={`
-                        fixed md:relative top-0 left-0 h-full w-72 bg-sidebar text-slate-300 flex flex-col shrink-0 z-40 shadow-xl 
-                        transform transition-transform duration-300 ease-in-out
-                        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-                    `}>
-                        <div className="h-auto py-4 flex items-center px-6 border-b border-slate-700/50 cursor-pointer shrink-0">
-                            <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center mr-3 shadow-md shrink-0">
-                                <i className="fa-solid fa-shield-halved text-white text-xl"></i>
+                    {/* Sidebar */}
+                    <nav id="sidebar" className={`custom-scroll ${isSidebarOpen ? 'open' : ''}`}>
+                        <div className="sidebar-logo">
+                            <div className="logo-icon"><i className="ti ti-shield-half"></i></div>
+                            <div>
+                                <div className="logo-text">書面審查作業系統</div>
+                                <div className="logo-sub">東海大學 ISAC</div>
                             </div>
-                            <div className="flex flex-col flex-1">
-                                <span className="text-blue-300 font-bold text-[10px] tracking-widest mb-0.5">東海大學 實習與學生成就中心</span>
-                                <span className="text-white font-bold text-sm tracking-wide leading-tight">實習課程書面審查作業系統</span>
-                            </div>
-                            <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-slate-400 hover:text-white ml-2">
-                                <i className="fa-solid fa-xmark text-xl"></i>
-                            </button>
                         </div>
-
-                        <div className="flex-1 overflow-y-auto py-4 custom-scrollbar">
-                            <MenuBtn active={currentHash === '/dashboard-content.html'} label="首頁" icon="fa-solid fa-house" onClick={() => navigate('/dashboard-content.html')} />
+                        
+                        <div className="sidebar-nav custom-scroll">
+                            <MenuBtn active={currentHash === '/dashboard-content.html'} label="首頁" icon="ti ti-home" onClick={() => navigate('/dashboard-content.html')} />
                             
-                            <div className="px-6 mt-6 mb-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">審查作業</div>
-                            <MenuBtn active={currentHash === '/list.html'} label="學生待查核名單" icon="fa-solid fa-user-check" onClick={() => navigate('/list.html')} />
-                            <MenuBtn active={currentHash === '/review/department.html'} label="系所審查作業" icon="fa-solid fa-building-user" onClick={() => navigate('/review/department.html')} />
-                            <MenuBtn active={currentHash === '/review/school.html'} label="校級審查作業" icon="fa-solid fa-building-columns" onClick={() => navigate('/review/school.html')} />
+                            <div className="nav-group-label">審查作業</div>
+                            <MenuBtn active={currentHash === '/list.html'} label="學生待查核名單" icon="ti ti-user-check" onClick={() => navigate('/list.html')} />
+                            <MenuBtn active={currentHash === '/review/department.html'} label="系所審查作業" icon="ti ti-building-community" onClick={() => navigate('/review/department.html')} />
+                            <MenuBtn active={currentHash === '/review/school.html'} label="校級審查作業" icon="ti ti-building-bank" onClick={() => navigate('/review/school.html')} />
                             
-                            <div className="px-6 mt-6 mb-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">實習資料瀏覽</div>
-                            <MenuBtn active={currentHash === '/intern_view/course.html'} label="實習課程清單" icon="fa-solid fa-book" onClick={() => navigate('/intern_view/course.html')} />
-                            <MenuBtn active={currentHash === '/intern_view/students.html'} label="實習學生清單" icon="fa-solid fa-address-book" onClick={() => navigate('/intern_view/students.html')} />
-                            <MenuBtn active={currentHash === '/intern_view/institution.html'} label="實習機構清單" icon="fa-solid fa-building" onClick={() => navigate('/intern_view/institution.html')} />
-                            <MenuBtn active={currentHash === '/intern_view/record.html'} label="實習記錄清單" icon="fa-solid fa-clipboard-list" onClick={() => navigate('/intern_view/record.html')} />
+                            <div className="nav-group-label">實習資料瀏覽</div>
+                            <MenuBtn active={currentHash === '/intern_view/course.html'} label="實習課程清單" icon="ti ti-book" onClick={() => navigate('/intern_view/course.html')} />
+                            <MenuBtn active={currentHash === '/intern_view/students.html'} label="實習學生清單" icon="ti ti-address-book" onClick={() => navigate('/intern_view/students.html')} />
+                            <MenuBtn active={currentHash === '/intern_view/institution.html'} label="實習機構清單" icon="ti ti-building" onClick={() => navigate('/intern_view/institution.html')} />
+                            <MenuBtn active={currentHash === '/intern_view/record.html'} label="實習記錄清單" icon="ti ti-clipboard-list" onClick={() => navigate('/intern_view/record.html')} />
                             
-                            <div className="px-6 mt-6 mb-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">實習資料管理</div>
-                            <MenuBtn active={currentHash === '/intern_manage/staging_review.html'} label="批次匯入審查中心" icon="fa-solid fa-cloud-arrow-up" onClick={() => navigate('/intern_manage/staging_review.html')} />
-                            <MenuBtn active={currentHash === '/intern_manage/course.html'} label="實習課程管理" icon="fa-solid fa-book" onClick={() => navigate('/intern_manage/course.html')} />
-                            <MenuBtn active={currentHash === '/intern_manage/students.html'} label="實習學生管理" icon="fa-solid fa-user-gear" onClick={() => navigate('/intern_manage/students.html')} />
-                            <MenuBtn active={currentHash === '/intern_manage/institution.html'} label="實習機構管理" icon="fa-solid fa-building" onClick={() => navigate('/intern_manage/institution.html')} />
-                            <MenuBtn active={currentHash === '/intern_manage/record.html'} label="實習記錄管理" icon="fa-solid fa-clipboard-check" onClick={() => navigate('/intern_manage/record.html')} />
+                            <div className="nav-group-label">實習資料管理</div>
+                            <MenuBtn active={currentHash === '/intern_manage/staging_review.html'} label="批次匯入審查中心" icon="ti ti-cloud-upload" onClick={() => navigate('/intern_manage/staging_review.html')} />
+                            <MenuBtn active={currentHash === '/intern_manage/course.html'} label="實習課程管理" icon="ti ti-book" onClick={() => navigate('/intern_manage/course.html')} />
+                            <MenuBtn active={currentHash === '/intern_manage/students.html'} label="實習學生管理" icon="ti ti-user-cog" onClick={() => navigate('/intern_manage/students.html')} />
+                            <MenuBtn active={currentHash === '/intern_manage/institution.html'} label="實習機構管理" icon="ti ti-building" onClick={() => navigate('/intern_manage/institution.html')} />
+                            <MenuBtn active={currentHash === '/intern_manage/record.html'} label="實習記錄管理" icon="ti ti-clipboard-check" onClick={() => navigate('/intern_manage/record.html')} />
                             
-                            <div className="px-6 mt-6 mb-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">審查項目設定</div>
-                            <MenuBtn active={currentHash === '/settings/moe-indicators.html'} label="教育部審查指標設定" icon="fa-solid fa-list-check" onClick={() => navigate('/settings/moe-indicators.html')} />
-                            <MenuBtn active={currentHash === '/settings/administrative_files.html'} label="行政文件審查設定" icon="fa-solid fa-folder-closed" onClick={() => navigate('/settings/administrative_files.html')} />
-                            <MenuBtn active={currentHash === '/settings/students_files.html'} label="學生文件審查設定" icon="fa-solid fa-file-lines" onClick={() => navigate('/settings/students_files.html')} />
-                            <MenuBtn active={currentHash === '/settings/institution_files.html'} label="機構文件審查設定" icon="fa-solid fa-file-pen" onClick={() => navigate('/settings/institution_files.html')} />
-                            <MenuBtn active={currentHash === '/settings/other_files.html'} label="其他文件審查設定" icon="fa-solid fa-file-circle-plus" onClick={() => navigate('/settings/other_files.html')} />
+                            <div className="nav-group-label">審查項目設定</div>
+                            <MenuBtn active={currentHash === '/settings/moe-indicators.html'} label="教育部審查指標設定" icon="ti ti-list-check" onClick={() => navigate('/settings/moe-indicators.html')} />
+                            <MenuBtn active={currentHash === '/settings/administrative_files.html'} label="行政文件審查設定" icon="ti ti-folder" onClick={() => navigate('/settings/administrative_files.html')} />
+                            <MenuBtn active={currentHash === '/settings/students_files.html'} label="學生文件審查設定" icon="ti ti-file-text" onClick={() => navigate('/settings/students_files.html')} />
+                            <MenuBtn active={currentHash === '/settings/institution_files.html'} label="機構文件審查設定" icon="ti ti-file-pencil" onClick={() => navigate('/settings/institution_files.html')} />
+                            <MenuBtn active={currentHash === '/settings/other_files.html'} label="其他文件審查設定" icon="ti ti-file-plus" onClick={() => navigate('/settings/other_files.html')} />
                             
-                            <div className="px-6 mt-6 mb-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">系統設定</div>
-                            <MenuBtn active={currentHash === '/manage/departments.html'} label="系所清單管理" icon="fa-solid fa-graduation-cap" onClick={() => navigate('/manage/departments.html')} />
-                            <MenuBtn active={currentHash === '/manage/roles.html'} label="用戶權限管理" icon="fa-solid fa-user-shield" onClick={() => navigate('/manage/roles.html')} />
+                            <div className="nav-group-label">系統設定</div>
+                            <MenuBtn active={currentHash === '/manage/departments.html'} label="系所清單管理" icon="ti ti-school" onClick={() => navigate('/manage/departments.html')} />
+                            <MenuBtn active={currentHash === '/manage/roles.html'} label="用戶權限管理" icon="ti ti-shield-lock" onClick={() => navigate('/manage/roles.html')} />
                         </div>
-
-                        <div className="p-4 border-t border-slate-700/50 shrink-0">
-                            <div className="flex items-center gap-3 p-2 rounded-xl">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-400 flex items-center justify-center text-white font-bold text-sm shadow-md shrink-0">
-                                    {userData?.name ? userData.name.charAt(0) : 'U'}
+                        
+                        <div className="sidebar-footer">
+                            <div className="user-row" onClick={() => alert('個人資料設定即將推出')}>
+                                <div className="user-avatar">{userData?.name ? userData.name.charAt(0) : 'U'}</div>
+                                <div className="user-info">
+                                    <div className="user-name">{userData ? `${userData.jobTitle || ''} ${userData.name || '管理員'}` : '使用者'}</div>
+                                    <div className="user-role">{userData ? `${userData.level1Unit || ''} | ${userData.level2Unit || ''}` : '資料讀取中...'}</div>
                                 </div>
-                                <div className="flex-1 overflow-hidden">
-                                    <div className="text-[10px] text-blue-300 font-bold truncate mb-0.5">
-                                        {userData ? `${userData.level1Unit || '未設定'} | ${userData.level2Unit || '未設定'}` : '資料讀取中...'}
-                                    </div>
-                                    <div className="text-sm font-bold text-white truncate">
-                                        {userData ? `${userData.jobTitle || '無'}  ${userData.name || '管理員'}` : '使用者'}
-                                    </div>
-                                </div>
+                                <i className="ti ti-settings" style={{fontSize:'16px', color:'var(--text-muted)'}}></i>
                             </div>
                         </div>
-                    </aside>
+                    </nav>
 
-                    <main className="flex-1 flex flex-col h-full relative overflow-hidden bg-slate-50">
-                        <header className="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-4 md:px-8 shrink-0 z-10 sticky top-0 shadow-sm w-full">
-                            <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
-                                <button 
-                                    onClick={() => setIsSidebarOpen(true)}
-                                    className="md:hidden p-2 -ml-2 text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition-colors shrink-0"
-                                >
-                                    <i className="fa-solid fa-bars text-xl"></i>
+                    {/* Main Content Area */}
+                    <div id="main">
+                        <header id="topbar">
+                            <div className="breadcrumb">
+                                <button className="mobile-menu-btn" onClick={() => setIsSidebarOpen(true)}>
+                                    <i className="ti ti-menu-2"></i>
                                 </button>
-                                <h2 className="text-base md:text-lg font-black text-slate-800 truncate">{getPageTitle()}</h2>
+                                <span className="hidden sm:inline">實習書審系統</span>
+                                <i className="ti ti-chevron-right hidden sm:inline" style={{fontSize: '14px', margin: '0 2px'}}></i>
+                                <span className="crumb-active">{getPageTitle()}</span>
                             </div>
                             
-                            <div className="flex items-center gap-3 md:gap-5 shrink-0 pl-2">
-                                <i className="fa-solid fa-bell text-slate-400 text-lg cursor-pointer hover:text-blue-500 transition-colors hidden sm:block"></i>
-                                <div className="h-6 w-px bg-slate-200 hidden sm:block"></div>
-                                <button onClick={handleLogout} className="bg-rose-500 hover:bg-rose-600 text-white border border-rose-600 px-3 md:px-4 py-1.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2 shadow-sm active:scale-95" title="登出系統">
-                                    <i className="fa-solid fa-arrow-right-from-bracket"></i> <span className="hidden sm:inline">登出</span>
-                                </button>
+                            <div className="topbar-actions">
+                                <div className="icon-btn" title="系統通知">
+                                    <i className="ti ti-bell"></i>
+                                </div>
+                                <div className="v-divider"></div>
+                                <div className="icon-btn danger" title="登出系統" onClick={handleLogout}>
+                                    <i className="ti ti-logout"></i>
+                                </div>
                             </div>
                         </header>
 
-                        {/* 💡 修改這裡：將 overflow-hidden 改成 overflow-y-auto，並加上 WebkitOverflowScrolling 以支援 iOS 順暢滑動 */}
-                        <div 
-                            className="flex-1 overflow-y-auto relative w-full h-full custom-scrollbar" 
-                            style={{ WebkitOverflowScrolling: 'touch' }}
-                        >
+                        <div id="content" className="custom-scroll" style={{ WebkitOverflowScrolling: 'touch' }}>
                             {currentHash && (
                                 <iframe 
                                     src={getCacheBustedUrl(currentHash)} 
                                     key={currentHash}
-                                    className="animate-fade w-full h-full block border-0"
+                                    className="animate-fade"
                                     title="Content View"
                                 />
                             )}
                         </div>
-                    </main>
+                    </div>
                 </div>
             );
         }
 
         function MenuBtn({ active, label, icon, onClick }) {
             return (
-                <div onClick={onClick} className={`sidebar-item w-full flex items-center px-6 py-3.5 text-sm mb-1 ${active ? 'active' : 'font-medium'}`}>
-                    <i className={`${icon} text-lg mr-3 ${active ? 'text-blue-400 opacity-100' : 'opacity-80'} w-5 text-center`}></i>
-                    <span className="tracking-tight truncate">{label}</span>
+                <div onClick={onClick} className={`nav-item ${active ? 'active' : ''}`}>
+                    <i className={icon}></i>
+                    <span>{label}</span>
                 </div>
             );
         }
@@ -354,36 +463,37 @@
             };
 
             return (
-                <div className="h-full flex items-center justify-center bg-slate-50 p-4">
-                    <form onSubmit={handleUpdate} className="bg-white p-6 md:p-10 rounded-[2rem] shadow-2xl w-full max-w-md border border-slate-100 animate-fade">
+                <div className="h-full flex items-center justify-center p-4" style={{backgroundColor: 'var(--bg)'}}>
+                    <form onSubmit={handleUpdate} className="w-full max-w-md animate-fade" style={{background: 'var(--surface)', padding: '40px', borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow)', border: '1px solid var(--border)'}}>
                         <div className="flex flex-col items-center mb-8 text-center">
-                            <div className="w-16 h-16 rounded-2xl bg-emerald-500 flex items-center justify-center mb-4 text-white shadow-lg shadow-emerald-500/20">
-                                <i className="fa-solid fa-unlock-keyhole text-3xl"></i>
+                            <div style={{width: '48px', height: '48px', borderRadius: 'var(--radius-lg)', background: 'var(--success-bg)', color: 'var(--success)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', fontSize: '24px'}}>
+                                {/* 改為 user-key */}
+                                <i className="ti ti-user-key"></i>
                             </div>
-                            <h1 className="text-xl font-black text-slate-800 tracking-tight">初次啟用帳號</h1>
-                            <p className="text-slate-500 text-sm mt-2 font-medium leading-relaxed">
+                            <h1 style={{fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)'}}>初次啟用帳號</h1>
+                            <p style={{fontSize: '13px', color: 'var(--text-secondary)', marginTop: '8px', lineHeight: '1.6'}}>
                                 歡迎加入實習書審平台！<br/>基於安全規範，請設定您的專屬登入密碼。
                             </p>
                         </div>
                         <div className="space-y-4">
                             <div>
                                 <div className="relative">
-                                    <input name="password" type={showPwd ? "text" : "password"} placeholder="設定新密碼" className="w-full bg-slate-50 border border-slate-200 px-4 py-3.5 pr-12 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-mono" required />
-                                    <button type="button" onClick={() => setShowPwd(!showPwd)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
-                                        <i className={`fa-solid ${showPwd ? 'fa-eye-slash' : 'fa-eye'} text-lg`}></i>
+                                    <input name="password" type={showPwd ? "text" : "password"} placeholder="設定新密碼" style={{width: '100%', padding: '12px 16px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', fontSize: '13px', fontFamily: 'inherit'}} required />
+                                    <button type="button" onClick={() => setShowPwd(!showPwd)} className="absolute right-4 top-1/2 -translate-y-1/2" style={{color: 'var(--text-muted)', fontSize: '18px'}}>
+                                        <i className={showPwd ? 'ti ti-eye-off' : 'ti ti-eye'}></i>
                                     </button>
                                 </div>
-                                <p className="text-[11px] text-slate-400 mt-2 ml-1"><i className="fa-solid fa-circle-info text-blue-500 mr-1"></i> 需為 8~20 碼，並包含大小寫字母與數字。</p>
+                                <p style={{fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px'}}><i className="ti ti-info-circle" style={{color: 'var(--brand)', fontSize: '14px'}}></i> 需為 8~20 碼，並包含大小寫字母與數字。</p>
                             </div>
                             <div className="relative">
-                                <input name="confirmPassword" type={showConfirmPwd ? "text" : "password"} placeholder="再次確認新密碼" className="w-full bg-slate-50 border border-slate-200 px-4 py-3.5 pr-12 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-mono" required />
-                                <button type="button" onClick={() => setShowConfirmPwd(!showConfirmPwd)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
-                                    <i className={`fa-solid ${showConfirmPwd ? 'fa-eye-slash' : 'fa-eye'} text-lg`}></i>
+                                <input name="confirmPassword" type={showConfirmPwd ? "text" : "password"} placeholder="再次確認新密碼" style={{width: '100%', padding: '12px 16px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', fontSize: '13px', fontFamily: 'inherit'}} required />
+                                <button type="button" onClick={() => setShowConfirmPwd(!showConfirmPwd)} className="absolute right-4 top-1/2 -translate-y-1/2" style={{color: 'var(--text-muted)', fontSize: '18px'}}>
+                                    <i className={showConfirmPwd ? 'ti ti-eye-off' : 'ti ti-eye'}></i>
                                 </button>
                             </div>
                         </div>
-                        <button disabled={isUpdating} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-xl font-bold shadow-xl transition-all mt-8 active:scale-[0.98] disabled:opacity-50 flex justify-center items-center gap-2">
-                            {isUpdating ? <><i className="fa-solid fa-circle-notch fa-spin"></i> 設定中...</> : "確認設定並進入系統"}
+                        <button disabled={isUpdating} style={{width: '100%', background: 'var(--brand)', color: 'white', padding: '12px', borderRadius: 'var(--radius)', fontWeight: '600', marginTop: '24px', border: 'none', cursor: isUpdating ? 'not-allowed' : 'pointer', opacity: isUpdating ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'}}>
+                            {isUpdating ? <><i className="ti ti-loader icon-spin text-lg"></i> 設定中...</> : "確認設定並進入系統"}
                         </button>
                     </form>
                 </div>
@@ -415,14 +525,15 @@
             };
 
             return (
-                <div className="h-full flex items-center justify-center bg-slate-50 p-4">
-                    <form onSubmit={handleLogin} className="bg-white p-6 md:p-10 rounded-[2rem] shadow-2xl w-full max-w-md border border-slate-100 animate-fade">
+                <div className="h-full flex items-center justify-center p-4" style={{backgroundColor: 'var(--bg)'}}>
+                    <form onSubmit={handleLogin} className="w-full max-w-md animate-fade" style={{background: 'var(--surface)', padding: '40px', borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow)', border: '1px solid var(--border)'}}>
                         <div className="flex flex-col items-center mb-8 text-center">
-                            <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center mb-4 text-white shadow-lg shadow-blue-500/20">
-                                <i className="fa-solid fa-shield-halved text-3xl"></i>
+                            <div style={{width: '56px', height: '56px', borderRadius: 'var(--radius-lg)', background: 'var(--brand)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', fontSize: '28px', boxShadow: 'var(--shadow-sm)'}}>
+                                {/* 改為 user-key */}
+                                <i className="ti ti-user-key"></i>
                             </div>
-                            <h1 className="text-xl font-black text-slate-800 tracking-tight">東海大學 實習與學生成就中心</h1>
-                            <p className="text-slate-500 text-sm mt-2 font-medium">實習課程書面審查作業系統</p>
+                            <h1 style={{fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)'}}>東海大學 實習與學生成就中心</h1>
+                            <p style={{fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px'}}>實習課程書面審查作業系統</p>
                         </div>
                         <div className="space-y-4">
                             <input 
@@ -430,8 +541,8 @@
                                 type="text" 
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                placeholder="請輸入帳號或電子郵件(@thu.edu.tw)" 
-                                className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-medium" 
+                                placeholder="請輸入帳號或電子郵件 (@thu.edu.tw)" 
+                                style={{width: '100%', padding: '14px 16px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', fontSize: '13px', fontFamily: 'inherit'}}
                                 required 
                             />
                             <div className="relative">
@@ -441,20 +552,21 @@
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="請輸入密碼" 
-                                    className="w-full bg-slate-50 border border-slate-200 p-4 pr-12 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-medium" 
+                                    style={{width: '100%', padding: '14px 16px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', fontSize: '13px', fontFamily: 'inherit'}}
                                     required 
                                 />
                                 <button 
                                     type="button" 
                                     onClick={() => setShowPassword(!showPassword)} 
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2"
+                                    style={{color: 'var(--text-muted)', fontSize: '18px'}}
                                 >
-                                    <i className={`fa-solid ${showPassword ? 'fa-eye-slash' : 'fa-eye'} text-lg`}></i>
+                                    <i className={showPassword ? 'ti ti-eye-off' : 'ti ti-eye'}></i>
                                 </button>
                             </div>
                         </div>
-                        <button disabled={isLoggingIn} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold shadow-xl transition-all mt-8 active:scale-[0.98] disabled:opacity-50 flex justify-center items-center gap-2">
-                            {isLoggingIn ? <><i className="fa-solid fa-circle-notch fa-spin"></i> 連線中...</> : "進入系統"}
+                        <button disabled={isLoggingIn} style={{width: '100%', background: 'var(--brand)', color: 'white', padding: '14px', borderRadius: 'var(--radius)', fontWeight: '600', marginTop: '24px', border: 'none', cursor: isLoggingIn ? 'not-allowed' : 'pointer', opacity: isLoggingIn ? 0.7 : 1, transition: 'background var(--transition)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'}}>
+                            {isLoggingIn ? <><i className="ti ti-loader icon-spin text-lg"></i> 連線中...</> : "進入系統"}
                         </button>
                     </form>
                 </div>
