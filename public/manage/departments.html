@@ -116,7 +116,6 @@ html, body {
 .btn-icon { width: 34px; padding: 0; justify-content: center; }
 .btn-icon.sm { width: 28px; height: 28px; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-/* 修正 5: 確保 icon 在 flex 佈局下絕對垂直置中 */
 .btn i { font-size: 16px; display: inline-flex; align-items: center; justify-content: center; }
 
 /* ─── FILTER ROW & BATCH BAR ─── */
@@ -200,7 +199,6 @@ tr.disabled td { opacity: 0.6; filter: grayscale(40%); background: var(--bg); }
 .cell-primary.bold { font-weight: 600; }
 .cell-secondary { font-size: 11px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
 
-/* 修正 6: 標籤改為更通用的結構，供後續 JS 填入樣式 */
 .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; }
 .badge-gray { background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; }
 
@@ -279,7 +277,20 @@ tr.disabled td { opacity: 0.6; filter: grayscale(40%); background: var(--bg); }
 }
 .field-input:focus, .field-select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); background: var(--surface); }
 select.field-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; }
-.color-picker { width: 36px; height: 36px; padding: 2px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; background: var(--surface); flex-shrink: 0; }
+
+/* ─── Custom Color Palette ─── */
+.color-palette { display: flex; flex-wrap: wrap; gap: 8px; }
+.color-swatch { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.2s; display: flex; align-items: center; justify-content: center; position: relative; }
+.color-swatch:hover { transform: scale(1.1); }
+.color-swatch.active { transform: scale(1.1); }
+.color-swatch.active::after { content: ''; position: absolute; inset: -4px; border: 2px solid var(--border-strong); border-radius: 50%; }
+.color-swatch i { color: white; font-size: 16px; opacity: 0; transition: opacity 0.2s; }
+.color-swatch.active i { opacity: 1; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+
+/* 原生 Edit Color Picker 美化 */
+.color-picker-edit { width: 28px; height: 28px; padding: 0; border: none; border-radius: 50%; cursor: pointer; overflow: hidden; flex-shrink: 0; background: none; outline: 1px solid var(--border); }
+.color-picker-edit::-webkit-color-swatch-wrapper { padding: 0; }
+.color-picker-edit::-webkit-color-swatch { border: none; border-radius: 50%; }
 
 /* ─── ROLE / COLLEGE LIST ─── */
 .role-list-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
@@ -329,8 +340,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
   .pagination-bar-right { width: 100%; justify-content: space-between; }
   .dialog-overlay { padding: 12px; }
   
-  #dept-form { flex-direction: column !important; gap: 16px !important; }
-  #dept-form > div { width: 100% !important; margin: 0 !important; }
+  #dept-form, #college-modal-body { flex-direction: column !important; gap: 16px !important; }
+  #dept-form > div, #college-modal-body > div { width: 100% !important; margin: 0 !important; }
   
   .v-divider-modal { 
     display: block !important; 
@@ -364,8 +375,9 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             </button>
             <input type="file" id="import-file" accept=".csv" style="display:none;" onchange="handleImport(event)">
             <div class="v-divider"></div>
+            <!-- 修改圖示為 ti-category -->
             <button onclick="openCollegeModal()" class="btn btn-secondary">
-                <i class="ti ti-building-bank"></i> <span class="btn-text">學院設定</span>
+                <i class="ti ti-category"></i> <span class="btn-text">學院設定</span>
             </button>
             <button onclick="openDeptModal()" class="btn btn-primary">
                 <i class="ti ti-plus"></i> <span class="btn-text">新增系所</span>
@@ -473,30 +485,52 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         </div>
     </div>
 
-    <!-- ─── UNIFIED DIALOG MODAL: 學院設定 ─── -->
+    <!-- ─── UNIFIED DIALOG MODAL: 學院設定 (雙欄左右版) ─── -->
     <div id="college-modal" class="dialog-overlay">
-        <div class="dialog-box" style="max-width: 540px;">
+        <!-- 展開寬度到 800px 以適應雙欄佈局 -->
+        <div class="dialog-box" style="max-width: 800px;">
             <div class="dialog-header">
-                <h3><i class="ti ti-building-bank"></i> 學院設定管理</h3>
+                <!-- 修改圖示為 ti-category -->
+                <h3><i class="ti ti-category"></i> 學院設定管理</h3>
                 <button type="button" class="dialog-close" onclick="closeCollegeModal()"><i class="ti ti-x"></i></button>
             </div>
-            <div class="dialog-body custom-scroll">
+            <div class="dialog-body custom-scroll" id="college-modal-body" style="display: flex; gap: 24px;">
                 
-                <div class="field" style="margin-bottom: 24px;">
-                    <label class="field-label">新增學院</label>
-                    <div style="display:flex; gap:12px;">
-                        <input type="color" id="new-college-color" value="#1a56db" class="color-picker" title="設定學院代表色">
-                        <input type="text" id="new-college-name" placeholder="全名 (如: 管理學院)" class="field-input" style="flex:1;">
-                        <input type="text" id="new-college-short" placeholder="簡稱 (選填)" class="field-input" style="width: 100px;">
-                        <button onclick="addCollege()" class="btn btn-primary" style="height: 36px; padding: 0 20px;"><i class="ti ti-plus"></i> 新增</button>
+                <!-- 左側：新增學院 -->
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
+                    <div class="form-section-title" style="margin-bottom: 0;"><i class="ti ti-plus"></i> 新增學院</div>
+                    
+                    <div class="field">
+                        <label class="field-label">學院全名 <span class="req">*</span></label>
+                        <input type="text" id="new-college-name" placeholder="例如：管理學院" class="field-input">
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label">學院簡稱 (選填)</label>
+                        <input type="text" id="new-college-short" placeholder="例如：管院" class="field-input">
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label">代表色 <span class="req">*</span></label>
+                        <!-- 改採莫蘭迪色點選盤 -->
+                        <div class="color-palette" id="new-college-palette"></div>
+                    </div>
+
+                    <div style="margin-top: 8px;">
+                        <button onclick="addCollege()" class="btn btn-primary" style="width: 100%;">
+                            <i class="ti ti-plus"></i> 新增學院
+                        </button>
                     </div>
                 </div>
                 
-                <div class="divider" style="margin: 0 0 16px 0;"></div>
+                <!-- 中間分隔線 -->
+                <div class="v-divider-modal" style="width: 1px; background: var(--border); margin: 0;"></div>
 
-                <div>
-                    <div class="role-list-label">現有學院清單 (可編輯與排序)</div>
-                    <div id="college-list-container" class="role-list"></div>
+                <!-- 右側：現有學院清單 -->
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 16px; min-height: 0;">
+                    <div class="form-section-title" style="margin-bottom: 0;"><i class="ti ti-list"></i> 現有學院清單</div>
+                    <div class="role-list-label" style="margin-bottom: -8px; text-transform:none;">(可拖曳或點擊箭頭排序，並支援編輯)</div>
+                    <div id="college-list-container" class="role-list custom-scroll" style="flex: 1; overflow-y: auto; padding-right: 4px;"></div>
                 </div>
                 
             </div>
@@ -525,7 +559,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                     </div>
                     <div class="field">
                         <label class="field-label">系所代碼 <span class="req">*</span></label>
-                        <!-- 修正 3: 移除 monospace 字體 -->
                         <input type="text" id="input-code" required placeholder="例如：IM" class="field-input" style="text-transform:uppercase; font-weight:600;">
                     </div>
                     <div class="field">
@@ -545,7 +578,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <div class="form-section-title" style="margin-bottom:0;"><i class="ti ti-users"></i> 承辦窗口 (可多位)</div>
-                        <!-- 修正 4: 套用與權限管理一致的主按鈕樣式 (高度34px) -->
+                        <!-- 修改為與權限管理新增角色完全一致的 primary 樣式與高度 -->
                         <button type="button" onclick="addContactField()" class="btn btn-primary" style="height: 34px; padding: 0 14px;"><i class="ti ti-plus"></i> 新增</button>
                     </div>
                     <div id="contacts-container" style="display:flex; flex-direction:column; gap:12px;"></div>
@@ -587,21 +620,47 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         let filterStatusSet = new Set();
         let sortCol = 'sortOrder'; let sortDir = 'asc';
 
+        // 莫蘭迪/高級平鋪色系組合 (12色)
+        let selectedCollegeColor = '#6b788a';
+        const paletteColors = [
+            '#6b788a', '#7c8c88', '#95a5a6', '#a89f91', 
+            '#d1bfae', '#b88e8d', '#c0848a', '#8f8b9e', 
+            '#3b82f6', '#10b981', '#f59e0b', '#ef4444'
+        ];
+
+        // 渲染選色器
+        function renderColorPalette() {
+            const container = document.getElementById('new-college-palette');
+            container.innerHTML = paletteColors.map(c => `
+                <div class="color-swatch ${c === selectedCollegeColor ? 'active' : ''}" style="background-color: ${c}" onclick="window.selectCollegeColor('${c}')">
+                    <i class="ti ti-check"></i>
+                </div>
+            `).join('');
+        }
+
+        window.selectCollegeColor = (color) => {
+            selectedCollegeColor = color;
+            renderColorPalette();
+        };
+
+        // 初始化選色器
+        renderColorPalette();
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 onSnapshot(collegeDocRef, (docSnap) => {
                     if (docSnap.exists()) {
                         const rawList = docSnap.data().list || [];
                         collegeList = rawList.map(c => {
-                            if (typeof c === 'string') return { name: c, shortName: c, color: '#1a56db' };
-                            return { ...c, color: c.color || '#1a56db' };
+                            if (typeof c === 'string') return { name: c, shortName: c, color: '#6b788a' };
+                            return { ...c, color: c.color || '#6b788a' };
                         });
                     } else {
                         collegeList = [
-                            {name: "文學院", shortName: "文院", color: "#eab308"}, 
+                            {name: "文學院", shortName: "文院", color: "#d1bfae"}, 
                             {name: "理學院", shortName: "理院", color: "#3b82f6"},
-                            {name: "工學院", shortName: "工院", color: "#14b8a6"}, 
-                            {name: "管理學院", shortName: "管院", color: "#f43f5e"}
+                            {name: "工學院", shortName: "工院", color: "#7c8c88"}, 
+                            {name: "管理學院", shortName: "管院", color: "#b88e8d"}
                         ];
                         setDoc(collegeDocRef, { list: collegeList }); 
                     }
@@ -690,7 +749,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
         // ─── COLLEGE MANAGEMENT ───
         function renderCollegeUI() {
-            // 修正 2: 移除篩選選單內的顏色圓點
             document.getElementById('college-options-container').innerHTML = collegeList.map(c => `
                 <label class="filter-option">
                     <input type="checkbox" class="filter-chk-college" value="${c.name}" onchange="toggleFilterCheck('college', '${c.name}')"> 
@@ -715,7 +773,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                     </div>
                     
                     <div class="role-item-input">
-                        <input type="color" id="col-color-input-${index}" value="${c.color}" class="color-picker" style="width:30px; height:30px;" title="修改顏色">
+                        <!-- 修改為套用美化的圓形原生選色器 -->
+                        <input type="color" id="col-color-input-${index}" value="${c.color}" class="color-picker-edit" title="修改顏色">
                         <input type="text" id="col-name-input-${index}" value="${c.name}" class="field-input" style="height:30px; padding:0 8px;">
                         <input type="text" id="col-short-input-${index}" value="${c.shortName || ''}" class="field-input" style="height:30px; padding:0 8px; width:80px;">
                     </div>
@@ -735,7 +794,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         window.addCollege = async () => {
             const nameVal = document.getElementById('new-college-name').value.trim();
             const shortVal = document.getElementById('new-college-short').value.trim();
-            const colorVal = document.getElementById('new-college-color').value;
+            const colorVal = selectedCollegeColor;
             if (!nameVal) return;
             if (collegeList.some(c => c.name === nameVal)) { alert("此學院已存在！"); return; }
             await updateDoc(collegeDocRef, { list: [...collegeList, { name: nameVal, shortName: shortVal || nameVal, color: colorVal }] });
@@ -936,25 +995,28 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 return matchSearch && matchCollege && matchStatus;
             });
 
-            // 修正 1: 使用 localeCompare('zh-TW') 進行筆畫順序的中文自然排序
             if (sortCol) {
                 filteredDepts.sort((a, b) => {
                     let valA = a[sortCol] || ''; let valB = b[sortCol] || '';
                     if (sortCol === 'sortOrder') {
                         valA = a.sortOrder || 999; valB = b.sortOrder || 999;
+                        if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+                        if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+                        return 0;
                     } else if (sortCol === 'name' || sortCol === 'college') {
                         valA = sortCol === 'name' ? (a.shortName || a.name) : a.college;
                         valB = sortCol === 'name' ? (b.shortName || b.name) : b.college;
                         valA = valA ? valA.toString() : '';
                         valB = valB ? valB.toString() : '';
+                        // 使用 localeCompare('zh-TW') 支援中文筆畫排序
                         const result = valA.localeCompare(valB, 'zh-TW');
                         return sortDir === 'asc' ? result : -result;
                     } else {
                         valA = valA.toString().toLowerCase(); valB = valB.toString().toLowerCase();
+                        if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+                        if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+                        return 0;
                     }
-                    if (valA < valB) return sortDir === 'asc' ? -1 : 1;
-                    if (valA > valB) return sortDir === 'asc' ? 1 : -1;
-                    return 0;
                 });
             }
 
@@ -1012,8 +1074,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 const colColor = colObj && colObj.color ? colObj.color : '#1a56db';
                 const isChecked = selectedIds.includes(data.id) ? 'checked' : '';
 
-                // 修正 3: 系所代碼改回無襯線字體，保留加粗
-                // 修正 6: 學院 Badge 修改為 白字 + 色底
                 html += `
                 <tr class="${isChecked ? 'selected' : ''} ${!data.is_active ? 'disabled' : ''}">
                     <td style="text-align: center;">
