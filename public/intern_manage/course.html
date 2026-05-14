@@ -113,8 +113,9 @@ html, body {
 .btn-indigo-solid { background: var(--indigo); color: white; border: 1px solid var(--indigo); }
 .btn-indigo-solid:hover { background: #4338ca; }
 
-.btn-icon { width: 34px; padding: 0; justify-content: center; }
-.btn-icon.sm { width: 28px; height: 28px; }
+/* 按鈕正方形修正強化 */
+.btn-icon { width: 34px; padding: 0; justify-content: center; flex-shrink: 0; }
+.btn-icon.sm { width: 32px !important; height: 32px !important; }
 .btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn i { font-size: 16px; display: inline-flex; align-items: center; justify-content: center; }
@@ -492,16 +493,17 @@ input[type=number] { -moz-appearance: textfield; }
                                 <input type="checkbox" id="selectAll" onchange="toggleSelectPage(event)" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                             </div>
                         </th>
-                        <th data-sort="academic_year" style="width: 8%;">學年度 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="term" style="width: 6%;">學期 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="edu_system" style="width: 10%;">開課學制 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="college" style="width: 12%;">開課學院 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="department" style="width: 12%;">開課學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <!-- 壓縮學年度、學期、學制、學院、學系的寬度比例，保留給課程名稱 -->
+                        <th data-sort="academic_year" style="width: 6%;">學年度 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="term" style="width: 5%;">學期 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="edu_system" style="width: 8%;">開課學制 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="college" style="width: 10%;">開課學院 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="department" style="width: 10%;">開課學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
                         <th data-sort="course_code" style="width: 10%;">選課代號 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="course_name" style="width: 18%;">課程名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="course_type" style="width: 8%;">課程屬性 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="credits" style="width: 6%;">學分數 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th style="width: 6%;">操作</th>
+                        <th data-sort="course_name" style="width: 26%;">課程名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="course_type" style="width: 7%;">課程屬性 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="credits" style="width: 5%;">學分數 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th style="width: 9%;">操作</th>
                     </tr>
                 </thead>
                 <tbody id="table-body">
