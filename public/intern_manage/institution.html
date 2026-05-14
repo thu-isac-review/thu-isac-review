@@ -187,13 +187,23 @@ html, body {
 .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; }
 .table-scroll { flex: 1; overflow: auto; }
 table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 900px; }
-thead { position: sticky; top: 0; z-index: 10; background: var(--surface); }
-thead tr { border-bottom: 2px solid var(--border); }
+
+/* 修正下拉時表頭分隔線消失問題：使用內陰影替代 border */
 th {
-  padding: 12px 16px; text-align: left;
+  padding: 12px 16px; text-align: center; /* 標題統一置中 */
   font-size: 11px; font-weight: 700; color: var(--text-muted);
   text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
+  position: sticky; top: 0; z-index: 10;
+  background: var(--surface);
+  box-shadow: inset 0 -2px 0 var(--border); 
 }
+
+/* 排序功能 CSS */
+th[data-sort] { cursor: pointer; user-select: none; transition: color var(--transition); }
+th[data-sort]:hover { color: var(--text-secondary); }
+th .sort-icon { margin-left: 4px; font-size: 14px; opacity: 0.4; vertical-align: middle; }
+th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand); }
+
 td { padding: 12px 16px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); }
 tr:hover td { background: #fafbff; }
 tr.selected td { background: #f0f4ff; }
@@ -301,7 +311,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 </head>
 <body>
 
-    <!-- ─── TOOLBAR (無標題設計) ─── -->
+    <!-- ─── TOOLBAR ─── -->
     <div class="toolbar">
         <div class="search-wrap">
             <i class="ti ti-search"></i>
@@ -343,6 +353,22 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             </div>
         </div>
 
+        <!-- 縣市別篩選 -->
+        <div class="filter-pill-wrap" id="pill-wrap-city">
+            <button class="filter-pill" id="pill-city" onclick="toggleDropdown('city')">
+                全部縣市 <i class="ti ti-chevron-down"></i>
+            </button>
+            <div class="filter-dropdown" id="drop-city">
+                <div class="filter-dropdown-search">
+                    <input type="text" id="search-city-input" placeholder="搜尋縣市..." onkeyup="filterDropdownItems(this, 'city-options-container')">
+                </div>
+                <div class="filter-dropdown-list" id="city-options-container"></div>
+                <div class="filter-dropdown-footer">
+                    <button onclick="clearFilter('city')">清除此篩選</button>
+                </div>
+            </div>
+        </div>
+
         <!-- 批次操作列 (選取後覆蓋顯示) -->
         <div id="batch-bar">
             <div class="batch-info">
@@ -364,17 +390,17 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             <table>
                 <thead>
                     <tr>
-                        <th class="col-checkbox" style="width: 5%; text-align: center;">
+                        <th class="col-checkbox" style="width: 5%;">
                             <div style="display:flex; justify-content:center; align-items:center;">
                                 <input type="checkbox" id="selectAll" onchange="toggleSelectPage(event)" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                             </div>
                         </th>
-                        <th style="width: 25%;">實習機構名稱</th>
-                        <th style="width: 15%; text-align: center;">統一編號</th>
-                        <th style="width: 10%; text-align: center;">國別</th>
-                        <th style="width: 10%; text-align: center;">縣市別</th>
-                        <th style="width: 25%;">實習場所地址</th>
-                        <th style="width: 10%; text-align: center;">操作</th>
+                        <th data-sort="name" class="sort-asc" style="width: 25%;">實習機構名稱 <i class="ti ti-sort-ascending sort-icon"></i></th>
+                        <th data-sort="tax_id" style="width: 15%;">統一編號 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="country" style="width: 10%;">國別 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="city" style="width: 10%;">縣市別 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="address" style="width: 25%;">實習場所地址 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th style="width: 10%;">操作</th>
                     </tr>
                 </thead>
                 <tbody id="table-body">
@@ -508,6 +534,10 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         let filteredInstitutions = []; 
         
         let filterCountrySet = new Set();
+        let filterCitySet = new Set();
+        
+        let sortCol = 'name'; 
+        let sortDir = 'asc';
 
         const LIST_COUNTRIES = ["中華民國","大陸地區","日本","美國","越南","泰國","澳大利亞","香港","澳門","馬來西亞","菲律賓","印尼","印度","孟加拉","緬甸","柬埔寨","黎巴嫩","蒙古","巴西","巴拉圭","秘魯"];
         const LIST_CITIES = ["臺北市","新北市","基隆市","桃園市","新竹縣","新竹市","苗栗縣","臺中市","彰化縣","南投縣","雲林縣","嘉義縣","嘉義市","臺南市","高雄市","屏東縣","宜蘭縣","花蓮縣","臺東縣","澎湖縣","金門縣","連江縣"];
@@ -532,6 +562,16 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 </label>`;
             });
             document.getElementById('country-options-container').innerHTML = filterCountryHtml;
+
+            let filterCityHtml = '';
+            LIST_CITIES.forEach(item => {
+                filterCityHtml += `
+                <label class="filter-option">
+                    <input type="checkbox" class="filter-chk-city" value="${item}" onchange="toggleFilterCheck('city', '${item}')"> 
+                    <span>${item}</span>
+                </label>`;
+            });
+            document.getElementById('city-options-container').innerHTML = filterCityHtml;
         }
 
         onAuthStateChanged(auth, async (user) => {
@@ -553,6 +593,24 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             } else {
                 document.getElementById('table-body').innerHTML = `<tr><td colspan="7" class="empty-state"><i class="ti ti-shield-half empty-icon"></i><div class="empty-text">請先登入系統以存取資料。</div></td></tr>`;
             }
+        });
+
+        // ─── SORTING LOGIC ───
+        document.querySelectorAll('th[data-sort]').forEach(th => {
+            th.onclick = () => {
+                const col = th.dataset.sort;
+                if (sortCol === col) { sortDir = sortDir === 'asc' ? 'desc' : 'asc'; } 
+                else { sortCol = col; sortDir = 'asc'; }
+                
+                document.querySelectorAll('th[data-sort]').forEach(t => {
+                    t.classList.remove('sort-asc', 'sort-desc');
+                    t.querySelector('.sort-icon').className = 'ti ti-arrows-sort sort-icon';
+                });
+                
+                th.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+                th.querySelector('.sort-icon').className = `ti ti-sort-${sortDir === 'asc' ? 'ascending' : 'descending'} sort-icon`;
+                window.renderTable();
+            };
         });
 
         // ─── DROPDOWN & FILTER LOGIC ───
@@ -578,7 +636,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             const chk = document.querySelector(`.filter-chk-${type}[value="${val}"]`);
             if(chk) chk.checked = !chk.checked;
             
-            const set = filterCountrySet;
+            const set = type === 'country' ? filterCountrySet : filterCitySet;
             if (set.has(val)) set.delete(val); else set.add(val);
             
             document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
@@ -587,19 +645,21 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         };
 
         function updatePillActive(type) {
-            const set = filterCountrySet;
+            const set = type === 'country' ? filterCountrySet : filterCitySet;
+            const typeName = type === 'country' ? '國別' : '縣市';
             const pill = document.getElementById(`pill-${type}`);
             if (set.size > 0) {
                 pill.classList.add('active');
-                pill.innerHTML = `國別 <span class="pill-count">${set.size}</span> <i class="ti ti-chevron-down"></i>`;
+                pill.innerHTML = `${typeName} <span class="pill-count">${set.size}</span> <i class="ti ti-chevron-down"></i>`;
             } else {
                 pill.classList.remove('active');
-                pill.innerHTML = `全部國別 <i class="ti ti-chevron-down"></i>`;
+                pill.innerHTML = `全部${typeName} <i class="ti ti-chevron-down"></i>`;
             }
         }
 
         window.clearFilter = (type) => {
-            filterCountrySet.clear();
+            const set = type === 'country' ? filterCountrySet : filterCitySet;
+            set.clear();
             document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = false);
             const searchInput = document.getElementById(`search-${type}-input`);
             if (searchInput) {
@@ -724,24 +784,34 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             filteredInstitutions = allData.filter(d => {
                 const matchSearch = (d.name || '').toLowerCase().includes(searchTerm) || (d.tax_id || '').toLowerCase().includes(searchTerm);
                 const matchCountry = filterCountrySet.size === 0 || filterCountrySet.has(d.country);
-                return matchSearch && matchCountry;
+                const matchCity = filterCitySet.size === 0 || filterCitySet.has(d.city);
+                return matchSearch && matchCountry && matchCity;
             });
 
+            // 套用排序
             filteredInstitutions.sort((a, b) => {
-                const aIsDomestic = a.country === '中華民國' ? 0 : 1;
-                const bIsDomestic = b.country === '中華民國' ? 0 : 1;
-                if (aIsDomestic !== bIsDomestic) return aIsDomestic - bIsDomestic;
-                
-                const cCmp = (a.country || '').localeCompare(b.country || '');
-                if (cCmp !== 0) return cCmp;
-                
-                const cityIdxA = LIST_CITIES.indexOf(a.city);
-                const cityIdxB = LIST_CITIES.indexOf(b.city);
-                const orderCityA = cityIdxA !== -1 ? cityIdxA : 999;
-                const orderCityB = cityIdxB !== -1 ? cityIdxB : 999;
-                if (orderCityA !== orderCityB) return orderCityA - orderCityB;
+                let valA = a[sortCol] || '';
+                let valB = b[sortCol] || '';
 
-                return (a.name || '').localeCompare(b.name || '');
+                if (sortCol === 'country') {
+                    const aIsDomestic = valA === '中華民國' ? 0 : 1;
+                    const bIsDomestic = valB === '中華民國' ? 0 : 1;
+                    if (aIsDomestic !== bIsDomestic) return sortDir === 'asc' ? aIsDomestic - bIsDomestic : bIsDomestic - aIsDomestic;
+                }
+                
+                if (sortCol === 'city') {
+                    const cityIdxA = LIST_CITIES.indexOf(valA);
+                    const cityIdxB = LIST_CITIES.indexOf(valB);
+                    const orderCityA = cityIdxA !== -1 ? cityIdxA : 999;
+                    const orderCityB = cityIdxB !== -1 ? cityIdxB : 999;
+                    if (orderCityA !== orderCityB) return sortDir === 'asc' ? orderCityA - orderCityB : orderCityB - orderCityA;
+                }
+
+                valA = valA.toString().toLowerCase(); 
+                valB = valB.toString().toLowerCase();
+                if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+                if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+                return 0;
             });
 
             const total = filteredInstitutions.length;
@@ -783,6 +853,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             paginatedItems.forEach((data) => {
                 const isChecked = selectedIds.includes(data.id) ? 'checked' : '';
                 const isDomestic = data.country === '中華民國';
+                
+                // 優化統編字體：取消 monospace 設定，僅保留灰色
                 const dispTaxId = isDomestic && data.tax_id ? data.tax_id : '<span style="color: var(--text-muted)">-</span>';
                 const dispCity = isDomestic && data.city ? data.city : '<span style="color: var(--text-muted)">-</span>';
 
@@ -794,7 +866,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                         </div>
                     </td>
                     <td><div class="cell-primary bold" title="${data.name}">${data.name}</div></td>
-                    <td style="text-align: center;"><div class="cell-primary" style="font-family: monospace; text-transform: uppercase;">${dispTaxId}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary" style="color: var(--text-muted); text-transform: uppercase;">${dispTaxId}</div></td>
                     <td style="text-align: center;"><div class="cell-primary">${data.country}</div></td>
                     <td style="text-align: center;"><div class="cell-primary">${dispCity}</div></td>
                     <td><div class="cell-primary" title="${data.address}">${data.address}</div></td>
