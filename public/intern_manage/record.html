@@ -51,14 +51,14 @@
 
 html, body { 
   height: 100%; overflow: hidden; 
-  font-family: 'Noto Sans TC', sans-serif; font-size: 14px; 
+  font-family: 'Noto Sans TC', sans-serif; font-size: 13px; 
   color: var(--text-primary); background: var(--bg); 
   -webkit-font-smoothing: antialiased; 
   display: flex; flex-direction: column;
 }
 
 /* ─── SCROLLBAR ─── */
-.custom-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+.custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
 .custom-scroll::-webkit-scrollbar-track { background: var(--surface); }
 .custom-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
 .custom-scroll::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
@@ -117,7 +117,7 @@ html, body {
 .btn-indigo-solid:hover { background: #4338ca; }
 .btn-icon { width: 34px; padding: 0; justify-content: center; }
 .btn-icon.sm { width: 28px; height: 28px; }
-.btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
+.btn-sm { height: 28px; padding: 0 10px; font-size: 11px; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn i { font-size: 16px; display: inline-flex; align-items: center; justify-content: center; }
 
@@ -135,14 +135,14 @@ html, body {
   padding: 0 10px; height: 28px;
   border: 1px solid var(--border);
   border-radius: 99px; background: var(--surface);
-  font-size: 12px; font-weight: 500; color: var(--text-secondary);
+  font-size: 11px; font-weight: 500; color: var(--text-secondary);
   cursor: pointer; transition: all var(--transition);
   white-space: nowrap;
 }
 .filter-pill:hover { border-color: var(--border-strong); color: var(--text-primary); }
 .filter-pill.active { border-color: var(--brand); background: var(--brand-light); color: var(--brand); }
 .filter-pill .pill-count { background: var(--brand); color: white; border-radius: 99px; font-size: 10px; font-weight: 700; padding: 0 5px; min-width: 16px; text-align: center; }
-.filter-pill i { font-size: 14px; transition: transform 0.2s; }
+.filter-pill i { font-size: 13px; transition: transform 0.2s; }
 .filter-pill-wrap.open .filter-pill i { transform: rotate(180deg); }
 
 .filter-dropdown {
@@ -157,7 +157,7 @@ html, body {
 .filter-dropdown-search { padding: 8px; border-bottom: 1px solid var(--border); }
 .filter-dropdown-search input { 
   width: 100%; height: 30px; border: 1px solid var(--border); border-radius: var(--radius-sm); 
-  padding: 0 10px; font-size: 12px; outline: none; background: var(--bg); transition: 0.2s; 
+  padding: 0 10px; font-size: 11px; outline: none; background: var(--bg); transition: 0.2s; 
 }
 .filter-dropdown-search input:focus { border-color: var(--brand); background: var(--surface); box-shadow: 0 0 0 2px rgba(26,86,219,0.1); }
 
@@ -165,7 +165,7 @@ html, body {
 .filter-option {
   display: flex; align-items: center; gap: 8px;
   padding: 6px 8px; border-radius: var(--radius-sm);
-  cursor: pointer; font-size: 12px; color: var(--text-secondary);
+  cursor: pointer; font-size: 11px; color: var(--text-secondary);
   transition: background var(--transition);
 }
 .filter-option:hover { background: var(--bg); color: var(--text-primary); }
@@ -188,7 +188,6 @@ html, body {
 /* ─── TABLE ─── */
 .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; position: relative; }
 .table-scroll { flex: 1; overflow-x: auto; overflow-y: auto; }
-/* 大幅增加表格 min-width 以容納所有獨立欄位 */
 table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; min-width: 1800px; }
 
 th {
@@ -200,7 +199,6 @@ th {
   box-shadow: inset 0 -2px 0 var(--border); 
 }
 
-/* 凍結最右側的「操作」欄位 */
 th.col-actions {
   position: sticky; right: 0; z-index: 20;
   box-shadow: inset 0 -2px 0 var(--border), -4px 0 8px rgba(0,0,0,0.05); 
@@ -214,15 +212,15 @@ td.col-actions {
 
 th[data-sort] { cursor: pointer; user-select: none; transition: color var(--transition); }
 th[data-sort]:hover { color: var(--text-secondary); }
-th .sort-icon { margin-left: 4px; font-size: 14px; opacity: 0.4; vertical-align: middle; }
+th .sort-icon { margin-left: 4px; font-size: 13px; opacity: 0.4; vertical-align: middle; }
 th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand); }
 
 td { padding: 14px 16px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); background: var(--surface); }
 tr:hover td { background: #fafbff; }
 tr.selected td { background: #f0f4ff; }
 
-.cell-primary { font-size: 13px; color: var(--text-primary); line-height: 1.4; }
-.cell-secondary { font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.4; font-weight: 500; }
+.cell-primary { font-size: 13px; color: var(--text-primary); line-height: 1.4; font-weight: 600; }
+.cell-secondary { font-size: 11px; color: var(--text-muted); margin-top: 4px; line-height: 1.4; font-weight: 500; }
 .row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; }
 
 /* Badges for Table */
@@ -236,14 +234,14 @@ tr.selected td { background: #f0f4ff; }
   display: flex; align-items: center; justify-content: space-between;
   padding: 10px 24px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; gap: 10px;
 }
-.pagination-info { font-size: 12px; color: var(--text-muted); }
+.pagination-info { font-size: 11px; color: var(--text-muted); }
 .pagination-info strong { color: var(--text-primary); }
 .pagination-bar-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.per-page-select { height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 12px; font-family: inherit; color: var(--text-secondary); padding: 0 6px; cursor: pointer; outline: none; }
+.per-page-select { height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 11px; font-family: inherit; color: var(--text-secondary); padding: 0 6px; cursor: pointer; outline: none; }
 .pagination-controls { display: flex; align-items: center; gap: 4px; }
 .page-btn {
   min-width: 30px; height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface);
-  font-size: 12px; font-weight: 500; color: var(--text-secondary);
+  font-size: 11px; font-weight: 500; color: var(--text-secondary);
   cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0 8px; transition: all var(--transition);
 }
 .page-btn:hover:not(:disabled) { background: var(--bg); border-color: var(--border-strong); }
@@ -303,7 +301,7 @@ tr.selected td { background: #f0f4ff; }
   padding: 20px; display: flex; flex-direction: column; box-shadow: var(--shadow-sm);
   position: relative;
 }
-.modal-card-title { font-size: 14px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+.modal-card-title { font-size: 13px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
 .modal-card-title i { font-size: 18px; }
 
 .fs-row { display: grid; gap: 20px; }
@@ -315,7 +313,7 @@ tr.selected td { background: #f0f4ff; }
 .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
 .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
 .field:last-child { margin-bottom: 0; }
-.field-label { font-size: 12px; font-weight: 700; color: var(--text-secondary); }
+.field-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); }
 .field-label .req { color: var(--danger); margin-left: 2px; }
 .field-input, .field-select {
   width: 100%; height: 38px; border: 1px solid var(--border); border-radius: var(--radius);
@@ -365,6 +363,9 @@ input[type=number] { -moz-appearance: textfield; }
 .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
 .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
 .empty-text { font-size: 13px; font-weight: 600; }
+
+.merge-option-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+.merge-option-desc { font-size: 11px; color: var(--text-secondary); margin-top: 4px; line-height: 1.4; }
 
 @media (max-width: 1024px) {
   .fs-row-top, .fs-row-bottom { grid-template-columns: 1fr; }
@@ -468,7 +469,7 @@ input[type=number] { -moz-appearance: textfield; }
                 <div class="pagination-info" id="pagination-info">共 0 筆</div>
                 <div class="pagination-bar-right">
                     <div style="display:flex; align-items:center; gap:6px;">
-                        <span style="font-size:12px; color:var(--text-muted)">每頁顯示</span>
+                        <span style="font-size:11px; color:var(--text-muted)">每頁顯示</span>
                         <select class="per-page-select" id="per-page-select" onchange="window.changePerPage(this.value)">
                             <option value="15">15 筆</option>
                             <option value="25">25 筆</option>
@@ -625,15 +626,15 @@ input[type=number] { -moz-appearance: textfield; }
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px;">
                     <div style="background: var(--success-bg); border: 1px solid var(--success-border); padding: 16px; border-radius: var(--radius); text-align: center;">
                         <div id="report-success-count" style="font-size: 28px; font-weight: 700; color: var(--success); margin-bottom: 4px;">0</div>
-                        <div style="font-size: 12px; font-weight: 700; color: var(--success);">成功匯入 (筆)</div>
+                        <div style="font-size: 11px; font-weight: 700; color: var(--success);">成功匯入 (筆)</div>
                     </div>
                     <div style="background: var(--warning-bg); border: 1px solid var(--warning-border); padding: 16px; border-radius: var(--radius); text-align: center;">
                         <div id="report-warning-count" style="font-size: 28px; font-weight: 700; color: var(--warning); margin-bottom: 4px;">0</div>
-                        <div style="font-size: 12px; font-weight: 700; color: var(--warning);">異常綁定 (筆)</div>
+                        <div style="font-size: 11px; font-weight: 700; color: var(--warning);">異常綁定 (筆)</div>
                     </div>
                     <div style="background: var(--danger-bg); border: 1px solid var(--danger-border); padding: 16px; border-radius: var(--radius); text-align: center;">
                         <div id="report-error-count" style="font-size: 28px; font-weight: 700; color: var(--danger); margin-bottom: 4px;">0</div>
-                        <div style="font-size: 12px; font-weight: 700; color: var(--danger);">嚴重錯誤 (筆)</div>
+                        <div style="font-size: 11px; font-weight: 700; color: var(--danger);">嚴重錯誤 (筆)</div>
                     </div>
                 </div>
                 
@@ -879,7 +880,7 @@ input[type=number] { -moz-appearance: textfield; }
             const dropdown = document.getElementById('student-dropdown'); 
             const val = term.split(' - ')[0].trim().toLowerCase(); 
             const filtered = list.filter(s => s.student_id.toLowerCase().includes(val) || s.name.toLowerCase().includes(val));
-            if (filtered.length === 0) { dropdown.innerHTML = '<div style="padding:12px; text-align:center; font-size:12px; color:var(--text-muted);">查無相符學生</div>'; return; }
+            if (filtered.length === 0) { dropdown.innerHTML = '<div style="padding:12px; text-align:center; font-size:11px; color:var(--text-muted);">查無相符學生</div>'; return; }
             
             let html = '';
             filtered.slice(0, 30).forEach(s => {
@@ -901,7 +902,7 @@ input[type=number] { -moz-appearance: textfield; }
             const dropdown = document.getElementById('institution-dropdown'); 
             const val = term.trim().toLowerCase();
             const filtered = list.filter(i => i.name.toLowerCase().includes(val) || (i.tax_id && i.tax_id.toLowerCase().includes(val)));
-            if (filtered.length === 0) { dropdown.innerHTML = '<div style="padding:12px; text-align:center; font-size:12px; color:var(--text-muted);">查無相符機構</div>'; return; }
+            if (filtered.length === 0) { dropdown.innerHTML = '<div style="padding:12px; text-align:center; font-size:11px; color:var(--text-muted);">查無相符機構</div>'; return; }
             
             let html = '';
             filtered.slice(0, 30).forEach(i => {
@@ -927,7 +928,7 @@ input[type=number] { -moz-appearance: textfield; }
                 c.course_name.toLowerCase().includes(val) || c.course_code.toLowerCase().includes(val) || c.department.toLowerCase().includes(val)
             );
             
-            if (filtered.length === 0) { dropdown.innerHTML = '<div style="padding:12px; text-align:center; font-size:12px; color:var(--text-muted);">查無相符或可選擇之課程</div>'; return; }
+            if (filtered.length === 0) { dropdown.innerHTML = '<div style="padding:12px; text-align:center; font-size:11px; color:var(--text-muted);">查無相符或可選擇之課程</div>'; return; }
 
             let html = '';
             filtered.slice(0, 30).forEach(c => {
@@ -998,7 +999,7 @@ input[type=number] { -moz-appearance: textfield; }
                     </div>`;
                 card.style.display = 'flex';
             } else { 
-                card.innerHTML = `<div style="font-size:12px; font-weight:700; color:var(--danger); padding:4px;">查無主檔，將建立獨立紀錄</div>`; 
+                card.innerHTML = `<div style="font-size:11px; font-weight:700; color:var(--danger); padding:4px;">查無主檔，將建立獨立紀錄</div>`; 
                 card.style.display = 'flex'; 
             }
             if (!skipRespUpdate) window.updateRespDeptOptions();
@@ -1017,7 +1018,7 @@ input[type=number] { -moz-appearance: textfield; }
                     </div>`;
                 card.style.display = 'flex';
             } else { 
-                card.innerHTML = `<div style="font-size:12px; font-weight:700; color:var(--danger); padding:4px;">查無主檔，將建立獨立紀錄</div>`; 
+                card.innerHTML = `<div style="font-size:11px; font-weight:700; color:var(--danger); padding:4px;">查無主檔，將建立獨立紀錄</div>`; 
                 card.style.display = 'flex'; 
             }
         };
