@@ -285,8 +285,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 }
 .role-item:hover { border-color: var(--brand-border); }
 .role-item-name { font-size: 13px; font-weight: 500; color: var(--text-primary); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 4px; }
-.role-item-input { flex: 1; height: 32px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); padding: 0 10px; font-size: 13px; outline: none; display: none; margin-right: 12px; transition: border-color var(--transition); }
-.role-item-input:focus { border-color: var(--text-muted); }
+.role-item-input { flex: 1; height: 32px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); padding: 0 10px; font-size: 13px; outline: none; display: none; margin-right: 12px; transition: all var(--transition); }
+.role-item-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
 .role-item.editing .role-item-name { display: none; }
 .role-item.editing .role-item-input { display: block; }
 .role-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
@@ -710,10 +710,13 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
         window.saveRole = async (index) => {
             const newVal = document.getElementById(`role-input-${index}`).value.trim();
-            if (!newVal) {
+            
+            if (!newVal || newVal === roleList[index]) {
                 document.getElementById(`role-item-${index}`).classList.remove('editing');
+                document.getElementById(`role-input-${index}`).value = roleList[index];
                 return;
             }
+            
             const newList = [...roleList]; newList[index] = newVal;
             await updateDoc(roleDocRef, { list: newList });
         };
