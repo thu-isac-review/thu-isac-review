@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 
 <style>
-/* ─── 核心樣式變數 (與用戶權限管理完全一致) ─── */
+/* ─── 核心樣式變數 ─── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
@@ -109,10 +109,13 @@ html, body {
 
 .btn-success-solid { background: var(--success); color: white; border: 1px solid var(--success); }
 .btn-success-solid:hover { background: #047857; }
-.btn-icon { width: 34px; padding: 0; justify-content: center; background: transparent; border: 1px solid transparent; color: var(--text-muted); }
-.btn-icon:hover { color: var(--brand); background: var(--brand-light); border-radius: var(--radius-sm); border-color: var(--brand-border); }
+
+/* 新增靛藍色按鈕 (給匯入功能) */
+.btn-indigo-solid { background: var(--indigo); color: white; border: 1px solid var(--indigo); }
+.btn-indigo-solid:hover { background: #4338ca; }
+
+.btn-icon { width: 34px; padding: 0; justify-content: center; }
 .btn-icon.sm { width: 28px; height: 28px; }
-.btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn i { font-size: 16px; }
 
@@ -179,7 +182,6 @@ table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 
 thead { position: sticky; top: 0; z-index: 10; background: var(--surface); }
 thead tr { border-bottom: 2px solid var(--border); }
 th {
-  /* 統一表頭置中對齊 */
   padding: 12px 16px; text-align: center;
   font-size: 11px; font-weight: 700; color: var(--text-muted);
   text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
@@ -317,7 +319,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
   .toolbar { padding: 12px 16px; justify-content: flex-end; }
   .search-wrap { flex: 0 0 100%; order: 1; margin-bottom: 8px; }
   .flex-spacer { display: none; }
-  /* 按鈕群滿版等寬分配 */
   .toolbar-actions { order: 2; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .toolbar-actions .btn { width: 100%; padding: 0 8px; font-size: 12px; margin: 0; }
   .v-divider { display: none; }
@@ -327,11 +328,9 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
   .pagination-bar-right { width: 100%; justify-content: space-between; }
   .dialog-overlay { padding: 12px; }
   
-  /* Reset flex direction for mobile modal (對齊權限管理介面) */
   #dept-form { flex-direction: column !important; gap: 16px !important; }
   #dept-form > div { width: 100% !important; margin: 0 !important; }
   
-  /* 強制將原本垂直的線轉為水平線 */
   .v-divider-modal { 
     display: block !important; 
     width: 100% !important; 
@@ -356,16 +355,15 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         <div class="flex-spacer"></div>
         
         <div class="toolbar-actions">
-            <!-- 統一為 btn-success-solid -->
             <button onclick="exportToCSV()" class="btn btn-success-solid">
                 <i class="ti ti-file-export"></i> <span class="btn-text">匯出清單</span>
             </button>
-            <button id="btn-import" onclick="document.getElementById('import-file').click()" class="btn btn-secondary">
+            <!-- 套用自訂的靛藍色按鈕 -->
+            <button id="btn-import" onclick="document.getElementById('import-file').click()" class="btn btn-indigo-solid">
                 <i class="ti ti-file-import"></i> <span class="btn-text">批次匯入</span>
             </button>
             <input type="file" id="import-file" accept=".csv" style="display:none;" onchange="handleImport(event)">
             <div class="v-divider"></div>
-            <!-- 套用次要與主要按鈕結構 -->
             <button onclick="openCollegeModal()" class="btn btn-secondary">
                 <i class="ti ti-building-bank"></i> <span class="btn-text">學院設定</span>
             </button>
@@ -433,12 +431,15 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         <div class="table-scroll custom-scroll">
             <table>
                 <thead>
-                    <!-- 移除所有的 inline text-align，依賴 CSS th 的 text-align: center -->
                     <tr>
                         <th style="width: 5%;">
-                            <input type="checkbox" id="selectAll" onchange="toggleSelectPage(event)" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px;">
+                            <!-- 使用 flex 置中確保各種比例都不會偏掉 -->
+                            <div style="display:flex; justify-content:center; align-items:center;">
+                                <input type="checkbox" id="selectAll" onchange="toggleSelectPage(event)" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
+                            </div>
                         </th>
-                        <th style="width: 12%;">學院</th>
+                        <!-- 加入 data-sort="college" 啟用排序功能 -->
+                        <th data-sort="college" style="width: 12%;">學院 <i class="ti ti-arrows-sort sort-icon"></i></th>
                         <th data-sort="name" style="width: 23%;">學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
                         <th data-sort="code" style="width: 12%;">系所代碼 <i class="ti ti-arrows-sort sort-icon"></i></th>
                         <th style="width: 22%;">承辦窗口</th>
@@ -514,7 +515,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 <h3 id="dept-modal-title"><i class="ti ti-school"></i> 新增系所單位</h3>
                 <button type="button" class="dialog-close" onclick="closeDeptModal()"><i class="ti ti-x"></i></button>
             </div>
-            <!-- 完全套用與權限管理一樣的 Flex + 中間分隔線佈局 -->
             <form id="dept-form" class="dialog-body custom-scroll" style="display: flex; gap: 24px;">
                 
                 <!-- 左側：基本資訊 -->
@@ -703,7 +703,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             // Select in form
             document.getElementById('input-college').innerHTML = `<option value="">請選擇學院...</option>` + collegeList.map(c => `<option value="${c.name}">${c.shortName || c.name}</option>`).join('');
 
-            // Modal List 結構比照權限角色
+            // Modal List 結構與按鈕完全比照權限角色
             document.getElementById('college-list-container').innerHTML = collegeList.map((c, index) => `
                 <div class="role-item" id="col-item-${index}">
                     <div class="reorder-btns">
@@ -1013,7 +1013,9 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 html += `
                 <tr class="${isChecked ? 'selected' : ''} ${!data.is_active ? 'disabled' : ''}">
                     <td style="text-align: center;">
-                        <input type="checkbox" value="${data.id}" onchange="toggleSelect('${data.id}')" ${isChecked} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px;">
+                        <div style="display:flex; justify-content:center; align-items:center;">
+                            <input type="checkbox" value="${data.id}" onchange="toggleSelect('${data.id}')" ${isChecked} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
+                        </div>
                     </td>
                     <td style="text-align: center;">
                         <span class="badge" style="color:${colColor}; border:1px solid ${colColor}; background:#ffffff;">${colDispName}</span>
@@ -1034,7 +1036,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                         </div>
                     </td>
                     <td style="text-align: center;">
-                        <!-- 操作按鈕與權限管理對齊：圓角小按鈕 -->
                         <div class="row-actions">
                             <button onclick="window.editDept('${data.id}')" class="btn btn-secondary btn-icon sm" title="編輯"><i class="ti ti-edit"></i></button>
                             <button onclick="window.deleteDept('${data.id}', '${data.name}')" class="btn btn-icon sm" style="color:var(--danger); border-color:var(--danger-border);" title="刪除"><i class="ti ti-trash"></i></button>
