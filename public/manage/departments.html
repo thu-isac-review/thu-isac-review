@@ -110,14 +110,14 @@ html, body {
 .btn-success-solid { background: var(--success); color: white; border: 1px solid var(--success); }
 .btn-success-solid:hover { background: #047857; }
 
-/* 新增靛藍色按鈕 (給匯入功能) */
 .btn-indigo-solid { background: var(--indigo); color: white; border: 1px solid var(--indigo); }
 .btn-indigo-solid:hover { background: #4338ca; }
 
 .btn-icon { width: 34px; padding: 0; justify-content: center; }
 .btn-icon.sm { width: 28px; height: 28px; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn i { font-size: 16px; }
+/* 修正 5: 確保 icon 在 flex 佈局下絕對垂直置中 */
+.btn i { font-size: 16px; display: inline-flex; align-items: center; justify-content: center; }
 
 /* ─── FILTER ROW & BATCH BAR ─── */
 .filter-row {
@@ -200,6 +200,7 @@ tr.disabled td { opacity: 0.6; filter: grayscale(40%); background: var(--bg); }
 .cell-primary.bold { font-weight: 600; }
 .cell-secondary { font-size: 11px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
 
+/* 修正 6: 標籤改為更通用的結構，供後續 JS 填入樣式 */
 .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; }
 .badge-gray { background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; }
 
@@ -358,7 +359,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             <button onclick="exportToCSV()" class="btn btn-success-solid">
                 <i class="ti ti-file-export"></i> <span class="btn-text">匯出清單</span>
             </button>
-            <!-- 套用自訂的靛藍色按鈕 -->
             <button id="btn-import" onclick="document.getElementById('import-file').click()" class="btn btn-indigo-solid">
                 <i class="ti ti-file-import"></i> <span class="btn-text">批次匯入</span>
             </button>
@@ -433,12 +433,10 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 <thead>
                     <tr>
                         <th style="width: 5%;">
-                            <!-- 使用 flex 置中確保各種比例都不會偏掉 -->
                             <div style="display:flex; justify-content:center; align-items:center;">
                                 <input type="checkbox" id="selectAll" onchange="toggleSelectPage(event)" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                             </div>
                         </th>
-                        <!-- 加入 data-sort="college" 啟用排序功能 -->
                         <th data-sort="college" style="width: 12%;">學院 <i class="ti ti-arrows-sort sort-icon"></i></th>
                         <th data-sort="name" style="width: 23%;">學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
                         <th data-sort="code" style="width: 12%;">系所代碼 <i class="ti ti-arrows-sort sort-icon"></i></th>
@@ -527,7 +525,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                     </div>
                     <div class="field">
                         <label class="field-label">系所代碼 <span class="req">*</span></label>
-                        <input type="text" id="input-code" required placeholder="例如：IM" class="field-input" style="text-transform:uppercase; font-family:monospace; font-weight:600;">
+                        <!-- 修正 3: 移除 monospace 字體 -->
+                        <input type="text" id="input-code" required placeholder="例如：IM" class="field-input" style="text-transform:uppercase; font-weight:600;">
                     </div>
                     <div class="field">
                         <label class="field-label">學系全名 <span class="req">*</span></label>
@@ -546,7 +545,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <div class="form-section-title" style="margin-bottom:0;"><i class="ti ti-users"></i> 承辦窗口 (可多位)</div>
-                        <button type="button" onclick="addContactField()" class="btn btn-secondary btn-sm" style="font-size:12px; height:26px;"><i class="ti ti-plus"></i> 新增</button>
+                        <!-- 修正 4: 套用與權限管理一致的主按鈕樣式 (高度34px) -->
+                        <button type="button" onclick="addContactField()" class="btn btn-primary" style="height: 34px; padding: 0 14px;"><i class="ti ti-plus"></i> 新增</button>
                     </div>
                     <div id="contacts-container" style="display:flex; flex-direction:column; gap:12px;"></div>
                 </div>
@@ -690,20 +690,17 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
         // ─── COLLEGE MANAGEMENT ───
         function renderCollegeUI() {
-            // Dropdown filter
+            // 修正 2: 移除篩選選單內的顏色圓點
             document.getElementById('college-options-container').innerHTML = collegeList.map(c => `
                 <label class="filter-option">
                     <input type="checkbox" class="filter-chk-college" value="${c.name}" onchange="toggleFilterCheck('college', '${c.name}')"> 
-                    <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:${c.color}; margin-right:4px;"></span>
                     <span>${c.shortName || c.name}</span>
                 </label>
             `).join('');
             document.querySelectorAll(`.filter-chk-college`).forEach(c => c.checked = filterCollegeSet.has(c.value));
 
-            // Select in form
             document.getElementById('input-college').innerHTML = `<option value="">請選擇學院...</option>` + collegeList.map(c => `<option value="${c.name}">${c.shortName || c.name}</option>`).join('');
 
-            // Modal List 結構與按鈕完全比照權限角色
             document.getElementById('college-list-container').innerHTML = collegeList.map((c, index) => `
                 <div class="role-item" id="col-item-${index}">
                     <div class="reorder-btns">
@@ -939,14 +936,19 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 return matchSearch && matchCollege && matchStatus;
             });
 
+            // 修正 1: 使用 localeCompare('zh-TW') 進行筆畫順序的中文自然排序
             if (sortCol) {
                 filteredDepts.sort((a, b) => {
                     let valA = a[sortCol] || ''; let valB = b[sortCol] || '';
                     if (sortCol === 'sortOrder') {
                         valA = a.sortOrder || 999; valB = b.sortOrder || 999;
-                    } else if (sortCol === 'name') {
-                        valA = (a.shortName || a.name).toString().toLowerCase();
-                        valB = (b.shortName || b.name).toString().toLowerCase();
+                    } else if (sortCol === 'name' || sortCol === 'college') {
+                        valA = sortCol === 'name' ? (a.shortName || a.name) : a.college;
+                        valB = sortCol === 'name' ? (b.shortName || b.name) : b.college;
+                        valA = valA ? valA.toString() : '';
+                        valB = valB ? valB.toString() : '';
+                        const result = valA.localeCompare(valB, 'zh-TW');
+                        return sortDir === 'asc' ? result : -result;
                     } else {
                         valA = valA.toString().toLowerCase(); valB = valB.toString().toLowerCase();
                     }
@@ -1010,6 +1012,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 const colColor = colObj && colObj.color ? colObj.color : '#1a56db';
                 const isChecked = selectedIds.includes(data.id) ? 'checked' : '';
 
+                // 修正 3: 系所代碼改回無襯線字體，保留加粗
+                // 修正 6: 學院 Badge 修改為 白字 + 色底
                 html += `
                 <tr class="${isChecked ? 'selected' : ''} ${!data.is_active ? 'disabled' : ''}">
                     <td style="text-align: center;">
@@ -1018,13 +1022,13 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                         </div>
                     </td>
                     <td style="text-align: center;">
-                        <span class="badge" style="color:${colColor}; border:1px solid ${colColor}; background:#ffffff;">${colDispName}</span>
+                        <span class="badge" style="color:#ffffff; background:${colColor}; border:1px solid ${colColor};">${colDispName}</span>
                     </td>
                     <td style="text-align: left;">
                         <div class="cell-primary bold">${data.shortName || data.name}</div>
                         ${data.shortName ? `<div class="cell-secondary">${data.name}</div>` : ''}
                     </td>
-                    <td style="text-align: center;"><div class="cell-secondary" style="font-family:monospace; font-size:12px;">${data.code}</div></td>
+                    <td style="text-align: center;"><div class="cell-secondary" style="font-size:13px; font-weight:500;">${data.code}</div></td>
                     <td style="text-align: ${contactAlign};">${contactsHtml}</td>
                     <td style="text-align: center;">
                         <div style="display:flex; justify-content:center;">
