@@ -58,8 +58,10 @@ html, body {
 }
 
 /* ─── SCROLLBAR ─── */
-.custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.custom-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+.custom-scroll::-webkit-scrollbar-track { background: var(--surface); }
 .custom-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
+.custom-scroll::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 /* ─── 動畫 ─── */
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -109,12 +111,10 @@ html, body {
 .btn-secondary:hover { background: var(--bg); border-color: var(--border-strong); color: var(--text-primary); }
 .btn-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
 .btn-danger:hover { background: #fee2e2; }
-
 .btn-success-solid { background: var(--success); color: white; border: 1px solid var(--success); }
 .btn-success-solid:hover { background: #047857; }
 .btn-indigo-solid { background: var(--indigo); color: white; border: 1px solid var(--indigo); }
 .btn-indigo-solid:hover { background: #4338ca; }
-
 .btn-icon { width: 34px; padding: 0; justify-content: center; }
 .btn-icon.sm { width: 28px; height: 28px; }
 .btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
@@ -186,11 +186,11 @@ html, body {
 .batch-info span { font-size: 16px; font-weight: 700; }
 
 /* ─── TABLE ─── */
-.table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; }
-.table-scroll { flex: 1; overflow: auto; }
-table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 1100px; }
+.table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; position: relative; }
+.table-scroll { flex: 1; overflow-x: auto; overflow-y: auto; }
+/* 大幅增加表格 min-width 以容納所有獨立欄位 */
+table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; min-width: 1800px; }
 
-/* ─── 修正要求：標題列一律置中 ─── */
 th {
   padding: 12px 16px; text-align: center; 
   font-size: 11px; font-weight: 700; color: var(--text-muted);
@@ -200,22 +200,35 @@ th {
   box-shadow: inset 0 -2px 0 var(--border); 
 }
 
+/* 凍結最右側的「操作」欄位 */
+th.col-actions {
+  position: sticky; right: 0; z-index: 20;
+  box-shadow: inset 0 -2px 0 var(--border), -4px 0 8px rgba(0,0,0,0.05); 
+}
+td.col-actions {
+  position: sticky; right: 0; z-index: 5;
+  background: var(--surface);
+  box-shadow: -4px 0 8px rgba(0,0,0,0.05);
+  border-bottom: 1px solid var(--border);
+}
+
 th[data-sort] { cursor: pointer; user-select: none; transition: color var(--transition); }
 th[data-sort]:hover { color: var(--text-secondary); }
 th .sort-icon { margin-left: 4px; font-size: 14px; opacity: 0.4; vertical-align: middle; }
 th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand); }
 
-td { padding: 14px 16px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); }
+td { padding: 14px 16px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); background: var(--surface); }
 tr:hover td { background: #fafbff; }
 tr.selected td { background: #f0f4ff; }
 
+.cell-primary { font-size: 13px; color: var(--text-primary); line-height: 1.4; }
+.cell-secondary { font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.4; font-weight: 500; }
 .row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; }
 
 /* Badges for Table */
-.badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.badge { display: inline-flex; align-items: center; justify-content: center; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; }
 .badge-outline-blue { background: var(--brand-light); color: var(--brand); border: 1px solid var(--brand-border); }
 .badge-outline-green { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
-.badge-outline-indigo { background: var(--indigo-bg); color: var(--indigo); border: 1px solid var(--indigo-border); }
 .badge-outline-amber { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
 
 /* ─── PAGINATION ─── */
@@ -384,7 +397,6 @@ input[type=number] { -moz-appearance: textfield; }
             </div>
             <div class="flex-spacer"></div>
             <div class="toolbar-actions">
-                <!-- 修正 1：匯出按鈕文字更新為「匯出清單」 -->
                 <button onclick="window.exportToCSV()" class="btn btn-success-solid">
                     <i class="ti ti-file-export"></i> <span class="btn-text">匯出清單</span>
                 </button>
@@ -420,23 +432,29 @@ input[type=number] { -moz-appearance: textfield; }
                 <table>
                     <thead>
                         <tr>
-                            <!-- 修正 6：表頭全面置中 (CSS已設定 th {text-align: center}) -->
                             <th class="col-checkbox" style="width: 4%;">
                                 <input type="checkbox" id="selectAll" onchange="window.toggleSelectPage(event)" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                             </th>
-                            <th data-sort="student_raw" style="width: 18%;">實習學生 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="inst_raw" style="width: 16%;">實習機構 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <!-- 修正 4：關聯課程改為課程數與總學分，分兩欄 -->
-                            <th style="width: 8%;">課程數</th>
-                            <th style="width: 8%;">總學分</th>
-                            <th data-sort="duration" style="width: 22%;">實習時間 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th style="width: 16%;">其他資訊</th>
-                            <th style="width: 8%;">操作</th>
+                            <th data-sort="student_id" style="width: 8%;">學號 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="student_name" style="width: 8%;">姓名 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="dept" style="width: 10%;">學系簡稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="grade" style="width: 5%;">年級 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="inst_raw" style="width: 14%;">機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th style="width: 5%;">課程數</th>
+                            <th style="width: 5%;">總學分</th>
+                            <th data-sort="duration" style="width: 12%;">起訖時間 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="hours" style="width: 5%;">時數 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="period_type" style="width: 8%;">實習時間 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="proof_type" style="width: 6%;">證明文件 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="insurance" style="width: 8%;">投保情形 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="employment" style="width: 5%;">勞雇關係 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="resp_dept" style="width: 7%;">歸屬系所 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th class="col-actions" style="width: 6%;">操作</th>
                         </tr>
                     </thead>
                     <tbody id="table-body">
                         <tr>
-                            <td colspan="8" class="empty-state">
+                            <td colspan="16" class="empty-state">
                                 <i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i>
                                 <div class="empty-text">資料載入與驗證中...</div>
                             </td>
@@ -1067,11 +1085,34 @@ input[type=number] { -moz-appearance: textfield; }
                 return ok;
             });
 
-            // Sorting
+            // Sorting - Add logic for all the split columns
             filteredRecords.sort((a, b) => {
-                let valA = a[sortCol] || ''; let valB = b[sortCol] || '';
+                let valA = ''; let valB = '';
+
                 if (sortCol === 'created_at') { valA = getTime(a.created_at); valB = getTime(b.created_at); }
-                else { valA = valA.toString().toLowerCase(); valB = valB.toString().toLowerCase(); }
+                else if (sortCol === 'student_id') {
+                    valA = (a.student_raw || '').split(' - ')[0] || '';
+                    valB = (b.student_raw || '').split(' - ')[0] || '';
+                }
+                else if (sortCol === 'student_name') {
+                    valA = (a.student_raw || '').split(' - ')[1] || '';
+                    valB = (b.student_raw || '').split(' - ')[1] || '';
+                }
+                else if (sortCol === 'dept') {
+                    const stuA = allStudents.find(s => s.student_id === (a.student_raw || '').split(' - ')[0]);
+                    valA = stuA ? getDeptShort(stuA.department) : '';
+                    const stuB = allStudents.find(s => s.student_id === (b.student_raw || '').split(' - ')[0]);
+                    valB = stuB ? getDeptShort(stuB.department) : '';
+                }
+                else if (sortCol === 'resp_dept') {
+                    valA = a.resp_dept ? getDeptShort(a.resp_dept) : '';
+                    valB = b.resp_dept ? getDeptShort(b.resp_dept) : '';
+                }
+                else { 
+                    valA = (a[sortCol] || '').toString().toLowerCase(); 
+                    valB = (b[sortCol] || '').toString().toLowerCase(); 
+                }
+
                 if (valA < valB) return sortDir === 'asc' ? -1 : 1;
                 if (valA > valB) return sortDir === 'asc' ? 1 : -1;
                 return 0;
@@ -1102,17 +1143,17 @@ input[type=number] { -moz-appearance: textfield; }
             
             document.getElementById('selectAll').checked = items.length > 0 && items.every(i => selectedIds.includes(i.id));
 
-            if (total === 0) { tbody.innerHTML = `<tr><td colspan="8" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">找不到符合條件的紀錄。</div></td></tr>`; return; }
+            if (total === 0) { tbody.innerHTML = `<tr><td colspan="16" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">找不到符合條件的紀錄。</div></td></tr>`; return; }
 
             let tHtml = '';
             items.forEach(data => {
-                const stuId = (data.student_raw || '').split(' - ')[0]; const stu = allStudents.find(s => s.student_id === stuId);
-                const stuCol = stu ? getColShort(stu.college) : '未知學院';
-                const stuDept = stu ? getDeptShort(stu.department) : '未綁定學系';
+                const stuParts = (data.student_raw || '').split(' - ');
+                const stuId = stuParts[0] || '';
+                const stuName = stuParts[1] || '';
                 
-                const inst = allInsts.find(i => i.name === data.inst_raw);
+                const stu = allStudents.find(s => s.student_id === stuId);
+                const stuDept = stu ? getDeptShort(stu.department) : '未綁定學系';
 
-                // 計算課程數與總學分
                 const courseCount = Array.isArray(data.courses) ? data.courses.length : 0;
                 let totalCredits = 0;
                 if (courseCount > 0) {
@@ -1122,7 +1163,6 @@ input[type=number] { -moz-appearance: textfield; }
                     });
                 }
 
-                // Badges for "Other info"
                 let proofBadge = data.proof_type === '合約' ? 'badge-outline-green' : 'badge-outline-amber';
                 let insBadge = data.insurance === '兩者皆無' ? 'badge-outline-amber' : 'badge-outline-blue';
 
@@ -1131,34 +1171,24 @@ input[type=number] { -moz-appearance: textfield; }
                     <td class="col-checkbox" style="text-align: center;">
                         <input type="checkbox" value="${data.id}" onchange="window.toggleSelect('${data.id}')" ${selectedIds.includes(data.id)?'checked':''} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                     </td>
-                    <td style="text-align: center;">
-                        <div style="font-weight: 500; color: var(--text-primary); font-size: 14px;">${stu?stu.name:data.student_raw}</div>
-                        <div style="font-weight: normal; color: var(--text-muted); font-size: 12px; margin-top: 4px;">${stuId} / ${stuDept} / ${data.grade || '-'}年級</div>
-                    </td>
-                    <td style="text-align: center;">
-                        <div style="font-weight: normal; color: var(--text-primary); font-size: 14px;">${data.inst_raw}</div>
-                    </td>
-                    <td style="text-align: center; font-weight: normal; font-size: 14px; color: var(--text-primary);">
-                        ${courseCount} 門
-                    </td>
-                    <td style="text-align: center; font-weight: normal; font-size: 14px; color: var(--text-primary);">
-                        ${totalCredits} 學分
-                    </td>
-                    <td style="text-align: center;">
-                        <div style="font-weight: normal; color: var(--text-primary); font-size: 14px;">${data.duration || '-'}</div>
-                        <div style="font-weight: normal; color: var(--text-muted); font-size: 12px; margin-top: 4px;">${data.period_type || '-'} / 共 <strong style="color: var(--text-primary); font-size: 13px;">${data.hours || 0}</strong> 小時</div>
-                    </td>
-                    <td style="text-align: center;">
-                        <div style="display:flex; justify-content: center; gap:6px; margin-bottom:6px;">
-                            <span class="badge ${proofBadge}">${data.proof_type || '-'}</span>
-                            <span class="badge ${insBadge}">${data.insurance || '-'}</span>
-                        </div>
-                        <div class="cell-secondary">勞雇: ${data.employment || '-'} • 歸屬: ${data.resp_dept ? getDeptShort(data.resp_dept) : '未設定'}</div>
-                    </td>
-                    <td style="text-align: center;">
+                    <td style="text-align: center;"><div class="cell-primary" style="font-family: monospace;">${stuId}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary">${stuName}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary">${stuDept}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary">${data.grade || '-'}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${data.inst_raw}">${data.inst_raw}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary">${courseCount}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary">${totalCredits}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary">${data.duration || '-'}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary">${data.hours || 0}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary">${data.period_type || '-'}</div></td>
+                    <td style="text-align: center;"><div class="badge ${proofBadge}">${data.proof_type || '-'}</div></td>
+                    <td style="text-align: center;"><div class="badge ${insBadge}">${data.insurance || '-'}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary">${data.employment || '-'}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</div></td>
+                    <td class="col-actions">
                         <div class="row-actions">
                             <button onclick="window.editData('${data.id}')" class="btn btn-secondary btn-icon sm" title="編輯"><i class="ti ti-edit"></i></button>
-                            <button onclick="window.deleteData('${data.id}', '${stu?stu.name:data.student_raw}')" class="btn btn-icon sm" style="color:var(--danger); border-color:var(--danger-border);" title="刪除"><i class="ti ti-trash"></i></button>
+                            <button onclick="window.deleteData('${data.id}', '${stuName}')" class="btn btn-icon sm" style="color:var(--danger); border-color:var(--danger-border);" title="刪除"><i class="ti ti-trash"></i></button>
                         </div>
                     </td>
                 </tr>`;
