@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>用戶權限管理</title>
+<title>實習機構管理</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 
 <style>
+/* ─── 核心樣式變數 ─── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
@@ -32,6 +33,8 @@
   --danger: #dc2626;
   --danger-bg: #fef2f2;
   --danger-border: #fecaca;
+  --warning: #d97706;
+  --warning-bg: #fffbeb;
   --indigo: #4f46e5;
   --indigo-bg: #e0e7ff;
   --indigo-border: #c7d2fe;
@@ -69,6 +72,7 @@ html, body {
   display: flex; align-items: center; gap: 10px;
   flex-shrink: 0; flex-wrap: wrap;
 }
+
 .search-wrap { position: relative; flex: 0 0 260px; }
 .search-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px; }
 .search-input {
@@ -106,18 +110,22 @@ html, body {
 
 .btn-success-solid { background: var(--success); color: white; border: 1px solid var(--success); }
 .btn-success-solid:hover { background: #047857; }
+.btn-indigo-solid { background: var(--indigo); color: white; border: 1px solid var(--indigo); }
+.btn-indigo-solid:hover { background: #4338ca; }
+
 .btn-icon { width: 34px; padding: 0; justify-content: center; }
 .btn-icon.sm { width: 28px; height: 28px; }
+.btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn i { font-size: 16px; }
+.btn i { font-size: 16px; display: inline-flex; align-items: center; justify-content: center; }
 
-/* ─── FILTER ROW ─── */
+/* ─── FILTER ROW & BATCH BAR ─── */
 .filter-row {
   padding: 10px 24px;
   background: var(--bg);
   border-bottom: 1px solid var(--border);
   display: flex; align-items: center; gap: 8px;
-  flex-shrink: 0; flex-wrap: wrap;
+  flex-shrink: 0; flex-wrap: wrap; position: relative;
 }
 .filter-pill-wrap { position: relative; }
 .filter-pill {
@@ -139,10 +147,18 @@ html, body {
   position: absolute; top: calc(100% + 6px); left: 0;
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius-lg); box-shadow: var(--shadow-md);
-  min-width: 200px; z-index: 100;
+  min-width: 220px; z-index: 100;
   display: none; flex-direction: column; overflow: hidden;
 }
 .filter-dropdown.show { display: flex; }
+
+.filter-dropdown-search { padding: 8px; border-bottom: 1px solid var(--border); }
+.filter-dropdown-search input { 
+  width: 100%; height: 30px; border: 1px solid var(--border); border-radius: var(--radius-sm); 
+  padding: 0 10px; font-size: 12px; outline: none; background: var(--bg); transition: 0.2s; 
+}
+.filter-dropdown-search input:focus { border-color: var(--brand); background: var(--surface); box-shadow: 0 0 0 2px rgba(26,86,219,0.1); }
+
 .filter-dropdown-list { max-height: 200px; overflow-y: auto; padding: 4px; }
 .filter-option {
   display: flex; align-items: center; gap: 8px;
@@ -156,19 +172,31 @@ html, body {
 .filter-dropdown-footer button { font-size: 11px; font-weight: 600; color: var(--danger); background: none; border: none; cursor: pointer; padding: 2px 4px; border-radius: var(--radius-sm); }
 .filter-dropdown-footer button:hover { background: var(--danger-bg); }
 
+/* Batch Action Bar */
+#batch-bar {
+  display: none; align-items: center; gap: 12px; padding: 8px 24px;
+  background: var(--brand-light); border-bottom: 1px solid var(--brand-border); flex-shrink: 0;
+  position: absolute; top: 0; left: 0; right: 0; height: 100%; z-index: 20;
+}
+#batch-bar.visible { display: flex; animation: slideDown 0.2s ease-out; }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+.batch-info { font-size: 13px; font-weight: 600; color: var(--brand); display: flex; align-items: center; gap: 8px; }
+.batch-info span { font-size: 16px; font-weight: 700; }
+
 /* ─── TABLE ─── */
 .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; }
 .table-scroll { flex: 1; overflow: auto; }
-table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 900px; }
-thead { position: sticky; top: 0; z-index: 10; background: var(--surface); }
-thead tr { border-bottom: 2px solid var(--border); }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 1000px; }
+
 th {
-  /* 將文字對齊改為置中 */
-  padding: 12px 16px; text-align: center;
+  padding: 12px 16px; text-align: center; 
   font-size: 11px; font-weight: 700; color: var(--text-muted);
   text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
+  position: sticky; top: 0; z-index: 10;
+  background: var(--surface);
+  box-shadow: inset 0 -2px 0 var(--border); 
 }
-/* Sortable header */
+
 th[data-sort] { cursor: pointer; user-select: none; transition: color var(--transition); }
 th[data-sort]:hover { color: var(--text-secondary); }
 th .sort-icon { margin-left: 4px; font-size: 14px; opacity: 0.4; vertical-align: middle; }
@@ -176,35 +204,12 @@ th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand
 
 td { padding: 12px 16px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); }
 tr:hover td { background: #fafbff; }
-tr.disabled td { opacity: 0.6; filter: grayscale(40%); background: var(--bg); }
+tr.selected td { background: #f0f4ff; }
 
 .cell-primary { font-size: 13px; color: var(--text-primary); line-height: 1.4; }
 .cell-primary.bold { font-weight: 600; }
 .cell-secondary { font-size: 11px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
-.cell-flex { display: flex; align-items: center; gap: 10px; }
-.user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--brand-light); border: 1px solid var(--brand-border); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--brand); flex-shrink: 0; }
-.user-avatar.admin { background: var(--indigo-bg); border-color: var(--indigo-border); color: var(--indigo); }
-
-.badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; }
-.badge i { font-size: 14px; }
-.badge-blue { background: var(--brand-light); color: var(--brand); border: 1px solid var(--brand-border); }
-.badge-indigo { background: var(--indigo-bg); color: var(--indigo); border: 1px solid var(--indigo-border); }
-.badge-green { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
-
-/* ─── TOGGLE SWITCH ─── */
-.toggle { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
-.toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
-.toggle-slider { width: 34px; height: 18px; background: var(--border-strong); border-radius: 20px; transition: 0.3s; position: relative; }
-.toggle-slider::before { content: ""; position: absolute; width: 12px; height: 12px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; box-shadow: var(--shadow-sm); }
-.toggle input:checked + .toggle-slider { background: var(--success); }
-.toggle input:checked + .toggle-slider::before { transform: translateX(16px); }
-.toggle.disabled { opacity: 0.5; cursor: not-allowed; }
-.toggle-label { margin-left: 8px; font-size: 11px; font-weight: 700; }
-.toggle-label.active { color: var(--success); }
-.toggle-label.inactive { color: var(--text-muted); }
-
-/* Row actions: Always visible */
-.row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; opacity: 1; }
+.row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; }
 
 /* ─── PAGINATION ─── */
 .pagination-bar {
@@ -224,7 +229,6 @@ tr.disabled td { opacity: 0.6; filter: grayscale(40%); background: var(--bg); }
 .page-btn:hover:not(:disabled) { background: var(--bg); border-color: var(--border-strong); }
 .page-btn.active { background: var(--brand); color: white; border-color: var(--brand); font-weight: 700; }
 .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.page-btn i { font-size: 14px; }
 
 /* ─── UNIFIED DIALOG MODALS ─── */
 .dialog-overlay {
@@ -253,67 +257,56 @@ tr.disabled td { opacity: 0.6; filter: grayscale(40%); background: var(--bg); }
   border-radius: var(--radius-sm); transition: all var(--transition);
 }
 .dialog-close:hover { color: var(--danger); background: var(--danger-bg); }
-
 .dialog-body { padding: 24px; overflow-y: auto; max-height: calc(85vh - 130px); }
-
-.dialog-footer {
-  padding: 16px 24px; border-top: 1px solid var(--border);
-  display: flex; justify-content: flex-end; gap: 10px; background: var(--bg);
-}
+.dialog-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg); }
 
 /* ─── FORM ELEMENTS INSIDE DIALOG ─── */
-.form-section-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+.form-section-title { font-size: 13px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px; margin-bottom: 16px; }
 .form-section-title i { color: var(--text-muted); font-size: 16px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
 .field { display: flex; flex-direction: column; gap: 4px; }
 .field-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
 .field-label .req { color: var(--danger); margin-left: 2px; }
 .field-input, .field-select {
   width: 100%; height: 36px; border: 1px solid var(--border); border-radius: var(--radius);
-  background: var(--bg); padding: 0 12px; font-size: 13px; font-family: inherit; color: var(--text-primary);
-  outline: none; transition: border-color var(--transition), box-shadow var(--transition);
+  background: var(--bg); padding: 0 12px; font-size: 13px; font-family: inherit; color: var(--text-primary); outline: none; transition: all var(--transition);
 }
-.field-input:focus, .field-select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); background: var(--surface); }
+.field-input:focus, .field-select:focus, textarea.field-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); background: var(--surface); }
+.field-input:disabled, .field-select:disabled { opacity: 0.5; cursor: not-allowed; }
 select.field-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; }
 
-/* ─── ROLE LIST ─── */
-.role-list-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
-.role-list { display: flex; flex-direction: column; gap: 8px; }
-.role-item {
-  display: flex; justify-content: space-between; align-items: center;
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 8px 12px; transition: border-color var(--transition);
+/* ─── MERGE MODAL SPECIFIC ─── */
+.merge-option {
+  display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px;
+  border: 2px solid var(--border); border-radius: var(--radius-lg);
+  cursor: pointer; transition: all var(--transition); background: var(--surface);
+  margin-bottom: 10px;
 }
-.role-item:hover { border-color: var(--brand-border); }
-.role-item-name { font-size: 13px; font-weight: 500; color: var(--text-primary); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 4px; }
-.role-item-input { flex: 1; height: 32px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); padding: 0 10px; font-size: 13px; outline: none; display: none; margin-right: 12px; transition: all var(--transition); }
-.role-item-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
-.role-item.editing .role-item-name { display: none; }
-.role-item.editing .role-item-input { display: block; }
-.role-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-.role-item.editing .btn.edit { display: none; }
-.role-item.editing .btn.save { display: inline-flex !important; }
+.merge-option:hover { border-color: var(--indigo-border); background: var(--bg); }
+.merge-option:has(input:checked) { border-color: var(--indigo); background: var(--indigo-light); }
+.merge-option input[type="radio"] { width: 16px; height: 16px; accent-color: var(--indigo); flex-shrink: 0; margin-top: 2px; cursor: pointer;}
+.merge-option-content { flex: 1; }
+.merge-option-title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+.merge-option-desc { font-size: 12px; color: var(--text-secondary); margin-top: 4px; line-height: 1.4; }
 
 /* Empty state */
 .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
 .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
 .empty-text { font-size: 13px; font-weight: 600; }
 
-/* ─── MOBILE RESPONSIVE ─── */
 @media (max-width: 768px) {
+  .col-checkbox { display: none !important; }
+  #batch-bar { display: none !important; }
   .toolbar { padding: 12px 16px; justify-content: flex-end; }
   .search-wrap { flex: 0 0 100%; order: 1; margin-bottom: 8px; }
   .flex-spacer { display: none; }
-  .toolbar-actions { order: 2; width: 100%; justify-content: space-between; }
-  .toolbar-actions .btn { flex: 1; }
+  .toolbar-actions { order: 2; width: 100%; justify-content: space-between; display: flex; gap: 8px; }
+  .toolbar-actions .btn { flex: 1; padding: 0 4px; font-size: 11px; margin: 0; }
   .v-divider { display: none; }
-  .filter-row { padding: 10px 16px; }
-  .pagination-bar { flex-direction: column; align-items: flex-start; padding: 12px 16px; gap: 12px; }
-  .pagination-bar-right { width: 100%; justify-content: space-between; }
-  .dialog-overlay { padding: 12px; }
   
   /* Reset flex direction for mobile modal */
-  #user-form { flex-direction: column !important; gap: 16px !important; }
-  #user-form > div { width: 100% !important; margin: 0 !important; }
+  #data-form { flex-direction: column !important; gap: 16px !important; }
+  #data-form > div { width: 100% !important; margin: 0 !important; }
   
   /* 強制將原本垂直的線轉為水平線 */
   .v-divider-modal { 
@@ -334,71 +327,104 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
     <div class="toolbar">
         <div class="search-wrap">
             <i class="ti ti-search"></i>
-            <input type="text" id="search-input" placeholder="搜尋姓名、登入帳號、所屬單位..." class="search-input">
+            <input type="text" id="search-input" placeholder="搜尋機構名稱或統編..." class="search-input">
         </div>
         
         <div class="flex-spacer"></div>
         
         <div class="toolbar-actions">
             <button onclick="exportToCSV()" class="btn btn-success-solid">
-                <i class="ti ti-file-export"></i> <span class="btn-text">匯出</span>
+                <i class="ti ti-file-export"></i> <span class="btn-text">匯出清單</span>
+            </button>
+            <button id="btn-import" onclick="document.getElementById('import-file').click()" class="btn btn-indigo-solid">
+                <i class="ti ti-file-import"></i> <span class="btn-text">批次匯入</span>
             </button>
             <div class="v-divider"></div>
-            <button onclick="openRoleModal()" class="btn btn-secondary">
-                <i class="ti ti-user-exclamation"></i> <span class="btn-text">角色設定</span>
-            </button>
-            <button onclick="openUserModal()" class="btn btn-primary">
-                <i class="ti ti-user-plus"></i> <span class="btn-text">新增授權用戶</span>
+            <button onclick="openModal()" class="btn btn-primary">
+                <i class="ti ti-plus"></i> <span class="btn-text">新增機構</span>
             </button>
         </div>
+        <input type="file" id="import-file" accept=".csv" style="display:none;" onchange="handleImport(event)">
     </div>
 
-    <!-- ─── FILTER ROW ─── -->
+    <!-- ─── FILTER ROW & BATCH BAR ─── -->
     <div class="filter-row">
-        <!-- 所屬單位篩選 -->
-        <div class="filter-pill-wrap" id="pill-wrap-unit">
-            <button class="filter-pill" id="pill-unit" onclick="toggleDropdown('unit')">
-                所屬單位 <i class="ti ti-chevron-down"></i>
+        <!-- 國別篩選 -->
+        <div class="filter-pill-wrap" id="pill-wrap-country">
+            <button class="filter-pill" id="pill-country" onclick="toggleDropdown('country')">
+                全部國別 <i class="ti ti-chevron-down"></i>
             </button>
-            <div class="filter-dropdown" id="drop-unit">
-                <div class="filter-dropdown-list" id="unit-options-container"></div>
+            <div class="filter-dropdown" id="drop-country">
+                <div class="filter-dropdown-search">
+                    <input type="text" id="search-country-input" placeholder="搜尋國別..." onkeyup="filterDropdownItems(this, 'country-options-container')">
+                </div>
+                <div class="filter-dropdown-list" id="country-options-container"></div>
                 <div class="filter-dropdown-footer">
-                    <button onclick="clearFilter('unit')">清除此篩選</button>
+                    <button onclick="clearFilter('country')">清除此篩選</button>
                 </div>
             </div>
         </div>
 
-        <div class="filter-pill-wrap" id="pill-wrap-role">
-            <button class="filter-pill" id="pill-role" onclick="toggleDropdown('role')">
-                權限角色 <i class="ti ti-chevron-down"></i>
+        <!-- 縣市別篩選 -->
+        <div class="filter-pill-wrap" id="pill-wrap-city">
+            <button class="filter-pill" id="pill-city" onclick="toggleDropdown('city')">
+                全部縣市 <i class="ti ti-chevron-down"></i>
             </button>
-            <div class="filter-dropdown" id="drop-role">
-                <div class="filter-dropdown-list" id="role-options-container"></div>
+            <div class="filter-dropdown" id="drop-city">
+                <div class="filter-dropdown-search">
+                    <input type="text" id="search-city-input" placeholder="搜尋縣市..." onkeyup="filterDropdownItems(this, 'city-options-container')">
+                </div>
+                <div class="filter-dropdown-list" id="city-options-container"></div>
                 <div class="filter-dropdown-footer">
-                    <button onclick="clearFilter('role')">清除此篩選</button>
+                    <button onclick="clearFilter('city')">清除此篩選</button>
                 </div>
             </div>
         </div>
 
-        <div class="filter-pill-wrap" id="pill-wrap-status">
-            <button class="filter-pill" id="pill-status" onclick="toggleDropdown('status')">
-                帳號狀態 <i class="ti ti-chevron-down"></i>
+        <!-- 行業別篩選 -->
+        <div class="filter-pill-wrap" id="pill-wrap-industry">
+            <button class="filter-pill" id="pill-industry" onclick="toggleDropdown('industry')">
+                全部行業別 <i class="ti ti-chevron-down"></i>
             </button>
-            <div class="filter-dropdown" id="drop-status">
-                <div class="filter-dropdown-list">
-                    <label class="filter-option">
-                        <input type="checkbox" class="filter-chk-status" value="active" onchange="toggleFilterCheck('status', 'active')">
-                        <span>啟用中</span>
-                    </label>
-                    <label class="filter-option">
-                        <input type="checkbox" class="filter-chk-status" value="inactive" onchange="toggleFilterCheck('status', 'inactive')">
-                        <span>已停用</span>
-                    </label>
+            <div class="filter-dropdown" id="drop-industry">
+                <div class="filter-dropdown-search">
+                    <input type="text" id="search-industry-input" placeholder="搜尋行業別..." onkeyup="filterDropdownItems(this, 'industry-options-container')">
                 </div>
+                <div class="filter-dropdown-list" id="industry-options-container"></div>
                 <div class="filter-dropdown-footer">
-                    <button onclick="clearFilter('status')">清除此篩選</button>
+                    <button onclick="clearFilter('industry')">清除此篩選</button>
                 </div>
             </div>
+        </div>
+
+        <!-- 實習場所篩選 -->
+        <div class="filter-pill-wrap" id="pill-wrap-venue">
+            <button class="filter-pill" id="pill-venue" onclick="toggleDropdown('venue')">
+                全部場所 <i class="ti ti-chevron-down"></i>
+            </button>
+            <div class="filter-dropdown" id="drop-venue">
+                <div class="filter-dropdown-search">
+                    <input type="text" id="search-venue-input" placeholder="搜尋場所..." onkeyup="filterDropdownItems(this, 'venue-options-container')">
+                </div>
+                <div class="filter-dropdown-list" id="venue-options-container"></div>
+                <div class="filter-dropdown-footer">
+                    <button onclick="clearFilter('venue')">清除此篩選</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 批次操作列 (選取後覆蓋顯示) -->
+        <div id="batch-bar">
+            <div class="batch-info">
+                <i class="ti ti-checks" style="font-size:18px;"></i> 已選 <span id="selected-count">0</span> 筆機構
+            </div>
+            <button id="btn-select-all-filtered" class="btn btn-sm btn-secondary" onclick="selectAllFiltered()">選取全部符合條件</button>
+            <button class="btn btn-sm btn-secondary" onclick="clearSelection()">取消選取</button>
+            
+            <div class="flex-spacer"></div>
+            
+            <button class="btn btn-sm btn-indigo-solid" onclick="window.openMergeModal()"><i class="ti ti-link"></i> 合併勾選</button>
+            <button class="btn btn-sm btn-danger" onclick="batchDelete()"><i class="ti ti-trash"></i> 批次刪除</button>
         </div>
     </div>
 
@@ -407,21 +433,27 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         <div class="table-scroll custom-scroll">
             <table>
                 <thead>
-                    <!-- 移除所有的 text-align inline style，由上方 CSS 統一置中處理 -->
                     <tr>
-                        <th data-sort="name" style="width: 25%;">使用者資訊 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th style="width: 20%;">所屬單位</th>
-                        <th style="width: 15%;">職稱</th>
-                        <th style="width: 15%;">權限角色</th>
-                        <th style="width: 12%;">帳號狀態</th>
-                        <th style="width: 13%;">操作</th>
+                        <th class="col-checkbox" style="width: 4%;">
+                            <div style="display:flex; justify-content:center; align-items:center;">
+                                <input type="checkbox" id="selectAll" onchange="toggleSelectPage(event)" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
+                            </div>
+                        </th>
+                        <th data-sort="name" style="width: 20%;">實習機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="tax_id" style="width: 12%;">統一編號 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="industry" style="width: 12%;">行業別 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="venue_type" style="width: 12%;">實習場所 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="country" style="width: 8%;">國別 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="city" style="width: 8%;">縣市別 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="address" style="width: 16%;">實習場所地址 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th style="width: 8%;">操作</th>
                     </tr>
                 </thead>
-                <tbody id="user-table-body">
+                <tbody id="table-body">
                     <tr>
-                        <td colspan="6" class="empty-state">
+                        <td colspan="9" class="empty-state">
                             <i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i>
-                            <div class="empty-text">同步雲端資料中...</div>
+                            <div class="empty-text">資料載入中...</div>
                         </td>
                     </tr>
                 </tbody>
@@ -435,7 +467,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 <div style="display:flex; align-items:center; gap:6px;">
                     <span style="font-size:12px; color:var(--text-muted)">每頁顯示</span>
                     <select class="per-page-select" id="per-page-select" onchange="window.changePerPage(this.value)">
-                        <option value="10">10 筆</option>
+                        <option value="15">15 筆</option>
                         <option value="25">25 筆</option>
                         <option value="50">50 筆</option>
                     </select>
@@ -445,144 +477,226 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         </div>
     </div>
 
-    <!-- ─── UNIFIED DIALOG MODAL: 授權新用戶 ─── -->
-    <div id="user-modal" class="dialog-overlay">
+    <!-- ─── UNIFIED DIALOG MODAL: 新增/編輯機構 ─── -->
+    <div id="data-modal" class="dialog-overlay">
         <div class="dialog-box" style="max-width: 800px;">
             <div class="dialog-header">
-                <h3 id="modal-title"><i class="ti ti-user-plus"></i> 授權新用戶</h3>
-                <button type="button" class="dialog-close" onclick="closeUserModal()"><i class="ti ti-x"></i></button>
+                <h3 id="modal-title"><i class="ti ti-building-skyscraper"></i> 新增實習機構</h3>
+                <button type="button" class="dialog-close" onclick="closeModal()"><i class="ti ti-x"></i></button>
             </div>
-            <form id="user-form" class="dialog-body custom-scroll" style="display: flex; gap: 24px;">
-                
-                <!-- 左側：單位與職務權限 -->
+            
+            <form id="data-form" class="dialog-body custom-scroll" style="display: flex; gap: 24px;">
+                <!-- 左側：機構基本資料 -->
                 <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
-                    <div class="form-section-title" style="margin-bottom: 0;"><i class="ti ti-briefcase"></i> 單位與職務權限</div>
+                    <div class="form-section-title" style="margin-bottom: 0;"><i class="ti ti-building-skyscraper"></i> 機構基本資料</div>
+                    
                     <div class="field">
-                        <label class="field-label">一級單位 <span class="req">*</span></label>
-                        <input type="text" id="input-level1" required placeholder="例如：教務處" class="field-input">
+                        <label class="field-label">實習場所國別 <span class="req">*</span></label>
+                        <select id="input-country" required onchange="handleCountryChange()" class="field-select">
+                            <!-- JS 動態產生 -->
+                        </select>
                     </div>
                     <div class="field">
-                        <label class="field-label">二級單位 <span class="req">*</span></label>
-                        <input type="text" id="input-level2" required placeholder="例如：實習中心" class="field-input">
+                        <label class="field-label">實習機構名稱 <span class="req">*</span></label>
+                        <input type="text" id="input-name" required placeholder="例如：台灣積體電路製造股份有限公司" class="field-input">
                     </div>
                     <div class="field">
-                        <label class="field-label">職務名稱 <span class="req">*</span></label>
-                        <input type="text" id="input-job-title" required placeholder="例如：組員" class="field-input">
+                        <label class="field-label">統一編號 <span id="req-tax" class="req">*</span></label>
+                        <input type="text" id="input-tax-id" required placeholder="如: 12345678" class="field-input" style="text-transform:uppercase;">
                     </div>
                     <div class="field">
-                        <label class="field-label">權限角色 <span class="req">*</span></label>
-                        <select id="input-role" required class="field-select"></select>
+                        <label class="field-label">縣市別 <span id="req-city" class="req">*</span></label>
+                        <select id="input-city" required class="field-select">
+                            <option value="">請選擇</option>
+                            <!-- JS 動態產生 -->
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">完整實習地址 <span class="req">*</span></label>
+                        <input type="text" id="input-address" required placeholder="如: 臺灣大道四段1727號" class="field-input">
                     </div>
                 </div>
-                
+
                 <!-- 中間分隔線 -->
                 <div class="v-divider-modal" style="width: 1px; background: var(--border); margin: 0;"></div>
-                
-                <!-- 右側：使用者基本資訊 -->
+
+                <!-- 右側：分類與備註 -->
                 <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
-                    <div class="form-section-title" style="margin-bottom: 0;"><i class="ti ti-id-badge"></i> 使用者基本資訊</div>
+                    <div class="form-section-title" style="margin-bottom: 0;"><i class="ti ti-tags"></i> 分類與備註</div>
+                    
                     <div class="field">
-                        <label class="field-label">姓名 <span class="req">*</span></label>
-                        <input type="text" id="input-name" required placeholder="請輸入姓名" class="field-input">
+                        <label class="field-label">行業別</label>
+                        <select id="input-industry" class="field-select">
+                            <option value="">請選擇</option>
+                            <!-- JS 動態產生 -->
+                        </select>
                     </div>
                     <div class="field">
-                        <label class="field-label">Email (登入帳號) <span class="req">*</span></label>
-                        <input type="email" id="input-email" required placeholder="例如：user@thu.edu.tw" class="field-input" style="font-family:monospace">
+                        <label class="field-label">實習場所</label>
+                        <select id="input-venue-type" class="field-select">
+                            <option value="">請選擇</option>
+                            <!-- JS 動態產生 -->
+                        </select>
+                    </div>
+                    <div class="field" style="flex: 1;">
+                        <label class="field-label">機構備註</label>
+                        <textarea id="input-remarks" class="field-input" placeholder="可輸入與該機構相關之備註說明..." style="height: 100%; min-height: 120px; resize: none; padding: 10px 12px; line-height: 1.5;"></textarea>
                     </div>
                 </div>
             </form>
+            
             <div class="dialog-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeUserModal()">取消</button>
-                <button type="button" class="btn btn-primary" id="btn-submit" onclick="submitUserForm()">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">取消</button>
+                <button type="button" id="btn-submit" class="btn btn-primary" onclick="submitForm()">
                     <i class="ti ti-check"></i> 確認儲存
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- ─── UNIFIED DIALOG MODAL: 角色設定 ─── -->
-    <div id="role-modal" class="dialog-overlay">
-        <div class="dialog-box" style="max-width: 480px;">
+    <!-- ─── MERGE DIALOG MODAL: 合併機構 ─── -->
+    <div id="merge-modal" class="dialog-overlay">
+        <div class="dialog-box" style="max-width: 650px;">
             <div class="dialog-header">
-                <h3><i class="ti ti-user-exclamation"></i> 角色設定管理</h3>
-                <button type="button" class="dialog-close" onclick="closeRoleModal()"><i class="ti ti-x"></i></button>
+                <h3 style="color: var(--indigo)"><i class="ti ti-link" style="color: var(--indigo)"></i> 合併重複機構</h3>
+                <button type="button" class="dialog-close" onclick="window.closeMergeModal()"><i class="ti ti-x"></i></button>
             </div>
-            <div class="dialog-body custom-scroll">
-                <div class="field" style="margin-bottom: 24px;">
-                    <label class="field-label">新增權限角色</label>
-                    <div style="display:flex; gap:12px;">
-                        <input type="text" id="new-role-input" placeholder="輸入新角色名稱..." class="field-input">
-                        <button onclick="addRole()" class="btn btn-primary" style="height: 36px; padding: 0 20px;"><i class="ti ti-plus"></i> 新增</button>
-                    </div>
+            <div class="dialog-body custom-scroll" style="background: var(--bg);">
+                <div style="background: var(--indigo-light); border: 1px solid var(--indigo-border); padding: 12px; border-radius: var(--radius); margin-bottom: 16px;">
+                    <p style="font-size: 13px; color: var(--indigo); font-weight: 600; line-height: 1.5;">
+                        您已選取 <span id="merge-count" style="font-size: 16px; font-weight: 700; margin: 0 4px;">0</span> 個機構準備進行合併。<br>
+                        請在下方選擇<strong style="color: var(--danger); margin: 0 4px;">「唯一要保留的主體機構」</strong>。合併後，其餘被勾選的機構將被刪除，且系統會自動更新所有關聯到被刪除機構的實習紀錄。
+                    </p>
                 </div>
-                <div class="divider" style="margin: 0 0 16px 0;"></div>
-                <div>
-                    <div class="role-list-label">現有權限清單</div>
-                    <div id="role-list-container" class="role-list"></div>
+                <div id="merge-options-container" style="display: flex; flex-direction: column;">
+                    <!-- JS 動態生成待合併選項 -->
                 </div>
             </div>
             <div class="dialog-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeRoleModal()">關閉</button>
+                <button type="button" class="btn btn-secondary" onclick="window.closeMergeModal()">取消</button>
+                <button type="button" id="btn-merge-submit" class="btn btn-indigo-solid" onclick="window.executeMerge()" disabled>
+                    <i class="ti ti-link"></i> 確認執行合併作業
+                </button>
             </div>
         </div>
     </div>
 
+    <!-- Firebase 邏輯 -->
     <script type="module">
-        import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc, serverTimestamp, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY", authDomain: "thu-isac-review.firebaseapp.com", projectId: "thu-isac-review", storageBucket: "thu-isac-review.firebasestorage.app", messagingSenderId: "453299876735", appId: "1:453299876735:web:1d8babca3315423161a04a" };
-        const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+        const app = initializeApp(firebaseConfig);
         const auth = getAuth(app); 
         const db = getFirestore(app);
         
-        let adminApp;
-        const existingAdminApp = getApps().find(a => a.name === "AdminApp");
-        if (existingAdminApp) { adminApp = existingAdminApp; } else { adminApp = initializeApp(firebaseConfig, "AdminApp"); }
-        const adminAuth = getAuth(adminApp);
+        const dataCollection = collection(db, "internship_institutions");
+        const recordsCol = collection(db, "internship_records"); 
+        
+        let allData = []; 
+        let allRecords = []; 
+        let editingId = null; 
+        let editingOldName = null; 
+        
+        let currentPage = 1; 
+        let itemsPerPage = 15;
+        let selectedIds = [];
+        let filteredInstitutions = []; 
+        
+        let filterCountrySet = new Set();
+        let filterCitySet = new Set();
+        let filterIndustrySet = new Set();
+        let filterVenueSet = new Set();
+        
+        // 預設不排序
+        let sortCol = ''; 
+        let sortDir = '';
 
-        const usersCollection = collection(db, "users");
-        const roleDocRef = doc(db, "settings", "roles");
+        const LIST_COUNTRIES = ["中華民國","大陸地區","日本","美國","越南","泰國","澳大利亞","香港","澳門","馬來西亞","菲律賓","印尼","印度","孟加拉","緬甸","柬埔寨","黎巴嫩","蒙古","巴西","巴拉圭","秘魯"];
+        const LIST_CITIES = ["臺北市","新北市","基隆市","桃園市","新竹縣","新竹市","苗栗縣","臺中市","彰化縣","南投縣","雲林縣","嘉義縣","嘉義市","臺南市","高雄市","屏東縣","宜蘭縣","花蓮縣","臺東縣","澎湖縣","金門縣","連江縣"];
+        const LIST_INDUSTRIES = ["農、林、漁、牧業","礦業及土石採取業","製造業","電力及燃氣供應業","用水供應及污染整治業","營建工程業","批發及零售業","運輸及倉儲業","住宿及餐飲業","出版及影音等內容傳播業","電信及資訊服務業","金融及保險業","不動產業","專業、科學及技術服務業","支援服務業","公共行政及國防；強制性社會安全","教育業","醫療保健及社會工作服務業","藝術、運動及休閒服務業","其他服務業"];
+        const LIST_VENUES = ["企業機構","其他機構","政府機構","就讀學校附屬機構"];
 
-        let allUsers = []; let roleList = []; let editingId = null; 
-        let currentPage = 1; let itemsPerPage = 10;
-        let filterRoleSet = new Set(); let filterStatusSet = new Set(); let filterUnitSet = new Set();
-        let sortCol = 'created_at'; let sortDir = 'desc';
+        function initSelectOptions() {
+            // Form selects
+            let countryHtml = '';
+            LIST_COUNTRIES.forEach(item => countryHtml += `<option value="${item}">${item}</option>`);
+            document.getElementById('input-country').innerHTML = countryHtml;
 
-        onAuthStateChanged(auth, (user) => {
+            let cityHtml = `<option value="">請選擇</option>`;
+            LIST_CITIES.forEach(item => cityHtml += `<option value="${item}">${item}</option>`);
+            document.getElementById('input-city').innerHTML = cityHtml;
+
+            let industryHtml = `<option value="">請選擇</option>`;
+            LIST_INDUSTRIES.forEach(item => industryHtml += `<option value="${item}">${item}</option>`);
+            document.getElementById('input-industry').innerHTML = industryHtml;
+
+            let venueHtml = `<option value="">請選擇</option>`;
+            LIST_VENUES.forEach(item => venueHtml += `<option value="${item}">${item}</option>`);
+            document.getElementById('input-venue-type').innerHTML = venueHtml;
+
+            // Filter options for dropdown
+            let filterCountryHtml = '';
+            LIST_COUNTRIES.forEach(item => {
+                filterCountryHtml += `
+                <label class="filter-option">
+                    <input type="checkbox" class="filter-chk-country" value="${item}" onchange="toggleFilterCheck('country', '${item}')"> 
+                    <span>${item}</span>
+                </label>`;
+            });
+            document.getElementById('country-options-container').innerHTML = filterCountryHtml;
+
+            let filterCityHtml = '';
+            LIST_CITIES.forEach(item => {
+                filterCityHtml += `
+                <label class="filter-option">
+                    <input type="checkbox" class="filter-chk-city" value="${item}" onchange="toggleFilterCheck('city', '${item}')"> 
+                    <span>${item}</span>
+                </label>`;
+            });
+            document.getElementById('city-options-container').innerHTML = filterCityHtml;
+
+            let filterIndustryHtml = '';
+            LIST_INDUSTRIES.forEach(item => {
+                filterIndustryHtml += `
+                <label class="filter-option">
+                    <input type="checkbox" class="filter-chk-industry" value="${item}" onchange="toggleFilterCheck('industry', '${item}')"> 
+                    <span>${item}</span>
+                </label>`;
+            });
+            document.getElementById('industry-options-container').innerHTML = filterIndustryHtml;
+
+            let filterVenueHtml = '';
+            LIST_VENUES.forEach(item => {
+                filterVenueHtml += `
+                <label class="filter-option">
+                    <input type="checkbox" class="filter-chk-venue" value="${item}" onchange="toggleFilterCheck('venue', '${item}')"> 
+                    <span>${item}</span>
+                </label>`;
+            });
+            document.getElementById('venue-options-container').innerHTML = filterVenueHtml;
+        }
+
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
-                onSnapshot(roleDocRef, (docSnap) => {
-                    if (docSnap.exists()) { roleList = docSnap.data().list || []; } 
-                    else { roleList = ["系統管理員 (Admin)", "一般查核員 (Reviewer)"]; setDoc(roleDocRef, { list: roleList }); }
-                    renderRoleUI(); renderTable();
+                initSelectOptions();
+                onSnapshot(dataCollection, (snapshot) => {
+                    allData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    selectedIds = [];
+                    updateBatchActionBar();
+                    window.renderTable();
+                }, (error) => {
+                    document.getElementById('table-body').innerHTML = `<tr><td colspan="9" class="empty-state"><i class="ti ti-lock empty-icon" style="color:var(--danger); opacity:1;"></i><div class="empty-text">資料讀取失敗，權限不足。</div></td></tr>`;
                 });
 
-                onSnapshot(usersCollection, (snapshot) => {
-                    allUsers = snapshot.docs.map(doc => {
-                        const data = doc.data();
-                        let createdDate = '未知';
-                        if (data.created_at && data.created_at.toDate) {
-                            const date = data.created_at.toDate();
-                            createdDate = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
-                        }
-                        return { id: doc.id, ...data, createdDate };
-                    });
-                    
-                    const hasDefaultAdmin = allUsers.some(u => u.email === 'thu.isac.review@gmail.com');
-                    if (!hasDefaultAdmin) {
-                        allUsers.unshift({ 
-                            id: 'default_admin', name: '系統預設管理員', email: 'thu.isac.review@gmail.com', 
-                            role: '系統管理員 (Admin)', level1Unit: '系統管理中心', level2Unit: '核心維運組', jobTitle: '管理員',
-                            is_active: true, createdDate: '系統預設' 
-                        });
-                    }
-                    
-                    renderUnitUI();
-                    renderTable();
-                }, (error) => {
-                    document.getElementById('user-table-body').innerHTML = `<tr><td colspan="6" class="empty-state"><i class="ti ti-lock empty-icon" style="color:var(--danger); opacity:1;"></i><div class="empty-text">資料讀取失敗，權限不足。</div></td></tr>`;
+                getDocs(recordsCol).then(snap => {
+                    allRecords = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 });
+
+            } else {
+                document.getElementById('table-body').innerHTML = `<tr><td colspan="9" class="empty-state"><i class="ti ti-shield-half empty-icon"></i><div class="empty-text">請先登入系統以存取資料。</div></td></tr>`;
             }
         });
 
@@ -590,11 +704,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         document.querySelectorAll('th[data-sort]').forEach(th => {
             th.onclick = () => {
                 const col = th.dataset.sort;
-                if (sortCol === col) {
-                    sortDir = sortDir === 'asc' ? 'desc' : 'asc';
-                } else { 
-                    sortCol = col; sortDir = 'asc'; 
-                }
+                if (sortCol === col) { sortDir = sortDir === 'asc' ? 'desc' : 'asc'; } 
+                else { sortCol = col; sortDir = 'asc'; }
                 
                 document.querySelectorAll('th[data-sort]').forEach(t => {
                     t.classList.remove('sort-asc', 'sort-desc');
@@ -603,12 +714,11 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 
                 th.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
                 th.querySelector('.sort-icon').className = `ti ti-sort-${sortDir === 'asc' ? 'ascending' : 'descending'} sort-icon`;
-                
-                renderTable();
+                window.renderTable();
             };
         });
 
-        // ─── DROPDOWN LOGIC ───
+        // ─── DROPDOWN & FILTER LOGIC ───
         window.toggleDropdown = (type) => {
             const drop = document.getElementById(`drop-${type}`);
             const wrap = document.getElementById(`pill-wrap-${type}`);
@@ -618,41 +728,64 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             if (!isOpen) { drop.classList.add('show'); wrap.classList.add('open'); }
         };
 
+        window.filterDropdownItems = (input, containerId) => {
+            const term = input.value.toLowerCase();
+            const labels = document.getElementById(containerId).querySelectorAll('.filter-option');
+            labels.forEach(lbl => {
+                const text = lbl.textContent.toLowerCase();
+                lbl.style.display = text.includes(term) ? 'flex' : 'none';
+            });
+        };
+
         window.toggleFilterCheck = (type, val) => {
             const chk = document.querySelector(`.filter-chk-${type}[value="${val}"]`);
             if(chk) chk.checked = !chk.checked;
             
-            const set = type === 'role' ? filterRoleSet : (type === 'unit' ? filterUnitSet : filterStatusSet);
+            let set;
+            if(type === 'country') set = filterCountrySet;
+            else if(type === 'city') set = filterCitySet;
+            else if(type === 'industry') set = filterIndustrySet;
+            else set = filterVenueSet;
+            
             if (set.has(val)) set.delete(val); else set.add(val);
             
-            document.querySelectorAll(`.filter-chk-${type}`).forEach(c => {
-                c.checked = set.has(c.value);
-            });
+            document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
             
-            currentPage = 1;
-            updatePillActive(type); renderTable();
+            currentPage = 1; updatePillActive(type); window.renderTable();
         };
 
         function updatePillActive(type) {
-            const set = type === 'role' ? filterRoleSet : (type === 'unit' ? filterUnitSet : filterStatusSet);
+            let set, typeName;
+            if(type === 'country') { set = filterCountrySet; typeName = '國別'; }
+            else if(type === 'city') { set = filterCitySet; typeName = '縣市'; }
+            else if(type === 'industry') { set = filterIndustrySet; typeName = '行業別'; }
+            else { set = filterVenueSet; typeName = '場所'; }
+
             const pill = document.getElementById(`pill-${type}`);
-            let typeName = type === 'role' ? '權限角色' : (type === 'unit' ? '所屬單位' : '帳號狀態');
-            
             if (set.size > 0) {
                 pill.classList.add('active');
                 pill.innerHTML = `${typeName} <span class="pill-count">${set.size}</span> <i class="ti ti-chevron-down"></i>`;
             } else {
                 pill.classList.remove('active');
-                pill.innerHTML = `${typeName} <i class="ti ti-chevron-down"></i>`;
+                pill.innerHTML = `全部${typeName} <i class="ti ti-chevron-down"></i>`;
             }
         }
 
         window.clearFilter = (type) => {
-            const set = type === 'role' ? filterRoleSet : (type === 'unit' ? filterUnitSet : filterStatusSet);
+            let set;
+            if(type === 'country') set = filterCountrySet;
+            else if(type === 'city') set = filterCitySet;
+            else if(type === 'industry') set = filterIndustrySet;
+            else set = filterVenueSet;
+
             set.clear();
             document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = false);
-            currentPage = 1;
-            updatePillActive(type); renderTable();
+            const searchInput = document.getElementById(`search-${type}-input`);
+            if (searchInput) {
+                searchInput.value = '';
+                filterDropdownItems(searchInput, `${type}-options-container`);
+            }
+            currentPage = 1; updatePillActive(type); window.renderTable();
         };
 
         document.addEventListener('click', e => {
@@ -662,143 +795,177 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             }
         });
 
-        function renderUnitUI() {
-            const units = [...new Set(allUsers.map(u => u.level1Unit).filter(Boolean))].sort();
-            const container = document.getElementById('unit-options-container');
-            container.innerHTML = units.map(u => `
-                <label class="filter-option">
-                    <input type="checkbox" class="filter-chk-unit" value="${u}" onchange="toggleFilterCheck('unit', '${u}')"> 
-                    <span>${u}</span>
-                </label>
-            `).join('');
-            document.querySelectorAll(`.filter-chk-unit`).forEach(c => c.checked = filterUnitSet.has(c.value));
-        }
-
-        function renderRoleUI() {
-            const container = document.getElementById('role-options-container');
-            container.innerHTML = roleList.map(r => `
-                <label class="filter-option">
-                    <input type="checkbox" class="filter-chk-role" value="${r}" onchange="toggleFilterCheck('role', '${r}')"> 
-                    <span>${r}</span>
-                </label>
-            `).join('');
-            document.querySelectorAll(`.filter-chk-role`).forEach(c => c.checked = filterRoleSet.has(c.value));
-
-            const roleListContainer = document.getElementById('role-list-container');
-            roleListContainer.innerHTML = roleList.map((r, index) => `
-                <div class="role-item" id="role-item-${index}">
-                    <div class="role-item-name" title="${r}">${r}</div>
-                    <input type="text" class="role-item-input" id="role-input-${index}" value="${r}">
-                    <div class="role-actions">
-                        <button type="button" class="btn btn-secondary btn-icon edit" onclick="editRole(${index})" title="編輯"><i class="ti ti-edit"></i></button>
-                        <button type="button" class="btn btn-success-solid btn-icon save" onclick="saveRole(${index})" title="儲存" style="display:none;"><i class="ti ti-check"></i></button>
-                        <button type="button" class="btn btn-icon" style="color:var(--danger); border-color:var(--danger-border);" onclick="removeRole(${index})" title="刪除"><i class="ti ti-trash"></i></button>
-                    </div>
-                </div>
-            `).join('');
-
-            document.getElementById('input-role').innerHTML = `<option value="">請選擇...</option>` + roleList.map(r => `<option value="${r}">${r}</option>`).join('');
-        }
-
-        // ─── ROLE MODAL ACTIONS ───
-        window.openRoleModal = () => { document.getElementById('role-modal').classList.add('open'); };
-        window.closeRoleModal = () => { document.getElementById('role-modal').classList.remove('open'); };
-
-        window.addRole = async () => {
-            const input = document.getElementById('new-role-input');
-            const val = input.value.trim();
-            if (!val || roleList.includes(val)) return;
-            await updateDoc(roleDocRef, { list: [...roleList, val] });
-            input.value = '';
-        };
-
-        window.editRole = (index) => {
-            const item = document.getElementById(`role-item-${index}`);
-            item.classList.add('editing');
-            document.getElementById(`role-input-${index}`).focus();
-        };
-
-        window.saveRole = async (index) => {
-            const newVal = document.getElementById(`role-input-${index}`).value.trim();
+        // ─── FORM DYNAMIC LOGIC ───
+        window.handleCountryChange = () => {
+            const country = document.getElementById('input-country').value;
+            const taxInput = document.getElementById('input-tax-id');
+            const cityInput = document.getElementById('input-city');
+            const reqTax = document.getElementById('req-tax');
+            const reqCity = document.getElementById('req-city');
             
-            if (!newVal || newVal === roleList[index]) {
-                document.getElementById(`role-item-${index}`).classList.remove('editing');
-                document.getElementById(`role-input-${index}`).value = roleList[index];
-                return;
-            }
+            const isDomestic = country === '中華民國';
             
-            const newList = [...roleList]; newList[index] = newVal;
-            await updateDoc(roleDocRef, { list: newList });
-        };
-
-        window.removeRole = async (index) => {
-            if (confirm(`確定移除角色「${roleList[index]}」嗎？`)) {
-                await updateDoc(roleDocRef, { list: roleList.filter((_, i) => i !== index) });
+            taxInput.disabled = !isDomestic;
+            cityInput.disabled = !isDomestic;
+            taxInput.required = isDomestic;
+            cityInput.required = isDomestic;
+            
+            if (isDomestic) {
+                reqTax.style.display = 'inline';
+                reqCity.style.display = 'inline';
+            } else {
+                reqTax.style.display = 'none';
+                reqCity.style.display = 'none';
+                taxInput.value = '';
+                cityInput.value = '';
             }
         };
 
-        // ─── USER MODAL ACTIONS ───
-        window.openUserModal = () => {
+        // ─── BATCH LOGIC ───
+        window.toggleSelectPage = (e) => {
+            const isChecked = e.target.checked;
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const currentPaginatedIds = filteredInstitutions.slice(startIndex, startIndex + itemsPerPage).map(d => d.id);
+            if (isChecked) {
+                currentPaginatedIds.forEach(id => { if (!selectedIds.includes(id)) selectedIds.push(id); });
+            } else {
+                selectedIds = selectedIds.filter(id => !currentPaginatedIds.includes(id));
+            }
+            updateBatchActionBar();
+            window.renderTable();
+        };
+
+        window.toggleSelect = (id) => {
+            const index = selectedIds.indexOf(id);
+            if (index === -1) selectedIds.push(id); else selectedIds.splice(index, 1);
+            updateBatchActionBar(); window.renderTable();
+        };
+
+        window.selectAllFiltered = () => {
+            selectedIds = filteredInstitutions.map(d => d.id);
+            updateBatchActionBar(); window.renderTable();
+        };
+
+        window.clearSelection = () => {
+            selectedIds = []; updateBatchActionBar(); window.renderTable();
+        };
+
+        function updateBatchActionBar() {
+            const bar = document.getElementById('batch-bar');
+            const count = document.getElementById('selected-count');
+            const btnSelectAll = document.getElementById('btn-select-all-filtered');
+            
+            if (selectedIds.length > 0) {
+                bar.classList.add('visible');
+                count.innerText = selectedIds.length;
+                if (selectedIds.length < filteredInstitutions.length) {
+                    btnSelectAll.style.display = 'inline-flex';
+                    btnSelectAll.innerText = `選取全部符合條件 (${filteredInstitutions.length})`;
+                } else {
+                    btnSelectAll.style.display = 'none';
+                }
+            } else {
+                bar.classList.remove('visible');
+            }
+        }
+
+        window.batchDelete = async () => {
+            if (!confirm(`警告：確定要刪除選取的 ${selectedIds.length} 筆機構嗎？\n此操作無法復原！`)) return;
+            try {
+                for (let id of selectedIds) { await deleteDoc(doc(db, "internship_institutions", id)); }
+                clearSelection();
+            } catch (e) { alert("批次刪除發生錯誤: " + e.message); }
+        };
+
+        // ─── MODAL LOGIC ───
+        window.openModal = () => {
             if (!editingId) { 
-                document.getElementById('user-form').reset();
-                document.getElementById('modal-title').innerHTML = '<i class="ti ti-user-plus" style="color:var(--brand)"></i> 授權新用戶';
-                document.getElementById('input-email').readOnly = false;
-                document.getElementById('input-email').style.background = 'var(--bg)';
+                document.getElementById('data-form').reset();
+                window.handleCountryChange(); 
+                document.getElementById('modal-title').innerHTML = '<i class="ti ti-building-skyscraper"></i> 新增實習機構';
             }
-            document.getElementById('user-modal').classList.add('open');
+            document.getElementById('data-modal').classList.add('open');
         };
 
-        window.closeUserModal = () => { document.getElementById('user-modal').classList.remove('open'); editingId = null; };
+        window.closeModal = () => { 
+            document.getElementById('data-modal').classList.remove('open'); 
+            editingId = null; 
+            editingOldName = null;
+        };
         
-        // ─── PAGINATION ACTIONS ───
-        window.changePage = (page) => { currentPage = page; renderTable(); };
-        window.changePerPage = (val) => { itemsPerPage = Number(val); currentPage = 1; renderTable(); };
+        window.changePage = (page) => { currentPage = page; window.renderTable(); };
+        window.changePerPage = (val) => { itemsPerPage = Number(val); currentPage = 1; window.renderTable(); };
 
-        function renderTable() {
-            const tbody = document.getElementById('user-table-body');
+        window.renderTable = () => {
+            const tbody = document.getElementById('table-body');
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
 
-            let filtered = allUsers.filter(u => {
-                const matchSearch = (u.name || '').toLowerCase().includes(searchTerm) || (u.email || '').toLowerCase().includes(searchTerm) || (u.level1Unit || '').toLowerCase().includes(searchTerm) || (u.level2Unit || '').toLowerCase().includes(searchTerm);
-                const matchRole = filterRoleSet.size === 0 || filterRoleSet.has(u.role);
-                const matchUnit = filterUnitSet.size === 0 || filterUnitSet.has(u.level1Unit);
-                const statusStr = u.is_active ? 'active' : 'inactive';
-                const matchStatus = filterStatusSet.size === 0 || filterStatusSet.has(statusStr);
-                return matchSearch && matchRole && matchUnit && matchStatus;
+            filteredInstitutions = allData.filter(d => {
+                const matchSearch = (d.name || '').toLowerCase().includes(searchTerm) || (d.tax_id || '').toLowerCase().includes(searchTerm);
+                const matchCountry = filterCountrySet.size === 0 || filterCountrySet.has(d.country);
+                const matchCity = filterCitySet.size === 0 || filterCitySet.has(d.city);
+                const matchIndustry = filterIndustrySet.size === 0 || filterIndustrySet.has(d.industry);
+                const matchVenue = filterVenueSet.size === 0 || filterVenueSet.has(d.venue_type);
+                return matchSearch && matchCountry && matchCity && matchIndustry && matchVenue;
             });
 
-            // Sorting logic
+            // 套用排序 (若使用者有點擊標題才啟動)
             if (sortCol) {
-                filtered.sort((a, b) => {
-                    let valA = (a[sortCol] || '').toString().toLowerCase();
-                    let valB = (b[sortCol] || '').toString().toLowerCase();
-                    
-                    // Handler for timestamp
-                    if (sortCol === 'created_at') {
-                        valA = a.created_at?.toMillis() || 0;
-                        valB = b.created_at?.toMillis() || 0;
+                filteredInstitutions.sort((a, b) => {
+                    let valA = a[sortCol] || '';
+                    let valB = b[sortCol] || '';
+
+                    if (sortCol === 'country') {
+                        const aIsDomestic = valA === '中華民國' ? 0 : 1;
+                        const bIsDomestic = valB === '中華民國' ? 0 : 1;
+                        if (aIsDomestic !== bIsDomestic) return sortDir === 'asc' ? aIsDomestic - bIsDomestic : bIsDomestic - aIsDomestic;
                     }
                     
+                    if (sortCol === 'city') {
+                        const cityIdxA = LIST_CITIES.indexOf(valA);
+                        const cityIdxB = LIST_CITIES.indexOf(valB);
+                        const orderCityA = cityIdxA !== -1 ? cityIdxA : 999;
+                        const orderCityB = cityIdxB !== -1 ? cityIdxB : 999;
+                        if (orderCityA !== orderCityB) return sortDir === 'asc' ? orderCityA - orderCityB : orderCityB - orderCityA;
+                    }
+
+                    if (sortCol === 'industry') {
+                        const indIdxA = LIST_INDUSTRIES.indexOf(valA);
+                        const indIdxB = LIST_INDUSTRIES.indexOf(valB);
+                        const orderIndA = indIdxA !== -1 ? indIdxA : 999;
+                        const orderIndB = indIdxB !== -1 ? indIdxB : 999;
+                        if (orderIndA !== orderIndB) return sortDir === 'asc' ? orderIndA - orderIndB : orderIndB - orderIndA;
+                    }
+
+                    if (sortCol === 'venue_type') {
+                        const venueIdxA = LIST_VENUES.indexOf(valA);
+                        const venueIdxB = LIST_VENUES.indexOf(valB);
+                        const orderVenueA = venueIdxA !== -1 ? venueIdxA : 999;
+                        const orderVenueB = venueIdxB !== -1 ? venueIdxB : 999;
+                        if (orderVenueA !== orderVenueB) return sortDir === 'asc' ? orderVenueA - orderVenueB : orderVenueB - orderVenueA;
+                    }
+
+                    valA = valA.toString().toLowerCase(); 
+                    valB = valB.toString().toLowerCase();
                     if (valA < valB) return sortDir === 'asc' ? -1 : 1;
                     if (valA > valB) return sortDir === 'asc' ? 1 : -1;
                     return 0;
                 });
             }
 
-            const total = filtered.length;
+            const total = filteredInstitutions.length;
             const totalPages = Math.max(1, Math.ceil(total / itemsPerPage));
             if (currentPage > totalPages) currentPage = totalPages;
+            
             const start = (currentPage - 1) * itemsPerPage;
-            const items = filtered.slice(start, start + itemsPerPage);
+            const paginatedItems = filteredInstitutions.slice(start, start + itemsPerPage);
 
-            // 更新分頁文字
             if (total > 0) {
                 document.getElementById('pagination-info').innerHTML = `共 <strong>${total}</strong> 筆，顯示第 ${start + 1}–${Math.min(start + itemsPerPage, total)} 筆`;
             } else {
                 document.getElementById('pagination-info').innerHTML = `共 <strong>0</strong> 筆`;
             }
             
-            // 產生分頁按鈕陣列
             let pHtml = `<button class="page-btn" onclick="window.changePage(${currentPage-1})" ${currentPage<=1?'disabled':''}><i class="ti ti-chevron-left"></i></button>`;
             const pages = [];
             for (let p=1; p<=totalPages; p++) {
@@ -810,115 +977,298 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 else pHtml += `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="window.changePage(${p})">${p}</button>`;
             });
             pHtml += `<button class="page-btn" onclick="window.changePage(${currentPage+1})" ${currentPage>=totalPages?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
-            
             document.getElementById('pagination-controls').innerHTML = pHtml;
 
-            // 空白狀態
-            if (total === 0) { 
-                tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">沒有符合搜尋或篩選條件的用戶。</div></td></tr>`; 
-                return; 
+            const currentPaginatedIds = paginatedItems.map(d => d.id);
+            const isAllVisibleSelected = currentPaginatedIds.length > 0 && currentPaginatedIds.every(id => selectedIds.includes(id));
+            document.getElementById('selectAll').checked = isAllVisibleSelected;
+
+            if (total === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">找不到符合條件的機構資料。</div></td></tr>`;
+                return;
             }
 
-            tbody.innerHTML = items.map(data => {
-                const isSuper = (data.role || '').includes('管理');
-                const isDefault = data.id === 'default_admin' || data.email === 'thu.isac.review@gmail.com';
-                const initial = data.name ? data.name.charAt(0) : 'U';
+            let html = '';
+            paginatedItems.forEach((data) => {
+                const isChecked = selectedIds.includes(data.id) ? 'checked' : '';
+                const isDomestic = data.country === '中華民國';
+                
+                const dispTaxId = isDomestic && data.tax_id ? data.tax_id : '<span style="color: var(--text-muted)">-</span>';
+                const dispCity = isDomestic && data.city ? data.city : '<span style="color: var(--text-muted)">-</span>';
+                
+                // 若未填寫自動留白
+                const dispIndustry = data.industry ? data.industry : '<span style="color: var(--text-muted)">-</span>';
+                const dispVenueType = data.venue_type ? data.venue_type : '<span style="color: var(--text-muted)">-</span>';
 
-                return `
-                <tr class="${!data.is_active ? 'disabled' : ''}">
-                    <td>
-                        <div class="cell-flex">
-                            <div class="user-avatar ${isSuper ? 'admin' : ''}">${initial}</div>
-                            <div style="min-width:0">
-                                <div class="cell-primary bold" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${data.name || '未名'}</div>
-                                <div class="cell-secondary" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px;">${data.email}</div>
-                            </div>
+                html += `
+                <tr class="${isChecked ? 'selected' : ''}">
+                    <td class="col-checkbox" style="text-align: center;">
+                        <div style="display:flex; justify-content:center; align-items:center;">
+                            <input type="checkbox" value="${data.id}" onchange="toggleSelect('${data.id}')" ${isChecked} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                         </div>
                     </td>
-                    <td style="text-align: left;">
-                        <div class="cell-primary">${data.level1Unit || '-'} ${data.level2Unit ? ' / ' + data.level2Unit : ''}</div>
-                    </td>
-                    <td style="text-align: center; vertical-align: middle;">
-                        <div class="cell-primary">${data.jobTitle || '-'}</div>
-                    </td>
-                    <td style="text-align: center;">
-                        <span class="badge ${isSuper ? 'badge-indigo' : 'badge-blue'}">
-                            ${data.role || '未設定'}
-                        </span>
-                    </td>
-                    <td style="text-align: center;">
-                        <div style="display:flex; justify-content:center;">
-                            <label class="toggle ${isDefault ? 'disabled' : ''}">
-                                <input type="checkbox" ${data.is_active ? 'checked' : ''} ${isDefault ? 'disabled' : `onchange="window.toggleStatus('${data.id}', ${data.is_active})"`}>
-                                <span class="toggle-slider"></span>
-                                <span class="toggle-label ${data.is_active ? 'active' : 'inactive'}">${data.is_active ? '啟用' : '停用'}</span>
-                            </label>
-                        </div>
-                    </td>
+                    <td><div class="cell-primary bold" title="${data.name}">${data.name}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary" style="color: var(--text-muted); text-transform: uppercase;">${dispTaxId}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary">${dispIndustry}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary">${dispVenueType}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary">${data.country}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary">${dispCity}</div></td>
+                    <td><div class="cell-primary" title="${data.address}">${data.address}</div></td>
                     <td style="text-align: center;">
                         <div class="row-actions">
-                            <button onclick="window.editUser('${data.id}')" class="btn btn-secondary btn-icon sm" title="編輯"><i class="ti ti-edit"></i></button>
-                            <button onclick="window.deleteUser('${data.id}', '${data.name}')" class="btn btn-icon sm" style="color:var(--danger); border-color:var(--danger-border); ${isDefault ? 'visibility:hidden' : ''}" title="刪除"><i class="ti ti-trash"></i></button>
+                            <button onclick="window.editData('${data.id}')" class="btn btn-secondary btn-icon sm" title="編輯"><i class="ti ti-edit"></i></button>
+                            <button onclick="window.deleteData('${data.id}', '${data.name}')" class="btn btn-icon sm" style="color:var(--danger); border-color:var(--danger-border);" title="刪除"><i class="ti ti-trash"></i></button>
                         </div>
                     </td>
                 </tr>`;
-            }).join('');
-        }
-
-        window.exportToCSV = () => {
-            if (allUsers.length === 0) return;
-            let csv = '\uFEFF一級單位,二級單位,職稱,姓名,電子郵件,權限角色,帳號狀態,加入時間\n';
-            allUsers.forEach(u => csv += [u.level1Unit, u.level2Unit, u.jobTitle, u.name, u.email, u.role, u.is_active?'啟用':'停用', u.createdDate].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n');
-            const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-            link.download = `系統用戶清單_${new Date().toISOString().split('T')[0]}.csv`; link.click();
+            });
+            tbody.innerHTML = html;
         };
 
-        window.submitUserForm = async () => {
+        // ─── UTILS: EXPORT & IMPORT ───
+        window.exportToCSV = () => {
+            if (filteredInstitutions.length === 0) { alert("沒有資料可供匯出！"); return; }
+            let csv = '\uFEFF實習機構名稱,統一編號,行業別,實習場所,實習場所國別,縣市別,實習場所地址,備註\n';
+            
+            filteredInstitutions.forEach(d => {
+                const isDomestic = d.country === '中華民國';
+                const exportTaxId = isDomestic ? (d.tax_id || '') : '-';
+                const exportCity = isDomestic ? (d.city || '') : '-';
+                const exportIndustry = d.industry || '';
+                const exportVenue = d.venue_type || '';
+                const exportRemarks = d.remarks || '';
+                
+                csv += [d.name, exportTaxId, exportIndustry, exportVenue, d.country, exportCity, d.address, exportRemarks].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+            });
+            const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+            link.download = `實習機構清單_${new Date().toISOString().split('T')[0]}.csv`; link.click();
+        };
+
+        window.handleImport = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const btn = document.getElementById('btn-import');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> <span class="btn-text">匯入中...</span>';
+            btn.disabled = true;
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const rows = event.target.result.split('\n').map(row => row.trim()).filter(row => row);
+                    let parsedRows = [];
+                    for (let i = 1; i < rows.length; i++) {
+                        let cols = []; let inQuotes = false; let currentVal = '';
+                        for (let char of rows[i]) {
+                            if (char === '"') { inQuotes = !inQuotes; }
+                            else if (char === ',' && !inQuotes) { cols.push(currentVal.trim()); currentVal = ''; }
+                            else { currentVal += char; }
+                        }
+                        cols.push(currentVal.trim());
+                        
+                        if (cols.length >= 7) {
+                            const payload = {
+                                name: cols[0],
+                                tax_id: cols[1] || '',
+                                industry: cols[2] || '',
+                                venue_type: cols[3] || '',
+                                country: cols[4] || '中華民國',
+                                city: cols[5] || '',
+                                address: cols[6] || '',
+                                remarks: cols[7] || '',
+                                created_at: serverTimestamp()
+                            };
+                            
+                            if (!payload.name) continue;
+                            
+                            if (payload.country !== '中華民國') {
+                                payload.tax_id = '';
+                                payload.city = '';
+                            }
+                            
+                            parsedRows.push(payload);
+                        }
+                    }
+                    
+                    let addedCount = 0;
+                    for (let payload of parsedRows) { 
+                        await addDoc(dataCollection, payload); 
+                        addedCount++; 
+                    }
+                    alert(`✅ 成功匯入 ${addedCount} 筆機構資料！`);
+                } catch (error) { alert("匯入失敗，請確認 CSV 檔案格式是否與匯出範本相符。\n" + error.message); } 
+                finally { btn.innerHTML = originalHtml; btn.disabled = false; e.target.value = ''; }
+            };
+            reader.readAsText(file);
+        };
+
+        window.submitForm = async () => {
             const btn = document.getElementById('btn-submit');
+            const isDomestic = document.getElementById('input-country').value === '中華民國';
+            
             const payload = { 
-                level1Unit: document.getElementById('input-level1').value.trim(),
-                level2Unit: document.getElementById('input-level2').value.trim(),
-                jobTitle: document.getElementById('input-job-title').value.trim(),
-                role: document.getElementById('input-role').value,
-                name: document.getElementById('input-name').value.trim(), 
-                email: document.getElementById('input-email').value.trim(), 
+                country: document.getElementById('input-country').value,
+                name: document.getElementById('input-name').value.trim(),
+                tax_id: isDomestic ? document.getElementById('input-tax-id').value.trim() : '',
+                city: isDomestic ? document.getElementById('input-city').value : '',
+                industry: document.getElementById('input-industry').value,
+                venue_type: document.getElementById('input-venue-type').value,
+                address: document.getElementById('input-address').value.trim(),
+                remarks: document.getElementById('input-remarks').value.trim()
             };
 
-            if(Object.values(payload).some(v => !v)) { alert("請填寫所有欄位"); return; }
+            if(!payload.country || !payload.name || !payload.address) { 
+                alert("請填寫所有必填欄位！"); return; 
+            }
+            if (isDomestic && (!payload.tax_id || !payload.city)) {
+                alert("中華民國機構必須填寫「統一編號」與「縣市別」！"); return; 
+            }
+
             btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 儲存中...';
             try {
-                if (editingId) { await updateDoc(doc(db, "users", editingId), { ...payload, updated_at: serverTimestamp() }); } 
-                else {
-                    const defaultPwd = "thu" + Math.random().toString().slice(2,8);
-                    const cred = await createUserWithEmailAndPassword(adminAuth, payload.email, defaultPwd);
-                    await signOut(adminAuth);
-                    await setDoc(doc(db, "users", cred.user.uid), { ...payload, is_active: true, isFirstLogin: true, created_at: serverTimestamp(), theme: 'blue' });
-                    alert(`✅ 新增成功！初始密碼：${defaultPwd}`);
+                if (editingId) {
+                    const batch = writeBatch(db);
+                    batch.update(doc(db, "internship_institutions", editingId), { ...payload, updated_at: serverTimestamp() });
+                    
+                    if (editingOldName && editingOldName !== payload.name) {
+                        allRecords.forEach(record => {
+                            if (record.inst_raw === editingOldName) {
+                                batch.update(doc(db, "internship_records", record.id), { 
+                                    inst_raw: payload.name, 
+                                    updated_at: serverTimestamp() 
+                                });
+                            }
+                        });
+                    }
+                    await batch.commit();
+
+                    if (editingOldName && editingOldName !== payload.name) {
+                        const snap = await getDocs(recordsCol);
+                        allRecords = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    }
+                } 
+                else { 
+                    await addDoc(dataCollection, { ...payload, created_at: serverTimestamp() }); 
                 }
-                closeUserModal();
-            } catch (err) { alert("錯誤: " + err.message); } finally { btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> 確認儲存'; }
+                window.closeModal();
+            } catch (err) { alert("儲存發生錯誤：" + err.message); } 
+            finally { btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> 確認儲存'; }
         };
 
-        window.editUser = (id) => {
-            const user = allUsers.find(u => u.id === id);
-            if (!user || id === 'default_admin') return;
+        window.editData = (id) => {
+            const docData = allData.find(d => d.id === id); if (!docData) return;
             editingId = id;
-            document.getElementById('input-level1').value = user.level1Unit || '';
-            document.getElementById('input-level2').value = user.level2Unit || '';
-            document.getElementById('input-job-title').value = user.jobTitle || '';
-            document.getElementById('input-role').value = user.role || '';
-            document.getElementById('input-name').value = user.name || ''; 
-            document.getElementById('input-email').value = user.email || ''; 
-            document.getElementById('input-email').readOnly = true;
-            document.getElementById('input-email').style.background = 'var(--surface)';
-            document.getElementById('modal-title').innerHTML = '<i class="ti ti-edit" style="color:var(--brand)"></i> 編輯用戶資料';
-            document.getElementById('user-modal').classList.add('open');
+            editingOldName = docData.name || ''; 
+            
+            document.getElementById('input-country').value = docData.country || '中華民國';
+            document.getElementById('input-name').value = docData.name || '';
+            document.getElementById('input-tax-id').value = docData.tax_id || '';
+            document.getElementById('input-city').value = docData.city || '';
+            document.getElementById('input-industry').value = docData.industry || '';
+            document.getElementById('input-venue-type').value = docData.venue_type || '';
+            document.getElementById('input-address').value = docData.address || '';
+            document.getElementById('input-remarks').value = docData.remarks || '';
+            
+            window.handleCountryChange(); 
+            
+            document.getElementById('modal-title').innerHTML = '<i class="ti ti-edit"></i> 編輯實習機構';
+            document.getElementById('data-modal').classList.add('open');
         };
 
-        window.toggleStatus = async (id, status) => { await updateDoc(doc(db, "users", id), { is_active: !status }); };
-        window.deleteUser = async (id, name) => { if (confirm(`確定刪除「${name}」的權限？`)) await deleteDoc(doc(db, "users", id)); };
+        window.deleteData = async (id, name) => {
+            if (confirm(`警告：確定要刪除機構「${name}」嗎？\n刪除後學生紀錄將無法關聯該機構名稱！`)) {
+                await deleteDoc(doc(db, "internship_institutions", id));
+            }
+        };
 
-        document.getElementById('search-input').oninput = () => { currentPage = 1; renderTable(); };
+        // ─── MERGE LOGIC ───
+        window.openMergeModal = () => {
+            if(selectedIds.length < 2) {
+                alert("請至少勾選 2 個機構才能進行合併！");
+                return;
+            }
+            
+            document.getElementById('merge-count').innerText = selectedIds.length;
+            const container = document.getElementById('merge-options-container');
+            let html = '';
+            
+            const targetInsts = allData.filter(i => selectedIds.includes(i.id));
+
+            targetInsts.forEach((inst) => {
+                html += `
+                <label class="merge-option">
+                    <input type="radio" name="master_inst" value="${inst.id}" onchange="document.getElementById('btn-merge-submit').disabled=false;">
+                    <div class="merge-option-content">
+                        <div class="merge-option-title">${inst.name}</div>
+                        <div class="merge-option-desc">統編：${inst.tax_id || '無'} | 行業：${inst.industry || '無'} | 地址：${inst.address || '無'}</div>
+                    </div>
+                </label>`;
+            });
+            container.innerHTML = html;
+            document.getElementById('btn-merge-submit').disabled = true; 
+            
+            document.getElementById('merge-modal').classList.add('open');
+        };
+
+        window.closeMergeModal = () => {
+            document.getElementById('merge-modal').classList.remove('open');
+        };
+
+        window.executeMerge = async () => {
+            const masterId = document.querySelector('input[name="master_inst"]:checked')?.value;
+            if(!masterId) return;
+
+            const masterInst = allData.find(i => i.id === masterId);
+            const instsToDelete = selectedIds.filter(id => id !== masterId);
+            const deletedNames = allData.filter(i => instsToDelete.includes(i.id)).map(i => i.name);
+
+            if(!confirm(`確認要進行合併作業嗎？\n\n📌 保留主體：${masterInst.name}\n🗑️ 將被刪除：${deletedNames.join('、')}\n\n此操作將會修改所有受影響的實習紀錄，無法復原！`)) {
+                return;
+            }
+
+            const btn = document.getElementById('btn-merge-submit');
+            const oriHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 資料庫深度合併中...';
+            btn.disabled = true;
+
+            try {
+                const batch = writeBatch(db);
+
+                allRecords.forEach(record => {
+                    if (deletedNames.includes(record.inst_raw)) {
+                        const recordRef = doc(db, "internship_records", record.id);
+                        batch.update(recordRef, { 
+                            inst_raw: masterInst.name,
+                            updated_at: serverTimestamp() 
+                        });
+                    }
+                });
+
+                instsToDelete.forEach(id => {
+                    const instRef = doc(db, "internship_institutions", id);
+                    batch.delete(instRef);
+                });
+
+                await batch.commit();
+
+                selectedIds = [];
+                updateBatchActionBar();
+                window.closeMergeModal();
+                alert(`合併成功！已保留「${masterInst.name}」並更新相關實習紀錄。`);
+                
+                const snap = await getDocs(recordsCol);
+                allRecords = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            } catch(e) {
+                alert("合併失敗：" + e.message);
+                console.error(e);
+            } finally {
+                btn.innerHTML = oriHtml;
+                btn.disabled = false;
+            }
+        };
+
+        document.getElementById('search-input').addEventListener('input', () => { currentPage = 1; window.renderTable(); });
+
     </script>
 </body>
 </html>
