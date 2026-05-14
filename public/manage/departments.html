@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>系所清單管理內容</title>
+<title>系所清單管理</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 
 <style>
-/* ─── 核心樣式變數 ─── */
+/* ─── 核心樣式變數 (與用戶權限管理完全一致) ─── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
@@ -30,11 +30,11 @@
   --success: #059669;
   --success-bg: #ecfdf5;
   --success-border: #a7f3d0;
-  --warning: #d97706;
-  --warning-bg: #fffbeb;
   --danger: #dc2626;
   --danger-bg: #fef2f2;
   --danger-border: #fecaca;
+  --warning: #d97706;
+  --warning-bg: #fffbeb;
   --indigo: #4f46e5;
   --indigo-bg: #e0e7ff;
   --indigo-border: #c7d2fe;
@@ -56,9 +56,11 @@ html, body {
   display: flex; flex-direction: column;
 }
 
-/* ─── SCROLLBAR & 動畫 ─── */
+/* ─── SCROLLBAR ─── */
 .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
 .custom-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
+
+/* ─── 動畫 ─── */
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .ti-spin { animation: spin 1s linear infinite; display: inline-block; }
 
@@ -74,9 +76,12 @@ html, body {
 .search-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px; }
 .search-input {
   width: 100%; height: 34px;
-  border: 1px solid var(--border); border-radius: var(--radius);
-  background: var(--surface); padding: 0 10px 0 34px;
-  font-size: 13px; font-family: inherit; color: var(--text-primary); outline: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 0 10px 0 34px;
+  font-size: 13px; font-family: inherit;
+  color: var(--text-primary); outline: none;
   transition: border-color var(--transition), box-shadow var(--transition);
 }
 .search-input::placeholder { color: var(--text-muted); }
@@ -89,40 +94,45 @@ html, body {
 /* ─── BUTTONS ─── */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  padding: 0 14px; height: 34px; border-radius: var(--radius);
+  padding: 0 14px; height: 34px;
+  border-radius: var(--radius);
   font-size: 13px; font-weight: 600; font-family: inherit;
   cursor: pointer; border: none; white-space: nowrap;
   transition: all var(--transition); text-decoration: none;
 }
-.btn span { display: inline-flex; align-items: center; gap: 6px; }
-.btn-primary { background: var(--brand); color: white; }
+.btn-primary { background: var(--brand); color: white; border: 1px solid var(--brand); }
 .btn-primary:hover { background: var(--brand-hover); }
 .btn-secondary { background: var(--surface); color: var(--text-secondary); border: 1px solid var(--border); }
 .btn-secondary:hover { background: var(--bg); border-color: var(--border-strong); color: var(--text-primary); }
 .btn-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
 .btn-danger:hover { background: #fee2e2; }
 
-/* 方形圖示按鈕 */
-.btn-icon { padding: 0; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: none; color: var(--text-muted); transition: all var(--transition); cursor: pointer; }
-.btn-icon:hover { color: var(--brand); background: var(--brand-light); border-radius: var(--radius-sm); }
-.btn-icon.sq { width: 32px; height: 32px; border-radius: var(--radius); border: 1px solid transparent; }
-.btn-icon.sq:hover { border-color: var(--border); background: var(--surface); box-shadow: var(--shadow-sm); }
+.btn-success-solid { background: var(--success); color: white; border: 1px solid var(--success); }
+.btn-success-solid:hover { background: #047857; }
+.btn-icon { width: 34px; padding: 0; justify-content: center; background: transparent; border: 1px solid transparent; color: var(--text-muted); }
+.btn-icon:hover { color: var(--brand); background: var(--brand-light); border-radius: var(--radius-sm); border-color: var(--brand-border); }
 .btn-icon.sm { width: 28px; height: 28px; }
 .btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
-.btn:disabled { opacity: 0.7; cursor: not-allowed; }
-.btn i { font-size: 16px; display: flex; align-items: center; justify-content: center; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn i { font-size: 16px; }
 
 /* ─── FILTER ROW & BATCH BAR ─── */
 .filter-row {
-  padding: 10px 24px; background: var(--bg); border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; position: relative;
+  padding: 10px 24px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+  flex-shrink: 0; flex-wrap: wrap; position: relative;
 }
 .filter-pill-wrap { position: relative; }
 .filter-pill {
-  display: inline-flex; align-items: center; gap: 5px; padding: 0 10px; height: 28px;
-  border: 1px solid var(--border); border-radius: 99px; background: var(--surface);
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 0 10px; height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 99px; background: var(--surface);
   font-size: 12px; font-weight: 500; color: var(--text-secondary);
-  cursor: pointer; transition: all var(--transition); white-space: nowrap;
+  cursor: pointer; transition: all var(--transition);
+  white-space: nowrap;
 }
 .filter-pill:hover { border-color: var(--border-strong); color: var(--text-primary); }
 .filter-pill.active { border-color: var(--brand); background: var(--brand-light); color: var(--brand); }
@@ -134,13 +144,16 @@ html, body {
   position: absolute; top: calc(100% + 6px); left: 0;
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius-lg); box-shadow: var(--shadow-md);
-  min-width: 200px; z-index: 100; display: none; flex-direction: column; overflow: hidden;
+  min-width: 200px; z-index: 100;
+  display: none; flex-direction: column; overflow: hidden;
 }
 .filter-dropdown.show { display: flex; }
 .filter-dropdown-list { max-height: 200px; overflow-y: auto; padding: 4px; }
 .filter-option {
-  display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: var(--radius-sm);
-  cursor: pointer; font-size: 12px; color: var(--text-secondary); transition: background var(--transition);
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 8px; border-radius: var(--radius-sm);
+  cursor: pointer; font-size: 12px; color: var(--text-secondary);
+  transition: background var(--transition);
 }
 .filter-option:hover { background: var(--bg); color: var(--text-primary); }
 .filter-option input[type=checkbox] { accent-color: var(--brand); flex-shrink: 0; }
@@ -166,7 +179,9 @@ table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 
 thead { position: sticky; top: 0; z-index: 10; background: var(--surface); }
 thead tr { border-bottom: 2px solid var(--border); }
 th {
-  padding: 12px 16px; font-size: 11px; font-weight: 700; color: var(--text-muted);
+  /* 統一表頭置中對齊 */
+  padding: 12px 16px; text-align: center;
+  font-size: 11px; font-weight: 700; color: var(--text-muted);
   text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
 }
 th[data-sort] { cursor: pointer; user-select: none; transition: color var(--transition); }
@@ -183,10 +198,10 @@ tr.disabled td { opacity: 0.6; filter: grayscale(40%); background: var(--bg); }
 .cell-primary.bold { font-weight: 600; }
 .cell-secondary { font-size: 11px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
 
-/* Badge & Toggle */
 .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; }
 .badge-gray { background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; }
 
+/* ─── TOGGLE SWITCH ─── */
 .toggle { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
 .toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
 .toggle-slider { width: 34px; height: 18px; background: var(--border-strong); border-radius: 20px; transition: 0.3s; position: relative; }
@@ -199,8 +214,6 @@ tr.disabled td { opacity: 0.6; filter: grayscale(40%); background: var(--bg); }
 
 /* Row actions */
 .row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; opacity: 1; }
-.row-actions .btn-icon.sq.delete { color: var(--danger); background: var(--danger-bg); border-color: var(--danger-border); }
-.row-actions .btn-icon.sq.delete:hover { background: #fee2e2; }
 
 /* ─── PAGINATION ─── */
 .pagination-bar {
@@ -251,7 +264,7 @@ tr.disabled td { opacity: 0.6; filter: grayscale(40%); background: var(--bg); }
 .dialog-body { padding: 24px; overflow-y: auto; max-height: calc(85vh - 130px); }
 .dialog-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg); }
 
-/* ─── FORM ELEMENTS & LAYOUTS ─── */
+/* ─── FORM ELEMENTS INSIDE DIALOG ─── */
 .form-section-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
 .form-section-title i { color: var(--text-muted); font-size: 16px; }
 .field { display: flex; flex-direction: column; gap: 4px; }
@@ -265,11 +278,8 @@ tr.disabled td { opacity: 0.6; filter: grayscale(40%); background: var(--bg); }
 select.field-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; }
 .color-picker { width: 36px; height: 36px; padding: 2px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; background: var(--surface); flex-shrink: 0; }
 
-/* 雙欄佈局 (新增系所用) */
-.dept-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-.dept-layout-left, .dept-layout-right { display: flex; flex-direction: column; gap: 16px; }
-
-/* ─── COLLEGE ROLE LIST ─── */
+/* ─── ROLE / COLLEGE LIST ─── */
+.role-list-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
 .role-list { display: flex; flex-direction: column; gap: 8px; }
 .role-item {
   display: flex; justify-content: space-between; align-items: center;
@@ -279,16 +289,16 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 .role-item:hover { border-color: var(--brand-border); }
 .role-item .reorder-btns { opacity: 0.3; transition: opacity var(--transition); display: flex; flex-direction: column; gap: 2px; margin-right: 8px; }
 .role-item:hover .reorder-btns { opacity: 1; }
-.role-item .reorder-btns .btn-icon { background: transparent; border: none; color: var(--text-muted); padding: 0; }
+.role-item .reorder-btns .btn-icon { background: transparent; border: none; color: var(--text-muted); padding: 0; height: 14px; width: 18px; display: inline-flex; }
 .role-item .reorder-btns .btn-icon:hover { color: var(--brand); background: var(--brand-light); border-radius: var(--radius-sm); }
-.role-item-name { font-size: 13px; font-weight: 600; color: var(--text-secondary); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 8px; }
+.role-item-name { font-size: 13px; font-weight: 500; color: var(--text-primary); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 8px; }
 .role-item-input { flex: 1; display: none; gap: 8px; align-items: center; }
 .role-item.editing .role-item-name { display: none; }
 .role-item.editing .role-item-input { display: flex; }
 .role-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: 12px;}
-.role-actions .btn-icon.save { display: none; color: var(--success); }
-.role-item.editing .btn-icon.edit { display: none; }
-.role-item.editing .btn-icon.save { display: flex; }
+.role-actions .btn.save { display: none; }
+.role-item.editing .btn.edit { display: none; }
+.role-item.editing .btn.save { display: inline-flex !important; }
 .role-item.editing .reorder-btns { visibility: hidden; }
 
 /* Dynamic Contact Entry */
@@ -307,7 +317,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
   .toolbar { padding: 12px 16px; justify-content: flex-end; }
   .search-wrap { flex: 0 0 100%; order: 1; margin-bottom: 8px; }
   .flex-spacer { display: none; }
-  /* 修正 1: 按鈕群改為 2x2 Grid，避免超出畫面 */
+  /* 按鈕群滿版等寬分配 */
   .toolbar-actions { order: 2; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .toolbar-actions .btn { width: 100%; padding: 0 8px; font-size: 12px; margin: 0; }
   .v-divider { display: none; }
@@ -317,8 +327,20 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
   .pagination-bar-right { width: 100%; justify-content: space-between; }
   .dialog-overlay { padding: 12px; }
   
-  /* 修正 7: 手機模式下表單為單欄垂直排列 */
-  .dept-layout { grid-template-columns: 1fr; gap: 16px; }
+  /* Reset flex direction for mobile modal (對齊權限管理介面) */
+  #dept-form { flex-direction: column !important; gap: 16px !important; }
+  #dept-form > div { width: 100% !important; margin: 0 !important; }
+  
+  /* 強制將原本垂直的線轉為水平線 */
+  .v-divider-modal { 
+    display: block !important; 
+    width: 100% !important; 
+    height: 1px !important; 
+    min-height: 1px !important; 
+    background-color: var(--border) !important; 
+    margin: 8px 0 !important; 
+    flex-shrink: 0 !important;
+  }
 }
 </style>
 </head>
@@ -334,19 +356,21 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         <div class="flex-spacer"></div>
         
         <div class="toolbar-actions">
-            <button onclick="exportToCSV()" class="btn btn-secondary">
-                <span><i class="ti ti-file-export" style="color:var(--success)"></i> 匯出清單</span>
+            <!-- 統一為 btn-success-solid -->
+            <button onclick="exportToCSV()" class="btn btn-success-solid">
+                <i class="ti ti-file-export"></i> <span class="btn-text">匯出清單</span>
             </button>
             <button id="btn-import" onclick="document.getElementById('import-file').click()" class="btn btn-secondary">
-                <span><i class="ti ti-file-import" style="color:var(--brand)"></i> 批次匯入</span>
+                <i class="ti ti-file-import"></i> <span class="btn-text">批次匯入</span>
             </button>
             <input type="file" id="import-file" accept=".csv" style="display:none;" onchange="handleImport(event)">
             <div class="v-divider"></div>
+            <!-- 套用次要與主要按鈕結構 -->
             <button onclick="openCollegeModal()" class="btn btn-secondary">
-                <span><i class="ti ti-building-bank"></i> 學院設定</span>
+                <i class="ti ti-building-bank"></i> <span class="btn-text">學院設定</span>
             </button>
             <button onclick="openDeptModal()" class="btn btn-primary">
-                <span><i class="ti ti-plus"></i> 新增系所</span>
+                <i class="ti ti-plus"></i> <span class="btn-text">新增系所</span>
             </button>
         </div>
     </div>
@@ -398,9 +422,9 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             
             <div class="flex-spacer"></div>
             
-            <button class="btn btn-sm btn-secondary" style="color:var(--success);" onclick="batchUpdateStatus(true)"><span><i class="ti ti-play"></i> 批次啟用</span></button>
-            <button class="btn btn-sm btn-secondary" style="color:var(--warning);" onclick="batchUpdateStatus(false)"><span><i class="ti ti-player-pause"></i> 批次停用</span></button>
-            <button class="btn btn-sm btn-danger" onclick="batchDelete()"><span><i class="ti ti-trash"></i> 批次刪除</span></button>
+            <button class="btn btn-sm btn-secondary" style="color:var(--success);" onclick="batchUpdateStatus(true)"><i class="ti ti-play"></i> 批次啟用</button>
+            <button class="btn btn-sm btn-secondary" style="color:var(--warning);" onclick="batchUpdateStatus(false)"><i class="ti ti-player-pause"></i> 批次停用</button>
+            <button class="btn btn-sm btn-danger" onclick="batchDelete()"><i class="ti ti-trash"></i> 批次刪除</button>
         </div>
     </div>
 
@@ -409,17 +433,17 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         <div class="table-scroll custom-scroll">
             <table>
                 <thead>
-                    <!-- 修正 4 & 5: 表格標題置中對齊 -->
+                    <!-- 移除所有的 inline text-align，依賴 CSS th 的 text-align: center -->
                     <tr>
-                        <th style="width: 5%; text-align: center;">
+                        <th style="width: 5%;">
                             <input type="checkbox" id="selectAll" onchange="toggleSelectPage(event)" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px;">
                         </th>
-                        <th style="width: 12%; text-align: center;">學院</th>
-                        <th data-sort="name" style="width: 23%; text-align: center;">學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="code" style="width: 12%; text-align: center;">系所代碼 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th style="width: 22%; text-align: center;">承辦窗口</th>
-                        <th style="width: 12%; text-align: center;">系統狀態</th>
-                        <th style="width: 14%; text-align: center;">操作</th>
+                        <th style="width: 12%;">學院</th>
+                        <th data-sort="name" style="width: 23%;">學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="code" style="width: 12%;">系所代碼 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th style="width: 22%;">承辦窗口</th>
+                        <th style="width: 12%;">系統狀態</th>
+                        <th style="width: 14%;">操作</th>
                     </tr>
                 </thead>
                 <tbody id="dept-table-body">
@@ -459,18 +483,22 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             </div>
             <div class="dialog-body custom-scroll">
                 
-                <!-- 修正 10: 學院設定新增區塊 UI 優化 -->
-                <div class="form-section-title"><i class="ti ti-plus"></i> 新增學院</div>
-                <div style="display:flex; align-items:center; gap:8px; margin-bottom:24px; background: var(--bg); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border);">
-                    <!-- 修正 2: 加入選色器 -->
-                    <input type="color" id="new-college-color" value="#1a56db" class="color-picker" title="設定學院代表色">
-                    <input type="text" id="new-college-name" placeholder="全名 (如: 管理學院)" class="field-input" style="flex:1;">
-                    <input type="text" id="new-college-short" placeholder="簡稱 (如: 管院)" class="field-input" style="width: 100px;">
-                    <button onclick="addCollege()" class="btn btn-primary" style="white-space:nowrap;">新增</button>
+                <div class="field" style="margin-bottom: 24px;">
+                    <label class="field-label">新增學院</label>
+                    <div style="display:flex; gap:12px;">
+                        <input type="color" id="new-college-color" value="#1a56db" class="color-picker" title="設定學院代表色">
+                        <input type="text" id="new-college-name" placeholder="全名 (如: 管理學院)" class="field-input" style="flex:1;">
+                        <input type="text" id="new-college-short" placeholder="簡稱 (選填)" class="field-input" style="width: 100px;">
+                        <button onclick="addCollege()" class="btn btn-primary" style="height: 36px; padding: 0 20px;"><i class="ti ti-plus"></i> 新增</button>
+                    </div>
                 </div>
                 
-                <div class="form-section-title"><i class="ti ti-list"></i> 現有學院清單 (可編輯與排序)</div>
-                <div id="college-list-container" class="role-list"></div>
+                <div class="divider" style="margin: 0 0 16px 0;"></div>
+
+                <div>
+                    <div class="role-list-label">現有學院清單 (可編輯與排序)</div>
+                    <div id="college-list-container" class="role-list"></div>
+                </div>
                 
             </div>
             <div class="dialog-footer">
@@ -481,52 +509,53 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
     <!-- ─── UNIFIED DIALOG MODAL: 新增/編輯系所單位 ─── -->
     <div id="dept-modal" class="dialog-overlay">
-        <div class="dialog-box" style="max-width: 720px;">
+        <div class="dialog-box" style="max-width: 800px;">
             <div class="dialog-header">
                 <h3 id="dept-modal-title"><i class="ti ti-school"></i> 新增系所單位</h3>
                 <button type="button" class="dialog-close" onclick="closeDeptModal()"><i class="ti ti-x"></i></button>
             </div>
-            <form id="dept-form" class="dialog-body custom-scroll">
+            <!-- 完全套用與權限管理一樣的 Flex + 中間分隔線佈局 -->
+            <form id="dept-form" class="dialog-body custom-scroll" style="display: flex; gap: 24px;">
                 
-                <!-- 修正 7: 雙欄排版設定 (桌機左右、手機上下) -->
-                <div class="dept-layout">
-                    <!-- 左側基本資訊 -->
-                    <div class="dept-layout-left">
-                        <div class="form-section-title" style="border-bottom: 1px solid var(--border); padding-bottom: 8px;"><i class="ti ti-info-circle"></i> 基本資訊</div>
-                        
-                        <div class="field">
-                            <label class="field-label">所屬學院 <span class="req">*</span></label>
-                            <select id="input-college" required class="field-select"></select>
-                        </div>
-                        <div class="field">
-                            <label class="field-label">系所代碼 <span class="req">*</span></label>
-                            <input type="text" id="input-code" required placeholder="例如：IM" class="field-input" style="text-transform:uppercase; font-family:monospace; font-weight:600;">
-                        </div>
-                        <div class="field">
-                            <label class="field-label">學系全名 <span class="req">*</span></label>
-                            <input type="text" id="input-name" required placeholder="例如：資訊管理學系" class="field-input">
-                        </div>
-                        <div class="field">
-                            <label class="field-label">簡稱 (選填)</label>
-                            <input type="text" id="input-short-name" placeholder="例如：資管系" class="field-input">
-                        </div>
-                    </div>
+                <!-- 左側：基本資訊 -->
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
+                    <div class="form-section-title" style="margin-bottom: 0;"><i class="ti ti-info-circle"></i> 基本資訊</div>
                     
-                    <!-- 右側承辦窗口 -->
-                    <div class="dept-layout-right">
-                        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
-                            <div class="form-section-title" style="margin-bottom:0;"><i class="ti ti-users"></i> 承辦窗口 (可多位)</div>
-                            <button type="button" onclick="addContactField()" class="btn btn-secondary btn-sm" style="font-size:12px; height:26px;"><span><i class="ti ti-plus"></i> 新增</span></button>
-                        </div>
-                        <div id="contacts-container" style="display:flex; flex-direction:column; gap:12px;"></div>
+                    <div class="field">
+                        <label class="field-label">所屬學院 <span class="req">*</span></label>
+                        <select id="input-college" required class="field-select"></select>
                     </div>
+                    <div class="field">
+                        <label class="field-label">系所代碼 <span class="req">*</span></label>
+                        <input type="text" id="input-code" required placeholder="例如：IM" class="field-input" style="text-transform:uppercase; font-family:monospace; font-weight:600;">
+                    </div>
+                    <div class="field">
+                        <label class="field-label">學系全名 <span class="req">*</span></label>
+                        <input type="text" id="input-name" required placeholder="例如：資訊管理學系" class="field-input">
+                    </div>
+                    <div class="field">
+                        <label class="field-label">簡稱 (選填)</label>
+                        <input type="text" id="input-short-name" placeholder="例如：資管系" class="field-input">
+                    </div>
+                </div>
+                
+                <!-- 中間分隔線 -->
+                <div class="v-divider-modal" style="width: 1px; background: var(--border); margin: 0;"></div>
+                
+                <!-- 右側：承辦窗口 -->
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div class="form-section-title" style="margin-bottom:0;"><i class="ti ti-users"></i> 承辦窗口 (可多位)</div>
+                        <button type="button" onclick="addContactField()" class="btn btn-secondary btn-sm" style="font-size:12px; height:26px;"><i class="ti ti-plus"></i> 新增</button>
+                    </div>
+                    <div id="contacts-container" style="display:flex; flex-direction:column; gap:12px;"></div>
                 </div>
 
             </form>
             <div class="dialog-footer">
                 <button type="button" class="btn btn-secondary" onclick="closeDeptModal()">取消</button>
                 <button type="button" id="btn-submit" class="btn btn-primary" onclick="submitDeptForm()">
-                    <span><i class="ti ti-check"></i> 確認儲存</span>
+                    <i class="ti ti-check"></i> 確認儲存
                 </button>
             </div>
         </div>
@@ -563,7 +592,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 onSnapshot(collegeDocRef, (docSnap) => {
                     if (docSnap.exists()) {
                         const rawList = docSnap.data().list || [];
-                        // 修正 2: 確保載入時包含 color 屬性，若無則給予預設顏色
                         collegeList = rawList.map(c => {
                             if (typeof c === 'string') return { name: c, shortName: c, color: '#1a56db' };
                             return { ...c, color: c.color || '#1a56db' };
@@ -675,30 +703,30 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             // Select in form
             document.getElementById('input-college').innerHTML = `<option value="">請選擇學院...</option>` + collegeList.map(c => `<option value="${c.name}">${c.shortName || c.name}</option>`).join('');
 
-            // 修正 2, 3, 10: Modal List (包含選色器與排序按鈕)
+            // Modal List 結構比照權限角色
             document.getElementById('college-list-container').innerHTML = collegeList.map((c, index) => `
                 <div class="role-item" id="col-item-${index}">
                     <div class="reorder-btns">
-                        <button type="button" class="btn-icon sm" style="height:14px; width:18px;" onclick="moveCollege(${index}, -1)" ${index === 0 ? 'disabled' : ''}><i class="ti ti-chevron-up" style="font-size:12px;"></i></button>
-                        <button type="button" class="btn-icon sm" style="height:14px; width:18px;" onclick="moveCollege(${index}, 1)" ${index === collegeList.length - 1 ? 'disabled' : ''}><i class="ti ti-chevron-down" style="font-size:12px;"></i></button>
+                        <button type="button" class="btn-icon" onclick="moveCollege(${index}, -1)" ${index === 0 ? 'disabled' : ''}><i class="ti ti-chevron-up"></i></button>
+                        <button type="button" class="btn-icon" onclick="moveCollege(${index}, 1)" ${index === collegeList.length - 1 ? 'disabled' : ''}><i class="ti ti-chevron-down"></i></button>
                     </div>
                     
                     <div class="role-item-name">
                         <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:${c.color}; border:1px solid rgba(0,0,0,0.1);"></span>
                         <span style="font-weight:700;">${c.name}</span>
-                        <span class="cell-secondary" style="margin-top:0;">(${c.shortName})</span>
+                        <span class="cell-secondary" style="margin-top:0;">(${c.shortName || '-'})</span>
                     </div>
                     
                     <div class="role-item-input">
                         <input type="color" id="col-color-input-${index}" value="${c.color}" class="color-picker" style="width:30px; height:30px;" title="修改顏色">
                         <input type="text" id="col-name-input-${index}" value="${c.name}" class="field-input" style="height:30px; padding:0 8px;">
-                        <input type="text" id="col-short-input-${index}" value="${c.shortName}" class="field-input" style="height:30px; padding:0 8px; width:80px;">
+                        <input type="text" id="col-short-input-${index}" value="${c.shortName || ''}" class="field-input" style="height:30px; padding:0 8px; width:80px;">
                     </div>
                     
                     <div class="role-actions">
-                        <button type="button" class="btn-icon sq edit" onclick="editCollege(${index})" title="編輯"><i class="ti ti-edit"></i></button>
-                        <button type="button" class="btn-icon sq save" onclick="saveCollege(${index})" title="儲存"><i class="ti ti-check"></i></button>
-                        <button type="button" class="btn-icon sq delete" style="color:var(--danger)" onclick="removeCollege(${index})" title="刪除"><i class="ti ti-trash"></i></button>
+                        <button type="button" class="btn btn-secondary btn-icon edit" onclick="editCollege(${index})" title="編輯"><i class="ti ti-edit"></i></button>
+                        <button type="button" class="btn btn-success-solid btn-icon save" onclick="saveCollege(${index})" title="儲存"><i class="ti ti-check"></i></button>
+                        <button type="button" class="btn btn-icon" style="color:var(--danger); border-color:var(--danger-border);" onclick="removeCollege(${index})" title="刪除"><i class="ti ti-trash"></i></button>
                     </div>
                 </div>
             `).join('');
@@ -773,8 +801,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                         <input type="email" placeholder="example@thu.edu.tw" value="${email}" class="contact-email field-input" style="height:30px; font-family:monospace;">
                     </div>
                 </div>
-                <!-- 修正 8: 承辦窗口刪除按鈕套用圓角紅框設計 -->
-                <button type="button" onclick="this.parentElement.remove()" class="btn-icon sq btn-danger" style="align-self:center; flex-shrink:0; border: 1px solid var(--danger-border); background: var(--danger-bg);"><i class="ti ti-trash"></i></button>
+                <button type="button" onclick="this.parentElement.remove()" class="btn btn-icon sm" style="color:var(--danger); border-color:var(--danger-border); align-self:center; flex-shrink:0;"><i class="ti ti-trash"></i></button>
             `;
             container.appendChild(div);
         };
@@ -795,9 +822,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
             if(!payload.college || !payload.code || !payload.name) { alert("請填寫必填欄位！"); return; }
             
-            // 修正 9: 確保儲存中圖示與文字置中，並利用 opacity 呈現半透明狀態
             btn.disabled = true; 
-            btn.innerHTML = `<span><i class="ti ti-loader-2 ti-spin"></i> 儲存中...</span>`;
+            btn.innerHTML = `<i class="ti ti-loader-2 ti-spin"></i> 儲存中...`;
 
             try {
                 if (editingId) await updateDoc(doc(db, "departments", editingId), { ...payload, updated_at: serverTimestamp() });
@@ -809,7 +835,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             } catch (err) { alert(err.message); }
             finally { 
                 btn.disabled = false; 
-                btn.innerHTML = `<span><i class="ti ti-check"></i> 確認儲存</span>`; 
+                btn.innerHTML = `<i class="ti ti-check"></i> 確認儲存`; 
             }
         };
 
@@ -966,7 +992,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
             let html = '';
             items.forEach((data, idx) => {
-                // 修正 5: 動態判定承辦窗口文字對齊
                 let contactsHtml = '';
                 let contactAlign = 'left';
                 if (data.contacts && data.contacts.length > 0) {
@@ -980,7 +1005,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                     contactAlign = 'center';
                 }
 
-                // 修正 2: 套用自定義學院顏色作為 Border 與文字色，底色加一點透明度
                 const colObj = collegeList.find(c => c.name === data.college);
                 const colDispName = colObj && colObj.shortName ? colObj.shortName : data.college;
                 const colColor = colObj && colObj.color ? colObj.color : '#1a56db';
@@ -1010,10 +1034,10 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                         </div>
                     </td>
                     <td style="text-align: center;">
-                        <!-- 修正 6: 移除操作順序調整，編輯與刪除改為圓角正方形 -->
+                        <!-- 操作按鈕與權限管理對齊：圓角小按鈕 -->
                         <div class="row-actions">
-                            <button onclick="window.editDept('${data.id}')" class="btn-icon sq" title="編輯" style="border:1px solid var(--border); background:var(--surface);"><i class="ti ti-edit"></i></button>
-                            <button onclick="window.deleteDept('${data.id}', '${data.name}')" class="btn-icon sq delete" title="刪除"><i class="ti ti-trash"></i></button>
+                            <button onclick="window.editDept('${data.id}')" class="btn btn-secondary btn-icon sm" title="編輯"><i class="ti ti-edit"></i></button>
+                            <button onclick="window.deleteDept('${data.id}', '${data.name}')" class="btn btn-icon sm" style="color:var(--danger); border-color:var(--danger-border);" title="刪除"><i class="ti ti-trash"></i></button>
                         </div>
                     </td>
                 </tr>`;
@@ -1050,7 +1074,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             if (!file) return;
             const btn = document.getElementById('btn-import');
             const originalHtml = btn.innerHTML;
-            btn.innerHTML = '<span><i class="ti ti-loader-2 ti-spin"></i> 匯入中...</span>';
+            btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> <span class="btn-text">匯入中...</span>';
             btn.disabled = true;
 
             const reader = new FileReader();
