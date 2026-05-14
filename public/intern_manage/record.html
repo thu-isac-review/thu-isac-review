@@ -190,8 +190,9 @@ html, body {
 .table-scroll { flex: 1; overflow: auto; }
 table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 1100px; }
 
+/* ─── 修正要求：標題列一律置中 ─── */
 th {
-  padding: 12px 16px; text-align: left; 
+  padding: 12px 16px; text-align: center; 
   font-size: 11px; font-weight: 700; color: var(--text-muted);
   text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
   position: sticky; top: 0; z-index: 10;
@@ -208,9 +209,7 @@ td { padding: 14px 16px; vertical-align: middle; word-break: break-word; border-
 tr:hover td { background: #fafbff; }
 tr.selected td { background: #f0f4ff; }
 
-.cell-primary { font-size: 14px; color: var(--text-primary); line-height: 1.4; font-weight: 600; }
-.cell-secondary { font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.4; font-weight: 500; }
-.row-actions { display: flex; align-items: center; gap: 6px; }
+.row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; }
 
 /* Badges for Table */
 .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; }
@@ -385,8 +384,9 @@ input[type=number] { -moz-appearance: textfield; }
             </div>
             <div class="flex-spacer"></div>
             <div class="toolbar-actions">
+                <!-- 修正 1：匯出按鈕文字更新為「匯出清單」 -->
                 <button onclick="window.exportToCSV()" class="btn btn-success-solid">
-                    <i class="ti ti-file-export"></i> <span class="btn-text">匯出</span>
+                    <i class="ti ti-file-export"></i> <span class="btn-text">匯出清單</span>
                 </button>
                 <button id="btn-import" onclick="document.getElementById('import-file').click()" class="btn btn-indigo-solid">
                     <i class="ti ti-file-import"></i> <span class="btn-text">批次匯入</span>
@@ -420,20 +420,23 @@ input[type=number] { -moz-appearance: textfield; }
                 <table>
                     <thead>
                         <tr>
-                            <th class="col-checkbox" style="width: 4%; text-align: center;">
+                            <!-- 修正 6：表頭全面置中 (CSS已設定 th {text-align: center}) -->
+                            <th class="col-checkbox" style="width: 4%;">
                                 <input type="checkbox" id="selectAll" onchange="window.toggleSelectPage(event)" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                             </th>
                             <th data-sort="student_raw" style="width: 18%;">實習學生 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="inst_raw" style="width: 18%;">實習機構 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th style="width: 20%;">關聯課程</th>
-                            <th data-sort="duration" style="width: 18%;">實習時間 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th style="width: 14%;">其他資訊</th>
-                            <th style="width: 8%; text-align: center;">操作</th>
+                            <th data-sort="inst_raw" style="width: 16%;">實習機構 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <!-- 修正 4：關聯課程改為課程數與總學分，分兩欄 -->
+                            <th style="width: 8%;">課程數</th>
+                            <th style="width: 8%;">總學分</th>
+                            <th data-sort="duration" style="width: 22%;">實習時間 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th style="width: 16%;">其他資訊</th>
+                            <th style="width: 8%;">操作</th>
                         </tr>
                     </thead>
                     <tbody id="table-body">
                         <tr>
-                            <td colspan="7" class="empty-state">
+                            <td colspan="8" class="empty-state">
                                 <i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i>
                                 <div class="empty-text">資料載入與驗證中...</div>
                             </td>
@@ -682,7 +685,7 @@ input[type=number] { -moz-appearance: textfield; }
 
                 Promise.all([p1, p2, p3, p4, p5]).then(() => {
                     setupGlobalListeners();
-                    renderFilterDropdowns(); // 繪製上方過濾器
+                    renderFilterDropdowns();
                     onSnapshot(recordsCol, (snapshot) => {
                         allRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                         selectedIds = []; window.updateBatchActionBar(); window.renderTable();
@@ -726,7 +729,6 @@ input[type=number] { -moz-appearance: textfield; }
                     </div>
                 </div>`;
             });
-            // 插入在 batch-bar 之前
             const batchBar = document.getElementById('batch-bar');
             container.insertAdjacentHTML('afterbegin', html);
         }
@@ -1100,7 +1102,7 @@ input[type=number] { -moz-appearance: textfield; }
             
             document.getElementById('selectAll').checked = items.length > 0 && items.every(i => selectedIds.includes(i.id));
 
-            if (total === 0) { tbody.innerHTML = `<tr><td colspan="7" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">找不到符合條件的紀錄。</div></td></tr>`; return; }
+            if (total === 0) { tbody.innerHTML = `<tr><td colspan="8" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">找不到符合條件的紀錄。</div></td></tr>`; return; }
 
             let tHtml = '';
             items.forEach(data => {
@@ -1109,16 +1111,15 @@ input[type=number] { -moz-appearance: textfield; }
                 const stuDept = stu ? getDeptShort(stu.department) : '未綁定學系';
                 
                 const inst = allInsts.find(i => i.name === data.inst_raw);
-                const instTax = inst?.tax_id || '無統編';
-                const instCountry = inst?.country || '中華民國';
 
-                let coursesHtml = '<span style="color:var(--text-muted); font-size:12px; font-weight:600;">無關聯課程</span>';
-                if (Array.isArray(data.courses) && data.courses.length > 0) {
-                    const cList = data.courses.map(cid => {
+                // 計算課程數與總學分
+                const courseCount = Array.isArray(data.courses) ? data.courses.length : 0;
+                let totalCredits = 0;
+                if (courseCount > 0) {
+                    data.courses.forEach(cid => {
                         const c = allCourses.find(x => x.id === cid);
-                        return c ? `<span class="badge badge-outline-blue" style="margin-right:4px; margin-bottom:4px;">${c.academic_year}-${c.term} ${c.course_code}</span>` : '';
-                    }).join('');
-                    coursesHtml = `<div style="display:flex; flex-wrap:wrap;">${cList}</div>`;
+                        if (c && c.credits) totalCredits += Number(c.credits);
+                    });
                 }
 
                 // Badges for "Other info"
@@ -1130,23 +1131,25 @@ input[type=number] { -moz-appearance: textfield; }
                     <td class="col-checkbox" style="text-align: center;">
                         <input type="checkbox" value="${data.id}" onchange="window.toggleSelect('${data.id}')" ${selectedIds.includes(data.id)?'checked':''} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                     </td>
-                    <td>
-                        <div class="cell-primary">${stu?stu.name:data.student_raw}</div>
-                        <div class="cell-secondary">${stuId} • ${stuDept} • ${data.grade || '-'}年級</div>
+                    <td style="text-align: center;">
+                        <div style="font-weight: 500; color: var(--text-primary); font-size: 14px;">${stu?stu.name:data.student_raw}</div>
+                        <div style="font-weight: normal; color: var(--text-muted); font-size: 12px; margin-top: 4px;">${stuId} / ${stuDept} / ${data.grade || '-'}年級</div>
                     </td>
-                    <td>
-                        <div class="cell-primary">${data.inst_raw}</div>
-                        <div class="cell-secondary">${instTax} • ${instCountry}</div>
+                    <td style="text-align: center;">
+                        <div style="font-weight: normal; color: var(--text-primary); font-size: 14px;">${data.inst_raw}</div>
                     </td>
-                    <td>
-                        ${coursesHtml}
+                    <td style="text-align: center; font-weight: normal; font-size: 14px; color: var(--text-primary);">
+                        ${courseCount} 門
                     </td>
-                    <td>
-                        <div class="cell-primary" style="font-family: monospace; font-size: 13px;">${data.duration || '-'}</div>
-                        <div class="cell-secondary">${data.period_type || '-'} • ${data.hours || 0} 小時</div>
+                    <td style="text-align: center; font-weight: normal; font-size: 14px; color: var(--text-primary);">
+                        ${totalCredits} 學分
                     </td>
-                    <td>
-                        <div style="display:flex; gap:6px; margin-bottom:6px;">
+                    <td style="text-align: center;">
+                        <div style="font-weight: normal; color: var(--text-primary); font-size: 14px;">${data.duration || '-'}</div>
+                        <div style="font-weight: normal; color: var(--text-muted); font-size: 12px; margin-top: 4px;">${data.period_type || '-'} / 共 <strong style="color: var(--text-primary); font-size: 13px;">${data.hours || 0}</strong> 小時</div>
+                    </td>
+                    <td style="text-align: center;">
+                        <div style="display:flex; justify-content: center; gap:6px; margin-bottom:6px;">
                             <span class="badge ${proofBadge}">${data.proof_type || '-'}</span>
                             <span class="badge ${insBadge}">${data.insurance || '-'}</span>
                         </div>
