@@ -103,8 +103,11 @@ html, body {
 .btn-secondary:hover { background: var(--bg); border-color: var(--border-strong); color: var(--text-primary); }
 .btn-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
 .btn-danger:hover { background: #fee2e2; }
-.btn-danger-solid { background: var(--danger); color: white; border: 1px solid var(--danger); }
-.btn-danger-solid:hover { background: #b91c1c; }
+
+/* 調整刪除按鈕為柔和的莫蘭迪紅 */
+.btn-danger-solid { background: #cf7373; color: white; border: 1px solid #cf7373; }
+.btn-danger-solid:hover { background: #b86262; border-color: #b86262; }
+
 .btn-success-solid { background: var(--success); color: white; border: 1px solid var(--success); }
 .btn-success-solid:hover { background: #047857; }
 .btn-icon { width: 34px; padding: 0; justify-content: center; }
@@ -164,7 +167,8 @@ table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 
 thead { position: sticky; top: 0; z-index: 10; background: var(--surface); }
 thead tr { border-bottom: 2px solid var(--border); }
 th {
-  padding: 12px 16px; text-align: left;
+  /* 將文字對齊改為置中 */
+  padding: 12px 16px; text-align: center;
   font-size: 11px; font-weight: 700; color: var(--text-muted);
   text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
 }
@@ -329,7 +333,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         <div class="flex-spacer"></div>
         
         <div class="toolbar-actions">
-            <!-- 修改匯出按鈕為實心綠色 -->
             <button onclick="exportToCSV()" class="btn btn-success-solid">
                 <i class="ti ti-file-export"></i> <span class="btn-text">匯出</span>
             </button>
@@ -397,14 +400,14 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         <div class="table-scroll custom-scroll">
             <table>
                 <thead>
+                    <!-- 移除所有的 text-align inline style，由上方 CSS 統一置中處理 -->
                     <tr>
-                        <th data-sort="name" style="width: 25%">使用者資訊 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th style="width: 20%; text-align: left;">所屬單位</th>
-                        <!-- 職稱欄位標題置中 -->
-                        <th style="width: 15%; text-align: center;">職稱</th>
-                        <th style="width: 15%; text-align: center;">權限角色</th>
-                        <th style="width: 12%; text-align: center;">帳號狀態</th>
-                        <th style="width: 13%; text-align: center;">操作</th>
+                        <th data-sort="name" style="width: 25%;">使用者資訊 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th style="width: 20%;">所屬單位</th>
+                        <th style="width: 15%;">職稱</th>
+                        <th style="width: 15%;">權限角色</th>
+                        <th style="width: 12%;">帳號狀態</th>
+                        <th style="width: 13%;">操作</th>
                     </tr>
                 </thead>
                 <tbody id="user-table-body">
@@ -437,13 +440,11 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
     <!-- ─── UNIFIED DIALOG MODAL: 授權新用戶 ─── -->
     <div id="user-modal" class="dialog-overlay">
-        <!-- 展開寬度以容納左右切割 -->
         <div class="dialog-box" style="max-width: 800px;">
             <div class="dialog-header">
                 <h3 id="modal-title"><i class="ti ti-user-plus"></i> 授權新用戶</h3>
                 <button type="button" class="dialog-close" onclick="closeUserModal()"><i class="ti ti-x"></i></button>
             </div>
-            <!-- 修改視窗內容為左右切割佈局 -->
             <form id="user-form" class="dialog-body custom-scroll" style="display: flex; gap: 24px;">
                 
                 <!-- 左側：單位與職務權限 -->
@@ -673,7 +674,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             document.querySelectorAll(`.filter-chk-role`).forEach(c => c.checked = filterRoleSet.has(c.value));
 
             const roleListContainer = document.getElementById('role-list-container');
-            // 將角色管理的編輯與刪除按鈕改為與主列表一致的組件樣式
             roleListContainer.innerHTML = roleList.map((r, index) => `
                 <div class="role-item" id="role-item-${index}">
                     <div class="role-item-name" title="${r}">${r}</div>
@@ -821,15 +821,12 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                             </div>
                         </div>
                     </td>
-                    <!-- 單位顯示方式調整 -->
                     <td style="text-align: left;">
                         <div class="cell-primary">${data.level1Unit || '-'} ${data.level2Unit ? ' / ' + data.level2Unit : ''}</div>
                     </td>
-                    <!-- 職稱內容置中 -->
                     <td style="text-align: center; vertical-align: middle;">
                         <div class="cell-primary">${data.jobTitle || '-'}</div>
                     </td>
-                    <!-- 權限角色移除 icon -->
                     <td style="text-align: center;">
                         <span class="badge ${isSuper ? 'badge-indigo' : 'badge-blue'}">
                             ${data.role || '未設定'}
@@ -847,7 +844,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                     <td style="text-align: center;">
                         <div class="row-actions">
                             <button onclick="window.editUser('${data.id}')" class="btn btn-secondary btn-icon sm" title="編輯"><i class="ti ti-edit"></i></button>
-                            <!-- 刪除按鈕改為紅底白字實心，無漸層或光暈 -->
+                            <!-- 刪除按鈕套用柔和莫蘭迪紅 -->
                             <button onclick="window.deleteUser('${data.id}', '${data.name}')" class="btn btn-icon sm btn-danger-solid" style="${isDefault ? 'visibility:hidden' : ''}" title="刪除"><i class="ti ti-trash"></i></button>
                         </div>
                     </td>
