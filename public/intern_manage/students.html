@@ -148,10 +148,19 @@ html, body {
   position: absolute; top: calc(100% + 6px); left: 0;
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius-lg); box-shadow: var(--shadow-md);
-  min-width: 200px; z-index: 100;
+  min-width: 220px; z-index: 100;
   display: none; flex-direction: column; overflow: hidden;
 }
 .filter-dropdown.show { display: flex; }
+
+/* 篩選下拉選單中的搜尋框 */
+.filter-dropdown-search { padding: 8px; border-bottom: 1px solid var(--border); }
+.filter-dropdown-search input { 
+  width: 100%; height: 30px; border: 1px solid var(--border); border-radius: var(--radius-sm); 
+  padding: 0 10px; font-size: 12px; outline: none; background: var(--bg); transition: 0.2s; 
+}
+.filter-dropdown-search input:focus { border-color: var(--brand); background: var(--surface); box-shadow: 0 0 0 2px rgba(26,86,219,0.1); }
+
 .filter-dropdown-list { max-height: 200px; overflow-y: auto; padding: 4px; }
 .filter-option {
   display: flex; align-items: center; gap: 8px;
@@ -269,15 +278,19 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
 .empty-text { font-size: 13px; font-weight: 600; }
 
+/* 手機版響應式設定 */
 @media (max-width: 768px) {
   .col-checkbox { display: none !important; }
   #batch-bar { display: none !important; }
   .toolbar { padding: 12px 16px; flex-direction: column; align-items: flex-start; gap: 12px;}
   .search-wrap { flex: 0 0 100%; width: 100%; }
   .flex-spacer { display: none; }
-  .toolbar-actions { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .toolbar-actions .btn { width: 100%; padding: 0 8px; font-size: 12px; margin: 0; }
+  
+  /* 操作按鈕手機版改為同行三欄 */
+  .toolbar-actions { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .toolbar-actions .btn { width: 100%; padding: 0 4px; font-size: 11px; margin: 0; }
   .toolbar-actions .v-divider { display: none; }
+  
   .form-grid { grid-template-columns: 1fr; }
 }
 </style>
@@ -316,6 +329,9 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 全部學院 <i class="ti ti-chevron-down"></i>
             </button>
             <div class="filter-dropdown" id="drop-college">
+                <div class="filter-dropdown-search">
+                    <input type="text" id="search-college-input" placeholder="搜尋學院..." onkeyup="filterDropdownItems(this, 'college-options-container')">
+                </div>
                 <div class="filter-dropdown-list" id="college-options-container"></div>
                 <div class="filter-dropdown-footer">
                     <button onclick="clearFilter('college')">清除此篩選</button>
@@ -329,6 +345,9 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 全部學系 <i class="ti ti-chevron-down"></i>
             </button>
             <div class="filter-dropdown" id="drop-dept">
+                <div class="filter-dropdown-search">
+                    <input type="text" id="search-dept-input" placeholder="搜尋學系..." onkeyup="filterDropdownItems(this, 'dept-options-container')">
+                </div>
                 <div class="filter-dropdown-list" id="dept-options-container"></div>
                 <div class="filter-dropdown-footer">
                     <button onclick="clearFilter('dept')">清除此篩選</button>
@@ -588,6 +607,15 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             if (!isOpen) { drop.classList.add('show'); wrap.classList.add('open'); }
         };
 
+        window.filterDropdownItems = (input, containerId) => {
+            const term = input.value.toLowerCase();
+            const labels = document.getElementById(containerId).querySelectorAll('.filter-option');
+            labels.forEach(lbl => {
+                const text = lbl.textContent.toLowerCase();
+                lbl.style.display = text.includes(term) ? 'flex' : 'none';
+            });
+        };
+
         window.toggleFilterCheck = (type, val) => {
             const chk = document.querySelector(`.filter-chk-${type}[value="${val}"]`);
             if(chk) chk.checked = !chk.checked;
@@ -598,9 +626,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
             
             if(type === 'college') {
-                filterDeptSet.clear(); // 如果改變學院過濾，清空學系過濾以防衝突
                 populateDeptFilterUI();
-                updatePillActive('dept');
             }
             
             currentPage = 1; updatePillActive(type); renderTable();
@@ -626,7 +652,13 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             set.clear();
             document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = false);
             
-            if(type === 'college') { filterDeptSet.clear(); populateDeptFilterUI(); updatePillActive('dept'); }
+            const searchInput = document.getElementById(`search-${type}-input`);
+            if (searchInput) {
+                searchInput.value = '';
+                filterDropdownItems(searchInput, `${type}-options-container`);
+            }
+
+            if(type === 'college') { populateDeptFilterUI(); }
             
             currentPage = 1; updatePillActive(type); renderTable();
         };
@@ -664,6 +696,14 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 deptsToShow = globalDepts.filter(d => filterCollegeSet.has(d.college));
             }
             
+            // 清理已勾選但因學院被反選而不再顯示的學系
+            const validDeptNames = new Set(deptsToShow.map(d => d.name));
+            for (let dept of filterDeptSet) {
+                if (!validDeptNames.has(dept)) {
+                    filterDeptSet.delete(dept);
+                }
+            }
+            
             document.getElementById('dept-options-container').innerHTML = deptsToShow.map(d => `
                 <label class="filter-option">
                     <input type="checkbox" class="filter-chk-dept" value="${d.name}" onchange="toggleFilterCheck('dept', '${d.name}')"> 
@@ -672,6 +712,13 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             `).join('');
             
             document.querySelectorAll(`.filter-chk-dept`).forEach(c => c.checked = filterDeptSet.has(c.value));
+            updatePillActive('dept');
+
+            // 如果有正在搜尋的文字，重新過濾
+            const searchInput = document.getElementById('search-dept-input');
+            if (searchInput && searchInput.value) {
+                filterDropdownItems(searchInput, 'dept-options-container');
+            }
         }
 
         window.updateFormDepts = (preselectedValue = '') => {
