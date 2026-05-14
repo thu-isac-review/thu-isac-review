@@ -72,10 +72,6 @@ html, body {
   display: flex; align-items: center; gap: 10px;
   flex-shrink: 0; flex-wrap: wrap;
 }
-.page-title-group { display: flex; align-items: center; gap: 12px; margin-right: 20px; }
-.page-icon { width: 40px; height: 40px; border-radius: var(--radius-lg); background: var(--brand-light); color: var(--brand); border: 1px solid var(--brand-border); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
-.page-title { font-size: 18px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em; line-height: 1.2; }
-.page-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 
 .search-wrap { position: relative; flex: 0 0 260px; }
 .search-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px; }
@@ -276,11 +272,10 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 @media (max-width: 768px) {
   .col-checkbox { display: none !important; }
   #batch-bar { display: none !important; }
-  .toolbar { padding: 12px 16px; justify-content: space-between; }
-  .page-title-group { width: 100%; margin-bottom: 12px; }
-  .search-wrap { flex: 0 0 100%; order: 1; margin-bottom: 8px; }
+  .toolbar { padding: 12px 16px; flex-direction: column; align-items: flex-start; gap: 12px;}
+  .search-wrap { flex: 0 0 100%; width: 100%; }
   .flex-spacer { display: none; }
-  .toolbar-actions { order: 2; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .toolbar-actions { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .toolbar-actions .btn { width: 100%; padding: 0 8px; font-size: 12px; margin: 0; }
   .toolbar-actions .v-divider { display: none; }
   .form-grid { grid-template-columns: 1fr; }
@@ -291,14 +286,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
     <!-- ─── TOOLBAR ─── -->
     <div class="toolbar">
-        <div class="page-title-group">
-            <div class="page-icon"><i class="ti ti-school"></i></div>
-            <div>
-                <div class="page-title">實習學生管理</div>
-                <div class="page-subtitle">管理參與實習之學生身分主檔資料</div>
-            </div>
-        </div>
-
         <div class="search-wrap">
             <i class="ti ti-search"></i>
             <input type="text" id="search-input" placeholder="搜尋學號或姓名..." class="search-input">
@@ -345,6 +332,28 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 <div class="filter-dropdown-list" id="dept-options-container"></div>
                 <div class="filter-dropdown-footer">
                     <button onclick="clearFilter('dept')">清除此篩選</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 性別篩選 -->
+        <div class="filter-pill-wrap" id="pill-wrap-gender">
+            <button class="filter-pill" id="pill-gender" onclick="toggleDropdown('gender')">
+                全部性別 <i class="ti ti-chevron-down"></i>
+            </button>
+            <div class="filter-dropdown" id="drop-gender">
+                <div class="filter-dropdown-list">
+                    <label class="filter-option">
+                        <input type="checkbox" class="filter-chk-gender" value="男" onchange="toggleFilterCheck('gender', '男')">
+                        <span>男</span>
+                    </label>
+                    <label class="filter-option">
+                        <input type="checkbox" class="filter-chk-gender" value="女" onchange="toggleFilterCheck('gender', '女')">
+                        <span>女</span>
+                    </label>
+                </div>
+                <div class="filter-dropdown-footer">
+                    <button onclick="clearFilter('gender')">清除此篩選</button>
                 </div>
             </div>
         </div>
@@ -520,6 +529,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         
         let filterCollegeSet = new Set();
         let filterDeptSet = new Set();
+        let filterGenderSet = new Set();
         let filterNatSet = new Set();
         let sortCol = 'student_id'; let sortDir = 'asc';
 
@@ -582,7 +592,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             const chk = document.querySelector(`.filter-chk-${type}[value="${val}"]`);
             if(chk) chk.checked = !chk.checked;
             
-            const set = type === 'college' ? filterCollegeSet : (type === 'dept' ? filterDeptSet : filterNatSet);
+            const set = type === 'college' ? filterCollegeSet : (type === 'dept' ? filterDeptSet : (type === 'nationality' ? filterNatSet : filterGenderSet));
             if (set.has(val)) set.delete(val); else set.add(val);
             
             document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
@@ -597,21 +607,22 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         };
 
         function updatePillActive(type) {
-            const set = type === 'college' ? filterCollegeSet : (type === 'dept' ? filterDeptSet : filterNatSet);
-            const pill = document.getElementById(`pill-${type}`);
-            let typeName = type === 'college' ? '學院' : (type === 'dept' ? '學系' : '國籍');
+            const set = type === 'college' ? filterCollegeSet : (type === 'dept' ? filterDeptSet : (type === 'nationality' ? filterNatSet : filterGenderSet));
+            let typeName = type === 'college' ? '學院' : (type === 'dept' ? '學系' : (type === 'nationality' ? '國籍' : '性別'));
             
             if (set.size > 0) {
+                const pill = document.getElementById(`pill-${type}`);
                 pill.classList.add('active');
                 pill.innerHTML = `${typeName} <span class="pill-count">${set.size}</span> <i class="ti ti-chevron-down"></i>`;
             } else {
+                const pill = document.getElementById(`pill-${type}`);
                 pill.classList.remove('active');
                 pill.innerHTML = `全部${typeName} <i class="ti ti-chevron-down"></i>`;
             }
         }
 
         window.clearFilter = (type) => {
-            const set = type === 'college' ? filterCollegeSet : (type === 'dept' ? filterDeptSet : filterNatSet);
+            const set = type === 'college' ? filterCollegeSet : (type === 'dept' ? filterDeptSet : (type === 'nationality' ? filterNatSet : filterGenderSet));
             set.clear();
             document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = false);
             
@@ -813,8 +824,9 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 const matchSearch = (d.name || '').toLowerCase().includes(searchTerm) || (d.student_id || '').toLowerCase().includes(searchTerm);
                 const matchCol = filterCollegeSet.size === 0 || filterCollegeSet.has(d.college);
                 const matchDept = filterDeptSet.size === 0 || filterDeptSet.has(d.department);
+                const matchGender = filterGenderSet.size === 0 || filterGenderSet.has(d.gender || '男');
                 const matchNat = filterNatSet.size === 0 || filterNatSet.has(d.nationality || '本國籍');
-                return matchSearch && matchCol && matchDept && matchNat;
+                return matchSearch && matchCol && matchDept && matchGender && matchNat;
             });
 
             // Sorting
