@@ -207,6 +207,18 @@ tr.selected td { background: #f0f4ff; }
 .cell-primary.bold { font-weight: 600; }
 .row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; }
 
+/* 膠囊樣式 - 選課代號 */
+.pill-code {
+  display: inline-block;
+  padding: 2px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
 /* ─── PAGINATION ─── */
 .pagination-bar {
   display: flex; align-items: center; justify-content: space-between;
@@ -271,6 +283,11 @@ tr.selected td { background: #f0f4ff; }
 .field-input:focus, .field-select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); background: var(--surface); }
 select.field-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; }
 
+/* 隱藏 type=number 的原生上下按鈕 */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number] { -moz-appearance: textfield; }
+
 /* Empty state */
 .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
 .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
@@ -320,23 +337,47 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
     <!-- ─── FILTER ROW & BATCH BAR ─── -->
     <div class="filter-row">
-        <!-- 學年/期篩選 -->
-        <div class="filter-pill-wrap" id="pill-wrap-semester">
-            <button class="filter-pill" id="pill-semester" onclick="toggleDropdown('semester')">
-                全部學年/期 <i class="ti ti-chevron-down"></i>
+        
+        <!-- 學年度 (無搜尋框) -->
+        <div class="filter-pill-wrap" id="pill-wrap-year">
+            <button class="filter-pill" id="pill-year" onclick="toggleDropdown('year')">
+                全部學年度 <i class="ti ti-chevron-down"></i>
             </button>
-            <div class="filter-dropdown" id="drop-semester">
-                <div class="filter-dropdown-search">
-                    <input type="text" id="search-semester-input" placeholder="搜尋學年期..." onkeyup="filterDropdownItems(this, 'semester-options-container')">
-                </div>
-                <div class="filter-dropdown-list" id="semester-options-container"></div>
+            <div class="filter-dropdown" id="drop-year">
+                <div class="filter-dropdown-list" id="year-options-container"></div>
                 <div class="filter-dropdown-footer">
-                    <button onclick="clearFilter('semester')">清除此篩選</button>
+                    <button onclick="clearFilter('year')">清除此篩選</button>
                 </div>
             </div>
         </div>
 
-        <!-- 學院篩選 -->
+        <!-- 學期 (無搜尋框) -->
+        <div class="filter-pill-wrap" id="pill-wrap-term">
+            <button class="filter-pill" id="pill-term" onclick="toggleDropdown('term')">
+                全部學期 <i class="ti ti-chevron-down"></i>
+            </button>
+            <div class="filter-dropdown" id="drop-term">
+                <div class="filter-dropdown-list" id="term-options-container"></div>
+                <div class="filter-dropdown-footer">
+                    <button onclick="clearFilter('term')">清除此篩選</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 學制 (無搜尋框) -->
+        <div class="filter-pill-wrap" id="pill-wrap-edu">
+            <button class="filter-pill" id="pill-edu" onclick="toggleDropdown('edu')">
+                全部學制 <i class="ti ti-chevron-down"></i>
+            </button>
+            <div class="filter-dropdown" id="drop-edu">
+                <div class="filter-dropdown-list" id="edu-options-container"></div>
+                <div class="filter-dropdown-footer">
+                    <button onclick="clearFilter('edu')">清除此篩選</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 學院 (有搜尋框) -->
         <div class="filter-pill-wrap" id="pill-wrap-college">
             <button class="filter-pill" id="pill-college" onclick="toggleDropdown('college')">
                 全部學院 <i class="ti ti-chevron-down"></i>
@@ -352,7 +393,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             </div>
         </div>
 
-        <!-- 學系篩選 -->
+        <!-- 學系 (有搜尋框) -->
         <div class="filter-pill-wrap" id="pill-wrap-dept">
             <button class="filter-pill" id="pill-dept" onclick="toggleDropdown('dept')">
                 全部學系 <i class="ti ti-chevron-down"></i>
@@ -364,6 +405,64 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 <div class="filter-dropdown-list" id="dept-options-container"></div>
                 <div class="filter-dropdown-footer">
                     <button onclick="clearFilter('dept')">清除此篩選</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 選課代號 (有搜尋框) -->
+        <div class="filter-pill-wrap" id="pill-wrap-code">
+            <button class="filter-pill" id="pill-code" onclick="toggleDropdown('code')">
+                全部代號 <i class="ti ti-chevron-down"></i>
+            </button>
+            <div class="filter-dropdown" id="drop-code">
+                <div class="filter-dropdown-search">
+                    <input type="text" id="search-code-input" placeholder="搜尋代號..." onkeyup="filterDropdownItems(this, 'code-options-container')">
+                </div>
+                <div class="filter-dropdown-list" id="code-options-container"></div>
+                <div class="filter-dropdown-footer">
+                    <button onclick="clearFilter('code')">清除此篩選</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 課程名稱 (有搜尋框) -->
+        <div class="filter-pill-wrap" id="pill-wrap-name">
+            <button class="filter-pill" id="pill-name" onclick="toggleDropdown('name')">
+                全部名稱 <i class="ti ti-chevron-down"></i>
+            </button>
+            <div class="filter-dropdown" id="drop-name">
+                <div class="filter-dropdown-search">
+                    <input type="text" id="search-name-input" placeholder="搜尋名稱..." onkeyup="filterDropdownItems(this, 'name-options-container')">
+                </div>
+                <div class="filter-dropdown-list" id="name-options-container"></div>
+                <div class="filter-dropdown-footer">
+                    <button onclick="clearFilter('name')">清除此篩選</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 課程屬性 (無搜尋框) -->
+        <div class="filter-pill-wrap" id="pill-wrap-type">
+            <button class="filter-pill" id="pill-type" onclick="toggleDropdown('type')">
+                全部屬性 <i class="ti ti-chevron-down"></i>
+            </button>
+            <div class="filter-dropdown" id="drop-type">
+                <div class="filter-dropdown-list" id="type-options-container"></div>
+                <div class="filter-dropdown-footer">
+                    <button onclick="clearFilter('type')">清除此篩選</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 學分數 (無搜尋框) -->
+        <div class="filter-pill-wrap" id="pill-wrap-credit">
+            <button class="filter-pill" id="pill-credit" onclick="toggleDropdown('credit')">
+                全部學分 <i class="ti ti-chevron-down"></i>
+            </button>
+            <div class="filter-dropdown" id="drop-credit">
+                <div class="filter-dropdown-list" id="credit-options-container"></div>
+                <div class="filter-dropdown-footer">
+                    <button onclick="clearFilter('credit')">清除此篩選</button>
                 </div>
             </div>
         </div>
@@ -393,20 +492,21 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                                 <input type="checkbox" id="selectAll" onchange="toggleSelectPage(event)" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                             </div>
                         </th>
-                        <th data-sort="semester" style="width: 10%;">學年-學期 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="academic_year" style="width: 8%;">學年度 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="term" style="width: 6%;">學期 <i class="ti ti-arrows-sort sort-icon"></i></th>
                         <th data-sort="edu_system" style="width: 10%;">開課學制 <i class="ti ti-arrows-sort sort-icon"></i></th>
                         <th data-sort="college" style="width: 12%;">開課學院 <i class="ti ti-arrows-sort sort-icon"></i></th>
                         <th data-sort="department" style="width: 12%;">開課學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
                         <th data-sort="course_code" style="width: 10%;">選課代號 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="course_name" style="width: 16%;">課程名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="course_type" style="width: 10%;">課程屬性 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="credits" style="width: 8%;">學分數 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th style="width: 8%;">操作</th>
+                        <th data-sort="course_name" style="width: 18%;">課程名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="course_type" style="width: 8%;">課程屬性 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="credits" style="width: 6%;">學分數 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th style="width: 6%;">操作</th>
                     </tr>
                 </thead>
                 <tbody id="table-body">
                     <tr>
-                        <td colspan="10" class="empty-state">
+                        <td colspan="11" class="empty-state">
                             <i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i>
                             <div class="empty-text">資料載入中...</div>
                         </td>
@@ -471,7 +571,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 <div class="form-grid" style="grid-template-columns: 1fr 2fr;">
                     <div class="field">
                         <label class="field-label">選課代號 <span class="req">*</span></label>
-                        <input type="text" id="input-course-code" required placeholder="如: 1234" class="field-input" style="font-family: monospace;">
+                        <input type="text" id="input-course-code" required placeholder="如: 1234" class="field-input">
                     </div>
                     <div class="field">
                         <label class="field-label">課程名稱 <span class="req">*</span></label>
@@ -499,7 +599,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                     </div>
                     <div class="field">
                         <label class="field-label">實習學分數 <span class="req">*</span></label>
-                        <input type="number" id="input-credits" min="0" step="0.5" required placeholder="如: 3" class="field-input" style="font-family: monospace;">
+                        <input type="number" id="input-credits" min="0" step="0.5" required placeholder="如: 3" class="field-input">
                     </div>
                 </div>
             </form>
@@ -535,11 +635,18 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         let selectedIds = [];
         let filteredData = []; 
         
-        let filterSemesterSet = new Set();
+        // 篩選器 Set
+        let filterYearSet = new Set();
+        let filterTermSet = new Set();
+        let filterEduSet = new Set();
         let filterCollegeSet = new Set();
         let filterDeptSet = new Set();
+        let filterCodeSet = new Set();
+        let filterNameSet = new Set();
+        let filterTypeSet = new Set();
+        let filterCreditSet = new Set();
         
-        let sortCol = 'sortOrder'; let sortDir = 'asc';
+        let sortCol = 'academic_year'; let sortDir = 'desc';
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -552,20 +659,18 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 const deptSnap = await getDocs(collection(db, "departments"));
                 globalDepts = deptSnap.docs.map(d => d.data());
                 globalDepts.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
-                
-                populateCollegesUI();
 
                 onSnapshot(dataCollection, (snapshot) => {
                     allData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    populateSemesterUI();
+                    populateAllFiltersUI();
                     selectedIds = [];
                     updateBatchActionBar();
                     renderTable();
                 }, (error) => {
-                    document.getElementById('table-body').innerHTML = `<tr><td colspan="10" class="empty-state"><i class="ti ti-lock empty-icon" style="color:var(--danger); opacity:1;"></i><div class="empty-text">資料讀取失敗，權限不足。</div></td></tr>`;
+                    document.getElementById('table-body').innerHTML = `<tr><td colspan="11" class="empty-state"><i class="ti ti-lock empty-icon" style="color:var(--danger); opacity:1;"></i><div class="empty-text">資料讀取失敗，權限不足。</div></td></tr>`;
                 });
             } else {
-                document.getElementById('table-body').innerHTML = `<tr><td colspan="10" class="empty-state"><i class="ti ti-shield-half empty-icon"></i><div class="empty-text">請先登入系統以存取資料。</div></td></tr>`;
+                document.getElementById('table-body').innerHTML = `<tr><td colspan="11" class="empty-state"><i class="ti ti-shield-half empty-icon"></i><div class="empty-text">請先登入系統以存取資料。</div></td></tr>`;
             }
         });
 
@@ -610,36 +715,54 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             const chk = document.querySelector(`.filter-chk-${type}[value="${val}"]`);
             if(chk) chk.checked = !chk.checked;
             
-            const set = type === 'semester' ? filterSemesterSet : (type === 'college' ? filterCollegeSet : filterDeptSet);
+            const setMap = {
+                'year': filterYearSet, 'term': filterTermSet, 'edu': filterEduSet,
+                'college': filterCollegeSet, 'dept': filterDeptSet, 'code': filterCodeSet,
+                'name': filterNameSet, 'type': filterTypeSet, 'credit': filterCreditSet
+            };
+            const set = setMap[type];
+
             if (set.has(val)) set.delete(val); else set.add(val);
-            
             document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
             
             if(type === 'college') { populateDeptFilterUI(); }
-            
             currentPage = 1; updatePillActive(type); renderTable();
         };
 
         function updatePillActive(type) {
-            const set = type === 'semester' ? filterSemesterSet : (type === 'college' ? filterCollegeSet : filterDeptSet);
-            let typeName = type === 'semester' ? '學年/期' : (type === 'college' ? '學院' : '學系');
+            const setMap = {
+                'year': filterYearSet, 'term': filterTermSet, 'edu': filterEduSet,
+                'college': filterCollegeSet, 'dept': filterDeptSet, 'code': filterCodeSet,
+                'name': filterNameSet, 'type': filterTypeSet, 'credit': filterCreditSet
+            };
+            const nameMap = {
+                'year': '學年度', 'term': '學期', 'edu': '學制',
+                'college': '學院', 'dept': '學系', 'code': '代號',
+                'name': '名稱', 'type': '屬性', 'credit': '學分'
+            };
+            
+            const set = setMap[type];
+            const typeName = nameMap[type];
+            const pill = document.getElementById(`pill-${type}`);
             
             if (set.size > 0) {
-                const pill = document.getElementById(`pill-${type}`);
                 pill.classList.add('active');
                 pill.innerHTML = `${typeName} <span class="pill-count">${set.size}</span> <i class="ti ti-chevron-down"></i>`;
             } else {
-                const pill = document.getElementById(`pill-${type}`);
                 pill.classList.remove('active');
                 pill.innerHTML = `全部${typeName} <i class="ti ti-chevron-down"></i>`;
             }
         }
 
         window.clearFilter = (type) => {
-            const set = type === 'semester' ? filterSemesterSet : (type === 'college' ? filterCollegeSet : filterDeptSet);
-            set.clear();
-            document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = false);
+            const setMap = {
+                'year': filterYearSet, 'term': filterTermSet, 'edu': filterEduSet,
+                'college': filterCollegeSet, 'dept': filterDeptSet, 'code': filterCodeSet,
+                'name': filterNameSet, 'type': filterTypeSet, 'credit': filterCreditSet
+            };
+            setMap[type].clear();
             
+            document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = false);
             const searchInput = document.getElementById(`search-${type}-input`);
             if (searchInput) {
                 searchInput.value = '';
@@ -647,7 +770,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             }
 
             if(type === 'college') { populateDeptFilterUI(); }
-            
             currentPage = 1; updatePillActive(type); renderTable();
         };
 
@@ -659,67 +781,70 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         });
 
         // ─── INITIALIZE DYNAMIC UI ───
-        function populateSemesterUI() {
-            const sems = [...new Set(allData.map(d => d.semester))].filter(Boolean).sort().reverse();
-            document.getElementById('semester-options-container').innerHTML = sems.map(s => `
-                <label class="filter-option">
-                    <input type="checkbox" class="filter-chk-semester" value="${s}" onchange="toggleFilterCheck('semester', '${s}')"> 
-                    <span>${s}</span>
-                </label>
-            `).join('');
+        function populateAllFiltersUI() {
+            const getUnique = (key) => [...new Set(allData.map(d => d[key]))].filter(Boolean).sort();
             
-            document.querySelectorAll(`.filter-chk-semester`).forEach(c => c.checked = filterSemesterSet.has(c.value));
-            updatePillActive('semester');
-        }
+            const years = getUnique('academic_year').reverse();
+            const terms = getUnique('term');
+            const edus = getUnique('edu_system');
+            const codes = getUnique('course_code');
+            const names = getUnique('course_name');
+            const types = getUnique('course_type');
+            const credits = getUnique('credits').sort((a,b) => a-b);
 
-        function populateCollegesUI() {
+            const generateHtml = (arr, type) => arr.map(v => `
+                <label class="filter-option">
+                    <input type="checkbox" class="filter-chk-${type}" value="${v}" onchange="toggleFilterCheck('${type}', '${v}')"> 
+                    <span>${v}</span>
+                </label>`).join('');
+
+            document.getElementById('year-options-container').innerHTML = generateHtml(years, 'year');
+            document.getElementById('term-options-container').innerHTML = generateHtml(terms, 'term');
+            document.getElementById('edu-options-container').innerHTML = generateHtml(edus, 'edu');
+            document.getElementById('code-options-container').innerHTML = generateHtml(codes, 'code');
+            document.getElementById('name-options-container').innerHTML = generateHtml(names, 'name');
+            document.getElementById('type-options-container').innerHTML = generateHtml(types, 'type');
+            document.getElementById('credit-options-container').innerHTML = generateHtml(credits, 'credit');
+
             const colleges = orderedColleges.length > 0 
                 ? orderedColleges 
                 : [...new Set(globalDepts.map(d => d.college))].filter(Boolean).map(c => ({name: c, shortName: c}));
             
-            // Filter list
             document.getElementById('college-options-container').innerHTML = colleges.map(c => `
                 <label class="filter-option">
                     <input type="checkbox" class="filter-chk-college" value="${c.name}" onchange="toggleFilterCheck('college', '${c.name}')"> 
                     <span>${c.shortName || c.name}</span>
-                </label>
-            `).join('');
-
-            // Form list
+                </label>`).join('');
             document.getElementById('input-college').innerHTML = `<option value="">請選擇學院...</option>` + colleges.map(c => `<option value="${c.name}">${c.shortName || c.name}</option>`).join('');
 
             populateDeptFilterUI();
+            
+            // Maintain checks state
+            ['year', 'term', 'edu', 'code', 'name', 'type', 'credit'].forEach(type => {
+                const setMap = { 'year': filterYearSet, 'term': filterTermSet, 'edu': filterEduSet, 'code': filterCodeSet, 'name': filterNameSet, 'type': filterTypeSet, 'credit': filterCreditSet };
+                document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = setMap[type].has(c.value));
+                updatePillActive(type);
+            });
         }
 
         function populateDeptFilterUI() {
             let deptsToShow = globalDepts;
-            if (filterCollegeSet.size > 0) {
-                deptsToShow = globalDepts.filter(d => filterCollegeSet.has(d.college));
-            }
+            if (filterCollegeSet.size > 0) deptsToShow = globalDepts.filter(d => filterCollegeSet.has(d.college));
             
-            // 清理已勾選但因學院被反選而不再顯示的學系
             const validDeptNames = new Set(deptsToShow.map(d => d.name));
-            for (let dept of filterDeptSet) {
-                if (!validDeptNames.has(dept)) {
-                    filterDeptSet.delete(dept);
-                }
-            }
+            for (let dept of filterDeptSet) { if (!validDeptNames.has(dept)) filterDeptSet.delete(dept); }
             
             document.getElementById('dept-options-container').innerHTML = deptsToShow.map(d => `
                 <label class="filter-option">
                     <input type="checkbox" class="filter-chk-dept" value="${d.name}" onchange="toggleFilterCheck('dept', '${d.name}')"> 
                     <span>${d.shortName || d.name}</span>
-                </label>
-            `).join('');
+                </label>`).join('');
             
             document.querySelectorAll(`.filter-chk-dept`).forEach(c => c.checked = filterDeptSet.has(c.value));
             updatePillActive('dept');
 
-            // 如果有正在搜尋的文字，重新過濾
             const searchInput = document.getElementById('search-dept-input');
-            if (searchInput && searchInput.value) {
-                filterDropdownItems(searchInput, 'dept-options-container');
-            }
+            if (searchInput && searchInput.value) filterDropdownItems(searchInput, 'dept-options-container');
         }
 
         window.updateFormDepts = (preselectedValue = '') => {
@@ -729,13 +854,9 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             
             if (selectedCol) {
                 const depts = globalDepts.filter(d => d.college === selectedCol);
-                depts.forEach(d => {
-                    const dispName = d.shortName || d.name;
-                    html += `<option value="${d.name}">${dispName}</option>`;
-                });
-            } else {
-                html = '<option value="">請先選擇學院...</option>';
-            }
+                depts.forEach(d => html += `<option value="${d.name}">${d.shortName || d.name}</option>`);
+            } else { html = '<option value="">請先選擇學院...</option>'; }
+            
             inputDept.innerHTML = html;
             if (preselectedValue) inputDept.value = preselectedValue;
         };
@@ -746,11 +867,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             const startIndex = (currentPage - 1) * itemsPerPage;
             const currentPaginatedIds = filteredData.slice(startIndex, startIndex + itemsPerPage).map(d => d.id);
             
-            if (isChecked) {
-                currentPaginatedIds.forEach(id => { if (!selectedIds.includes(id)) selectedIds.push(id); });
-            } else {
-                selectedIds = selectedIds.filter(id => !currentPaginatedIds.includes(id));
-            }
+            if (isChecked) { currentPaginatedIds.forEach(id => { if (!selectedIds.includes(id)) selectedIds.push(id); }); } 
+            else { selectedIds = selectedIds.filter(id => !currentPaginatedIds.includes(id)); }
             updateBatchActionBar(); renderTable();
         };
 
@@ -760,14 +878,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             updateBatchActionBar(); renderTable();
         };
 
-        window.selectAllFiltered = () => {
-            selectedIds = filteredData.map(d => d.id);
-            updateBatchActionBar(); renderTable();
-        };
-
-        window.clearSelection = () => {
-            selectedIds = []; updateBatchActionBar(); renderTable();
-        };
+        window.selectAllFiltered = () => { selectedIds = filteredData.map(d => d.id); updateBatchActionBar(); renderTable(); };
+        window.clearSelection = () => { selectedIds = []; updateBatchActionBar(); renderTable(); };
 
         function updateBatchActionBar() {
             const bar = document.getElementById('batch-bar');
@@ -780,12 +892,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 if (selectedIds.length < filteredData.length) {
                     btnSelectAll.style.display = 'inline-flex';
                     btnSelectAll.innerText = `選取全部符合條件 (${filteredData.length})`;
-                } else {
-                    btnSelectAll.style.display = 'none';
-                }
-            } else {
-                bar.classList.remove('visible');
-            }
+                } else { btnSelectAll.style.display = 'none'; }
+            } else { bar.classList.remove('visible'); }
         }
 
         window.batchDelete = async () => {
@@ -832,8 +940,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 if (editingId) { 
                     await updateDoc(doc(db, "internship_courses", editingId), { ...payload, updated_at: serverTimestamp() }); 
                 } else {
-                    let maxOrder = allData.length > 0 ? Math.max(...allData.map(d => d.sortOrder || 0)) : 0;
-                    await addDoc(dataCollection, { ...payload, sortOrder: maxOrder + 10, created_at: serverTimestamp() });
+                    await addDoc(dataCollection, { ...payload, created_at: serverTimestamp() });
                 }
                 closeModal();
             } catch (err) { alert("儲存發生錯誤：" + err.message); } 
@@ -866,24 +973,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             }
         };
 
-        window.moveOrder = async (id, direction) => {
-            let sortedVis = [...filteredData].sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
-            const currentIndex = sortedVis.findIndex(d => d.id === id);
-            if (direction === 'up' && currentIndex > 0) {
-                let currentOrder = sortedVis[currentIndex].sortOrder || currentIndex * 10;
-                let prevOrder = sortedVis[currentIndex - 1].sortOrder || (currentIndex - 1) * 10;
-                if (currentOrder === prevOrder) { currentOrder += 1; prevOrder -= 1; }
-                await updateDoc(doc(db, "internship_courses", sortedVis[currentIndex].id), { sortOrder: prevOrder });
-                await updateDoc(doc(db, "internship_courses", sortedVis[currentIndex - 1].id), { sortOrder: currentOrder });
-            } else if (direction === 'down' && currentIndex < sortedVis.length - 1) {
-                let currentOrder = sortedVis[currentIndex].sortOrder || currentIndex * 10;
-                let nextOrder = sortedVis[currentIndex + 1].sortOrder || (currentIndex + 1) * 10;
-                if (currentOrder === nextOrder) { currentOrder -= 1; nextOrder += 1; }
-                await updateDoc(doc(db, "internship_courses", sortedVis[currentIndex].id), { sortOrder: nextOrder });
-                await updateDoc(doc(db, "internship_courses", sortedVis[currentIndex + 1].id), { sortOrder: currentOrder });
-            }
-        };
-
         // ─── TABLE RENDERING ───
         window.changePage = (page) => { currentPage = page; renderTable(); };
         window.changePerPage = (val) => { itemsPerPage = Number(val); currentPage = 1; renderTable(); };
@@ -894,10 +983,17 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
             filteredData = allData.filter(d => {
                 const matchSearch = (d.course_name || '').toLowerCase().includes(searchTerm) || (d.course_code || '').toLowerCase().includes(searchTerm);
-                const matchSem = filterSemesterSet.size === 0 || filterSemesterSet.has(d.semester);
+                const matchYear = filterYearSet.size === 0 || filterYearSet.has(d.academic_year);
+                const matchTerm = filterTermSet.size === 0 || filterTermSet.has(d.term);
+                const matchEdu = filterEduSet.size === 0 || filterEduSet.has(d.edu_system);
                 const matchCol = filterCollegeSet.size === 0 || filterCollegeSet.has(d.college);
                 const matchDept = filterDeptSet.size === 0 || filterDeptSet.has(d.department);
-                return matchSearch && matchSem && matchCol && matchDept;
+                const matchCode = filterCodeSet.size === 0 || filterCodeSet.has(d.course_code);
+                const matchName = filterNameSet.size === 0 || filterNameSet.has(d.course_name);
+                const matchType = filterTypeSet.size === 0 || filterTypeSet.has(d.course_type);
+                const matchCredit = filterCreditSet.size === 0 || filterCreditSet.has(String(d.credits));
+                
+                return matchSearch && matchYear && matchTerm && matchEdu && matchCol && matchDept && matchCode && matchName && matchType && matchCredit;
             });
 
             // Sorting
@@ -921,9 +1017,9 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                     return 0;
                 }
 
-                if (sortCol === 'sortOrder' || sortCol === 'credits') {
-                    valA = Number(valA) || (sortCol === 'sortOrder' ? 999 : 0);
-                    valB = Number(valB) || (sortCol === 'sortOrder' ? 999 : 0);
+                if (sortCol === 'credits' || sortCol === 'academic_year' || sortCol === 'term') {
+                    valA = Number(valA) || 0;
+                    valB = Number(valB) || 0;
                     if (valA < valB) return sortDir === 'asc' ? -1 : 1;
                     if (valA > valB) return sortDir === 'asc' ? 1 : -1;
                     return 0;
@@ -966,13 +1062,12 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             document.getElementById('selectAll').checked = isAllVisibleSelected;
 
             if (total === 0) {
-                tbody.innerHTML = `<tr><td colspan="10" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">找不到符合條件的課程。</div></td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="11" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">找不到符合條件的課程。</div></td></tr>`;
                 return;
             }
 
             let html = '';
-            paginatedItems.forEach((data, idx) => {
-                const globalIndex = start + idx;
+            paginatedItems.forEach((data) => {
                 const colObj = orderedColleges.find(c => c.name === data.college);
                 const colDispName = colObj && colObj.shortName ? colObj.shortName : data.college;
                 const deptObj = globalDepts.find(d => d.name === data.department);
@@ -986,18 +1081,17 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                             <input type="checkbox" value="${data.id}" onchange="toggleSelect('${data.id}')" ${isChecked} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                         </div>
                     </td>
-                    <td style="text-align: center;"><div class="cell-primary bold">${data.academic_year}-${data.term}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary bold">${data.academic_year}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary">${data.term}</div></td>
                     <td style="text-align: center;"><div class="cell-primary">${data.edu_system}</div></td>
                     <td style="text-align: center;"><div class="cell-primary">${colDispName}</div></td>
                     <td style="text-align: center;"><div class="cell-primary">${deptDispName}</div></td>
-                    <td style="text-align: center;"><div class="cell-primary bold uppercase" style="font-family: monospace;">${data.course_code}</div></td>
-                    <td style="text-align: center;"><div class="cell-primary bold" title="${data.course_name}">${data.course_name}</div></td>
+                    <td style="text-align: center;"><span class="pill-code">${data.course_code}</span></td>
+                    <td style="text-align: left;"><div class="cell-primary bold" title="${data.course_name}">${data.course_name}</div></td>
                     <td style="text-align: center;"><div class="cell-primary">${data.course_type}</div></td>
                     <td style="text-align: center;"><div class="cell-primary bold">${data.credits}</div></td>
                     <td style="text-align: center;">
                         <div class="row-actions">
-                            <button onclick="window.moveOrder('${data.id}', 'up')" class="btn btn-icon sm" style="color:var(--text-muted); border:none;" title="上移" ${globalIndex === 0 ? 'disabled' : ''}><i class="ti ti-chevron-up"></i></button>
-                            <button onclick="window.moveOrder('${data.id}', 'down')" class="btn btn-icon sm" style="color:var(--text-muted); border:none;" title="下移" ${globalIndex === filteredData.length - 1 ? 'disabled' : ''}><i class="ti ti-chevron-down"></i></button>
                             <button onclick="window.editData('${data.id}')" class="btn btn-secondary btn-icon sm" title="編輯"><i class="ti ti-edit"></i></button>
                             <button onclick="window.deleteData('${data.id}', '${data.course_name}')" class="btn btn-icon sm" style="color:var(--danger); border-color:var(--danger-border);" title="刪除"><i class="ti ti-trash"></i></button>
                         </div>
@@ -1010,7 +1104,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         // ─── UTILS: EXPORT & IMPORT ───
         window.exportToCSV = () => {
             if (filteredData.length === 0) { alert("沒有資料可供匯出！"); return; }
-            let csv = '\uFEFF學年,學期,開課學制,開課學院,開課學系,選課代號,課程名稱,實習課程屬性,實習學分數\n';
+            let csv = '\uFEFF學年度,學期,開課學制,開課學院,開課學系,選課代號,課程名稱,實習課程屬性,實習學分數\n';
             filteredData.forEach(d => {
                 csv += [d.academic_year, d.term, d.edu_system, d.college, d.department, d.course_code, d.course_name, d.course_type, d.credits].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
             });
@@ -1053,27 +1147,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                         }
                     }
                     
-                    parsedRows.sort((a, b) => {
-                        const yearA = parseInt(a.academic_year) || 0; const yearB = parseInt(b.academic_year) || 0;
-                        if (yearA !== yearB) return yearB - yearA;
-                        const termA = parseInt(a.term) || 0; const termB = parseInt(b.term) || 0;
-                        if (termA !== termB) return termB - termA;
-                        const colIdxA = orderedColleges.findIndex(c => c.name === a.college);
-                        const colIdxB = orderedColleges.findIndex(c => c.name === b.college);
-                        if (colIdxA !== colIdxB) return (colIdxA === -1 ? 999 : colIdxA) - (colIdxB === -1 ? 999 : colIdxB);
-                        const deptA = globalDepts.find(d => d.name === a.department);
-                        const deptB = globalDepts.find(d => d.name === b.department);
-                        const orderDeptA = deptA ? (deptA.sortOrder || 999) : 999;
-                        const orderDeptB = deptB ? (deptB.sortOrder || 999) : 999;
-                        if (orderDeptA !== orderDeptB) return orderDeptA - orderDeptB;
-                        return (a.course_code || '').localeCompare(b.course_code || '');
-                    });
-
-                    let maxOrder = allData.length > 0 ? Math.max(...allData.map(d => d.sortOrder || 0)) : 0;
                     let addedCount = 0;
-                    
                     for (let payload of parsedRows) { 
-                        maxOrder += 10; payload.sortOrder = maxOrder; 
                         await addDoc(dataCollection, payload); 
                         addedCount++; 
                     }
