@@ -107,14 +107,17 @@ html, body {
 .btn-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
 .btn-danger:hover { background: #fee2e2; }
 
+/* 實心底色按鈕系列 */
 .btn-success-solid { background: var(--success); color: white; border: 1px solid var(--success); }
 .btn-success-solid:hover { background: #047857; }
-
+.btn-warning-solid { background: var(--warning); color: white; border: 1px solid var(--warning); }
+.btn-warning-solid:hover { background: #b45309; }
 .btn-indigo-solid { background: var(--indigo); color: white; border: 1px solid var(--indigo); }
 .btn-indigo-solid:hover { background: #4338ca; }
 
 .btn-icon { width: 34px; padding: 0; justify-content: center; }
 .btn-icon.sm { width: 28px; height: 28px; }
+.btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn i { font-size: 16px; display: inline-flex; align-items: center; justify-content: center; }
 
@@ -278,48 +281,28 @@ tr.disabled td { opacity: 0.6; filter: grayscale(40%); background: var(--bg); }
 .field-input:focus, .field-select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); background: var(--surface); }
 select.field-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; }
 
-/* ─── Custom Color Palette ─── */
-.color-palette { display: flex; flex-wrap: wrap; gap: 8px; }
-.color-swatch { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.2s; display: flex; align-items: center; justify-content: center; position: relative; }
-.color-swatch:hover { transform: scale(1.1); }
-.color-swatch.active { transform: scale(1.1); }
-.color-swatch.active::after { content: ''; position: absolute; inset: -4px; border: 2px solid var(--border-strong); border-radius: 50%; }
-.color-swatch i { color: white; font-size: 16px; opacity: 0; transition: opacity 0.2s; }
-.color-swatch.active i { opacity: 1; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+/* 統一風格的原生選色器 */
+.color-picker-input { padding: 2px 6px; cursor: pointer; background: var(--surface); }
+.color-picker-input::-webkit-color-swatch-wrapper { padding: 0; }
+.color-picker-input::-webkit-color-swatch { border: 1px solid rgba(0,0,0,0.1); border-radius: 4px; }
 
-/* 原生 Edit Color Picker 美化 */
-.color-picker-edit { width: 28px; height: 28px; padding: 0; border: none; border-radius: 50%; cursor: pointer; overflow: hidden; flex-shrink: 0; background: none; outline: 1px solid var(--border); }
-.color-picker-edit::-webkit-color-swatch-wrapper { padding: 0; }
-.color-picker-edit::-webkit-color-swatch { border: none; border-radius: 50%; }
-
-/* ─── ROLE / COLLEGE LIST ─── */
-.role-list-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
-.role-list { display: flex; flex-direction: column; gap: 8px; }
-.role-item {
-  display: flex; justify-content: space-between; align-items: center;
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 8px 12px; transition: border-color var(--transition);
+/* 學院清單管理 (可點選標籤) */
+.col-select-btn {
+  padding: 6px 12px; border: 1px solid var(--border); border-radius: 99px; background: var(--surface);
+  cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500;
+  transition: all 0.2s; color: var(--text-secondary); white-space: nowrap; user-select: none;
 }
-.role-item:hover { border-color: var(--brand-border); }
-.role-item .reorder-btns { opacity: 0.3; transition: opacity var(--transition); display: flex; flex-direction: column; gap: 2px; margin-right: 8px; }
-.role-item:hover .reorder-btns { opacity: 1; }
-.role-item .reorder-btns .btn-icon { background: transparent; border: none; color: var(--text-muted); padding: 0; height: 14px; width: 18px; display: inline-flex; }
-.role-item .reorder-btns .btn-icon:hover { color: var(--brand); background: var(--brand-light); border-radius: var(--radius-sm); }
-.role-item-name { font-size: 13px; font-weight: 500; color: var(--text-primary); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 8px; }
-.role-item-input { flex: 1; display: none; gap: 8px; align-items: center; }
-.role-item.editing .role-item-name { display: none; }
-.role-item.editing .role-item-input { display: flex; }
-.role-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: 12px;}
-.role-actions .btn.save { display: none; }
-.role-item.editing .btn.edit { display: none; }
-.role-item.editing .btn.save { display: inline-flex !important; }
-.role-item.editing .reorder-btns { visibility: hidden; }
+.col-select-btn:hover { border-color: var(--brand-border); background: var(--bg); color: var(--text-primary); }
+.col-select-btn.active { border-color: var(--brand); background: var(--brand-light); color: var(--brand); font-weight: 700; }
+.col-select-color { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); flex-shrink: 0; }
 
 /* Dynamic Contact Entry */
 .contact-entry {
   display: flex; align-items: flex-start; gap: 10px; background: var(--bg);
   padding: 12px; border-radius: var(--radius); border: 1px solid var(--border);
 }
+.more-badge { display: flex; align-items: center; justify-content: center; height: 24px; padding: 0 8px; border-radius: 99px; background: var(--border); color: var(--text-secondary); font-size: 11px; font-weight: 700; cursor: help; margin-left: 6px; transition: 0.2s; flex-shrink:0; }
+.more-badge:hover { background: var(--border-strong); color: var(--text-primary); }
 
 /* Empty state */
 .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
@@ -328,6 +311,10 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
 /* ─── MOBILE RESPONSIVE ─── */
 @media (max-width: 768px) {
+  /* 隱藏勾選功能相關區塊 */
+  .col-checkbox { display: none !important; }
+  #batch-bar { display: none !important; }
+
   .toolbar { padding: 12px 16px; justify-content: flex-end; }
   .search-wrap { flex: 0 0 100%; order: 1; margin-bottom: 8px; }
   .flex-spacer { display: none; }
@@ -375,7 +362,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             </button>
             <input type="file" id="import-file" accept=".csv" style="display:none;" onchange="handleImport(event)">
             <div class="v-divider"></div>
-            <!-- 修改圖示為 ti-category -->
             <button onclick="openCollegeModal()" class="btn btn-secondary">
                 <i class="ti ti-category"></i> <span class="btn-text">學院設定</span>
             </button>
@@ -432,8 +418,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             
             <div class="flex-spacer"></div>
             
-            <button class="btn btn-sm btn-secondary" style="color:var(--success);" onclick="batchUpdateStatus(true)"><i class="ti ti-play"></i> 批次啟用</button>
-            <button class="btn btn-sm btn-secondary" style="color:var(--warning);" onclick="batchUpdateStatus(false)"><i class="ti ti-player-pause"></i> 批次停用</button>
+            <button class="btn btn-sm btn-success-solid" onclick="batchUpdateStatus(true)"><i class="ti ti-circle-check"></i> 批次啟用</button>
+            <button class="btn btn-sm btn-warning-solid" onclick="batchUpdateStatus(false)"><i class="ti ti-circle-x"></i> 批次停用</button>
             <button class="btn btn-sm btn-danger" onclick="batchDelete()"><i class="ti ti-trash"></i> 批次刪除</button>
         </div>
     </div>
@@ -444,7 +430,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 5%;">
+                        <th class="col-checkbox" style="width: 5%;">
                             <div style="display:flex; justify-content:center; align-items:center;">
                                 <input type="checkbox" id="selectAll" onchange="toggleSelectPage(event)" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                             </div>
@@ -485,12 +471,10 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         </div>
     </div>
 
-    <!-- ─── UNIFIED DIALOG MODAL: 學院設定 (雙欄左右版) ─── -->
+    <!-- ─── UNIFIED DIALOG MODAL: 學院設定 (雙欄左右版 / 上選下編) ─── -->
     <div id="college-modal" class="dialog-overlay">
-        <!-- 展開寬度到 800px 以適應雙欄佈局 -->
         <div class="dialog-box" style="max-width: 800px;">
             <div class="dialog-header">
-                <!-- 修改圖示為 ti-category -->
                 <h3><i class="ti ti-category"></i> 學院設定管理</h3>
                 <button type="button" class="dialog-close" onclick="closeCollegeModal()"><i class="ti ti-x"></i></button>
             </div>
@@ -512,13 +496,13 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
                     <div class="field">
                         <label class="field-label">代表色 <span class="req">*</span></label>
-                        <!-- 改採莫蘭迪色點選盤 -->
-                        <div class="color-palette" id="new-college-palette"></div>
+                        <!-- 統一風格選色器 -->
+                        <input type="color" id="new-college-color" value="#1a56db" class="field-input color-picker-input">
                     </div>
 
                     <div style="margin-top: 8px;">
                         <button onclick="addCollege()" class="btn btn-primary" style="width: 100%;">
-                            <i class="ti ti-plus"></i> 新增學院
+                            <i class="ti ti-plus"></i> 確認新增
                         </button>
                     </div>
                 </div>
@@ -526,11 +510,49 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 <!-- 中間分隔線 -->
                 <div class="v-divider-modal" style="width: 1px; background: var(--border); margin: 0;"></div>
 
-                <!-- 右側：現有學院清單 -->
+                <!-- 右側：現有學院清單 (上半部選擇、下半部編輯) -->
                 <div style="flex: 1; display: flex; flex-direction: column; gap: 16px; min-height: 0;">
-                    <div class="form-section-title" style="margin-bottom: 0;"><i class="ti ti-list"></i> 現有學院清單</div>
-                    <div class="role-list-label" style="margin-bottom: -8px; text-transform:none;">(可拖曳或點擊箭頭排序，並支援編輯)</div>
-                    <div id="college-list-container" class="role-list custom-scroll" style="flex: 1; overflow-y: auto; padding-right: 4px;"></div>
+                    <div class="form-section-title" style="margin-bottom: 0;"><i class="ti ti-list"></i> 現有學院清單 (點選編輯)</div>
+                    
+                    <!-- 標籤選擇區 (上半部) -->
+                    <div id="college-list-container" class="custom-scroll" style="display: flex; flex-wrap: wrap; gap: 8px; max-height: 140px; overflow-y: auto; padding-right: 4px;"></div>
+                    
+                    <!-- 空白狀態 -->
+                    <div id="college-edit-empty" style="flex: 1; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 13px; background: var(--bg); border: 1px dashed var(--border); border-radius: var(--radius); min-height: 150px;">
+                        請在上方點選學院以進行編輯或排序
+                    </div>
+
+                    <!-- 編輯區塊 (下半部) -->
+                    <div id="college-edit-container" style="display: none; flex-direction: column; gap: 12px; padding: 16px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);">
+                        <div class="form-section-title" style="margin-bottom: 0;"><i class="ti ti-settings"></i> 設定選取的學院</div>
+                        
+                        <div class="field">
+                            <label class="field-label">學院全名 <span class="req">*</span></label>
+                            <input type="text" id="edit-college-name" class="field-input">
+                        </div>
+                        <div style="display: flex; gap: 12px;">
+                            <div class="field" style="flex: 1;">
+                                <label class="field-label">學院簡稱</label>
+                                <input type="text" id="edit-college-short" class="field-input">
+                            </div>
+                            <div class="field" style="width: 80px;">
+                                <label class="field-label">代表色</label>
+                                <input type="color" id="edit-college-color" class="field-input color-picker-input">
+                            </div>
+                        </div>
+                        
+                        <!-- 操作按鈕列 -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                            <div style="display: flex; gap: 6px;">
+                                <button type="button" class="btn btn-secondary btn-icon sm" onclick="moveActiveCollege(-1)" title="往前移"><i class="ti ti-arrow-left"></i></button>
+                                <button type="button" class="btn btn-secondary btn-icon sm" onclick="moveActiveCollege(1)" title="往後移"><i class="ti ti-arrow-right"></i></button>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" class="btn btn-danger" onclick="removeActiveCollege()"><i class="ti ti-trash"></i> 刪除</button>
+                                <button type="button" class="btn btn-primary" onclick="saveActiveCollege()"><i class="ti ti-check"></i> 儲存</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
             </div>
@@ -578,7 +600,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <div class="form-section-title" style="margin-bottom:0;"><i class="ti ti-users"></i> 承辦窗口 (可多位)</div>
-                        <!-- 修改為與權限管理新增角色完全一致的 primary 樣式與高度 -->
                         <button type="button" onclick="addContactField()" class="btn btn-primary" style="height: 34px; padding: 0 14px;"><i class="ti ti-plus"></i> 新增</button>
                     </div>
                     <div id="contacts-container" style="display:flex; flex-direction:column; gap:12px;"></div>
@@ -619,32 +640,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         let filterCollegeSet = new Set();
         let filterStatusSet = new Set();
         let sortCol = 'sortOrder'; let sortDir = 'asc';
-
-        // 莫蘭迪/高級平鋪色系組合 (12色)
-        let selectedCollegeColor = '#6b788a';
-        const paletteColors = [
-            '#6b788a', '#7c8c88', '#95a5a6', '#a89f91', 
-            '#d1bfae', '#b88e8d', '#c0848a', '#8f8b9e', 
-            '#3b82f6', '#10b981', '#f59e0b', '#ef4444'
-        ];
-
-        // 渲染選色器
-        function renderColorPalette() {
-            const container = document.getElementById('new-college-palette');
-            container.innerHTML = paletteColors.map(c => `
-                <div class="color-swatch ${c === selectedCollegeColor ? 'active' : ''}" style="background-color: ${c}" onclick="window.selectCollegeColor('${c}')">
-                    <i class="ti ti-check"></i>
-                </div>
-            `).join('');
-        }
-
-        window.selectCollegeColor = (color) => {
-            selectedCollegeColor = color;
-            renderColorPalette();
-        };
-
-        // 初始化選色器
-        renderColorPalette();
+        
+        let activeEditColIndex = -1;
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -652,15 +649,15 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                     if (docSnap.exists()) {
                         const rawList = docSnap.data().list || [];
                         collegeList = rawList.map(c => {
-                            if (typeof c === 'string') return { name: c, shortName: c, color: '#6b788a' };
-                            return { ...c, color: c.color || '#6b788a' };
+                            if (typeof c === 'string') return { name: c, shortName: c, color: '#1a56db' };
+                            return { ...c, color: c.color || '#1a56db' };
                         });
                     } else {
                         collegeList = [
-                            {name: "文學院", shortName: "文院", color: "#d1bfae"}, 
+                            {name: "文學院", shortName: "文院", color: "#eab308"}, 
                             {name: "理學院", shortName: "理院", color: "#3b82f6"},
-                            {name: "工學院", shortName: "工院", color: "#7c8c88"}, 
-                            {name: "管理學院", shortName: "管院", color: "#b88e8d"}
+                            {name: "工學院", shortName: "工院", color: "#14b8a6"}, 
+                            {name: "管理學院", shortName: "管院", color: "#f43f5e"}
                         ];
                         setDoc(collegeDocRef, { list: collegeList }); 
                     }
@@ -759,33 +756,26 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
             document.getElementById('input-college').innerHTML = `<option value="">請選擇學院...</option>` + collegeList.map(c => `<option value="${c.name}">${c.shortName || c.name}</option>`).join('');
 
+            // 上半部標籤清單
             document.getElementById('college-list-container').innerHTML = collegeList.map((c, index) => `
-                <div class="role-item" id="col-item-${index}">
-                    <div class="reorder-btns">
-                        <button type="button" class="btn-icon" onclick="moveCollege(${index}, -1)" ${index === 0 ? 'disabled' : ''}><i class="ti ti-chevron-up"></i></button>
-                        <button type="button" class="btn-icon" onclick="moveCollege(${index}, 1)" ${index === collegeList.length - 1 ? 'disabled' : ''}><i class="ti ti-chevron-down"></i></button>
-                    </div>
-                    
-                    <div class="role-item-name">
-                        <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:${c.color}; border:1px solid rgba(0,0,0,0.1);"></span>
-                        <span style="font-weight:700;">${c.name}</span>
-                        <span class="cell-secondary" style="margin-top:0;">(${c.shortName || '-'})</span>
-                    </div>
-                    
-                    <div class="role-item-input">
-                        <!-- 修改為套用美化的圓形原生選色器 -->
-                        <input type="color" id="col-color-input-${index}" value="${c.color}" class="color-picker-edit" title="修改顏色">
-                        <input type="text" id="col-name-input-${index}" value="${c.name}" class="field-input" style="height:30px; padding:0 8px;">
-                        <input type="text" id="col-short-input-${index}" value="${c.shortName || ''}" class="field-input" style="height:30px; padding:0 8px; width:80px;">
-                    </div>
-                    
-                    <div class="role-actions">
-                        <button type="button" class="btn btn-secondary btn-icon edit" onclick="editCollege(${index})" title="編輯"><i class="ti ti-edit"></i></button>
-                        <button type="button" class="btn btn-success-solid btn-icon save" onclick="saveCollege(${index})" title="儲存"><i class="ti ti-check"></i></button>
-                        <button type="button" class="btn btn-icon" style="color:var(--danger); border-color:var(--danger-border);" onclick="removeCollege(${index})" title="刪除"><i class="ti ti-trash"></i></button>
-                    </div>
+                <div class="col-select-btn ${activeEditColIndex === index ? 'active' : ''}" onclick="window.selectCollegeToEdit(${index})">
+                    <div class="col-select-color" style="background:${c.color};"></div>
+                    ${c.name}
                 </div>
             `).join('');
+
+            // 下半部編輯表單渲染
+            if (activeEditColIndex >= 0 && activeEditColIndex < collegeList.length) {
+                const c = collegeList[activeEditColIndex];
+                document.getElementById('college-edit-container').style.display = 'flex';
+                document.getElementById('college-edit-empty').style.display = 'none';
+                document.getElementById('edit-college-name').value = c.name;
+                document.getElementById('edit-college-short').value = c.shortName || '';
+                document.getElementById('edit-college-color').value = c.color;
+            } else {
+                document.getElementById('college-edit-container').style.display = 'none';
+                document.getElementById('college-edit-empty').style.display = 'flex';
+            }
         }
 
         window.openCollegeModal = () => document.getElementById('college-modal').classList.add('open');
@@ -794,39 +784,49 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         window.addCollege = async () => {
             const nameVal = document.getElementById('new-college-name').value.trim();
             const shortVal = document.getElementById('new-college-short').value.trim();
-            const colorVal = selectedCollegeColor;
-            if (!nameVal) return;
+            const colorVal = document.getElementById('new-college-color').value;
+            if (!nameVal) { alert('請填寫學院全名'); return; }
             if (collegeList.some(c => c.name === nameVal)) { alert("此學院已存在！"); return; }
             await updateDoc(collegeDocRef, { list: [...collegeList, { name: nameVal, shortName: shortVal || nameVal, color: colorVal }] });
             document.getElementById('new-college-name').value = '';
             document.getElementById('new-college-short').value = '';
+            // 新增後自動選取最新一筆
+            activeEditColIndex = collegeList.length; 
         };
         
-        window.editCollege = (index) => {
-            document.getElementById(`col-item-${index}`).classList.add('editing');
-            document.getElementById(`col-name-input-${index}`).focus();
+        window.selectCollegeToEdit = (idx) => {
+            activeEditColIndex = idx;
+            renderCollegeUI();
         };
         
-        window.saveCollege = async (index) => {
-            const nameVal = document.getElementById(`col-name-input-${index}`).value.trim();
-            const shortVal = document.getElementById(`col-short-input-${index}`).value.trim();
-            const colorVal = document.getElementById(`col-color-input-${index}`).value;
-            if (!nameVal) return;
+        window.saveActiveCollege = async () => {
+            if (activeEditColIndex < 0) return;
+            const nameVal = document.getElementById('edit-college-name').value.trim();
+            const shortVal = document.getElementById('edit-college-short').value.trim();
+            const colorVal = document.getElementById('edit-college-color').value;
+            if (!nameVal) { alert('請填寫學院全名'); return; }
             const newList = [...collegeList]; 
-            newList[index] = { name: nameVal, shortName: shortVal || nameVal, color: colorVal };
+            newList[activeEditColIndex] = { name: nameVal, shortName: shortVal || nameVal, color: colorVal };
             await updateDoc(collegeDocRef, { list: newList });
         };
         
-        window.moveCollege = async (index, dir) => {
-            if (index + dir < 0 || index + dir >= collegeList.length) return;
+        window.moveActiveCollege = async (dir) => {
+            if (activeEditColIndex < 0) return;
+            const newIdx = activeEditColIndex + dir;
+            if (newIdx < 0 || newIdx >= collegeList.length) return;
             const newList = [...collegeList];
-            const temp = newList[index]; newList[index] = newList[index + dir]; newList[index + dir] = temp;
+            const temp = newList[activeEditColIndex]; 
+            newList[activeEditColIndex] = newList[newIdx]; 
+            newList[newIdx] = temp;
+            activeEditColIndex = newIdx; // 更新 focus 狀態
             await updateDoc(collegeDocRef, { list: newList });
         };
         
-        window.removeCollege = async (index) => {
-            if (confirm(`確定移除「${collegeList[index].name}」嗎？`)) {
-                await updateDoc(collegeDocRef, { list: collegeList.filter((_, i) => i !== index) });
+        window.removeActiveCollege = async () => {
+            if (activeEditColIndex < 0) return;
+            if (confirm(`確定移除「${collegeList[activeEditColIndex].name}」嗎？`)) {
+                await updateDoc(collegeDocRef, { list: collegeList.filter((_, i) => i !== activeEditColIndex) });
+                activeEditColIndex = -1; // 刪除後取消選取
             }
         };
 
@@ -1008,7 +1008,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                         valB = sortCol === 'name' ? (b.shortName || b.name) : b.college;
                         valA = valA ? valA.toString() : '';
                         valB = valB ? valB.toString() : '';
-                        // 使用 localeCompare('zh-TW') 支援中文筆畫排序
                         const result = valA.localeCompare(valB, 'zh-TW');
                         return sortDir === 'asc' ? result : -result;
                     } else {
@@ -1058,12 +1057,32 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             items.forEach((data, idx) => {
                 let contactsHtml = '';
                 let contactAlign = 'left';
+                
+                // 修正 5: 聯絡人採用權限管理的 Avatar 雙行佈局 + N位提示按鈕
                 if (data.contacts && data.contacts.length > 0) {
-                    contactsHtml = data.contacts.map(c => `
-                        <div style="margin-bottom:4px; line-height:1.4;">
-                            <span class="cell-primary bold">${c.name || '未填寫'}</span>
-                            <span class="cell-secondary" style="margin-left:4px;">${c.email || ''}</span>
-                        </div>`).join('');
+                    const firstContact = data.contacts[0];
+                    const initial = firstContact.name ? firstContact.name.charAt(0) : 'U';
+                    let extraHtml = '';
+                    
+                    if (data.contacts.length > 1) {
+                        const otherContactsText = data.contacts.slice(1).map(c => `${c.name || '未填寫'} (${c.email || ''})`).join('\n');
+                        extraHtml = `
+                            <div class="more-badge" title="其他承辦人：\n${otherContactsText}">
+                                +${data.contacts.length - 1}
+                            </div>
+                        `;
+                    }
+                    
+                    contactsHtml = `
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:32px; height:32px; border-radius:50%; background:var(--brand-light); border:1px solid var(--brand-border); color:var(--brand); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0;">${initial}</div>
+                            <div style="min-width:0;">
+                                <div class="cell-primary bold" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${firstContact.name || '未填寫'}</div>
+                                <div class="cell-secondary" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px;">${firstContact.email || ''}</div>
+                            </div>
+                            ${extraHtml}
+                        </div>
+                    `;
                 } else {
                     contactsHtml = `<span class="badge badge-gray">- 尚未設定 -</span>`;
                     contactAlign = 'center';
@@ -1076,7 +1095,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
                 html += `
                 <tr class="${isChecked ? 'selected' : ''} ${!data.is_active ? 'disabled' : ''}">
-                    <td style="text-align: center;">
+                    <td class="col-checkbox" style="text-align: center;">
                         <div style="display:flex; justify-content:center; align-items:center;">
                             <input type="checkbox" value="${data.id}" onchange="toggleSelect('${data.id}')" ${isChecked} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                         </div>
