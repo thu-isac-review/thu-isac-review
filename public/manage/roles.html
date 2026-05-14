@@ -97,12 +97,16 @@ html, body {
   cursor: pointer; border: none; white-space: nowrap;
   transition: all var(--transition); text-decoration: none;
 }
-.btn-primary { background: var(--brand); color: white; }
+.btn-primary { background: var(--brand); color: white; border: 1px solid var(--brand); }
 .btn-primary:hover { background: var(--brand-hover); }
 .btn-secondary { background: var(--surface); color: var(--text-secondary); border: 1px solid var(--border); }
 .btn-secondary:hover { background: var(--bg); border-color: var(--border-strong); color: var(--text-primary); }
 .btn-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
 .btn-danger:hover { background: #fee2e2; }
+.btn-danger-solid { background: var(--danger); color: white; border: 1px solid var(--danger); }
+.btn-danger-solid:hover { background: #b91c1c; }
+.btn-success-solid { background: var(--success); color: white; border: 1px solid var(--success); }
+.btn-success-solid:hover { background: #047857; }
 .btn-icon { width: 34px; padding: 0; justify-content: center; }
 .btn-icon.sm { width: 28px; height: 28px; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -200,7 +204,7 @@ tr.disabled td { opacity: 0.6; filter: grayscale(40%); background: var(--bg); }
 .toggle-label.inactive { color: var(--text-muted); }
 
 /* Row actions: Always visible */
-.row-actions { display: flex; align-items: center; justify-content: center; gap: 4px; opacity: 1; }
+.row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; opacity: 1; }
 
 /* ─── PAGINATION ─── */
 .pagination-bar {
@@ -260,7 +264,6 @@ tr.disabled td { opacity: 0.6; filter: grayscale(40%); background: var(--bg); }
 /* ─── FORM ELEMENTS INSIDE DIALOG ─── */
 .form-section-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
 .form-section-title i { color: var(--text-muted); font-size: 16px; }
-.form-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px; }
 .field { display: flex; flex-direction: column; gap: 4px; }
 .field-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
 .field-label .req { color: var(--danger); margin-left: 2px; }
@@ -271,7 +274,6 @@ tr.disabled td { opacity: 0.6; filter: grayscale(40%); background: var(--bg); }
 }
 .field-input:focus, .field-select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); background: var(--surface); }
 select.field-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; }
-.divider { height: 1px; background: var(--border); margin: 4px 0 24px; }
 
 /* ─── ROLE LIST ─── */
 .role-list-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
@@ -286,14 +288,9 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 .role-item-input { flex: 1; height: 28px; border: 1px solid var(--brand); border-radius: var(--radius-sm); padding: 0 8px; font-size: 12px; outline: none; display: none; }
 .role-item.editing .role-item-name { display: none; }
 .role-item.editing .role-item-input { display: block; }
-.role-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
-.role-actions .btn-icon { width: 28px; height: 28px; font-size: 16px; color: var(--text-muted); border: none; background: transparent; }
-.role-actions .btn-icon.edit:hover { color: var(--brand); background: var(--brand-light); }
-.role-actions .btn-icon.save { display: none; color: var(--success); }
-.role-actions .btn-icon.save:hover { background: var(--success-bg); }
-.role-actions .btn-icon.delete:hover { color: var(--danger); background: var(--danger-bg); }
-.role-item.editing .btn-icon.edit { display: none; }
-.role-item.editing .btn-icon.save { display: flex; }
+.role-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.role-item.editing .btn.edit { display: none; }
+.role-item.editing .btn.save { display: inline-flex !important; }
 
 /* Empty state */
 .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
@@ -308,14 +305,15 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
   .toolbar-actions { order: 2; width: 100%; justify-content: space-between; }
   .toolbar-actions .btn { flex: 1; }
   .v-divider { display: none; }
-
   .filter-row { padding: 10px 16px; }
-  
   .pagination-bar { flex-direction: column; align-items: flex-start; padding: 12px 16px; gap: 12px; }
   .pagination-bar-right { width: 100%; justify-content: space-between; }
-
   .dialog-overlay { padding: 12px; }
-  .form-grid-2 { grid-template-columns: 1fr; gap: 12px; margin-bottom: 16px; }
+  
+  /* Reset flex direction for mobile modal */
+  #user-form { flex-direction: column; gap: 16px !important; }
+  #user-form > div { width: 100% !important; margin: 0 !important; }
+  #user-form > .v-divider-modal { display: none; }
 }
 </style>
 </head>
@@ -331,8 +329,9 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         <div class="flex-spacer"></div>
         
         <div class="toolbar-actions">
-            <button onclick="exportToCSV()" class="btn btn-secondary">
-                <i class="ti ti-file-export" style="color:var(--success)"></i> <span class="btn-text">匯出</span>
+            <!-- 修改匯出按鈕為實心綠色 -->
+            <button onclick="exportToCSV()" class="btn btn-success-solid">
+                <i class="ti ti-file-export"></i> <span class="btn-text">匯出</span>
             </button>
             <div class="v-divider"></div>
             <button onclick="openRoleModal()" class="btn btn-secondary">
@@ -401,7 +400,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                     <tr>
                         <th data-sort="name" style="width: 25%">使用者資訊 <i class="ti ti-arrows-sort sort-icon"></i></th>
                         <th style="width: 20%; text-align: left;">所屬單位</th>
-                        <th style="width: 15%; text-align: left;">職稱</th>
+                        <!-- 職稱欄位標題置中 -->
+                        <th style="width: 15%; text-align: center;">職稱</th>
                         <th style="width: 15%; text-align: center;">權限角色</th>
                         <th style="width: 12%; text-align: center;">帳號狀態</th>
                         <th style="width: 13%; text-align: center;">操作</th>
@@ -437,14 +437,18 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
     <!-- ─── UNIFIED DIALOG MODAL: 授權新用戶 ─── -->
     <div id="user-modal" class="dialog-overlay">
-        <div class="dialog-box" style="max-width: 640px;">
+        <!-- 展開寬度以容納左右切割 -->
+        <div class="dialog-box" style="max-width: 800px;">
             <div class="dialog-header">
                 <h3 id="modal-title"><i class="ti ti-user-plus"></i> 授權新用戶</h3>
                 <button type="button" class="dialog-close" onclick="closeUserModal()"><i class="ti ti-x"></i></button>
             </div>
-            <form id="user-form" class="dialog-body custom-scroll">
-                <div class="form-section-title"><i class="ti ti-briefcase"></i> 單位與職務權限</div>
-                <div class="form-grid-2">
+            <!-- 修改視窗內容為左右切割佈局 -->
+            <form id="user-form" class="dialog-body custom-scroll" style="display: flex; gap: 24px;">
+                
+                <!-- 左側：單位與職務權限 -->
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
+                    <div class="form-section-title" style="margin-bottom: 0;"><i class="ti ti-briefcase"></i> 單位與職務權限</div>
                     <div class="field">
                         <label class="field-label">一級單位 <span class="req">*</span></label>
                         <input type="text" id="input-level1" required placeholder="例如：教務處" class="field-input">
@@ -463,10 +467,12 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                     </div>
                 </div>
                 
-                <div class="divider"></div>
+                <!-- 中間分隔線 -->
+                <div class="v-divider-modal" style="width: 1px; background: var(--border); margin: 0;"></div>
                 
-                <div class="form-section-title"><i class="ti ti-id-badge"></i> 使用者基本資訊</div>
-                <div class="form-grid-2" style="margin-bottom:0;">
+                <!-- 右側：使用者基本資訊 -->
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
+                    <div class="form-section-title" style="margin-bottom: 0;"><i class="ti ti-id-badge"></i> 使用者基本資訊</div>
                     <div class="field">
                         <label class="field-label">姓名 <span class="req">*</span></label>
                         <input type="text" id="input-name" required placeholder="請輸入姓名" class="field-input">
@@ -667,14 +673,15 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             document.querySelectorAll(`.filter-chk-role`).forEach(c => c.checked = filterRoleSet.has(c.value));
 
             const roleListContainer = document.getElementById('role-list-container');
+            // 將角色管理的編輯與刪除按鈕改為與主列表一致的組件樣式
             roleListContainer.innerHTML = roleList.map((r, index) => `
                 <div class="role-item" id="role-item-${index}">
                     <div class="role-item-name" title="${r}">${r}</div>
                     <input type="text" class="role-item-input" id="role-input-${index}" value="${r}">
                     <div class="role-actions">
-                        <button type="button" class="btn-icon edit" onclick="editRole(${index})" title="編輯"><i class="ti ti-edit"></i></button>
-                        <button type="button" class="btn-icon save" onclick="saveRole(${index})" title="儲存"><i class="ti ti-check"></i></button>
-                        <button type="button" class="btn-icon delete" onclick="removeRole(${index})" title="刪除"><i class="ti ti-trash"></i></button>
+                        <button type="button" class="btn btn-secondary btn-icon sm edit" onclick="editRole(${index})" title="編輯"><i class="ti ti-edit"></i></button>
+                        <button type="button" class="btn btn-success-solid btn-icon sm save" onclick="saveRole(${index})" title="儲存" style="display:none;"><i class="ti ti-check"></i></button>
+                        <button type="button" class="btn btn-danger-solid btn-icon sm delete" onclick="removeRole(${index})" title="刪除"><i class="ti ti-trash"></i></button>
                     </div>
                 </div>
             `).join('');
@@ -814,16 +821,18 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                             </div>
                         </div>
                     </td>
+                    <!-- 單位顯示方式調整 -->
                     <td style="text-align: left;">
-                        <div class="cell-primary">${data.level1Unit || '-'}</div>
-                        ${data.level2Unit ? `<div class="cell-primary" style="margin-top:2px;">${data.level2Unit}</div>` : ''}
+                        <div class="cell-primary">${data.level1Unit || '-'} ${data.level2Unit ? ' / ' + data.level2Unit : ''}</div>
                     </td>
-                    <td style="text-align: left; vertical-align: middle;">
+                    <!-- 職稱內容置中 -->
+                    <td style="text-align: center; vertical-align: middle;">
                         <div class="cell-primary">${data.jobTitle || '-'}</div>
                     </td>
+                    <!-- 權限角色移除 icon -->
                     <td style="text-align: center;">
                         <span class="badge ${isSuper ? 'badge-indigo' : 'badge-blue'}">
-                            <i class="ti ${isSuper ? 'ti-crown' : 'ti-user-check'}"></i> ${data.role || '未設定'}
+                            ${data.role || '未設定'}
                         </span>
                     </td>
                     <td style="text-align: center;">
@@ -838,7 +847,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                     <td style="text-align: center;">
                         <div class="row-actions">
                             <button onclick="window.editUser('${data.id}')" class="btn btn-secondary btn-icon sm" title="編輯"><i class="ti ti-edit"></i></button>
-                            <button onclick="window.deleteUser('${data.id}', '${data.name}')" class="btn btn-icon sm" style="color:var(--danger); border-color:var(--danger-border); ${isDefault ? 'visibility:hidden' : ''}" title="刪除"><i class="ti ti-trash"></i></button>
+                            <!-- 刪除按鈕改為紅底白字實心，無漸層或光暈 -->
+                            <button onclick="window.deleteUser('${data.id}', '${data.name}')" class="btn btn-icon sm btn-danger-solid" style="${isDefault ? 'visibility:hidden' : ''}" title="刪除"><i class="ti ti-trash"></i></button>
                         </div>
                     </td>
                 </tr>`;
