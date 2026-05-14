@@ -312,9 +312,19 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
   .dialog-overlay { padding: 12px; }
   
   /* Reset flex direction for mobile modal */
-  #user-form { flex-direction: column; gap: 16px !important; }
+  #user-form { flex-direction: column !important; gap: 16px !important; }
   #user-form > div { width: 100% !important; margin: 0 !important; }
-  #user-form > .v-divider-modal { display: block !important; width: 100% !important; height: 1px !important; margin: 8px 0 !important; }
+  
+  /* 強制將原本垂直的線轉為水平線 */
+  .v-divider-modal { 
+    display: block !important; 
+    width: 100% !important; 
+    height: 1px !important; 
+    min-height: 1px !important; 
+    background-color: var(--border) !important; 
+    margin: 8px 0 !important; 
+    flex-shrink: 0 !important;
+  }
 }
 </style>
 </head>
