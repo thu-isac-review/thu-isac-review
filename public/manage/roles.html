@@ -327,7 +327,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
     <div class="toolbar">
         <div class="search-wrap">
             <i class="ti ti-search"></i>
-            <input type="text" id="search-input" placeholder="搜尋姓名、信箱、單位..." class="search-input">
+            <input type="text" id="search-input" placeholder="搜尋姓名、登入帳號、所屬單位..." class="search-input">
         </div>
         
         <div class="flex-spacer"></div>
@@ -745,7 +745,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
 
             let filtered = allUsers.filter(u => {
-                const matchSearch = (u.name || '').toLowerCase().includes(searchTerm) || (u.email || '').toLowerCase().includes(searchTerm) || (u.level1Unit || '').toLowerCase().includes(searchTerm);
+                const matchSearch = (u.name || '').toLowerCase().includes(searchTerm) || (u.email || '').toLowerCase().includes(searchTerm) || (u.level1Unit || '').toLowerCase().includes(searchTerm) || (u.level2Unit || '').toLowerCase().includes(searchTerm);
                 const matchRole = filterRoleSet.size === 0 || filterRoleSet.has(u.role);
                 const matchUnit = filterUnitSet.size === 0 || filterUnitSet.has(u.level1Unit);
                 const statusStr = u.is_active ? 'active' : 'inactive';
