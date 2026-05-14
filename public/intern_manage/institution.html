@@ -271,7 +271,7 @@ tr.selected td { background: #f0f4ff; }
   width: 100%; height: 36px; border: 1px solid var(--border); border-radius: var(--radius);
   background: var(--bg); padding: 0 12px; font-size: 13px; font-family: inherit; color: var(--text-primary); outline: none; transition: all var(--transition);
 }
-.field-input:focus, .field-select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); background: var(--surface); }
+.field-input:focus, .field-select:focus, textarea.field-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); background: var(--surface); }
 .field-input:disabled, .field-select:disabled { opacity: 0.5; cursor: not-allowed; }
 select.field-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; }
 
@@ -303,7 +303,21 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
   .toolbar-actions { order: 2; width: 100%; justify-content: space-between; display: flex; gap: 8px; }
   .toolbar-actions .btn { flex: 1; padding: 0 4px; font-size: 11px; margin: 0; }
   .v-divider { display: none; }
-  .form-grid { grid-template-columns: 1fr; }
+  
+  /* Reset flex direction for mobile modal */
+  #data-form { flex-direction: column !important; gap: 16px !important; }
+  #data-form > div { width: 100% !important; margin: 0 !important; }
+  
+  /* 強制將原本垂直的線轉為水平線 */
+  .v-divider-modal { 
+    display: block !important; 
+    width: 100% !important; 
+    height: 1px !important; 
+    min-height: 1px !important; 
+    background-color: var(--border) !important; 
+    margin: 8px 0 !important; 
+    flex-shrink: 0 !important;
+  }
 }
 </style>
 </head>
@@ -425,13 +439,13 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                                 <input type="checkbox" id="selectAll" onchange="toggleSelectPage(event)" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                             </div>
                         </th>
-                        <th data-sort="name" style="width: 18%;">實習機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="tax_id" style="width: 10%;">統一編號 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="name" style="width: 20%;">實習機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="tax_id" style="width: 12%;">統一編號 <i class="ti ti-arrows-sort sort-icon"></i></th>
                         <th data-sort="industry" style="width: 12%;">行業別 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="venue_type" style="width: 10%;">實習場所 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="venue_type" style="width: 12%;">實習場所 <i class="ti ti-arrows-sort sort-icon"></i></th>
                         <th data-sort="country" style="width: 8%;">國別 <i class="ti ti-arrows-sort sort-icon"></i></th>
                         <th data-sort="city" style="width: 8%;">縣市別 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="address" style="width: 22%;">實習場所地址 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="address" style="width: 16%;">實習場所地址 <i class="ti ti-arrows-sort sort-icon"></i></th>
                         <th style="width: 8%;">操作</th>
                     </tr>
                 </thead>
@@ -465,15 +479,17 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
     <!-- ─── UNIFIED DIALOG MODAL: 新增/編輯機構 ─── -->
     <div id="data-modal" class="dialog-overlay">
-        <div class="dialog-box" style="max-width: 600px;">
+        <div class="dialog-box" style="max-width: 800px;">
             <div class="dialog-header">
                 <h3 id="modal-title"><i class="ti ti-building-skyscraper"></i> 新增實習機構</h3>
                 <button type="button" class="dialog-close" onclick="closeModal()"><i class="ti ti-x"></i></button>
             </div>
-            <form id="data-form" class="dialog-body custom-scroll">
-                <div class="form-section-title"><i class="ti ti-info-circle"></i> 機構基本資料</div>
-                
-                <div class="form-grid">
+            
+            <form id="data-form" class="dialog-body custom-scroll" style="display: flex; gap: 24px;">
+                <!-- 左側：機構基本資料 -->
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
+                    <div class="form-section-title" style="margin-bottom: 0;"><i class="ti ti-building-skyscraper"></i> 機構基本資料</div>
+                    
                     <div class="field">
                         <label class="field-label">實習場所國別 <span class="req">*</span></label>
                         <select id="input-country" required onchange="handleCountryChange()" class="field-select">
@@ -484,9 +500,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                         <label class="field-label">實習機構名稱 <span class="req">*</span></label>
                         <input type="text" id="input-name" required placeholder="例如：台灣積體電路製造股份有限公司" class="field-input">
                     </div>
-                </div>
-
-                <div class="form-grid">
                     <div class="field">
                         <label class="field-label">統一編號 <span id="req-tax" class="req">*</span></label>
                         <input type="text" id="input-tax-id" required placeholder="如: 12345678" class="field-input" style="text-transform:uppercase;">
@@ -498,9 +511,19 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                             <!-- JS 動態產生 -->
                         </select>
                     </div>
+                    <div class="field">
+                        <label class="field-label">完整實習地址 <span class="req">*</span></label>
+                        <input type="text" id="input-address" required placeholder="如: 臺灣大道四段1727號" class="field-input">
+                    </div>
                 </div>
 
-                <div class="form-grid">
+                <!-- 中間分隔線 -->
+                <div class="v-divider-modal" style="width: 1px; background: var(--border); margin: 0;"></div>
+
+                <!-- 右側：分類與備註 -->
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
+                    <div class="form-section-title" style="margin-bottom: 0;"><i class="ti ti-tags"></i> 分類與備註</div>
+                    
                     <div class="field">
                         <label class="field-label">行業別</label>
                         <select id="input-industry" class="field-select">
@@ -515,13 +538,13 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                             <!-- JS 動態產生 -->
                         </select>
                     </div>
-                </div>
-
-                <div class="field">
-                    <label class="field-label">完整實習地址 <span class="req">*</span></label>
-                    <input type="text" id="input-address" required placeholder="如: 臺灣大道四段1727號" class="field-input">
+                    <div class="field" style="flex: 1;">
+                        <label class="field-label">機構備註</label>
+                        <textarea id="input-remarks" class="field-input" placeholder="可輸入與該機構相關之備註說明..." style="height: 100%; min-height: 120px; resize: none; padding: 10px 12px; line-height: 1.5;"></textarea>
+                    </div>
                 </div>
             </form>
+            
             <div class="dialog-footer">
                 <button type="button" class="btn btn-secondary" onclick="closeModal()">取消</button>
                 <button type="button" id="btn-submit" class="btn btn-primary" onclick="submitForm()">
@@ -1005,7 +1028,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         // ─── UTILS: EXPORT & IMPORT ───
         window.exportToCSV = () => {
             if (filteredInstitutions.length === 0) { alert("沒有資料可供匯出！"); return; }
-            let csv = '\uFEFF實習機構名稱,統一編號,行業別,實習場所,實習場所國別,縣市別,實習場所地址\n';
+            let csv = '\uFEFF實習機構名稱,統一編號,行業別,實習場所,實習場所國別,縣市別,實習場所地址,備註\n';
             
             filteredInstitutions.forEach(d => {
                 const isDomestic = d.country === '中華民國';
@@ -1013,8 +1036,9 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 const exportCity = isDomestic ? (d.city || '') : '-';
                 const exportIndustry = d.industry || '';
                 const exportVenue = d.venue_type || '';
+                const exportRemarks = d.remarks || '';
                 
-                csv += [d.name, exportTaxId, exportIndustry, exportVenue, d.country, exportCity, d.address].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+                csv += [d.name, exportTaxId, exportIndustry, exportVenue, d.country, exportCity, d.address, exportRemarks].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
             });
             const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
             link.download = `實習機構清單_${new Date().toISOString().split('T')[0]}.csv`; link.click();
@@ -1050,6 +1074,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                                 country: cols[4] || '中華民國',
                                 city: cols[5] || '',
                                 address: cols[6] || '',
+                                remarks: cols[7] || '',
                                 created_at: serverTimestamp()
                             };
                             
@@ -1087,7 +1112,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 city: isDomestic ? document.getElementById('input-city').value : '',
                 industry: document.getElementById('input-industry').value,
                 venue_type: document.getElementById('input-venue-type').value,
-                address: document.getElementById('input-address').value.trim()
+                address: document.getElementById('input-address').value.trim(),
+                remarks: document.getElementById('input-remarks').value.trim()
             };
 
             if(!payload.country || !payload.name || !payload.address) { 
@@ -1140,6 +1166,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             document.getElementById('input-industry').value = docData.industry || '';
             document.getElementById('input-venue-type').value = docData.venue_type || '';
             document.getElementById('input-address').value = docData.address || '';
+            document.getElementById('input-remarks').value = docData.remarks || '';
             
             window.handleCountryChange(); 
             
