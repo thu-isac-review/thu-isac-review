@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>用戶權限管理內容</title>
+<title>用戶權限管理</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
@@ -285,7 +285,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 }
 .role-item:hover { border-color: var(--brand-border); }
 .role-item-name { font-size: 13px; font-weight: 500; color: var(--text-primary); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 4px; }
-.role-item-input { flex: 1; height: 34px; border: 1px solid var(--brand); border-radius: var(--radius-sm); background: var(--surface); padding: 0 10px; font-size: 13px; outline: none; display: none; box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
+.role-item-input { flex: 1; height: 32px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); padding: 0 10px; font-size: 13px; outline: none; display: none; margin-right: 12px; transition: border-color var(--transition); }
+.role-item-input:focus { border-color: var(--text-muted); }
 .role-item.editing .role-item-name { display: none; }
 .role-item.editing .role-item-input { display: block; }
 .role-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
@@ -334,7 +335,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             </button>
             <div class="v-divider"></div>
             <button onclick="openRoleModal()" class="btn btn-secondary">
-                <i class="ti ti-shield-lock"></i> <span class="btn-text">角色設定</span>
+                <i class="ti ti-user-exclamation"></i> <span class="btn-text">角色設定</span>
             </button>
             <button onclick="openUserModal()" class="btn btn-primary">
                 <i class="ti ti-user-plus"></i> <span class="btn-text">新增授權用戶</span>
@@ -493,7 +494,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
     <div id="role-modal" class="dialog-overlay">
         <div class="dialog-box" style="max-width: 480px;">
             <div class="dialog-header">
-                <h3><i class="ti ti-shield-lock"></i> 角色設定管理</h3>
+                <h3><i class="ti ti-user-exclamation"></i> 角色設定管理</h3>
                 <button type="button" class="dialog-close" onclick="closeRoleModal()"><i class="ti ti-x"></i></button>
             </div>
             <div class="dialog-body custom-scroll">
