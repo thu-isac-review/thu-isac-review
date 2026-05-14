@@ -284,8 +284,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
   padding: 8px 12px; transition: border-color var(--transition);
 }
 .role-item:hover { border-color: var(--brand-border); }
-.role-item-name { font-size: 13px; font-weight: 600; color: var(--text-secondary); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.role-item-input { flex: 1; height: 28px; border: 1px solid var(--brand); border-radius: var(--radius-sm); padding: 0 8px; font-size: 12px; outline: none; display: none; }
+.role-item-name { font-size: 13px; font-weight: 500; color: var(--text-primary); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 4px; }
+.role-item-input { flex: 1; height: 34px; border: 1px solid var(--brand); border-radius: var(--radius-sm); background: var(--surface); padding: 0 10px; font-size: 13px; outline: none; display: none; box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
 .role-item.editing .role-item-name { display: none; }
 .role-item.editing .role-item-input { display: block; }
 .role-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
@@ -334,7 +334,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             </button>
             <div class="v-divider"></div>
             <button onclick="openRoleModal()" class="btn btn-secondary">
-                <i class="ti ti-tags"></i> <span class="btn-text">角色設定</span>
+                <i class="ti ti-shield-lock"></i> <span class="btn-text">角色設定</span>
             </button>
             <button onclick="openUserModal()" class="btn btn-primary">
                 <i class="ti ti-user-plus"></i> <span class="btn-text">新增授權用戶</span>
@@ -381,7 +381,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                     </label>
                     <label class="filter-option">
                         <input type="checkbox" class="filter-chk-status" value="inactive" onchange="toggleFilterCheck('status', 'inactive')">
-                        <span>已停權</span>
+                        <span>已停用</span>
                     </label>
                 </div>
                 <div class="filter-dropdown-footer">
@@ -493,14 +493,18 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
     <div id="role-modal" class="dialog-overlay">
         <div class="dialog-box" style="max-width: 480px;">
             <div class="dialog-header">
-                <h3><i class="ti ti-tags"></i> 角色設定管理</h3>
+                <h3><i class="ti ti-shield-lock"></i> 角色設定管理</h3>
                 <button type="button" class="dialog-close" onclick="closeRoleModal()"><i class="ti ti-x"></i></button>
             </div>
             <div class="dialog-body custom-scroll">
-                <div style="display:flex; gap:10px; margin-bottom:24px;">
-                    <input type="text" id="new-role-input" placeholder="輸入新角色名稱..." class="field-input">
-                    <button onclick="addRole()" class="btn btn-primary">新增</button>
+                <div class="field" style="margin-bottom: 24px;">
+                    <label class="field-label">新增權限角色</label>
+                    <div style="display:flex; gap:12px;">
+                        <input type="text" id="new-role-input" placeholder="輸入新角色名稱..." class="field-input">
+                        <button onclick="addRole()" class="btn btn-primary" style="height: 36px; padding: 0 20px;"><i class="ti ti-plus"></i> 新增</button>
+                    </div>
                 </div>
+                <div class="divider" style="margin: 0 0 16px 0;"></div>
                 <div>
                     <div class="role-list-label">現有權限清單</div>
                     <div id="role-list-container" class="role-list"></div>
@@ -675,9 +679,9 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                     <div class="role-item-name" title="${r}">${r}</div>
                     <input type="text" class="role-item-input" id="role-input-${index}" value="${r}">
                     <div class="role-actions">
-                        <button type="button" class="btn btn-secondary btn-icon sm edit" onclick="editRole(${index})" title="編輯"><i class="ti ti-edit"></i></button>
-                        <button type="button" class="btn btn-success-solid btn-icon sm save" onclick="saveRole(${index})" title="儲存" style="display:none;"><i class="ti ti-check"></i></button>
-                        <button type="button" class="btn btn-icon sm" style="color:var(--danger); border-color:var(--danger-border);" onclick="removeRole(${index})" title="刪除"><i class="ti ti-trash"></i></button>
+                        <button type="button" class="btn btn-secondary btn-icon edit" onclick="editRole(${index})" title="編輯"><i class="ti ti-edit"></i></button>
+                        <button type="button" class="btn btn-success-solid btn-icon save" onclick="saveRole(${index})" title="儲存" style="display:none;"><i class="ti ti-check"></i></button>
+                        <button type="button" class="btn btn-icon" style="color:var(--danger); border-color:var(--danger-border);" onclick="removeRole(${index})" title="刪除"><i class="ti ti-trash"></i></button>
                     </div>
                 </div>
             `).join('');
@@ -833,7 +837,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                             <label class="toggle ${isDefault ? 'disabled' : ''}">
                                 <input type="checkbox" ${data.is_active ? 'checked' : ''} ${isDefault ? 'disabled' : `onchange="window.toggleStatus('${data.id}', ${data.is_active})"`}>
                                 <span class="toggle-slider"></span>
-                                <span class="toggle-label ${data.is_active ? 'active' : 'inactive'}">${data.is_active ? '啟用' : '停權'}</span>
+                                <span class="toggle-label ${data.is_active ? 'active' : 'inactive'}">${data.is_active ? '啟用' : '停用'}</span>
                             </label>
                         </div>
                     </td>
@@ -850,7 +854,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         window.exportToCSV = () => {
             if (allUsers.length === 0) return;
             let csv = '\uFEFF一級單位,二級單位,職稱,姓名,電子郵件,權限角色,帳號狀態,加入時間\n';
-            allUsers.forEach(u => csv += [u.level1Unit, u.level2Unit, u.jobTitle, u.name, u.email, u.role, u.is_active?'啟用':'停權', u.createdDate].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n');
+            allUsers.forEach(u => csv += [u.level1Unit, u.level2Unit, u.jobTitle, u.name, u.email, u.role, u.is_active?'啟用':'停用', u.createdDate].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n');
             const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
             link.download = `系統用戶清單_${new Date().toISOString().split('T')[0]}.csv`; link.click();
         };
