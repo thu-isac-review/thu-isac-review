@@ -186,11 +186,10 @@ html, body {
 /* ─── TABLE ─── */
 .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; }
 .table-scroll { flex: 1; overflow: auto; }
-table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 900px; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 1000px; }
 
-/* 修正下拉時表頭分隔線消失問題：使用內陰影替代 border */
 th {
-  padding: 12px 16px; text-align: center; /* 標題統一置中 */
+  padding: 12px 16px; text-align: center; 
   font-size: 11px; font-weight: 700; color: var(--text-muted);
   text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
   position: sticky; top: 0; z-index: 10;
@@ -198,7 +197,6 @@ th {
   box-shadow: inset 0 -2px 0 var(--border); 
 }
 
-/* 排序功能 CSS */
 th[data-sort] { cursor: pointer; user-select: none; transition: color var(--transition); }
 th[data-sort]:hover { color: var(--text-secondary); }
 th .sort-icon { margin-left: 4px; font-size: 14px; opacity: 0.4; vertical-align: middle; }
@@ -369,6 +367,38 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             </div>
         </div>
 
+        <!-- 行業別篩選 -->
+        <div class="filter-pill-wrap" id="pill-wrap-industry">
+            <button class="filter-pill" id="pill-industry" onclick="toggleDropdown('industry')">
+                全部行業別 <i class="ti ti-chevron-down"></i>
+            </button>
+            <div class="filter-dropdown" id="drop-industry">
+                <div class="filter-dropdown-search">
+                    <input type="text" id="search-industry-input" placeholder="搜尋行業別..." onkeyup="filterDropdownItems(this, 'industry-options-container')">
+                </div>
+                <div class="filter-dropdown-list" id="industry-options-container"></div>
+                <div class="filter-dropdown-footer">
+                    <button onclick="clearFilter('industry')">清除此篩選</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 實習場所篩選 -->
+        <div class="filter-pill-wrap" id="pill-wrap-venue">
+            <button class="filter-pill" id="pill-venue" onclick="toggleDropdown('venue')">
+                全部場所 <i class="ti ti-chevron-down"></i>
+            </button>
+            <div class="filter-dropdown" id="drop-venue">
+                <div class="filter-dropdown-search">
+                    <input type="text" id="search-venue-input" placeholder="搜尋場所..." onkeyup="filterDropdownItems(this, 'venue-options-container')">
+                </div>
+                <div class="filter-dropdown-list" id="venue-options-container"></div>
+                <div class="filter-dropdown-footer">
+                    <button onclick="clearFilter('venue')">清除此篩選</button>
+                </div>
+            </div>
+        </div>
+
         <!-- 批次操作列 (選取後覆蓋顯示) -->
         <div id="batch-bar">
             <div class="batch-info">
@@ -390,22 +420,24 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             <table>
                 <thead>
                     <tr>
-                        <th class="col-checkbox" style="width: 5%;">
+                        <th class="col-checkbox" style="width: 4%;">
                             <div style="display:flex; justify-content:center; align-items:center;">
                                 <input type="checkbox" id="selectAll" onchange="toggleSelectPage(event)" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                             </div>
                         </th>
-                        <th data-sort="name" class="sort-asc" style="width: 25%;">實習機構名稱 <i class="ti ti-sort-ascending sort-icon"></i></th>
-                        <th data-sort="tax_id" style="width: 15%;">統一編號 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="country" style="width: 10%;">國別 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="city" style="width: 10%;">縣市別 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="address" style="width: 25%;">實習場所地址 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th style="width: 10%;">操作</th>
+                        <th data-sort="name" style="width: 18%;">實習機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="tax_id" style="width: 10%;">統一編號 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="industry" style="width: 12%;">行業別 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="venue_type" style="width: 10%;">實習場所 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="country" style="width: 8%;">國別 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="city" style="width: 8%;">縣市別 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="address" style="width: 22%;">實習場所地址 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th style="width: 8%;">操作</th>
                     </tr>
                 </thead>
                 <tbody id="table-body">
                     <tr>
-                        <td colspan="7" class="empty-state">
+                        <td colspan="9" class="empty-state">
                             <i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i>
                             <div class="empty-text">資料載入中...</div>
                         </td>
@@ -462,6 +494,23 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                     <div class="field">
                         <label class="field-label">縣市別 <span id="req-city" class="req">*</span></label>
                         <select id="input-city" required class="field-select">
+                            <option value="">請選擇</option>
+                            <!-- JS 動態產生 -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="field">
+                        <label class="field-label">行業別</label>
+                        <select id="input-industry" class="field-select">
+                            <option value="">請選擇</option>
+                            <!-- JS 動態產生 -->
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">實習場所</label>
+                        <select id="input-venue-type" class="field-select">
                             <option value="">請選擇</option>
                             <!-- JS 動態產生 -->
                         </select>
@@ -535,12 +584,17 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         
         let filterCountrySet = new Set();
         let filterCitySet = new Set();
+        let filterIndustrySet = new Set();
+        let filterVenueSet = new Set();
         
-        let sortCol = 'name'; 
-        let sortDir = 'asc';
+        // 預設不排序
+        let sortCol = ''; 
+        let sortDir = '';
 
         const LIST_COUNTRIES = ["中華民國","大陸地區","日本","美國","越南","泰國","澳大利亞","香港","澳門","馬來西亞","菲律賓","印尼","印度","孟加拉","緬甸","柬埔寨","黎巴嫩","蒙古","巴西","巴拉圭","秘魯"];
         const LIST_CITIES = ["臺北市","新北市","基隆市","桃園市","新竹縣","新竹市","苗栗縣","臺中市","彰化縣","南投縣","雲林縣","嘉義縣","嘉義市","臺南市","高雄市","屏東縣","宜蘭縣","花蓮縣","臺東縣","澎湖縣","金門縣","連江縣"];
+        const LIST_INDUSTRIES = ["農、林、漁、牧業","礦業及土石採取業","製造業","電力及燃氣供應業","用水供應及污染整治業","營建工程業","批發及零售業","運輸及倉儲業","住宿及餐飲業","出版及影音等內容傳播業","電信及資訊服務業","金融及保險業","不動產業","專業、科學及技術服務業","支援服務業","公共行政及國防；強制性社會安全","教育業","醫療保健及社會工作服務業","藝術、運動及休閒服務業","其他服務業"];
+        const LIST_VENUES = ["企業機構","其他機構","政府機構","就讀學校附屬機構"];
 
         function initSelectOptions() {
             // Form selects
@@ -551,6 +605,14 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             let cityHtml = `<option value="">請選擇</option>`;
             LIST_CITIES.forEach(item => cityHtml += `<option value="${item}">${item}</option>`);
             document.getElementById('input-city').innerHTML = cityHtml;
+
+            let industryHtml = `<option value="">請選擇</option>`;
+            LIST_INDUSTRIES.forEach(item => industryHtml += `<option value="${item}">${item}</option>`);
+            document.getElementById('input-industry').innerHTML = industryHtml;
+
+            let venueHtml = `<option value="">請選擇</option>`;
+            LIST_VENUES.forEach(item => venueHtml += `<option value="${item}">${item}</option>`);
+            document.getElementById('input-venue-type').innerHTML = venueHtml;
 
             // Filter options for dropdown
             let filterCountryHtml = '';
@@ -572,6 +634,26 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 </label>`;
             });
             document.getElementById('city-options-container').innerHTML = filterCityHtml;
+
+            let filterIndustryHtml = '';
+            LIST_INDUSTRIES.forEach(item => {
+                filterIndustryHtml += `
+                <label class="filter-option">
+                    <input type="checkbox" class="filter-chk-industry" value="${item}" onchange="toggleFilterCheck('industry', '${item}')"> 
+                    <span>${item}</span>
+                </label>`;
+            });
+            document.getElementById('industry-options-container').innerHTML = filterIndustryHtml;
+
+            let filterVenueHtml = '';
+            LIST_VENUES.forEach(item => {
+                filterVenueHtml += `
+                <label class="filter-option">
+                    <input type="checkbox" class="filter-chk-venue" value="${item}" onchange="toggleFilterCheck('venue', '${item}')"> 
+                    <span>${item}</span>
+                </label>`;
+            });
+            document.getElementById('venue-options-container').innerHTML = filterVenueHtml;
         }
 
         onAuthStateChanged(auth, async (user) => {
@@ -583,7 +665,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                     updateBatchActionBar();
                     window.renderTable();
                 }, (error) => {
-                    document.getElementById('table-body').innerHTML = `<tr><td colspan="7" class="empty-state"><i class="ti ti-lock empty-icon" style="color:var(--danger); opacity:1;"></i><div class="empty-text">資料讀取失敗，權限不足。</div></td></tr>`;
+                    document.getElementById('table-body').innerHTML = `<tr><td colspan="9" class="empty-state"><i class="ti ti-lock empty-icon" style="color:var(--danger); opacity:1;"></i><div class="empty-text">資料讀取失敗，權限不足。</div></td></tr>`;
                 });
 
                 getDocs(recordsCol).then(snap => {
@@ -591,7 +673,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 });
 
             } else {
-                document.getElementById('table-body').innerHTML = `<tr><td colspan="7" class="empty-state"><i class="ti ti-shield-half empty-icon"></i><div class="empty-text">請先登入系統以存取資料。</div></td></tr>`;
+                document.getElementById('table-body').innerHTML = `<tr><td colspan="9" class="empty-state"><i class="ti ti-shield-half empty-icon"></i><div class="empty-text">請先登入系統以存取資料。</div></td></tr>`;
             }
         });
 
@@ -636,7 +718,12 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             const chk = document.querySelector(`.filter-chk-${type}[value="${val}"]`);
             if(chk) chk.checked = !chk.checked;
             
-            const set = type === 'country' ? filterCountrySet : filterCitySet;
+            let set;
+            if(type === 'country') set = filterCountrySet;
+            else if(type === 'city') set = filterCitySet;
+            else if(type === 'industry') set = filterIndustrySet;
+            else set = filterVenueSet;
+            
             if (set.has(val)) set.delete(val); else set.add(val);
             
             document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
@@ -645,8 +732,12 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         };
 
         function updatePillActive(type) {
-            const set = type === 'country' ? filterCountrySet : filterCitySet;
-            const typeName = type === 'country' ? '國別' : '縣市';
+            let set, typeName;
+            if(type === 'country') { set = filterCountrySet; typeName = '國別'; }
+            else if(type === 'city') { set = filterCitySet; typeName = '縣市'; }
+            else if(type === 'industry') { set = filterIndustrySet; typeName = '行業別'; }
+            else { set = filterVenueSet; typeName = '場所'; }
+
             const pill = document.getElementById(`pill-${type}`);
             if (set.size > 0) {
                 pill.classList.add('active');
@@ -658,7 +749,12 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         }
 
         window.clearFilter = (type) => {
-            const set = type === 'country' ? filterCountrySet : filterCitySet;
+            let set;
+            if(type === 'country') set = filterCountrySet;
+            else if(type === 'city') set = filterCitySet;
+            else if(type === 'industry') set = filterIndustrySet;
+            else set = filterVenueSet;
+
             set.clear();
             document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = false);
             const searchInput = document.getElementById(`search-${type}-input`);
@@ -785,34 +881,54 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 const matchSearch = (d.name || '').toLowerCase().includes(searchTerm) || (d.tax_id || '').toLowerCase().includes(searchTerm);
                 const matchCountry = filterCountrySet.size === 0 || filterCountrySet.has(d.country);
                 const matchCity = filterCitySet.size === 0 || filterCitySet.has(d.city);
-                return matchSearch && matchCountry && matchCity;
+                const matchIndustry = filterIndustrySet.size === 0 || filterIndustrySet.has(d.industry);
+                const matchVenue = filterVenueSet.size === 0 || filterVenueSet.has(d.venue_type);
+                return matchSearch && matchCountry && matchCity && matchIndustry && matchVenue;
             });
 
-            // 套用排序
-            filteredInstitutions.sort((a, b) => {
-                let valA = a[sortCol] || '';
-                let valB = b[sortCol] || '';
+            // 套用排序 (若使用者有點擊標題才啟動)
+            if (sortCol) {
+                filteredInstitutions.sort((a, b) => {
+                    let valA = a[sortCol] || '';
+                    let valB = b[sortCol] || '';
 
-                if (sortCol === 'country') {
-                    const aIsDomestic = valA === '中華民國' ? 0 : 1;
-                    const bIsDomestic = valB === '中華民國' ? 0 : 1;
-                    if (aIsDomestic !== bIsDomestic) return sortDir === 'asc' ? aIsDomestic - bIsDomestic : bIsDomestic - aIsDomestic;
-                }
-                
-                if (sortCol === 'city') {
-                    const cityIdxA = LIST_CITIES.indexOf(valA);
-                    const cityIdxB = LIST_CITIES.indexOf(valB);
-                    const orderCityA = cityIdxA !== -1 ? cityIdxA : 999;
-                    const orderCityB = cityIdxB !== -1 ? cityIdxB : 999;
-                    if (orderCityA !== orderCityB) return sortDir === 'asc' ? orderCityA - orderCityB : orderCityB - orderCityA;
-                }
+                    if (sortCol === 'country') {
+                        const aIsDomestic = valA === '中華民國' ? 0 : 1;
+                        const bIsDomestic = valB === '中華民國' ? 0 : 1;
+                        if (aIsDomestic !== bIsDomestic) return sortDir === 'asc' ? aIsDomestic - bIsDomestic : bIsDomestic - aIsDomestic;
+                    }
+                    
+                    if (sortCol === 'city') {
+                        const cityIdxA = LIST_CITIES.indexOf(valA);
+                        const cityIdxB = LIST_CITIES.indexOf(valB);
+                        const orderCityA = cityIdxA !== -1 ? cityIdxA : 999;
+                        const orderCityB = cityIdxB !== -1 ? cityIdxB : 999;
+                        if (orderCityA !== orderCityB) return sortDir === 'asc' ? orderCityA - orderCityB : orderCityB - orderCityA;
+                    }
 
-                valA = valA.toString().toLowerCase(); 
-                valB = valB.toString().toLowerCase();
-                if (valA < valB) return sortDir === 'asc' ? -1 : 1;
-                if (valA > valB) return sortDir === 'asc' ? 1 : -1;
-                return 0;
-            });
+                    if (sortCol === 'industry') {
+                        const indIdxA = LIST_INDUSTRIES.indexOf(valA);
+                        const indIdxB = LIST_INDUSTRIES.indexOf(valB);
+                        const orderIndA = indIdxA !== -1 ? indIdxA : 999;
+                        const orderIndB = indIdxB !== -1 ? indIdxB : 999;
+                        if (orderIndA !== orderIndB) return sortDir === 'asc' ? orderIndA - orderIndB : orderIndB - orderIndA;
+                    }
+
+                    if (sortCol === 'venue_type') {
+                        const venueIdxA = LIST_VENUES.indexOf(valA);
+                        const venueIdxB = LIST_VENUES.indexOf(valB);
+                        const orderVenueA = venueIdxA !== -1 ? venueIdxA : 999;
+                        const orderVenueB = venueIdxB !== -1 ? venueIdxB : 999;
+                        if (orderVenueA !== orderVenueB) return sortDir === 'asc' ? orderVenueA - orderVenueB : orderVenueB - orderVenueA;
+                    }
+
+                    valA = valA.toString().toLowerCase(); 
+                    valB = valB.toString().toLowerCase();
+                    if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+                    if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+                    return 0;
+                });
+            }
 
             const total = filteredInstitutions.length;
             const totalPages = Math.max(1, Math.ceil(total / itemsPerPage));
@@ -845,7 +961,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             document.getElementById('selectAll').checked = isAllVisibleSelected;
 
             if (total === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">找不到符合條件的機構資料。</div></td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">找不到符合條件的機構資料。</div></td></tr>`;
                 return;
             }
 
@@ -854,9 +970,12 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 const isChecked = selectedIds.includes(data.id) ? 'checked' : '';
                 const isDomestic = data.country === '中華民國';
                 
-                // 優化統編字體：取消 monospace 設定，僅保留灰色
                 const dispTaxId = isDomestic && data.tax_id ? data.tax_id : '<span style="color: var(--text-muted)">-</span>';
                 const dispCity = isDomestic && data.city ? data.city : '<span style="color: var(--text-muted)">-</span>';
+                
+                // 若未填寫自動留白
+                const dispIndustry = data.industry ? data.industry : '<span style="color: var(--text-muted)">-</span>';
+                const dispVenueType = data.venue_type ? data.venue_type : '<span style="color: var(--text-muted)">-</span>';
 
                 html += `
                 <tr class="${isChecked ? 'selected' : ''}">
@@ -867,6 +986,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                     </td>
                     <td><div class="cell-primary bold" title="${data.name}">${data.name}</div></td>
                     <td style="text-align: center;"><div class="cell-primary" style="color: var(--text-muted); text-transform: uppercase;">${dispTaxId}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary">${dispIndustry}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary">${dispVenueType}</div></td>
                     <td style="text-align: center;"><div class="cell-primary">${data.country}</div></td>
                     <td style="text-align: center;"><div class="cell-primary">${dispCity}</div></td>
                     <td><div class="cell-primary" title="${data.address}">${data.address}</div></td>
@@ -884,14 +1005,16 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         // ─── UTILS: EXPORT & IMPORT ───
         window.exportToCSV = () => {
             if (filteredInstitutions.length === 0) { alert("沒有資料可供匯出！"); return; }
-            let csv = '\uFEFF實習機構名稱,統一編號,實習場所國別,縣市別,實習場所地址\n';
+            let csv = '\uFEFF實習機構名稱,統一編號,行業別,實習場所,實習場所國別,縣市別,實習場所地址\n';
             
             filteredInstitutions.forEach(d => {
                 const isDomestic = d.country === '中華民國';
                 const exportTaxId = isDomestic ? (d.tax_id || '') : '-';
                 const exportCity = isDomestic ? (d.city || '') : '-';
+                const exportIndustry = d.industry || '';
+                const exportVenue = d.venue_type || '';
                 
-                csv += [d.name, exportTaxId, d.country, exportCity, d.address].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+                csv += [d.name, exportTaxId, exportIndustry, exportVenue, d.country, exportCity, d.address].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
             });
             const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
             link.download = `實習機構清單_${new Date().toISOString().split('T')[0]}.csv`; link.click();
@@ -918,13 +1041,15 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                         }
                         cols.push(currentVal.trim());
                         
-                        if (cols.length >= 5) {
+                        if (cols.length >= 7) {
                             const payload = {
                                 name: cols[0],
                                 tax_id: cols[1] || '',
-                                country: cols[2] || '中華民國',
-                                city: cols[3] || '',
-                                address: cols[4] || '',
+                                industry: cols[2] || '',
+                                venue_type: cols[3] || '',
+                                country: cols[4] || '中華民國',
+                                city: cols[5] || '',
+                                address: cols[6] || '',
                                 created_at: serverTimestamp()
                             };
                             
@@ -960,6 +1085,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 name: document.getElementById('input-name').value.trim(),
                 tax_id: isDomestic ? document.getElementById('input-tax-id').value.trim() : '',
                 city: isDomestic ? document.getElementById('input-city').value : '',
+                industry: document.getElementById('input-industry').value,
+                venue_type: document.getElementById('input-venue-type').value,
                 address: document.getElementById('input-address').value.trim()
             };
 
@@ -1010,6 +1137,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             document.getElementById('input-name').value = docData.name || '';
             document.getElementById('input-tax-id').value = docData.tax_id || '';
             document.getElementById('input-city').value = docData.city || '';
+            document.getElementById('input-industry').value = docData.industry || '';
+            document.getElementById('input-venue-type').value = docData.venue_type || '';
             document.getElementById('input-address').value = docData.address || '';
             
             window.handleCountryChange(); 
@@ -1043,7 +1172,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                     <input type="radio" name="master_inst" value="${inst.id}" onchange="document.getElementById('btn-merge-submit').disabled=false;">
                     <div class="merge-option-content">
                         <div class="merge-option-title">${inst.name}</div>
-                        <div class="merge-option-desc">統編：${inst.tax_id || '無'} | 地址：${inst.address || '無'}</div>
+                        <div class="merge-option-desc">統編：${inst.tax_id || '無'} | 行業：${inst.industry || '無'} | 地址：${inst.address || '無'}</div>
                     </div>
                 </label>`;
             });
