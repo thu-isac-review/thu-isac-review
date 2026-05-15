@@ -438,7 +438,7 @@ input[type=number] { -moz-appearance: textfield; }
                             </th>
                             <th data-sort="student_id" style="width: 8%;">學號 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="student_name" style="width: 8%;">姓名 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="dept" style="width: 10%;">學系簡稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="dept" style="width: 10%;">學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="grade" style="width: 5%;">年級 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="inst_raw" style="width: 14%;">機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th style="width: 5%;">課程數</th>
@@ -1174,8 +1174,8 @@ input[type=number] { -moz-appearance: textfield; }
                     </td>
                     <td style="text-align: center;"><div class="cell-primary">${stuId}</div></td>
                     <td style="text-align: center;"><div class="cell-primary">${stuName}</div></td>
-                    <td style="text-align: center;"><div class="cell-primary">${stuDept}</div></td>
-                    <td style="text-align: center;"><div class="cell-primary">${data.grade || '-'}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${stuDept}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.grade || '-'}</div></td>
                     <td style="text-align: left;"><div class="cell-primary">${data.inst_raw}</div></td>
                     <td style="text-align: center;"><div class="cell-primary">${courseCount}</div></td>
                     <td style="text-align: center;"><div class="cell-primary">${totalCredits}</div></td>
