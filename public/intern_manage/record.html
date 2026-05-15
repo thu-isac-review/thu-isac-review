@@ -704,21 +704,94 @@ input[type=number] { -moz-appearance: textfield; }
 
         // ─── FILTER LOGIC ───
         window.filterDropdownItems = (input, containerId) => {
-            const term = input.value.toLowerCase();
-            const labels = document.getElementById(containerId).querySelectorAll('.filter-option');
-            labels.forEach(lbl => {
-                const text = lbl.textContent.toLowerCase();
-                lbl.style.display = text.includes(term) ? 'flex' : 'none';
+            window.updateFilterVisibility(); // 改為呼叫全局的連動篩選器更新邏輯
+        };
+
+        window.updateFilterVisibility = () => {
+            const searchInputGlobal = document.getElementById('search-input');
+            const globalSearchTerm = searchInputGlobal ? searchInputGlobal.value.toLowerCase().trim() : '';
+
+            filterDefinitions.forEach(def => {
+                const key = def.key;
+                const availableValues = new Set();
+                
+                // 1. 模擬在「排除當前這個條件」的情況下，其他條件過濾後的資料集
+                allRecords.forEach(d => {
+                    const matchSearch = (d.student_raw || '').toLowerCase().includes(globalSearchTerm) || (d.inst_raw || '').toLowerCase().includes(globalSearchTerm);
+                    let ok = matchSearch;
+
+                    if (key !== 'dept' && ok && filterSelections.dept.size > 0) {
+                        const stuId = (d.student_raw || '').split(' - ')[0];
+                        const stu = allStudents.find(s => s.student_id === stuId);
+                        ok = stu && filterSelections.dept.has(stu.department);
+                    }
+                    if (key !== 'grade' && ok && filterSelections.grade.size > 0) ok = filterSelections.grade.has(d.grade);
+                    if (key !== 'inst_raw' && ok && filterSelections.inst_raw.size > 0) ok = filterSelections.inst_raw.has(d.inst_raw);
+                    if (key !== 'resp_dept' && ok && filterSelections.resp_dept.size > 0) ok = filterSelections.resp_dept.has(d.resp_dept);
+                    if (key !== 'period' && ok && filterSelections.period.size > 0) ok = filterSelections.period.has(d.period_type);
+                    if (key !== 'proof' && ok && filterSelections.proof.size > 0) ok = filterSelections.proof.has(d.proof_type);
+                    if (key !== 'insurance' && ok && filterSelections.insurance.size > 0) ok = filterSelections.insurance.has(d.insurance);
+                    if (key !== 'employment' && ok && filterSelections.employment.size > 0) ok = filterSelections.employment.has(d.employment);
+
+                    // 2. 如果符合其他所有條件，則把這個維度的值收錄為「可選擇」
+                    if (ok) {
+                        if (key === 'dept') {
+                            const stuId = (d.student_raw || '').split(' - ')[0];
+                            const stu = allStudents.find(s => s.student_id === stuId);
+                            if (stu && stu.department) availableValues.add(stu.department);
+                        } else if (key === 'grade') {
+                            if (d.grade) availableValues.add(d.grade);
+                        } else if (key === 'inst_raw') {
+                            if (d.inst_raw) availableValues.add(d.inst_raw);
+                        } else if (key === 'resp_dept') {
+                            if (d.resp_dept) availableValues.add(d.resp_dept);
+                        } else if (key === 'period') {
+                            if (d.period_type) availableValues.add(d.period_type);
+                        } else if (key === 'proof') {
+                            if (d.proof_type) availableValues.add(d.proof_type);
+                        } else if (key === 'insurance') {
+                            if (d.insurance) availableValues.add(d.insurance);
+                        } else if (key === 'employment') {
+                            if (d.employment) availableValues.add(d.employment);
+                        }
+                    }
+                });
+
+                // 3. 更新 UI 介面，隱藏無效的篩選選項
+                const container = document.getElementById(`${key}-options-container`);
+                if (container) {
+                    const searchInputLocal = document.getElementById(`search-${key}-input`);
+                    const localSearchTerm = searchInputLocal ? searchInputLocal.value.toLowerCase().trim() : '';
+
+                    container.querySelectorAll('.filter-option').forEach(lbl => {
+                        const checkbox = lbl.querySelector('input[type="checkbox"]');
+                        const val = checkbox.value;
+                        const text = lbl.querySelector('span').textContent.toLowerCase();
+                        
+                        // 判斷邏輯：值必須在「可選集合」內（或已經被勾選了以免無法取消），並且符合搜尋關鍵字
+                        const isAvailable = availableValues.has(val) || checkbox.checked;
+                        const matchesLocalSearch = text.includes(localSearchTerm);
+
+                        if (isAvailable && matchesLocalSearch) {
+                            lbl.style.display = 'flex';
+                        } else {
+                            lbl.style.display = 'none';
+                        }
+                    });
+                }
             });
         };
 
         function renderFilterDropdowns() {
             const container = document.getElementById('filter-container');
+            // 保留 globalDepts 在資料庫最初設定的正確排序 (SortOrder)
+            const uniqueSortedDepts = [...new Set(globalDepts.map(d=>d.name))];
+            
             const filterOptions = {
-                dept: [...new Set(globalDepts.map(d=>d.name))].map(v=>({value:v, label: getDeptShort(v)})),
+                dept: uniqueSortedDepts.map(v=>({value:v, label: getDeptShort(v)})),
                 grade: ['1', '2', '3', '4', '5'].map(v=>({value:v, label: `${v} 年級${v==='5'?'以上':''}`})),
                 inst_raw: [...new Set(allRecords.map(r=>r.inst_raw))].filter(Boolean).sort().map(v=>({value:v, label:v})),
-                resp_dept: [...new Set(globalDepts.map(d=>d.name))].map(v=>({value:v, label: getDeptShort(v)})),
+                resp_dept: uniqueSortedDepts.map(v=>({value:v, label: getDeptShort(v)})),
                 period: ['寒假實習', '暑假實習', '學期期間實習', '單一學期實習', '全學年'].map(v=>({value:v, label:v})),
                 proof: ['合約', '公函', '其他證明文件'].map(v=>({value:v, label:v})),
                 insurance: ['僅校外實習保險', '僅勞保', '兩者皆有', '兩者皆無'].map(v=>({value:v, label:v})),
@@ -769,6 +842,9 @@ input[type=number] { -moz-appearance: textfield; }
             // Remove old ones if any, then insert
             container.querySelectorAll('.filter-pill-wrap').forEach(el => el.remove());
             container.insertAdjacentHTML('afterbegin', html);
+            
+            // 初次載入時根據既有資料觸發隱藏
+            window.updateFilterVisibility();
         }
 
         window.toggleDropdown = (type) => {
@@ -807,12 +883,12 @@ input[type=number] { -moz-appearance: textfield; }
             const searchInput = document.getElementById(`search-${type}-input`);
             if (searchInput) {
                 searchInput.value = '';
-                window.filterDropdownItems(searchInput, `${type}-options-container`);
+                // 這裡不用再叫過濾項目了，交給連動機制全權處理
             }
             
             currentPage = 1; window.updatePillActive(type); window.renderTable();
         };
-
+      
         document.addEventListener('click', e => {
             if (!e.target.closest('.filter-pill-wrap')) {
                 document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
@@ -1231,6 +1307,8 @@ input[type=number] { -moz-appearance: textfield; }
                 </tr>`;
             });
             tbody.innerHTML = tHtml;
+          
+            window.updateFilterVisibility();
         };
 
         window.exportToCSV = () => {
