@@ -443,13 +443,13 @@ input[type=number] { -moz-appearance: textfield; }
                             <th data-sort="inst_raw" style="width: 14%;">機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th style="width: 5%;">課程數</th>
                             <th style="width: 5%;">總學分</th>
-                            <th data-sort="duration" style="width: 12%;">起訖時間 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="hours" style="width: 5%;">時數 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="duration" style="width: 12%;">實習起訖時間 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="hours" style="width: 5%;">總時數 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="period_type" style="width: 8%;">實習時間 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="proof_type" style="width: 6%;">證明文件 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="insurance" style="width: 8%;">投保情形 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="employment" style="width: 5%;">勞雇關係 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="resp_dept" style="width: 7%;">歸屬系所 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="resp_dept" style="width: 7%;">填報系所 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th class="col-actions" style="width: 6%;">操作</th>
                         </tr>
                     </thead>
@@ -1177,15 +1177,15 @@ input[type=number] { -moz-appearance: textfield; }
                     <td style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${stuDept}</div></td>
                     <td style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.grade || '-'}</div></td>
                     <td style="text-align: left;"><div class="cell-primary">${data.inst_raw}</div></td>
-                    <td style="text-align: center;"><div class="cell-primary">${courseCount}</div></td>
-                    <td style="text-align: center;"><div class="cell-primary">${totalCredits}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${courseCount}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${totalCredits}</div></td>
                     <td style="text-align: center;"><div class="cell-primary">${data.duration || '-'}</div></td>
-                    <td style="text-align: center;"><div class="cell-primary">${data.hours || 0}</div></td>
-                    <td style="text-align: center;"><div class="cell-primary">${data.period_type || '-'}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.hours || 0}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.period_type || '-'}</div></td>
                     <td style="text-align: center;"><div class="badge ${proofBadge}">${data.proof_type || '-'}</div></td>
                     <td style="text-align: center;"><div class="badge ${insBadge}">${data.insurance || '-'}</div></td>
-                    <td style="text-align: center;"><div class="cell-primary">${data.employment || '-'}</div></td>
-                    <td style="text-align: center;"><div class="cell-primary">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.employment || '-'}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</div></td>
                     <td class="col-actions">
                         <div class="row-actions">
                             <button onclick="window.editData('${data.id}')" class="btn btn-secondary btn-icon sm" title="編輯"><i class="ti ti-edit"></i></button>
