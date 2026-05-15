@@ -1348,32 +1348,37 @@ input[type=number] { -moz-appearance: textfield; }
                     const courseObjs = data.courses.map(cid => allCourses.find(x => x.id === cid)).filter(Boolean);
                     if (courseObjs.length > 0) {
                         const formatCourse = (c) => `${c.academic_year}-${c.term}_${c.course_code}：${c.course_name}`;
-                        const firstCourseTag = `<span class="badge badge-outline-blue" style="font-weight:normal; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${formatCourse(courseObjs[0])}</span>`;
+                        
+                        // 修正 2：移除 white-space: nowrap 等截斷樣式，允許文字自動換行，完整顯示課程名稱
+                        const badgeStyle = 'font-weight:normal; max-width: 100%; white-space: normal; word-break: break-word; text-align: left; height: auto; padding: 4px 8px; line-height: 1.4;';
+                        const firstCourseTag = `<span class="badge badge-outline-blue" style="${badgeStyle}">${formatCourse(courseObjs[0])}</span>`;
                         
                         if (courseObjs.length > 1) {
                             const otherCoursesHtml = courseObjs.slice(1).map(c => `
-                                <div style="margin-bottom: 4px;">
-                                    <span class="badge badge-outline-blue" style="font-weight:normal; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${formatCourse(c)}</span>
+                                <div style="margin-top: 4px;">
+                                    <span class="badge badge-outline-blue" style="${badgeStyle}">${formatCourse(c)}</span>
                                 </div>
                             `).join('');
-
+                
                             coursesHtml = `
                                 <div style="display:flex; flex-direction:column; width:100%;">
-                                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:nowrap; width:100%;">
-                                        <div style="flex: 1; min-width: 0; text-align: left;">${firstCourseTag}</div>
+                                    <!-- 修正 1：利用 justify-content: space-between 確保 +N 按鈕永遠貼齊最右側 -->
+                                    <div style="display:flex; align-items:center; justify-content:space-between; gap:6px; width:100%;">
+                                        <div style="flex: 1; min-width: 0; text-align: left; display: flex;">${firstCourseTag}</div>
                                         <button type="button" class="more-badge" onclick="window.toggleCourseExpand('${data.id}')">
                                             +${courseObjs.length - 1} <i class="ti ti-chevron-down" id="icon-course-${data.id}" style="margin-left:4px; font-size:12px; transition:0.2s;"></i>
                                         </button>
                                     </div>
-                                    <div id="expand-course-${data.id}" style="display:none; margin-top:8px; padding-top:8px; border-top:1px dashed var(--border); text-align: left;">
+                                    <!-- 修正 3：移除 padding-top 與 border-top 虛線樣式 -->
+                                    <div id="expand-course-${data.id}" style="display:none; margin-top:4px; text-align: left;">
                                         ${otherCoursesHtml}
                                     </div>
                                 </div>
                             `;
                         } else {
                             coursesHtml = `
-                                <div style="display:flex; align-items:center; gap:6px; flex-wrap:nowrap; width:100%;">
-                                    <div style="flex: 1; min-width: 0; text-align: left;">${firstCourseTag}</div>
+                                <div style="display:flex; align-items:center; width:100%;">
+                                    <div style="flex: 1; min-width: 0; text-align: left; display: flex;">${firstCourseTag}</div>
                                 </div>
                             `;
                         }
