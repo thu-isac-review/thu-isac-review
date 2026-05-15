@@ -1495,18 +1495,44 @@ input[type=number] { -moz-appearance: textfield; }
 
         window.exportToCSV = () => {
             if (filteredRecords.length === 0) { alert("沒有資料可供匯出！"); return; }
-            let csv = '\uFEFF學號,學生姓名,當學年年級,實習機構名稱,關聯課程(學年-學期_代號：課程名稱),負責填報系所,實習起訖時間,核定時數,實習時間分類,證明文件類型,投保情形,勞雇關係,備註\n';
+            
+            // 標題列完美對齊 UI 表格 (共 15 欄)
+            let csv = '\uFEFF學號,姓名,學系,年級,機構名稱,修習課程(學年-學期_代號：課程名稱),總學分,實習起訖時間,總時數,實習時間,證明文件,投保情形,勞雇關係,填報系所,備註\n';
+            
             filteredRecords.forEach(d => {
+                // 計算總學分
+                let totalCredits = 0;
                 let courseNames = (Array.isArray(d.courses) ? d.courses : []).map(cid => { 
                     const c = allCourses.find(x => x.id === cid); 
+                    if (c && c.credits) totalCredits += Number(c.credits);
                     return c ? formatCourseInfo(c) : ''; 
                 }).filter(Boolean).join('、');
                 
                 const stuParts = (d.student_raw || '').split(' - ');
                 const stuId = stuParts[0] || '';
                 const stuName = stuParts[1] || '';
+                
+                // 抓取學系 (匯出完整名稱以利辨識)
+                const stu = allStudents.find(s => s.student_id === stuId);
+                const stuDept = stu ? stu.department : '';
 
-                csv += [stuId, stuName, d.grade, d.inst_raw, courseNames, d.resp_dept || '', d.duration, d.hours !== undefined ? d.hours : '', d.period_type, d.proof_type, d.insurance, d.employment, d.notes || ''].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+                csv += [
+                    stuId, 
+                    stuName, 
+                    stuDept, 
+                    d.grade, 
+                    d.inst_raw, 
+                    courseNames, 
+                    totalCredits, 
+                    d.duration, 
+                    d.hours !== undefined && d.hours !== '' ? d.hours : '', 
+                    d.period_type, 
+                    d.proof_type, 
+                    d.insurance, 
+                    d.employment, 
+                    d.resp_dept || '', 
+                    d.notes || ''
+                ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
             });
             const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
             link.download = `實習紀錄總表_${new Date().toISOString().split('T')[0]}.csv`; link.click();
@@ -1548,20 +1574,23 @@ input[type=number] { -moz-appearance: textfield; }
                         }
                         cols.push(currentVal.trim());
 
-                        if (cols.length >= 12) {
-                            const stuId = (cols[0] || '').trim().toUpperCase();
-                            const stuName = (cols[1] || '').trim();
-                            const grade = cols[2];
-                            const inst_raw = cols[3];
-                            const coursesRaw = cols[4];
-                            const resp_dept = cols[5] || ''; 
-                            const duration = cols[6];        
-                            const hours = cols[7] ? Number(cols[7]) : ''; 
-                            const period_type = cols[8];     
-                            const proof_type = cols[9];      
-                            const insurance = cols[10];      
-                            const employment = cols[11];     
-                            const notes = cols[12] || '';   
+                        // 修改：欄位數防呆從 >= 12 改為 >= 14，以符合全新的 CSV 格式
+                        if (cols.length >= 14) {
+                            const stuId = (cols[0] || '').trim().toUpperCase();  // 0: 學號
+                            const stuName = (cols[1] || '').trim();              // 1: 姓名
+                            // cols[2] 是學系 (由主檔自動帶入，匯入時忽略)
+                            const grade = cols[3];                               // 3: 年級
+                            const inst_raw = cols[4];                            // 4: 機構名稱
+                            const coursesRaw = cols[5];                          // 5: 修習課程
+                            // cols[6] 是總學分 (由主檔自動帶入，匯入時忽略)
+                            const duration = cols[7];                            // 7: 實習起訖時間
+                            const hours = cols[8] ? Number(cols[8]) : '';        // 8: 總時數
+                            const period_type = cols[9];                         // 9: 實習時間
+                            const proof_type = cols[10];                         // 10: 證明文件
+                            const insurance = cols[11];                          // 11: 投保情形
+                            const employment = cols[12];                         // 12: 勞雇關係
+                            const resp_dept = cols[13] || '';                    // 13: 填報系所
+                            const notes = cols[14] || '';                        // 14: 備註
 
                             if (!stuId || !inst_raw || !duration || !period_type || !proof_type || !insurance || !employment || !grade) {
                                 errorCount++;
