@@ -266,7 +266,8 @@ tr.selected td { background: #f0f4ff; }
 }
 .fs-modal.open { display: flex; }
 .fs-topbar {
-  height: 64px; background: var(--surface); border-bottom: 1px solid var(--border);
+  height: 59px; 
+  background: var(--surface); border-bottom: 1px solid var(--border);
   display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0;
   z-index: 10;
 }
@@ -278,7 +279,7 @@ tr.selected td { background: #f0f4ff; }
 
 /* 修改重點 2：因為上層移除了 flex 居中對齊，這裡利用 margin: 0 auto; 讓版面維持完美水平置中 */
 .split-layout { 
-  display: grid; grid-template-columns: 1fr 1fr; gap: 40px 48px; 
+  display: grid; grid-template-columns: 1fr 1fr; gap: 20px 48px; 
   width: 100%; max-width: 1100px; margin: 0 auto; align-items: start;
 }
 .clean-section { margin-bottom: 24px; } /* 為每個 Section 底部加上固定的留白 */
@@ -494,19 +495,7 @@ input[type=number] { -moz-appearance: textfield; }
         <div class="fs-content custom-scroll">
             <div class="split-layout">
                 <div class="clean-section">
-                    <div class="clean-section-title"><i class="ti ti-user"></i> 實習對象與機構</div>
-                    
-                    <div class="form-grid">
-                        <div class="field z-index-fix" style="z-index: 30; grid-column: span 2;">
-                            <label class="field-label">實習學生 <span class="req">*</span></label>
-                            <div style="display:flex; gap:8px;">
-                                <div class="search-input-wrap" style="flex:1;">
-                                    <input type="text" id="input-student" class="field-input" placeholder="搜尋學號或姓名..." autocomplete="off">
-                                    <div id="student-dropdown" class="search-dropdown custom-scroll"></div>
-                                </div>
-                                <button type="button" id="btn-info-student" class="btn-info-pop" onclick="window.showInfoPopup('student')" disabled title="查看學生詳情"><i class="ti ti-info-circle"></i></button>
-                            </div>
-                        </div>
+              
                         <div class="field" style="grid-column: span 2;">
                             <label class="field-label">當學年年級 <span class="req">*</span></label>
                             <select id="input-grade" class="field-select" required>
