@@ -275,14 +275,26 @@ tr.selected td { background: #f0f4ff; }
 .fs-topbar-title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-left: 8px; }
 
 /* 修改重點 1：改回 display: flex 達成垂直與水平正居中，並將 overflow 設為 hidden 強制不產生捲動軸 */
-.fs-content { flex: 1; overflow: hidden; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.fs-content { 
+  flex: 1; 
+  overflow-y: auto; 
+  display: flex; 
+  flex-direction: column; 
+  padding: 40px 24px; /* 確保螢幕太小時，上下仍有至少 40px 留白 */
+}
 
-/* 修改重點 2：因父層已設定 flex 置中，此處移除 margin: 0 auto */
+/* 修改重點 2：利用 margin: auto 將內容推到正中間 */
 .split-layout { 
   display: grid; grid-template-columns: 1fr 1fr; gap: 20px 48px; 
   width: 100%; max-width: 1100px; align-items: start;
+  margin: auto; 
 }
-.clean-section { margin-bottom: 24px; } /* 為每個 Section 底部加上固定的留白 */
+.clean-section { margin-bottom: 24px; } 
+/* 修改重點 3：消除最後一排的隱藏高度，讓置中視覺完全精準對稱 */
+.split-layout > .clean-section:last-child { margin-bottom: 0; }
+@media (min-width: 1025px) {
+  .split-layout > .clean-section:nth-last-child(2) { margin-bottom: 0; }
+}
 .clean-section-title { 
   font-size: 15px; font-weight: 700; color: var(--text-primary); 
   margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--brand-light); 
