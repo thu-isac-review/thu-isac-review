@@ -992,6 +992,7 @@ input[type=number] { -moz-appearance: textfield; }
             const stuInput = document.getElementById('input-student'); const stuDropdown = document.getElementById('student-dropdown');
             const instInput = document.getElementById('input-institution'); const instDropdown = document.getElementById('institution-dropdown');
             const courseInput = document.getElementById('input-course-search'); const courseDropdown = document.getElementById('course-dropdown');
+            const mainSearchInput = document.getElementById('search-input'); // 加入主搜尋框
 
             const handleFocus = (dropdown) => { dropdown.classList.add('show'); };
 
@@ -1003,6 +1004,12 @@ input[type=number] { -moz-appearance: textfield; }
             
             courseInput?.addEventListener('focus', () => { handleFocus(courseDropdown); renderCourseDropdown(allCourses, courseInput.value); });
             courseInput?.addEventListener('input', () => { handleFocus(courseDropdown); renderCourseDropdown(allCourses, courseInput.value); });
+
+            // 修正：補上主搜尋框的即時搜尋事件
+            mainSearchInput?.addEventListener('input', () => { 
+                currentPage = 1; 
+                window.renderTable(); 
+            });
 
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('#input-student') && !e.target.closest('#student-dropdown')) stuDropdown?.classList.remove('show');
