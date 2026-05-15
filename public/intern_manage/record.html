@@ -379,13 +379,62 @@ input[type=number] { -moz-appearance: textfield; }
   #batch-bar { display: none !important; }
   .toolbar { padding: 12px 16px; justify-content: flex-end; }
   .search-wrap { flex: 0 0 100%; order: 1; margin-bottom: 8px; }
-  .flex-spacer { display: none; }
+  .toolbar .flex-spacer, .filter-row .flex-spacer { display: none; }
   .toolbar-actions { order: 2; width: 100%; justify-content: space-between; display: flex; gap: 8px; }
   .toolbar-actions .btn { flex: 1; padding: 0 4px; font-size: 11px; margin: 0; }
   .v-divider { display: none; }
   .form-grid, .form-grid-3 { grid-template-columns: 1fr; }
   .fs-topbar { padding: 0 16px; }
   .fs-content { padding: 16px; }
+
+  /* ===== 新增：篩選列單行滑動與顯示欄位按鈕固定 ===== */
+  .filter-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-right: 0; /* 移除右側內距，讓固定按鈕完全貼齊邊緣 */
+    -webkit-overflow-scrolling: touch; /* 確保 iOS 滑動順暢 */
+    scrollbar-width: none; /* 隱藏 Firefox 捲軸 */
+  }
+  .filter-row::-webkit-scrollbar {
+    display: none; /* 隱藏 Chrome/Safari 捲軸 */
+  }
+  .filter-pill-wrap {
+    flex-shrink: 0; /* 避免標籤被壓縮 */
+  }
+  
+  /* 將顯示設定固定於最右側 */
+  #pill-wrap-col-toggle {
+    position: sticky;
+    right: 0;
+    background: var(--bg);
+    padding-left: 8px;
+    padding-right: 16px;
+    margin-left: auto;
+    z-index: 50;
+  }
+  
+  /* 左側漸層遮罩，讓滑動過去的標籤有隱沒效果 */
+  #pill-wrap-col-toggle::before {
+    content: '';
+    position: absolute;
+    left: -16px;
+    top: 0;
+    bottom: 0;
+    width: 16px;
+    background: linear-gradient(to right, rgba(248,249,252,0), #f8f9fc);
+    pointer-events: none;
+  }
+
+  /* 避免下拉選單被 overflow-x 切斷，改為固定定位 */
+  .filter-dropdown {
+    position: fixed !important;
+    top: 145px !important; /* 定位在篩選列下方 */
+    left: 16px !important;
+    right: 16px !important;
+    width: auto !important;
+    min-width: auto !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important;
+  }
 }
 </style>
 </head>
