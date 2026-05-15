@@ -333,7 +333,14 @@ input[type=number] { -moz-appearance: textfield; }
 .search-item-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
 .search-item-desc { font-size: 11px; color: var(--text-muted); font-weight: 500; }
 
-.selected-course-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--bg); border: 1px dashed var(--border); border-radius: var(--radius); }
+.selected-course-item { 
+    display: flex; align-items: center; justify-content: space-between; 
+    padding: 12px 8px; /* 稍微放大上下間距讓閱讀更舒適 */
+    border-bottom: 1px dashed var(--border-strong); /* 課程之間的虛線分隔線 */
+}
+.selected-course-item:last-child {
+    border-bottom: none; 
+}
 .selected-course-info { display: flex; flex-direction: column; gap: 4px; }
 .selected-course-top { display: flex; align-items: center; gap: 6px; }
 .selected-course-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
@@ -557,7 +564,7 @@ input[type=number] { -moz-appearance: textfield; }
                             <span id="selected-course-count" class="badge badge-outline-blue" style="font-size: 11px; padding: 4px 8px;">已選 0 門</span>
                         </div>
                         
-                        <div id="selected-courses-container" class="custom-scroll" style="display: flex; flex-direction: column; gap: 4px; overflow-y: scroll; height: 210px; border: 1px solid var(--border); border-radius: var(--radius); padding: 8px; background: var(--surface);">
+                        <div id="selected-courses-container" class="custom-scroll" style="display: flex; flex-direction: column; overflow-y: scroll; height: 210px; border: 1px solid var(--border); border-radius: var(--radius); padding: 0 8px; background: var(--surface);">
                             <div class="empty-state" style="padding: 20px;"><div class="empty-text">尚未加入課程</div></div>
                         </div>
                     </div>
