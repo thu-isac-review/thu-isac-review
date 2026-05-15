@@ -58,7 +58,7 @@ html, body {
 
 /* ─── SCROLLBAR ─── */
 .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
-.custom-scroll::-webkit-scrollbar-track { background: var(--surface); }
+.custom-scroll::-webkit-scrollbar-track { background: transparent; }
 .custom-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
 .custom-scroll::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
@@ -66,6 +66,7 @@ html, body {
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .ti-spin { animation: spin 1s linear infinite; display: inline-block; }
 @keyframes pageFadeIn { from { opacity: 0; transform: scale(0.99); } to { opacity: 1; transform: scale(1); } }
+@keyframes dialogIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } }
 
 /* ─── TOOLBAR ─── */
 .toolbar {
@@ -104,21 +105,37 @@ html, body {
   cursor: pointer; border: none; white-space: nowrap;
   transition: all var(--transition); text-decoration: none;
 }
-.btn-primary { background: var(--brand); color: white; border: 1px solid var(--brand); }
+.btn-primary { background: var(--brand); color: white; }
 .btn-primary:hover { background: var(--brand-hover); }
 .btn-secondary { background: var(--surface); color: var(--text-secondary); border: 1px solid var(--border); }
 .btn-secondary:hover { background: var(--bg); border-color: var(--border-strong); color: var(--text-primary); }
 .btn-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
 .btn-danger:hover { background: #fee2e2; }
-.btn-success-solid { background: var(--success); color: white; border: 1px solid var(--success); }
+.btn-success-solid { background: var(--success); color: white; }
 .btn-success-solid:hover { background: #047857; }
-.btn-indigo-solid { background: var(--indigo); color: white; border: 1px solid var(--indigo); }
+.btn-indigo-solid { background: var(--indigo); color: white; }
 .btn-indigo-solid:hover { background: #4338ca; }
 .btn-icon { width: 34px; padding: 0; justify-content: center; }
 .btn-icon.sm { width: 28px; height: 28px; }
 .btn-sm { height: 28px; padding: 0 10px; font-size: 11px; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn i { font-size: 16px; display: inline-flex; align-items: center; justify-content: center; }
+
+/* 詳情資訊小按鈕與 Ghost 返回按鈕 */
+.btn-ghost-back {
+    background: transparent; color: var(--text-secondary); border: none;
+    padding: 8px 12px; border-radius: var(--radius); font-weight: 600; cursor: pointer; transition: 0.2s;
+    display: inline-flex; align-items: center; gap: 6px; font-size: 14px;
+}
+.btn-ghost-back:hover { background: var(--bg); color: var(--text-primary); }
+
+.btn-info-pop {
+    width: 38px; height: 38px; border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--surface); color: var(--brand); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: 0.2s;
+}
+.btn-info-pop:hover:not(:disabled) { background: var(--brand-light); border-color: var(--brand-border); }
+.btn-info-pop:disabled { opacity: 0.3; cursor: not-allowed; color: var(--text-muted); border-color: var(--border); background: var(--bg); }
 
 /* ─── Expandable Contact/Course Badge (+N) ─── */
 .more-badge { display: inline-flex; align-items: center; justify-content: center; height: 24px; padding: 0 8px; border-radius: 99px; background: var(--border); color: var(--text-secondary); font-size: 11px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-left: auto; flex-shrink: 0; border: none; outline: none; }
@@ -156,14 +173,12 @@ html, body {
   display: none; flex-direction: column; overflow: hidden;
 }
 .filter-dropdown.show { display: flex; }
-
 .filter-dropdown-search { padding: 8px; border-bottom: 1px solid var(--border); }
 .filter-dropdown-search input { 
   width: 100%; height: 30px; border: 1px solid var(--border); border-radius: var(--radius-sm); 
   padding: 0 10px; font-size: 11px; outline: none; background: var(--bg); transition: 0.2s; 
 }
 .filter-dropdown-search input:focus { border-color: var(--brand); background: var(--surface); box-shadow: 0 0 0 2px rgba(26,86,219,0.1); }
-
 .filter-dropdown-list { max-height: 200px; overflow-y: auto; padding: 4px; }
 .filter-option {
   display: flex; align-items: center; gap: 8px;
@@ -201,19 +216,8 @@ th {
   background: var(--surface);
   box-shadow: inset 0 -2px 0 var(--border); 
 }
-
-/* 右側操作欄位凍結 */
-th.col-actions {
-  position: sticky; right: 0; z-index: 20;
-  box-shadow: inset 0 -2px 0 var(--border), -4px 0 8px rgba(0,0,0,0.05); 
-}
-td.col-actions {
-  position: sticky; right: 0; z-index: 5;
-  background: var(--surface);
-  box-shadow: -4px 0 8px rgba(0,0,0,0.05);
-  border-bottom: 1px solid var(--border);
-}
-
+th.col-actions { position: sticky; right: 0; z-index: 20; box-shadow: inset 0 -2px 0 var(--border), -4px 0 8px rgba(0,0,0,0.05); }
+td.col-actions { position: sticky; right: 0; z-index: 5; background: var(--surface); box-shadow: -4px 0 8px rgba(0,0,0,0.05); border-bottom: 1px solid var(--border); }
 th[data-sort] { cursor: pointer; user-select: none; transition: color var(--transition); }
 th[data-sort]:hover { color: var(--text-secondary); }
 th .sort-icon { margin-left: 4px; font-size: 13px; opacity: 0.4; vertical-align: middle; }
@@ -228,7 +232,7 @@ tr.selected td { background: #f0f4ff; }
 .cell-secondary { font-size: 11px; color: var(--text-muted); margin-top: 4px; line-height: 1.4; font-weight: 500; }
 .row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; }
 
-/* Badges for Table (更新多種顏色) */
+/* Badges for Table */
 .badge { display: inline-flex; align-items: center; justify-content: center; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; }
 .badge-outline-blue { background: var(--brand-light); color: var(--brand); border: 1px solid var(--brand-border); }
 .badge-outline-green { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
@@ -256,37 +260,7 @@ tr.selected td { background: #f0f4ff; }
 .page-btn.active { background: var(--brand); color: white; border-color: var(--brand); font-weight: 700; }
 .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* ─── UNIFIED DIALOG MODALS ─── */
-.dialog-overlay {
-  position: fixed; inset: 0; z-index: 300;
-  background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
-  display: none; align-items: center; justify-content: center; padding: 24px;
-}
-.dialog-overlay.open { display: flex; }
-.dialog-box {
-  background: var(--surface); border-radius: var(--radius-xl);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-  width: 100%; display: flex; flex-direction: column; overflow: hidden;
-  animation: dialogIn 0.25s cubic-bezier(0.16,1,0.3,1);
-}
-@keyframes dialogIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } }
-
-.dialog-header {
-  padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between; background: var(--surface);
-}
-.dialog-header h3 { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: var(--text-primary); }
-.dialog-header h3 i { font-size: 20px; color: var(--brand); }
-.dialog-close {
-  background: none; border: none; color: var(--text-muted); cursor: pointer;
-  font-size: 20px; padding: 4px; display: flex; align-items: center; justify-content: center;
-  border-radius: var(--radius-sm); transition: all var(--transition);
-}
-.dialog-close:hover { color: var(--danger); background: var(--danger-bg); }
-.dialog-body { padding: 24px; overflow-y: auto; max-height: calc(85vh - 130px); }
-.dialog-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg); }
-
-/* ─── FULL SCREEN MODAL (Borderless Split-Panel Design) ─── */
+/* ─── FULL SCREEN MODAL (無邊界左右分欄 2x2 對齊) ─── */
 .fs-modal {
   position: fixed; inset: 0; background: var(--surface); z-index: 200;
   display: none; flex-direction: column; height: 100vh; width: 100vw;
@@ -294,20 +268,20 @@ tr.selected td { background: #f0f4ff; }
 }
 .fs-modal.open { display: flex; }
 .fs-topbar {
-  height: 60px; background: var(--surface); border-bottom: 1px solid var(--border);
+  height: 64px; background: var(--surface); border-bottom: 1px solid var(--border);
   display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0;
   z-index: 10;
 }
 .fs-topbar-left { display: flex; align-items: center; gap: 12px; }
-.fs-topbar-title { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+.fs-topbar-title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-left: 8px; }
 .fs-content { flex: 1; overflow-y: auto; padding: 40px 24px; display: flex; justify-content: center; }
 
-/* 左右分欄網格 */
+/* 左右分欄網格 (改為 2x2 強制對齊) */
 .split-layout { 
-  display: grid; grid-template-columns: 1fr 1fr; gap: 48px; 
-  width: 100%; max-width: 1100px; margin: 0 auto; 
+  display: grid; grid-template-columns: 1fr 1fr; gap: 40px 48px; 
+  width: 100%; max-width: 1100px; margin: 0 auto; align-items: start;
 }
-.clean-section { margin-bottom: 40px; }
+.clean-section { margin-bottom: 0; }
 .clean-section-title { 
   font-size: 15px; font-weight: 700; color: var(--text-primary); 
   margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--brand-light); 
@@ -344,15 +318,6 @@ input[type=number] { -moz-appearance: textfield; }
 .search-item-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
 .search-item-desc { font-size: 11px; color: var(--text-muted); font-weight: 500; }
 
-/* Info Cards in Modal (simplified for clean layout) */
-.info-card { background: var(--bg); border: 1px dashed var(--border); border-radius: var(--radius); padding: 12px; display: flex; align-items: flex-start; gap: 12px; margin-top: 8px; }
-.info-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
-.info-icon.student { background: var(--brand-light); color: var(--brand); }
-.info-icon.inst { background: var(--success-bg); color: var(--success); }
-.info-content { flex: 1; min-width: 0; }
-.info-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.info-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.4; }
-
 /* Selected Courses Box */
 .selected-course-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--bg); border: 1px dashed var(--border); border-radius: var(--radius); margin-bottom: 8px; }
 .selected-course-item:last-child { margin-bottom: 0; }
@@ -369,8 +334,24 @@ input[type=number] { -moz-appearance: textfield; }
 .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
 .empty-text { font-size: 13px; font-weight: 600; }
 
+/* ─── INFO MODAL (Nested) ─── */
+.info-modal-overlay {
+    position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px);
+    display: none; align-items: center; justify-content: center; padding: 20px;
+}
+.info-modal-overlay.open { display: flex; }
+.info-modal-box {
+    background: var(--surface); border-radius: var(--radius-lg); width: 100%; max-width: 400px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15); overflow: hidden; animation: dialogIn 0.2s ease-out;
+}
+.info-modal-header { padding: 16px 20px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.info-modal-body { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+.info-item { display: flex; flex-direction: column; gap: 4px; }
+.info-item-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+.info-item-value { font-size: 14px; font-weight: 600; color: var(--text-primary); line-height: 1.4; }
+
 @media (max-width: 1024px) {
-  .split-layout { grid-template-columns: 1fr; gap: 24px; }
+  .split-layout { grid-template-columns: 1fr; gap: 40px; }
 }
 
 @media (max-width: 768px) {
@@ -388,11 +369,8 @@ input[type=number] { -moz-appearance: textfield; }
 
   /* 橫向滑動與顯示欄位按鈕固定 */
   .filter-row {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding-right: 0;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    flex-wrap: nowrap; overflow-x: auto; padding-right: 0;
+    -webkit-overflow-scrolling: touch; scrollbar-width: none;
   }
   .filter-row::-webkit-scrollbar { display: none; }
   .filter-pill-wrap { flex-shrink: 0; }
@@ -501,136 +479,145 @@ input[type=number] { -moz-appearance: textfield; }
         </div>
     </div>
 
-    <!-- ─── FULL SCREEN MODAL (無邊界左右分欄) ─── -->
     <div id="data-modal" class="fs-modal">
         <div class="fs-topbar">
             <div class="fs-topbar-left">
-                <button class="btn-icon" onclick="window.closeModal()" style="border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary);"><i class="ti ti-arrow-left"></i></button>
-                <div class="fs-topbar-title" id="modal-title">新增實習紀錄</div>
+                <button class="btn-ghost-back" onclick="window.closeModal()"><i class="ti ti-chevron-left" style="font-size: 18px;"></i> 返回清單</button>
+                <div class="fs-topbar-title" id="modal-title" style="border-left: 1px solid var(--border); padding-left: 16px; margin-left: 4px;">新增實習紀錄</div>
             </div>
             <div style="display:flex; gap:10px;">
-                <button class="btn btn-secondary" onclick="window.closeModal()">取消</button>
                 <button class="btn btn-primary" id="btn-submit" onclick="window.submitForm()"><i class="ti ti-check"></i> 儲存紀錄</button>
             </div>
         </div>
         
         <div class="fs-content custom-scroll">
             <div class="split-layout">
-                <!-- 左半部 -->
-                <div>
-                    <div class="clean-section">
-                        <div class="clean-section-title"><i class="ti ti-user"></i> 實習對象與機構</div>
-                        
-                        <div class="form-grid">
-                            <div class="field z-index-fix" style="z-index: 30;">
-                                <label class="field-label">實習學生 <span class="req">*</span></label>
-                                <div class="search-input-wrap">
+                <div class="clean-section">
+                    <div class="clean-section-title"><i class="ti ti-user"></i> 實習對象與機構</div>
+                    
+                    <div class="form-grid">
+                        <div class="field z-index-fix" style="z-index: 30; grid-column: span 2;">
+                            <label class="field-label">實習學生 <span class="req">*</span></label>
+                            <div style="display:flex; gap:8px;">
+                                <div class="search-input-wrap" style="flex:1;">
                                     <input type="text" id="input-student" class="field-input" placeholder="搜尋學號或姓名..." autocomplete="off">
                                     <div id="student-dropdown" class="search-dropdown custom-scroll"></div>
                                 </div>
-                            </div>
-                            <div class="field">
-                                <label class="field-label">當學年年級 <span class="req">*</span></label>
-                                <select id="input-grade" class="field-select" required>
-                                    <option value="">請選擇</option>
-                                    <option value="1">1 年級</option><option value="2">2 年級</option><option value="3">3 年級</option><option value="4">4 年級</option><option value="5">5 年級以上</option>
-                                </select>
+                                <button type="button" id="btn-info-student" class="btn-info-pop" onclick="window.showInfoPopup('student')" disabled title="查看學生詳情"><i class="ti ti-info-circle"></i></button>
                             </div>
                         </div>
-                        <div id="student-info-card" class="info-card" style="display: none;"></div>
+                        <div class="field" style="grid-column: span 2;">
+                            <label class="field-label">當學年年級 <span class="req">*</span></label>
+                            <select id="input-grade" class="field-select" required>
+                                <option value="">請選擇</option>
+                                <option value="1">1 年級</option><option value="2">2 年級</option><option value="3">3 年級</option><option value="4">4 年級</option><option value="5">5 年級以上</option>
+                            </select>
+                        </div>
+                    </div>
 
-                        <div class="field z-index-fix" style="z-index: 20; margin-top: 16px;">
-                            <label class="field-label">實習機構 <span class="req">*</span></label>
-                            <div class="search-input-wrap">
+                    <div class="field z-index-fix" style="z-index: 20; margin-top: 16px;">
+                        <label class="field-label">實習機構 <span class="req">*</span></label>
+                        <div style="display:flex; gap:8px;">
+                            <div class="search-input-wrap" style="flex:1;">
                                 <input type="text" id="input-institution" class="field-input" placeholder="搜尋機構名稱或統編..." autocomplete="off">
                                 <div id="institution-dropdown" class="search-dropdown custom-scroll"></div>
                             </div>
-                        </div>
-                        <div id="inst-info-card" class="info-card" style="display: none;"></div>
-                    </div>
-
-                    <div class="clean-section">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px solid var(--brand-light); padding-bottom: 8px;">
-                            <div class="clean-section-title" style="border: none; padding: 0; margin: 0;"><i class="ti ti-layers-linked"></i> 關聯學分課程</div>
-                            <span id="selected-course-count" style="font-size: 11px; font-weight: 700; color: var(--text-muted);">已選 0 門</span>
-                        </div>
-                        
-                        <div class="field z-index-fix" style="z-index: 10;">
-                            <label class="field-label">搜尋課程 <span class="req">*</span></label>
-                            <div class="search-input-wrap">
-                                <input type="text" id="input-course-search" class="field-input" placeholder="課程名稱、代號或系所..." autocomplete="off">
-                                <div id="course-dropdown" class="search-dropdown custom-scroll"></div>
-                            </div>
-                        </div>
-                        <div id="selected-courses-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;">
-                            <div class="empty-state" style="padding: 20px;"><div class="empty-text">尚未加入課程</div></div>
+                            <button type="button" id="btn-info-inst" class="btn-info-pop" onclick="window.showInfoPopup('inst')" disabled title="查看機構詳情"><i class="ti ti-info-circle"></i></button>
                         </div>
                     </div>
                 </div>
 
-                <!-- 右半部 -->
-                <div>
-                    <div class="clean-section">
-                        <div class="clean-section-title"><i class="ti ti-clock"></i> 條件與保障</div>
-                        <div class="form-grid">
-                            <div class="field">
-                                <label class="field-label">起訖時間 <span class="req">*</span></label>
-                                <input type="text" id="input-duration" class="field-input" placeholder="YYY/MM/DD-YYY/MM/DD" required>
-                            </div>
-                            <div class="field">
-                                <label class="field-label">總時數</label>
-                                <input type="number" id="input-hours" class="field-input" placeholder="可留空 (待補)" min="0">
-                            </div>
-                            <div class="field">
-                                <label class="field-label">實習時間 <span class="req">*</span></label>
-                                <select id="input-period-type" class="field-select" required>
-                                    <option value="">請選擇</option>
-                                    <option value="寒假實習">寒假實習</option><option value="暑假實習">暑假實習</option><option value="學期期間實習">學期期間實習</option><option value="單一學期實習">單一學期實習</option><option value="全學年">全學年</option>
-                                </select>
-                            </div>
-                            <div class="field">
-                                <label class="field-label">證明文件 <span class="req">*</span></label>
-                                <select id="input-proof-type" class="field-select" required>
-                                    <option value="">請選擇</option>
-                                    <option value="合約">合約</option><option value="公函">公函</option><option value="其他證明文件">其他證明文件</option>
-                                </select>
-                            </div>
-                            <div class="field">
-                                <label class="field-label">投保情形 <span class="req">*</span></label>
-                                <select id="input-insurance" class="field-select" required>
-                                    <option value="">請選擇</option>
-                                    <option value="僅校外實習保險">僅校外實習保險</option><option value="僅勞保">僅勞保</option><option value="兩者皆有">兩者皆有</option><option value="兩者皆無">兩者皆無</option>
-                                </select>
-                            </div>
-                            <div class="field">
-                                <label class="field-label">勞雇關係 <span class="req">*</span></label>
-                                <select id="input-employment" class="field-select" required>
-                                    <option value="">請選擇</option>
-                                    <option value="是">是</option><option value="否">否</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="clean-section">
-                        <div class="clean-section-title"><i class="ti ti-building-community"></i> 行政歸屬與備註</div>
+                <div class="clean-section">
+                    <div class="clean-section-title"><i class="ti ti-clock"></i> 條件與保障</div>
+                    <div class="form-grid">
                         <div class="field">
-                            <label class="field-label">負責填報系所 <span class="req">*</span></label>
-                            <select id="input-resp-dept" class="field-select" required>
-                                <option value="">請先選擇學生與關聯課程...</option>
+                            <label class="field-label">起訖時間 (民國年) <span class="req">*</span></label>
+                            <input type="text" id="input-duration" class="field-input" placeholder="YYY/MM/DD-YYY/MM/DD" required>
+                        </div>
+                        <div class="field">
+                            <label class="field-label">總時數</label>
+                            <input type="number" id="input-hours" class="field-input" placeholder="可留空 (待補)" min="0">
+                        </div>
+                        <div class="field">
+                            <label class="field-label">實習時間 <span class="req">*</span></label>
+                            <select id="input-period-type" class="field-select" required>
+                                <option value="">請選擇</option>
+                                <option value="寒假實習">寒假實習</option><option value="暑假實習">暑假實習</option><option value="學期期間實習">學期期間實習</option><option value="單一學期實習">單一學期實習</option><option value="全學年">全學年</option>
                             </select>
                         </div>
-                        <div class="field" style="margin-top: 16px;">
-                            <label class="field-label">備註 (選填)</label>
-                            <textarea id="input-notes" class="field-input" placeholder="選填備註..." style="min-height: 80px; resize: none; padding-top: 10px;"></textarea>
+                        <div class="field">
+                            <label class="field-label">證明文件 <span class="req">*</span></label>
+                            <select id="input-proof-type" class="field-select" required>
+                                <option value="">請選擇</option>
+                                <option value="合約">合約</option><option value="公函">公函</option><option value="其他證明文件">其他證明文件</option>
+                            </select>
                         </div>
+                        <div class="field">
+                            <label class="field-label">投保情形 <span class="req">*</span></label>
+                            <select id="input-insurance" class="field-select" required>
+                                <option value="">請選擇</option>
+                                <option value="僅校外實習保險">僅校外實習保險</option><option value="僅勞保">僅勞保</option><option value="兩者皆有">兩者皆有</option><option value="兩者皆無">兩者皆無</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label class="field-label">勞雇關係 <span class="req">*</span></label>
+                            <select id="input-employment" class="field-select" required>
+                                <option value="">請選擇</option>
+                                <option value="是">是</option><option value="否">否</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="clean-section" style="display: flex; flex-direction: column;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px solid var(--brand-light); padding-bottom: 8px;">
+                        <div class="clean-section-title" style="border: none; padding: 0; margin: 0;"><i class="ti ti-layers-linked"></i> 關聯學分課程</div>
+                        <span id="selected-course-count" style="font-size: 11px; font-weight: 700; color: var(--text-muted);">已選 0 門</span>
+                    </div>
+                    
+                    <div class="field z-index-fix" style="z-index: 10;">
+                        <label class="field-label">搜尋並加入課程 <span class="req">*</span></label>
+                        <div class="search-input-wrap">
+                            <input type="text" id="input-course-search" class="field-input" placeholder="課程名稱、代號或系所..." autocomplete="off">
+                            <div id="course-dropdown" class="search-dropdown custom-scroll"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="selected-courses-container" class="custom-scroll" style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px; overflow-y: auto;">
+                        <div class="empty-state" style="padding: 20px;"><div class="empty-text">尚未加入課程</div></div>
+                    </div>
+                </div>
+
+                <div class="clean-section">
+                    <div class="clean-section-title"><i class="ti ti-building-community"></i> 行政歸屬與備註</div>
+                    <div class="field">
+                        <label class="field-label">負責填報系所 <span class="req">*</span></label>
+                        <select id="input-resp-dept" class="field-select" required>
+                            <option value="">請先選擇學生與關聯課程...</option>
+                        </select>
+                    </div>
+                    <div class="field" style="margin-top: 16px;">
+                        <label class="field-label">備註 (選填)</label>
+                        <textarea id="input-notes" class="field-input custom-scroll" placeholder="選填備註..." style="min-height: 120px; resize: none; padding-top: 10px;"></textarea>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 匯入報表 MODAL -->
+    <div id="info-popup" class="info-modal-overlay">
+        <div class="info-modal-box">
+            <div class="info-modal-header">
+                <h4 id="info-popup-title" style="font-weight: 700; font-size: 14px; margin: 0;">詳情確認</h4>
+                <button class="btn btn-icon sm" onclick="window.closeInfoPopup()" style="background:transparent; color: var(--text-muted);"><i class="ti ti-x"></i></button>
+            </div>
+            <div id="info-popup-body" class="info-modal-body"></div>
+            <div style="padding: 12px 24px; border-top: 1px solid var(--border); text-align: right; background: var(--bg);">
+                <button class="btn btn-secondary btn-sm" onclick="window.closeInfoPopup()">關閉</button>
+            </div>
+        </div>
+    </div>
+
     <div id="import-report-modal" class="dialog-overlay">
         <div class="dialog-box" style="max-width: 800px;">
             <div class="dialog-header">
@@ -757,23 +744,24 @@ input[type=number] { -moz-appearance: textfield; }
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                const p1 = getDoc(doc(db, "settings", "colleges")).then(snap => { if (snap.exists()) orderedColleges = snap.data().list.map(c => typeof c === 'string' ? { name: c, shortName: c } : c); });
-                const p2 = getDocs(collection(db, "departments")).then(snap => {
+                onSnapshot(studentsCol, (snap) => allStudents = snap.docs.map(d => ({id: d.id, ...d.data()})));
+                onSnapshot(instsCol, (snap) => allInsts = snap.docs.map(d => ({id: d.id, ...d.data()})));
+                onSnapshot(coursesCol, (snap) => { 
+                    allCourses = snap.docs.map(d => ({id: d.id, ...d.data()})); 
+                    allCourses.sort((a,b) => (b.academic_year+b.term).localeCompare(a.academic_year+a.term)); 
+                });
+                getDoc(doc(db, "settings", "colleges")).then(snap => { if (snap.exists()) orderedColleges = snap.data().list.map(c => typeof c === 'string' ? { name: c, shortName: c } : c); });
+                getDocs(collection(db, "departments")).then(snap => {
                     globalDepts = snap.docs.map(d => d.data());
                     globalDepts.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
                 });
-                const p3 = getDocs(studentsCol).then(s => allStudents = s.docs.map(d => ({id: d.id, ...d.data()})));
-                const p4 = getDocs(instsCol).then(s => allInsts = s.docs.map(d => ({id: d.id, ...d.data()})));
-                const p5 = getDocs(coursesCol).then(s => { allCourses = s.docs.map(d => ({id: d.id, ...d.data()})); allCourses.sort((a,b) => (b.academic_year+b.term).localeCompare(a.academic_year+a.term)); });
 
-                Promise.all([p1, p2, p3, p4, p5]).then(() => {
-                    setupGlobalListeners();
-                    onSnapshot(recordsCol, (snapshot) => {
-                        allRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                        renderFilterDropdowns(); 
-                        selectedIds = []; window.updateBatchActionBar(); window.renderTable();
-                    });
+                onSnapshot(recordsCol, (snapshot) => {
+                    allRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderFilterDropdowns(); 
+                    selectedIds = []; window.updateBatchActionBar(); window.renderTable();
                 });
+                setupGlobalListeners();
             }
         });
 
@@ -1017,11 +1005,16 @@ input[type=number] { -moz-appearance: textfield; }
 
             const handleFocus = (dropdown) => { dropdown.classList.add('show'); };
 
+            const checkBtn = (input, btnId, list, key) => {
+                const match = list.find(x => (x[key] === input.value || (x.student_id && input.value.startsWith(x.student_id))));
+                document.getElementById(btnId).disabled = !match;
+            };
+
             stuInput?.addEventListener('focus', () => { handleFocus(stuDropdown); renderStudentDropdown(allStudents, stuInput.value); });
-            stuInput?.addEventListener('input', () => { handleFocus(stuDropdown); renderStudentDropdown(allStudents, stuInput.value); window.autoFillStudentInfo(); });
+            stuInput?.addEventListener('input', () => { handleFocus(stuDropdown); renderStudentDropdown(allStudents, stuInput.value); checkBtn(stuInput, 'btn-info-student', allStudents, 'student_id'); window.updateRespDeptOptions(); });
             
             instInput?.addEventListener('focus', () => { handleFocus(instDropdown); renderInstDropdown(allInsts, instInput.value); });
-            instInput?.addEventListener('input', () => { handleFocus(instDropdown); renderInstDropdown(allInsts, instInput.value); window.autoFillInstInfo(); });
+            instInput?.addEventListener('input', () => { handleFocus(instDropdown); renderInstDropdown(allInsts, instInput.value); checkBtn(instInput, 'btn-info-inst', allInsts, 'name'); });
             
             courseInput?.addEventListener('focus', () => { handleFocus(courseDropdown); renderCourseDropdown(allCourses, courseInput.value); });
             courseInput?.addEventListener('input', () => { handleFocus(courseDropdown); renderCourseDropdown(allCourses, courseInput.value); });
@@ -1091,9 +1084,11 @@ input[type=number] { -moz-appearance: textfield; }
             dropdown.innerHTML = html;
         }
         window.selectStudent = (id, name) => { 
-            document.getElementById('input-student').value = `${id} - ${name}`; 
+            const stuIn = document.getElementById('input-student');
+            stuIn.value = `${id} - ${name}`; 
             document.getElementById('student-dropdown').classList.remove('show');
-            window.autoFillStudentInfo(); 
+            document.getElementById('btn-info-student').disabled = false;
+            window.updateRespDeptOptions(); 
         };
 
         function renderInstDropdown(list, term) {
@@ -1113,9 +1108,10 @@ input[type=number] { -moz-appearance: textfield; }
             dropdown.innerHTML = html;
         }
         window.selectInst = (name) => { 
-            document.getElementById('input-institution').value = name; 
+            const instIn = document.getElementById('input-institution');
+            instIn.value = name; 
             document.getElementById('institution-dropdown').classList.remove('show');
-            window.autoFillInstInfo(); 
+            document.getElementById('btn-info-inst').disabled = false;
         };
 
         function renderCourseDropdown(list, term) {
@@ -1151,9 +1147,17 @@ input[type=number] { -moz-appearance: textfield; }
 
         window.renderSelectedCourseChips = (skipRespUpdate = false) => {
             const container = document.getElementById('selected-courses-container'); 
-            const counter = document.getElementById('selected-course-count');
-            if(counter) counter.innerText = `已選 ${selectedCourseIds.length} 門`;
+            document.getElementById('selected-course-count').innerText = `已選 ${selectedCourseIds.length} 門`;
             
+            // 邏輯：超過 3 門課，容器高度鎖定 250px 並顯示捲軸
+            if (selectedCourseIds.length > 3) {
+                container.style.maxHeight = '250px';
+                container.style.paddingRight = '8px';
+            } else {
+                container.style.maxHeight = 'none';
+                container.style.paddingRight = '0';
+            }
+
             if (selectedCourseIds.length === 0) { 
                 container.innerHTML = '<div class="empty-state" style="padding:20px;"><div class="empty-text">尚未加入課程</div></div>'; 
                 if (!skipRespUpdate) window.updateRespDeptOptions(); 
@@ -1182,44 +1186,38 @@ input[type=number] { -moz-appearance: textfield; }
         
         window.removeCourse = (id) => { selectedCourseIds = selectedCourseIds.filter(cid => cid !== id); window.renderSelectedCourseChips(); };
 
-        window.autoFillStudentInfo = (skipRespUpdate = false) => {
-            const inputVal = document.getElementById('input-student').value; 
-            const card = document.getElementById('student-info-card');
-            const studentIdMatch = inputVal.split(' - ')[0]; 
-            const stu = allStudents.find(s => s.student_id === studentIdMatch);
-            
-            if (stu) {
-                card.innerHTML = `
-                    <div class="info-icon student"><i class="ti ti-user"></i></div>
-                    <div class="info-content">
-                        <div class="info-title">${stu.name} (${stu.student_id})</div>
-                        <div class="info-desc">${getColShort(stu.college)} / ${getDeptShort(stu.department)}</div>
-                    </div>`;
-                card.style.display = 'flex';
-            } else { 
-                card.innerHTML = `<div style="font-size:11px; font-weight:700; color:var(--danger); padding:4px;">查無主檔，將建立獨立紀錄</div>`; 
-                card.style.display = 'flex'; 
-            }
-            if (!skipRespUpdate) window.updateRespDeptOptions();
-        };
+        // ─── 詳情彈窗邏輯 ───
+        window.showInfoPopup = (type) => {
+            const container = document.getElementById('info-popup-body');
+            const title = document.getElementById('info-popup-title');
+            let html = '';
 
-        window.autoFillInstInfo = () => {
-            const inputVal = document.getElementById('input-institution').value; 
-            const card = document.getElementById('inst-info-card');
-            const inst = allInsts.find(i => i.name === inputVal);
-            if (inst) {
-                card.innerHTML = `
-                    <div class="info-icon inst"><i class="ti ti-building-skyscraper"></i></div>
-                    <div class="info-content">
-                        <div class="info-title">${inst.name}</div>
-                        <div class="info-desc">${inst.tax_id || '無統編'} | ${inst.address || ''}</div>
-                    </div>`;
-                card.style.display = 'flex';
-            } else { 
-                card.innerHTML = `<div style="font-size:11px; font-weight:700; color:var(--danger); padding:4px;">查無主檔，將建立獨立紀錄</div>`; 
-                card.style.display = 'flex'; 
+            if (type === 'student') {
+                const stuId = document.getElementById('input-student').value.split(' - ')[0];
+                const stu = allStudents.find(s => s.student_id === stuId);
+                if (!stu) return;
+                title.innerHTML = '<i class="ti ti-user" style="color:var(--brand); margin-right:4px;"></i> 學生詳細資訊';
+                html = `
+                    <div class="info-item"><span class="info-item-label">學號</span><div class="info-item-value">${stu.student_id}</div></div>
+                    <div class="info-item"><span class="info-item-label">姓名</span><div class="info-item-value">${stu.name}</div></div>
+                    <div class="info-item"><span class="info-item-label">所屬系所</span><div class="info-item-value">${stu.department}</div></div>
+                    <div class="info-item"><span class="info-item-label">所屬學院</span><div class="info-item-value">${stu.college}</div></div>
+                `;
+            } else {
+                const instName = document.getElementById('input-institution').value;
+                const inst = allInsts.find(i => i.name === instName);
+                if (!inst) return;
+                title.innerHTML = '<i class="ti ti-building-skyscraper" style="color:var(--success); margin-right:4px;"></i> 機構詳細資訊';
+                html = `
+                    <div class="info-item"><span class="info-item-label">機構名稱</span><div class="info-item-value">${inst.name}</div></div>
+                    <div class="info-item"><span class="info-item-label">統一編號</span><div class="info-item-value">${inst.tax_id || '無'}</div></div>
+                    <div class="info-item"><span class="info-item-label">通訊地址</span><div class="info-item-value">${inst.address || '無'}</div></div>
+                `;
             }
+            container.innerHTML = html;
+            document.getElementById('info-popup').classList.add('open');
         };
+        window.closeInfoPopup = () => document.getElementById('info-popup').classList.remove('open');
 
         // ─── BATCH & TABLE LOGIC ───
         window.toggleSelectPage = (e) => {
@@ -1259,8 +1257,9 @@ input[type=number] { -moz-appearance: textfield; }
                 document.getElementById('input-employment').value = '';
                 document.getElementById('input-notes').value = '';
                 
-                document.getElementById('student-info-card').style.display = 'none'; 
-                document.getElementById('inst-info-card').style.display = 'none';
+                document.getElementById('btn-info-student').disabled = true;
+                document.getElementById('btn-info-inst').disabled = true;
+
                 selectedCourseIds = []; window.renderSelectedCourseChips();
                 document.getElementById('input-resp-dept').innerHTML = '<option value="">請先選擇學生與關聯課程...</option>';
                 document.getElementById('modal-title').innerText = '新增實習紀錄';
@@ -1296,7 +1295,6 @@ input[type=number] { -moz-appearance: textfield; }
 
             filteredRecords = allRecords.filter(d => {
                 const matchSearch = (d.student_raw || '').toLowerCase().includes(searchTerm) || (d.inst_raw || '').toLowerCase().includes(searchTerm);
-                
                 let ok = matchSearch;
                 
                 if (ok && filterSelections.dept.size > 0) {
@@ -1310,7 +1308,6 @@ input[type=number] { -moz-appearance: textfield; }
                     ok = d.courses && d.courses.some(cid => filterSelections.course.has(cid));
                 }
                 if (ok && filterSelections.resp_dept.size > 0) ok = filterSelections.resp_dept.has(d.resp_dept);
-
                 if (ok && filterSelections.period.size > 0) ok = filterSelections.period.has(d.period_type);
                 if (ok && filterSelections.proof.size > 0) ok = filterSelections.proof.has(d.proof_type);
                 if (ok && filterSelections.insurance.size > 0) ok = filterSelections.insurance.has(d.insurance);
@@ -1678,7 +1675,6 @@ input[type=number] { -moz-appearance: textfield; }
             const respDeptInput = document.getElementById('input-resp-dept').value;
             const hoursVal = document.getElementById('input-hours').value.trim();
             
-            // 嚴格規定民國年格式 YYY/MM/DD-YYY/MM/DD (允許2~3位數年份)
             const regex = /^\d{2,3}\/\d{2}\/\d{2}-\d{2,3}\/\d{2}\/\d{2}$/;
             
             if (!regex.test(durationInput)) { alert("時間格式錯誤！格式應為：YYY/MM/DD-YYY/MM/DD (例如：114/07/01-114/08/31)"); return; }
@@ -1726,8 +1722,10 @@ input[type=number] { -moz-appearance: textfield; }
             document.getElementById('input-insurance').value = data.insurance || '';
             document.getElementById('input-employment').value = data.employment || '';
 
-            window.autoFillStudentInfo(true); 
-            window.autoFillInstInfo();
+            // 控制詳情按鈕啟動狀態
+            document.getElementById('btn-info-student').disabled = false;
+            document.getElementById('btn-info-inst').disabled = false;
+
             selectedCourseIds = Array.isArray(data.courses) ? [...data.courses] : [];
             window.renderSelectedCourseChips(true);
             
