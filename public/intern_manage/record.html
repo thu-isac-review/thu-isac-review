@@ -234,6 +234,9 @@ tr.selected td { background: #f0f4ff; }
 .badge-outline-blue { background: var(--brand-light); color: var(--brand); border: 1px solid var(--brand-border); }
 .badge-outline-green { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
 .badge-outline-amber { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+.badge-outline-red { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
+.badge-outline-indigo { background: var(--indigo-bg); color: var(--indigo); border: 1px solid var(--indigo-border); }
+.badge-outline-gray { background: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; }
 
 /* ─── PAGINATION ─── */
 .pagination-bar {
@@ -1458,9 +1461,19 @@ input[type=number] { -moz-appearance: textfield; }
                     }
                 }
 
-                let proofBadge = data.proof_type === '合約' ? 'badge-outline-green' : 'badge-outline-amber';
-                let insBadge = data.insurance === '兩者皆無' ? 'badge-outline-amber' : 'badge-outline-blue';
+                // 證明文件顏色邏輯
+                let proofBadge = 'badge-outline-gray';
+                if (data.proof_type === '合約') proofBadge = 'badge-outline-green';
+                else if (data.proof_type === '公函') proofBadge = 'badge-outline-blue';
+                else if (data.proof_type === '其他證明文件') proofBadge = 'badge-outline-amber';
 
+                // 投保情形顏色邏輯
+                let insBadge = 'badge-outline-gray';
+                if (data.insurance === '兩者皆有') insBadge = 'badge-outline-green';
+                else if (data.insurance === '僅校外實習保險') insBadge = 'badge-outline-indigo';
+                else if (data.insurance === '僅勞保') insBadge = 'badge-outline-blue';
+                else if (data.insurance === '兩者皆無') insBadge = 'badge-outline-red';
+              
                 tHtml += `
                 <tr class="${selectedIds.includes(data.id)?'selected':''}">
                     <td class="col-checkbox" style="text-align: center;">
