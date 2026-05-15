@@ -7,7 +7,6 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
-<!-- Tabler Icons -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 
 <style>
@@ -388,9 +387,7 @@ input[type=number] { -moz-appearance: textfield; }
 </head>
 <body>
 
-    <!-- ─── MAIN LIST VIEW ─── -->
     <div id="main-view" style="display: flex; flex-direction: column; height: 100%;">
-        <!-- TOOLBAR -->
         <div class="toolbar">
             <div class="search-wrap">
                 <i class="ti ti-search"></i>
@@ -412,10 +409,7 @@ input[type=number] { -moz-appearance: textfield; }
             </div>
         </div>
 
-        <!-- FILTER ROW & BATCH BAR -->
         <div class="filter-row" id="filter-container">
-            <!-- JS 動態產生 Filter Pills -->
-            
             <div id="batch-bar">
                 <div class="batch-info">
                     <i class="ti ti-checks" style="font-size:18px;"></i> 已選 <span id="selected-count">0</span> 筆紀錄
@@ -427,7 +421,6 @@ input[type=number] { -moz-appearance: textfield; }
             </div>
         </div>
 
-        <!-- TABLE AREA -->
         <div class="table-wrap">
             <div class="table-scroll custom-scroll">
                 <table>
@@ -464,7 +457,6 @@ input[type=number] { -moz-appearance: textfield; }
                 </table>
             </div>
             
-            <!-- PAGINATION -->
             <div class="pagination-bar">
                 <div class="pagination-info" id="pagination-info">共 0 筆</div>
                 <div class="pagination-bar-right">
@@ -482,7 +474,6 @@ input[type=number] { -moz-appearance: textfield; }
         </div>
     </div>
 
-    <!-- ─── FULL SCREEN MODAL: 編輯/新增紀錄 ─── -->
     <div id="data-modal" class="fs-modal">
         <div class="fs-topbar">
             <div class="fs-topbar-left">
@@ -497,9 +488,7 @@ input[type=number] { -moz-appearance: textfield; }
         
         <div class="fs-content custom-scroll">
             <div class="fs-container">
-                <!-- Top Row (3 Cards) -->
                 <div class="fs-row fs-row-top">
-                    <!-- Card 1: Student -->
                     <div class="modal-card">
                         <div class="modal-card-title"><i class="ti ti-user" style="color: var(--brand);"></i> 實習學生</div>
                         <div class="field z-index-fix" style="z-index: 30;">
@@ -519,7 +508,6 @@ input[type=number] { -moz-appearance: textfield; }
                         </div>
                     </div>
 
-                    <!-- Card 2: Institution -->
                     <div class="modal-card">
                         <div class="modal-card-title"><i class="ti ti-building-skyscraper" style="color: var(--success);"></i> 實習機構</div>
                         <div class="field z-index-fix" style="z-index: 20;">
@@ -532,7 +520,6 @@ input[type=number] { -moz-appearance: textfield; }
                         <div id="inst-info-card" class="info-card" style="display: none;"></div>
                     </div>
 
-                    <!-- Card 3: Courses -->
                     <div class="modal-card">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
                             <div class="modal-card-title" style="border: none; padding: 0; margin: 0;"><i class="ti ti-layers-linked" style="color: var(--indigo);"></i> 關聯課程</div>
@@ -551,9 +538,7 @@ input[type=number] { -moz-appearance: textfield; }
                     </div>
                 </div>
 
-                <!-- Bottom Row (2 Cards) -->
                 <div class="fs-row fs-row-bottom">
-                    <!-- Card 4: Conditions -->
                     <div class="modal-card">
                         <div class="modal-card-title"><i class="ti ti-clock" style="color: var(--warning);"></i> 實習條件與保障</div>
                         <div class="form-grid-3">
@@ -562,8 +547,8 @@ input[type=number] { -moz-appearance: textfield; }
                                 <input type="text" id="input-duration" class="field-input" placeholder="YYYY/MM/DD-YYYY/MM/DD" required>
                             </div>
                             <div class="field">
-                                <label class="field-label">核定時數 <span class="req">*</span></label>
-                                <input type="number" id="input-hours" class="field-input" placeholder="小時" min="1" required>
+                                <label class="field-label">總時數</label>
+                                <input type="number" id="input-hours" class="field-input" placeholder="可留空 (待補)" min="0">
                             </div>
                             <div class="field">
                                 <label class="field-label">實習時間 <span class="req">*</span></label>
@@ -596,7 +581,6 @@ input[type=number] { -moz-appearance: textfield; }
                         </div>
                     </div>
 
-                    <!-- Card 5: Admin -->
                     <div class="modal-card">
                         <div class="modal-card-title"><i class="ti ti-building-community" style="color: var(--text-secondary);"></i> 行政歸屬與備註</div>
                         <div class="field">
@@ -615,7 +599,6 @@ input[type=number] { -moz-appearance: textfield; }
         </div>
     </div>
 
-    <!-- ─── IMPORT REPORT MODAL ─── -->
     <div id="import-report-modal" class="dialog-overlay">
         <div class="dialog-box" style="max-width: 800px;">
             <div class="dialog-header">
@@ -643,8 +626,7 @@ input[type=number] { -moz-appearance: textfield; }
                         <div>狀態</div><div>Excel來源列</div><div>學號 / 姓名</div><div>詳細說明</div>
                     </div>
                     <div id="report-details-container" class="custom-scroll" style="max-height: 240px; overflow-y: auto; font-size: 13px;">
-                        <!-- JS 動態插入 -->
-                    </div>
+                        </div>
                 </div>
                 <div style="font-size: 11px; color: var(--text-muted); margin-top: 12px; font-weight: 500;">
                     <i class="ti ti-info-circle" style="color: var(--brand);"></i> 提示：帶有「異常綁定」的資料依然會被匯入系統，您可以事後透過編輯功能或補齊主檔來修正。
@@ -659,7 +641,6 @@ input[type=number] { -moz-appearance: textfield; }
         </div>
     </div>
 
-    <!-- Firebase 邏輯 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -1180,7 +1161,7 @@ input[type=number] { -moz-appearance: textfield; }
                     <td style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${courseCount}</div></td>
                     <td style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${totalCredits}</div></td>
                     <td style="text-align: center;"><div class="cell-primary">${data.duration || '-'}</div></td>
-                    <td style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.hours || 0}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.hours !== undefined && data.hours !== '' ? data.hours : '-'}</div></td>
                     <td style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.period_type || '-'}</div></td>
                     <td style="text-align: center;"><div class="badge ${proofBadge}">${data.proof_type || '-'}</div></td>
                     <td style="text-align: center;"><div class="badge ${insBadge}">${data.insurance || '-'}</div></td>
@@ -1210,7 +1191,7 @@ input[type=number] { -moz-appearance: textfield; }
                 const stuId = stuParts[0] || '';
                 const stuName = stuParts[1] || '';
 
-                csv += [stuId, stuName, d.grade, d.inst_raw, courseNames, d.resp_dept || '', d.duration, d.hours, d.period_type, d.proof_type, d.insurance, d.employment, d.notes || ''].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+                csv += [stuId, stuName, d.grade, d.inst_raw, courseNames, d.resp_dept || '', d.duration, d.hours !== undefined ? d.hours : '', d.period_type, d.proof_type, d.insurance, d.employment, d.notes || ''].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
             });
             const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
             link.download = `實習紀錄總表_${new Date().toISOString().split('T')[0]}.csv`; link.click();
@@ -1260,7 +1241,7 @@ input[type=number] { -moz-appearance: textfield; }
                             const coursesRaw = cols[4];
                             const resp_dept = cols[5] || ''; 
                             const duration = cols[6];        
-                            const hours = Number(cols[7]) || 0; 
+                            const hours = cols[7] ? Number(cols[7]) : ''; 
                             const period_type = cols[8];     
                             const proof_type = cols[9];      
                             const insurance = cols[10];      
@@ -1277,15 +1258,16 @@ input[type=number] { -moz-appearance: textfield; }
 
                             if (!recordsMap.has(key)) {
                                 recordsMap.set(key, {
-                                    student_raw: `${stuId} - ${stuName}`, stuId: stuId, stuName: stuName, grade, inst_raw, duration, hours: 0, 
+                                    student_raw: `${stuId} - ${stuName}`, stuId: stuId, stuName: stuName, grade, inst_raw, duration, hours: hours !== '' ? hours : 0, 
                                     period_type, proof_type, insurance, employment, notes, resp_dept, coursesRawList: [], courseIds: [], sourceRows: [] 
                                 });
+                            } else if (hours !== '') {
+                                const groupRecord = recordsMap.get(key);
+                                groupRecord.hours += hours; 
+                                groupRecord.sourceRows.push(i+1);
                             }
 
                             const groupRecord = recordsMap.get(key);
-                            groupRecord.hours += hours; 
-                            groupRecord.sourceRows.push(i+1);
-                            
                             if (notes && !groupRecord.notes.includes(notes)) {
                                 groupRecord.notes = groupRecord.notes ? `${groupRecord.notes}；${notes}` : notes;
                             }
@@ -1385,6 +1367,8 @@ input[type=number] { -moz-appearance: textfield; }
             const btn = document.getElementById('btn-submit');
             const durationInput = document.getElementById('input-duration').value.trim();
             const respDeptInput = document.getElementById('input-resp-dept').value;
+            const hoursVal = document.getElementById('input-hours').value.trim();
+            
             // 嚴格規定 YYYY/MM/DD 格式
             const regex = /^\d{3,4}\/\d{2}\/\d{2}-\d{3,4}\/\d{2}\/\d{2}$/;
             
@@ -1401,13 +1385,13 @@ input[type=number] { -moz-appearance: textfield; }
                 insurance: document.getElementById('input-insurance').value, 
                 employment: document.getElementById('input-employment').value, 
                 proof_type: document.getElementById('input-proof-type').value, 
-                hours: Number(document.getElementById('input-hours').value), 
+                hours: hoursVal === '' ? '' : Number(hoursVal), 
                 resp_dept: respDeptInput, 
                 notes: document.getElementById('input-notes').value.trim(), 
                 courses: selectedCourseIds
             };
 
-            if(!payload.student_raw || !payload.inst_raw || !payload.duration || !payload.hours || !payload.grade || !payload.period_type || !payload.proof_type || !payload.insurance || !payload.employment || !payload.resp_dept) { alert("請完成所有包含 * 號之必填選單與欄位設定！"); return; }
+            if(!payload.student_raw || !payload.inst_raw || !payload.duration || !payload.grade || !payload.period_type || !payload.proof_type || !payload.insurance || !payload.employment || !payload.resp_dept) { alert("請完成所有包含 * 號之必填選單與欄位設定！"); return; }
             
             btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 儲存中...';
             try {
@@ -1424,7 +1408,7 @@ input[type=number] { -moz-appearance: textfield; }
             document.getElementById('input-student').value = data.student_raw || '';
             document.getElementById('input-institution').value = data.inst_raw || '';
             document.getElementById('input-duration').value = data.duration || '';
-            document.getElementById('input-hours').value = data.hours || '';
+            document.getElementById('input-hours').value = data.hours !== undefined && data.hours !== '' ? data.hours : '';
             document.getElementById('input-notes').value = data.notes || '';
             
             document.getElementById('input-grade').value = data.grade || '';
