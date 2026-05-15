@@ -552,12 +552,12 @@ input[type=number] { -moz-appearance: textfield; }
                     </div>
             
                     <div class="clean-section stretch-section" style="display: flex; flex-direction: column;">
-                        <span id="selected-course-count" style="display: none;"></span>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px solid var(--brand-light); padding-bottom: 8px;">
+                            <div class="clean-section-title" style="border: none; padding: 0; margin: 0;"><i class="ti ti-layers-linked"></i> 關聯學分課程</div>
+                            <span id="selected-course-count" class="badge badge-outline-blue" style="font-size: 11px; padding: 4px 8px;">已選 0 門</span>
+                        </div>
                         
-                        <div id="selected-courses-container" class="custom-scroll" 
-                             style="display: flex; flex-direction: column; gap: 4px; overflow-y: scroll; 
-                                    height: 200px; border: 1px solid var(--border); border-radius: var(--radius); 
-                                    padding: 8px; background: var(--surface); flex: none;">
+                        <div id="selected-courses-container" class="custom-scroll" style="display: flex; flex-direction: column; gap: 4px; overflow-y: auto; flex: 1; border: 1px solid var(--border); border-radius: var(--radius); padding: 8px; background: var(--surface); min-height: 120px;">
                             <div class="empty-state" style="padding: 20px;"><div class="empty-text">尚未加入課程</div></div>
                         </div>
                     </div>
@@ -1166,9 +1166,7 @@ input[type=number] { -moz-appearance: textfield; }
 
         window.renderSelectedCourseChips = (skipRespUpdate = false) => {
             const container = document.getElementById('selected-courses-container'); 
-            // 雖然 HTML 隱藏了，但維持這行更新數據才不會噴錯
-            const countEl = document.getElementById('selected-course-count');
-            if (countEl) countEl.innerText = `已選 ${selectedCourseIds.length} 門`;
+            document.getElementById('selected-course-count').innerText = `已選 ${selectedCourseIds.length} 門`;
 
             if (selectedCourseIds.length === 0) { 
                 container.innerHTML = '<div class="empty-state" style="padding:20px;"><div class="empty-text">尚未加入課程</div></div>'; 
