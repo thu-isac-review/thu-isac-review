@@ -1287,14 +1287,14 @@ input[type=number] { -moz-appearance: textfield; }
                     <td class="col-checkbox" style="text-align: center;">
                         <input type="checkbox" value="${data.id}" onchange="window.toggleSelect('${data.id}')" ${selectedIds.includes(data.id)?'checked':''} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                     </td>
-                    <td style="text-align: center;"><div class="cell-primary">${stuId}</div></td>
-                    <td style="text-align: center;"><div class="cell-primary">${stuName}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary bold">${stuId}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary bold">${stuName}</div></td>
                     <td style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${stuDept}</div></td>
                     <td style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.grade || '-'}</div></td>
-                    <td style="text-align: left;"><div class="cell-primary">${data.inst_raw}</div></td>
+                    <td style="text-align: left;"><div class="cell-primary bold">${data.inst_raw}</div></td>
                     <td style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${courseCount}</div></td>
                     <td style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${totalCredits}</div></td>
-                    <td style="text-align: center;"><div class="cell-primary">${data.duration || '-'}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary bold">${data.duration || '-'}</div></td>
                     <td style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.hours !== undefined && data.hours !== '' ? data.hours : '-'}</div></td>
                     <td style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.period_type || '-'}</div></td>
                     <td style="text-align: center;"><div class="badge ${proofBadge}">${data.proof_type || '-'}</div></td>
