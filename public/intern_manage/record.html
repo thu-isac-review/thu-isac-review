@@ -283,8 +283,8 @@ tr.selected td { background: #f0f4ff; }
   padding: 20px 24px; 
 }
 
-.split-col { display: flex; flex-direction: column; }
-.stretch-section { flex: 1; display: flex; flex-direction: column; margin-bottom: 0 !important; }
+.split-col { display: flex; flex-direction: column; height: 100%; }
+.stretch-section { flex: 1; display: flex; flex-direction: column; margin-bottom: 0 !important; min-height: 0; }
   
 /* 修改重點 2：利用 margin: auto 將內容推到正中間 */
 .split-layout { 
@@ -546,7 +546,7 @@ input[type=number] { -moz-appearance: textfield; }
                     <div class="clean-section stretch-section" style="display: flex; flex-direction: column;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px solid var(--brand-light); padding-bottom: 8px;">
                             <div class="clean-section-title" style="border: none; padding: 0; margin: 0;"><i class="ti ti-layers-linked"></i> 關聯學分課程</div>
-                            <span id="selected-course-count" style="font-size: 11px; font-weight: 700; color: var(--text-muted);">已選 0 門</span>
+                            <span id="selected-course-count" class="badge badge-outline-blue" style="font-size: 11px; padding: 4px 8px;">已選 0 門</span>
                         </div>
                         
                         <div class="field z-index-fix" style="z-index: 10;">
@@ -557,7 +557,7 @@ input[type=number] { -moz-appearance: textfield; }
                             </div>
                         </div>
                         
-                        <div id="selected-courses-container" class="custom-scroll" style="display: flex; flex-direction: column; gap: 4px; margin-top: 12px; margin-bottom: 8px; overflow-y: auto; flex: 1;">
+                        <div id="selected-courses-container" class="custom-scroll" style="display: flex; flex-direction: column; gap: 4px; margin-top: 12px; overflow-y: auto; flex: 1; border: 1px solid var(--border); border-radius: var(--radius); padding: 8px; background: var(--surface); min-height: 120px;">
                             <div class="empty-state" style="padding: 20px;"><div class="empty-text">尚未加入課程</div></div>
                         </div>
                     </div>
