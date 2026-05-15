@@ -1138,9 +1138,16 @@ input[type=number] { -moz-appearance: textfield; }
             const dropdown = document.getElementById('course-dropdown'); 
             const val = term.trim().toLowerCase();
             const available = list.filter(c => !selectedCourseIds.includes(c.id));
-            const filtered = available.filter(c => 
-                c.course_name.toLowerCase().includes(val) || c.course_code.toLowerCase().includes(val) || c.department.toLowerCase().includes(val)
-            );
+            
+            const filtered = available.filter(c => {
+                // 取得該課程的系所簡稱並轉為小寫
+                const deptShort = getDeptShort(c.department).toLowerCase();
+                
+                return c.course_name.toLowerCase().includes(val) || 
+                       c.course_code.toLowerCase().includes(val) || 
+                       c.department.toLowerCase().includes(val) ||
+                       deptShort.includes(val); // 新增：比對系所簡稱
+            });
             
             if (filtered.length === 0) { dropdown.innerHTML = '<div style="padding:12px; text-align:center; font-size:11px; color:var(--text-muted);">查無相符或可選擇之課程</div>'; return; }
 
