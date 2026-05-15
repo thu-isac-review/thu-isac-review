@@ -662,13 +662,18 @@ input[type=number] { -moz-appearance: textfield; }
         window.globalImportReportData = [];
 
         const filterSelections = {
+            dept: new Set(), grade: new Set(), inst_raw: new Set(), resp_dept: new Set(),
             period: new Set(), proof: new Set(), insurance: new Set(), employment: new Set()
         };
         const filterDefinitions = [
-            { key: 'period', label: '實習時間' },
-            { key: 'proof', label: '證明文件' },
-            { key: 'insurance', label: '投保情形' },
-            { key: 'employment', label: '勞雇關係' }
+            { key: 'dept', label: '學系', searchable: true },
+            { key: 'grade', label: '年級', searchable: false },
+            { key: 'inst_raw', label: '機構名稱', searchable: true },
+            { key: 'resp_dept', label: '填報系所', searchable: true },
+            { key: 'period', label: '實習時間', searchable: false },
+            { key: 'proof', label: '證明文件', searchable: false },
+            { key: 'insurance', label: '投保情形', searchable: false },
+            { key: 'employment', label: '勞雇關係', searchable: false }
         ];
 
         const getTime = (ts) => ts ? (ts.toMillis ? ts.toMillis() : (ts.seconds ? ts.seconds * 1000 : new Date(ts).getTime() || 0)) : 0;
@@ -698,10 +703,14 @@ input[type=number] { -moz-appearance: textfield; }
         function renderFilterDropdowns() {
             const container = document.getElementById('filter-container');
             const filterOptions = {
-                period: ['寒假實習', '暑假實習', '學期期間實習', '單一學期實習', '全學年'],
-                proof: ['合約', '公函', '其他證明文件'],
-                insurance: ['僅校外實習保險', '僅勞保', '兩者皆有', '兩者皆無'],
-                employment: ['是', '否']
+                dept: [...new Set(globalDepts.map(d=>d.name))].map(v=>({value:v, label: getDeptShort(v)})),
+                grade: ['1', '2', '3', '4', '5'].map(v=>({value:v, label: `${v} 年級${v==='5'?'以上':''}`})),
+                inst_raw: [...new Set(allRecords.map(r=>r.inst_raw))].filter(Boolean).sort().map(v=>({value:v, label:v})),
+                resp_dept: [...new Set(globalDepts.map(d=>d.name))].map(v=>({value:v, label: getDeptShort(v)})),
+                period: ['寒假實習', '暑假實習', '學期期間實習', '單一學期實習', '全學年'].map(v=>({value:v, label:v})),
+                proof: ['合約', '公函', '其他證明文件'].map(v=>({value:v, label:v})),
+                insurance: ['僅校外實習保險', '僅勞保', '兩者皆有', '兩者皆無'].map(v=>({value:v, label:v})),
+                employment: ['是', '否'].map(v=>({value:v, label:v}))
             };
 
             let html = '';
@@ -709,12 +718,22 @@ input[type=number] { -moz-appearance: textfield; }
                 const opts = filterOptions[def.key] || [];
                 let optionsHtml = '';
                 opts.forEach(opt => {
+                    const val = typeof opt === 'object' ? opt.value : opt;
+                    const lbl = typeof opt === 'object' ? opt.label : opt;
                     optionsHtml += `
                     <label class="filter-option">
-                        <input type="checkbox" class="filter-chk-${def.key}" value="${opt}" onchange="window.toggleFilterCheck('${def.key}', '${opt}')"> 
-                        <span>${opt}</span>
+                        <input type="checkbox" class="filter-chk-${def.key}" value="${val}" onchange="window.toggleFilterCheck('${def.key}', '${val}')"> 
+                        <span>${lbl}</span>
                     </label>`;
                 });
+
+                let searchHtml = '';
+                if (def.searchable) {
+                    searchHtml = `
+                    <div class="filter-dropdown-search">
+                        <input type="text" id="search-${def.key}-input" placeholder="搜尋${def.label}..." onkeyup="window.filterDropdownItems(this, '${def.key}-options-container')">
+                    </div>`;
+                }
 
                 html += `
                 <div class="filter-pill-wrap" id="pill-wrap-${def.key}">
@@ -722,16 +741,27 @@ input[type=number] { -moz-appearance: textfield; }
                         ${def.label} <i class="ti ti-chevron-down"></i>
                     </button>
                     <div class="filter-dropdown" id="drop-${def.key}">
-                        <div class="filter-dropdown-list">${optionsHtml}</div>
+                        ${searchHtml}
+                        <div class="filter-dropdown-list" id="${def.key}-options-container">${optionsHtml}</div>
                         <div class="filter-dropdown-footer">
                             <button onclick="window.clearFilter('${def.key}')">清除此篩選</button>
                         </div>
                     </div>
                 </div>`;
             });
-            const batchBar = document.getElementById('batch-bar');
+            
+            container.querySelectorAll('.filter-pill-wrap').forEach(el => el.remove());
             container.insertAdjacentHTML('afterbegin', html);
         }
+
+        window.filterDropdownItems = (input, containerId) => {
+            const term = input.value.toLowerCase();
+            const labels = document.getElementById(containerId).querySelectorAll('.filter-option');
+            labels.forEach(lbl => {
+                const text = lbl.textContent.toLowerCase();
+                lbl.style.display = text.includes(term) ? 'flex' : 'none';
+            });
+        };
 
         window.toggleDropdown = (type) => {
             const drop = document.getElementById(`drop-${type}`);
@@ -1059,6 +1089,16 @@ input[type=number] { -moz-appearance: textfield; }
                 const matchSearch = (d.student_raw || '').toLowerCase().includes(searchTerm) || (d.inst_raw || '').toLowerCase().includes(searchTerm);
                 
                 let ok = matchSearch;
+                
+                if (ok && filterSelections.dept.size > 0) {
+                    const stuId = (d.student_raw || '').split(' - ')[0];
+                    const stu = allStudents.find(s => s.student_id === stuId);
+                    ok = stu && filterSelections.dept.has(stu.department);
+                }
+                if (ok && filterSelections.grade.size > 0) ok = filterSelections.grade.has(d.grade);
+                if (ok && filterSelections.inst_raw.size > 0) ok = filterSelections.inst_raw.has(d.inst_raw);
+                if (ok && filterSelections.resp_dept.size > 0) ok = filterSelections.resp_dept.has(d.resp_dept);
+                
                 if (ok && filterSelections.period.size > 0) ok = filterSelections.period.has(d.period_type);
                 if (ok && filterSelections.proof.size > 0) ok = filterSelections.proof.has(d.proof_type);
                 if (ok && filterSelections.insurance.size > 0) ok = filterSelections.insurance.has(d.insurance);
@@ -1066,7 +1106,7 @@ input[type=number] { -moz-appearance: textfield; }
                 
                 return ok;
             });
-
+          
             // Sorting - Add logic for all the split columns
             filteredRecords.sort((a, b) => {
                 let valA = ''; let valB = '';
