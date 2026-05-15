@@ -191,6 +191,7 @@ html, body {
 /* ─── TABLE ─── */
 .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; position: relative; }
 .table-scroll { flex: 1; overflow-x: auto; overflow-y: auto; }
+/* 套用最新的寬度擴充 */
 table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; min-width: 2000px; }
 
 th {
@@ -477,7 +478,7 @@ input[type=number] { -moz-appearance: textfield; }
         </div>
     </div>
 
-    <!-- DIALOGS AND MODALS OMITTED FOR BREVITY, REST OF CODE REMAINS EXACTLY SAME AS ORIGINAL -->
+    <!-- DIALOGS -->
     <div id="data-modal" class="fs-modal">
         <div class="fs-topbar">
             <div class="fs-topbar-left">
@@ -604,7 +605,6 @@ input[type=number] { -moz-appearance: textfield; }
     </div>
 
     <div id="import-report-modal" class="dialog-overlay">
-        <!-- Import logic HTML remains exactly same -->
         <div class="dialog-box" style="max-width: 800px;">
             <div class="dialog-header">
                 <h3><i class="ti ti-file-invoice"></i> 批次匯入結果報告</h3>
@@ -666,6 +666,9 @@ input[type=number] { -moz-appearance: textfield; }
 
         window.globalImportReportData = [];
 
+        // 定義全域格式化課程函數
+        const formatCourseInfo = (c) => c ? `${c.academic_year}-${c.term}_${c.course_code}：${c.course_name}` : '';
+
         // --- COLUMNS SETTING STATE ---
         window.tableColumns = [
             { index: 1, label: '學號', visible: true },
@@ -706,14 +709,16 @@ input[type=number] { -moz-appearance: textfield; }
             styleEl.innerHTML = css;
         };
 
+        // 修改：新增 course (修習課程) 至篩選狀態
         const filterSelections = {
-            dept: new Set(), grade: new Set(), inst_raw: new Set(), resp_dept: new Set(),
+            dept: new Set(), grade: new Set(), inst_raw: new Set(), course: new Set(), resp_dept: new Set(),
             period: new Set(), proof: new Set(), insurance: new Set(), employment: new Set()
         };
         const filterDefinitions = [
             { key: 'dept', label: '學系', searchable: true },
             { key: 'grade', label: '年級', searchable: false },
             { key: 'inst_raw', label: '機構名稱', searchable: true },
+            { key: 'course', label: '修習課程', searchable: true },
             { key: 'resp_dept', label: '填報系所', searchable: true },
             { key: 'period', label: '實習時間', searchable: false },
             { key: 'proof', label: '證明文件', searchable: false },
@@ -769,6 +774,9 @@ input[type=number] { -moz-appearance: textfield; }
                     }
                     if (key !== 'grade' && ok && filterSelections.grade.size > 0) ok = filterSelections.grade.has(d.grade);
                     if (key !== 'inst_raw' && ok && filterSelections.inst_raw.size > 0) ok = filterSelections.inst_raw.has(d.inst_raw);
+                    if (key !== 'course' && ok && filterSelections.course.size > 0) {
+                        ok = d.courses && d.courses.some(cid => filterSelections.course.has(cid));
+                    }
                     if (key !== 'resp_dept' && ok && filterSelections.resp_dept.size > 0) ok = filterSelections.resp_dept.has(d.resp_dept);
                     if (key !== 'period' && ok && filterSelections.period.size > 0) ok = filterSelections.period.has(d.period_type);
                     if (key !== 'proof' && ok && filterSelections.proof.size > 0) ok = filterSelections.proof.has(d.proof_type);
@@ -784,6 +792,8 @@ input[type=number] { -moz-appearance: textfield; }
                             if (d.grade) availableValues.add(d.grade);
                         } else if (key === 'inst_raw') {
                             if (d.inst_raw) availableValues.add(d.inst_raw);
+                        } else if (key === 'course') {
+                            if (d.courses) d.courses.forEach(cid => availableValues.add(cid));
                         } else if (key === 'resp_dept') {
                             if (d.resp_dept) availableValues.add(d.resp_dept);
                         } else if (key === 'period') {
@@ -825,10 +835,19 @@ input[type=number] { -moz-appearance: textfield; }
             const container = document.getElementById('filter-container');
             const uniqueSortedDepts = [...new Set(globalDepts.map(d=>d.name))];
             
+            // 抓取被紀錄使用過的獨立課程
+            const uniqueUsedCourses = [...new Set(allRecords.flatMap(r => r.courses || []))];
+            const courseOptions = uniqueUsedCourses.map(cid => {
+                const c = allCourses.find(x => x.id === cid);
+                return { value: cid, label: c ? formatCourseInfo(c) : cid };
+            }).filter(opt => opt.label !== opt.value);
+            courseOptions.sort((a,b) => a.label.localeCompare(b.label));
+
             const filterOptions = {
                 dept: uniqueSortedDepts.map(v=>({value:v, label: getDeptShort(v)})),
                 grade: ['1', '2', '3', '4', '5'].map(v=>({value:v, label: `${v} 年級${v==='5'?'以上':''}`})),
                 inst_raw: [...new Set(allRecords.map(r=>r.inst_raw))].filter(Boolean).sort().map(v=>({value:v, label:v})),
+                course: courseOptions,
                 resp_dept: uniqueSortedDepts.map(v=>({value:v, label: getDeptShort(v)})),
                 period: ['寒假實習', '暑假實習', '學期期間實習', '單一學期實習', '全學年'].map(v=>({value:v, label:v})),
                 proof: ['合約', '公函', '其他證明文件'].map(v=>({value:v, label:v})),
@@ -877,12 +896,12 @@ input[type=number] { -moz-appearance: textfield; }
                 </div>`;
             });
 
-            // ─── 加入自訂顯示欄位切換 ───
+            // ─── 新增自訂顯示欄位切換，更新圖標為 adjustments-horizontal，並使用粗體 ───
             html += `
             <div class="flex-spacer"></div>
             <div class="filter-pill-wrap" id="pill-wrap-col-toggle">
-                <button class="filter-pill" id="pill-col-toggle" onclick="window.toggleDropdown('col-toggle')">
-                    <i class="ti ti-layout-columns"></i> 顯示欄位 <i class="ti ti-chevron-down"></i>
+                <button class="filter-pill" id="pill-col-toggle" onclick="window.toggleDropdown('col-toggle')" style="font-weight: 700; color: var(--text-primary);">
+                    <i class="ti ti-adjustments-horizontal" style="font-size: 16px;"></i> 顯示欄位 <i class="ti ti-chevron-down"></i>
                 </button>
                 <div class="filter-dropdown" id="drop-col-toggle" style="right: 0; left: auto; min-width: 160px;">
                     <div class="filter-dropdown-list custom-scroll" style="max-height: 250px; padding: 8px;">
@@ -1253,6 +1272,9 @@ input[type=number] { -moz-appearance: textfield; }
                 }
                 if (ok && filterSelections.grade.size > 0) ok = filterSelections.grade.has(d.grade);
                 if (ok && filterSelections.inst_raw.size > 0) ok = filterSelections.inst_raw.has(d.inst_raw);
+                if (ok && filterSelections.course.size > 0) {
+                    ok = d.courses && d.courses.some(cid => filterSelections.course.has(cid));
+                }
                 if (ok && filterSelections.resp_dept.size > 0) ok = filterSelections.resp_dept.has(d.resp_dept);
 
                 if (ok && filterSelections.period.size > 0) ok = filterSelections.period.has(d.period_type);
@@ -1263,7 +1285,7 @@ input[type=number] { -moz-appearance: textfield; }
                 return ok;
             });
 
-            // Sorting - Add logic for all the split columns
+            // Sorting
             filteredRecords.sort((a, b) => {
                 let valA = ''; let valB = '';
 
@@ -1341,25 +1363,21 @@ input[type=number] { -moz-appearance: textfield; }
                     });
                 }
 
-                // 修改：修習課程的顯示與收折邏輯
                 let coursesHtml = '-';
                 let courseAlign = 'center';
                 if (data.courses && data.courses.length > 0) {
                     const courseObjs = data.courses.map(cid => allCourses.find(x => x.id === cid)).filter(Boolean);
                     if (courseObjs.length > 0) {
-                        const formatCourse = (c) => `${c.academic_year}-${c.term}_${c.course_code}：${c.course_name}`;
-                        
-                        // 修正 2：移除 white-space: nowrap 等截斷樣式，允許文字自動換行，完整顯示課程名稱
                         const badgeStyle = 'max-width: 100%; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle;';
-                        const firstCourseTag = `<span class="badge badge-outline-blue" style="${badgeStyle}" title="${formatCourse(courseObjs[0])}">${formatCourse(courseObjs[0])}</span>`;
+                        const firstCourseTag = `<span class="badge badge-outline-blue" style="${badgeStyle}" title="${formatCourseInfo(courseObjs[0])}">${formatCourseInfo(courseObjs[0])}</span>`;
                         
                         if (courseObjs.length > 1) {
                             const otherCoursesHtml = courseObjs.slice(1).map(c => `
                                 <div style="margin-top: 4px;">
-                                    <span class="badge badge-outline-blue" style="${badgeStyle}" title="${formatCourse(c)}">${formatCourse(c)}</span>
+                                    <span class="badge badge-outline-blue" style="${badgeStyle}" title="${formatCourseInfo(c)}">${formatCourseInfo(c)}</span>
                                 </div>
                             `).join('');
-                
+
                             coursesHtml = `
                                 <div style="display:flex; flex-direction:column; width:100%;">
                                     <div style="display:flex; align-items:center; justify-content:space-between; gap:6px; width:100%;">
@@ -1378,11 +1396,11 @@ input[type=number] { -moz-appearance: textfield; }
                                 <div style="display:flex; align-items:center; width:100%;">
                                     <div style="flex: 1; min-width: 0; text-align: left; display: flex;">${firstCourseTag}</div>
                                 </div>
-            `;
-        }
-        courseAlign = 'left';
-    }
-}
+                            `;
+                        }
+                        courseAlign = 'left';
+                    }
+                }
 
                 let proofBadge = data.proof_type === '合約' ? 'badge-outline-green' : 'badge-outline-amber';
                 let insBadge = data.insurance === '兩者皆無' ? 'badge-outline-amber' : 'badge-outline-blue';
@@ -1425,7 +1443,7 @@ input[type=number] { -moz-appearance: textfield; }
             filteredRecords.forEach(d => {
                 let courseNames = (Array.isArray(d.courses) ? d.courses : []).map(cid => { 
                     const c = allCourses.find(x => x.id === cid); 
-                    return c ? `${c.academic_year}-${c.term}_${c.course_code}：${c.course_name}` : ''; 
+                    return c ? formatCourseInfo(c) : ''; 
                 }).filter(Boolean).join('、');
                 
                 const stuParts = (d.student_raw || '').split(' - ');
