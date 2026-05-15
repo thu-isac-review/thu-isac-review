@@ -191,7 +191,6 @@ html, body {
 /* ─── TABLE ─── */
 .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; position: relative; }
 .table-scroll { flex: 1; overflow-x: auto; overflow-y: auto; }
-/* 套用最新的寬度擴充 */
 table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; min-width: 2000px; }
 
 th {
@@ -229,7 +228,7 @@ tr.selected td { background: #f0f4ff; }
 .cell-secondary { font-size: 11px; color: var(--text-muted); margin-top: 4px; line-height: 1.4; font-weight: 500; }
 .row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; }
 
-/* Badges for Table */
+/* Badges for Table (更新多種顏色) */
 .badge { display: inline-flex; align-items: center; justify-content: center; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; }
 .badge-outline-blue { background: var(--brand-light); color: var(--brand); border: 1px solid var(--brand-border); }
 .badge-outline-green { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
@@ -287,9 +286,9 @@ tr.selected td { background: #f0f4ff; }
 .dialog-body { padding: 24px; overflow-y: auto; max-height: calc(85vh - 130px); }
 .dialog-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg); }
 
-/* ─── FULL SCREEN MODAL (For Record Form) ─── */
+/* ─── FULL SCREEN MODAL (Borderless Split-Panel Design) ─── */
 .fs-modal {
-  position: fixed; inset: 0; background: var(--bg); z-index: 200;
+  position: fixed; inset: 0; background: var(--surface); z-index: 200;
   display: none; flex-direction: column; height: 100vh; width: 100vw;
   animation: pageFadeIn 0.25s ease-out;
 }
@@ -297,31 +296,28 @@ tr.selected td { background: #f0f4ff; }
 .fs-topbar {
   height: 60px; background: var(--surface); border-bottom: 1px solid var(--border);
   display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0;
-  box-shadow: var(--shadow-sm); z-index: 10;
+  z-index: 10;
 }
 .fs-topbar-left { display: flex; align-items: center; gap: 12px; }
 .fs-topbar-title { font-size: 16px; font-weight: 700; color: var(--text-primary); }
-.fs-content { flex: 1; overflow-y: auto; padding: 24px; display: flex; justify-content: center; }
-.fs-container { width: 100%; max-width: 1400px; display: flex; flex-direction: column; gap: 20px; }
+.fs-content { flex: 1; overflow-y: auto; padding: 40px 24px; display: flex; justify-content: center; }
 
-/* Modal Cards & Grid */
-.modal-card {
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
-  padding: 20px; display: flex; flex-direction: column; box-shadow: var(--shadow-sm);
-  position: relative;
+/* 左右分欄網格 */
+.split-layout { 
+  display: grid; grid-template-columns: 1fr 1fr; gap: 48px; 
+  width: 100%; max-width: 1100px; margin: 0 auto; 
 }
-.modal-card-title { font-size: 13px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
-.modal-card-title i { font-size: 18px; }
-
-.fs-row { display: grid; gap: 20px; }
-.fs-row-top { grid-template-columns: 1fr 1fr 1.2fr; }
-.fs-row-bottom { grid-template-columns: 1.5fr 1fr; }
+.clean-section { margin-bottom: 40px; }
+.clean-section-title { 
+  font-size: 15px; font-weight: 700; color: var(--text-primary); 
+  margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--brand-light); 
+  display: flex; align-items: center; gap: 8px; 
+}
+.clean-section-title i { color: var(--brand); font-size: 18px; }
 
 /* ─── FORM ELEMENTS INSIDE DIALOG ─── */
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
-.field:last-child { margin-bottom: 0; }
+.field { display: flex; flex-direction: column; gap: 6px; }
 .field-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); }
 .field-label .req { color: var(--danger); margin-left: 2px; }
 .field-input, .field-select {
@@ -348,17 +344,17 @@ input[type=number] { -moz-appearance: textfield; }
 .search-item-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
 .search-item-desc { font-size: 11px; color: var(--text-muted); font-weight: 500; }
 
-/* Info Cards in Modal */
-.info-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; display: flex; align-items: flex-start; gap: 12px; margin-top: 12px; }
-.info-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+/* Info Cards in Modal (simplified for clean layout) */
+.info-card { background: var(--bg); border: 1px dashed var(--border); border-radius: var(--radius); padding: 12px; display: flex; align-items: flex-start; gap: 12px; margin-top: 8px; }
+.info-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
 .info-icon.student { background: var(--brand-light); color: var(--brand); }
 .info-icon.inst { background: var(--success-bg); color: var(--success); }
 .info-content { flex: 1; min-width: 0; }
-.info-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.info-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .info-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.4; }
 
 /* Selected Courses Box */
-.selected-course-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 8px; }
+.selected-course-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--bg); border: 1px dashed var(--border); border-radius: var(--radius); margin-bottom: 8px; }
 .selected-course-item:last-child { margin-bottom: 0; }
 .selected-course-info { display: flex; flex-direction: column; gap: 4px; }
 .selected-course-top { display: flex; align-items: center; gap: 6px; }
@@ -374,7 +370,7 @@ input[type=number] { -moz-appearance: textfield; }
 .empty-text { font-size: 13px; font-weight: 600; }
 
 @media (max-width: 1024px) {
-  .fs-row-top, .fs-row-bottom { grid-template-columns: 1fr; }
+  .split-layout { grid-template-columns: 1fr; gap: 24px; }
 }
 
 @media (max-width: 768px) {
@@ -386,57 +382,32 @@ input[type=number] { -moz-appearance: textfield; }
   .toolbar-actions { order: 2; width: 100%; justify-content: space-between; display: flex; gap: 8px; }
   .toolbar-actions .btn { flex: 1; padding: 0 4px; font-size: 11px; margin: 0; }
   .v-divider { display: none; }
-  .form-grid, .form-grid-3 { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
   .fs-topbar { padding: 0 16px; }
   .fs-content { padding: 16px; }
 
-  /* ===== 新增：篩選列單行滑動與顯示欄位按鈕固定 ===== */
+  /* 橫向滑動與顯示欄位按鈕固定 */
   .filter-row {
     flex-wrap: nowrap;
     overflow-x: auto;
-    padding-right: 0; /* 移除右側內距，讓固定按鈕完全貼齊邊緣 */
-    -webkit-overflow-scrolling: touch; /* 確保 iOS 滑動順暢 */
-    scrollbar-width: none; /* 隱藏 Firefox 捲軸 */
+    padding-right: 0;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
   }
-  .filter-row::-webkit-scrollbar {
-    display: none; /* 隱藏 Chrome/Safari 捲軸 */
-  }
-  .filter-pill-wrap {
-    flex-shrink: 0; /* 避免標籤被壓縮 */
-  }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .filter-pill-wrap { flex-shrink: 0; }
   
-  /* 將顯示設定固定於最右側 */
   #pill-wrap-col-toggle {
-    position: sticky;
-    right: 0;
-    background: var(--bg);
-    padding-left: 8px;
-    padding-right: 16px;
-    margin-left: auto;
-    z-index: 50;
+    position: sticky; right: 0; background: var(--bg);
+    padding-left: 8px; padding-right: 16px; margin-left: auto; z-index: 50;
   }
-  
-  /* 左側漸層遮罩，讓滑動過去的標籤有隱沒效果 */
   #pill-wrap-col-toggle::before {
-    content: '';
-    position: absolute;
-    left: -16px;
-    top: 0;
-    bottom: 0;
-    width: 16px;
-    background: linear-gradient(to right, rgba(248,249,252,0), #f8f9fc);
-    pointer-events: none;
+    content: ''; position: absolute; left: -16px; top: 0; bottom: 0; width: 16px;
+    background: linear-gradient(to right, rgba(248,249,252,0), #f8f9fc); pointer-events: none;
   }
-
-  /* 避免下拉選單被 overflow-x 切斷，改為固定定位 */
   .filter-dropdown {
-    position: fixed !important;
-    top: 145px !important; /* 定位在篩選列下方 */
-    left: 16px !important;
-    right: 16px !important;
-    width: auto !important;
-    min-width: auto !important;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important;
+    position: fixed !important; top: 145px !important; left: 16px !important; right: 16px !important;
+    width: auto !important; min-width: auto !important; box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important;
   }
 }
 </style>
@@ -447,7 +418,7 @@ input[type=number] { -moz-appearance: textfield; }
         <div class="toolbar">
             <div class="search-wrap">
                 <i class="ti ti-search"></i>
-                <input type="text" id="search-input" placeholder="搜尋學號、姓名或機構名稱..." class="search-input">
+                <input type="text" id="search-input" placeholder="搜尋學號、姓名、機構..." class="search-input">
             </div>
             <div class="flex-spacer"></div>
             <div class="toolbar-actions">
@@ -530,7 +501,7 @@ input[type=number] { -moz-appearance: textfield; }
         </div>
     </div>
 
-    <!-- DIALOGS -->
+    <!-- ─── FULL SCREEN MODAL (無邊界左右分欄) ─── -->
     <div id="data-modal" class="fs-modal">
         <div class="fs-topbar">
             <div class="fs-topbar-left">
@@ -544,31 +515,32 @@ input[type=number] { -moz-appearance: textfield; }
         </div>
         
         <div class="fs-content custom-scroll">
-            <div class="fs-container">
-                <div class="fs-row fs-row-top">
-                    <div class="modal-card">
-                        <div class="modal-card-title"><i class="ti ti-user" style="color: var(--brand);"></i> 實習學生</div>
-                        <div class="field z-index-fix" style="z-index: 30;">
-                            <label class="field-label">學生 <span class="req">*</span></label>
-                            <div class="search-input-wrap">
-                                <input type="text" id="input-student" class="field-input" placeholder="搜尋學號或姓名..." autocomplete="off">
-                                <div id="student-dropdown" class="search-dropdown custom-scroll"></div>
+            <div class="split-layout">
+                <!-- 左半部 -->
+                <div>
+                    <div class="clean-section">
+                        <div class="clean-section-title"><i class="ti ti-user"></i> 實習對象與機構</div>
+                        
+                        <div class="form-grid">
+                            <div class="field z-index-fix" style="z-index: 30;">
+                                <label class="field-label">實習學生 <span class="req">*</span></label>
+                                <div class="search-input-wrap">
+                                    <input type="text" id="input-student" class="field-input" placeholder="搜尋學號或姓名..." autocomplete="off">
+                                    <div id="student-dropdown" class="search-dropdown custom-scroll"></div>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="field-label">當學年年級 <span class="req">*</span></label>
+                                <select id="input-grade" class="field-select" required>
+                                    <option value="">請選擇</option>
+                                    <option value="1">1 年級</option><option value="2">2 年級</option><option value="3">3 年級</option><option value="4">4 年級</option><option value="5">5 年級以上</option>
+                                </select>
                             </div>
                         </div>
                         <div id="student-info-card" class="info-card" style="display: none;"></div>
-                        <div class="field" style="margin-top: auto; padding-top: 16px;">
-                            <label class="field-label">當學年年級 <span class="req">*</span></label>
-                            <select id="input-grade" class="field-select" required>
-                                <option value="">請選擇</option>
-                                <option value="1">1 年級</option><option value="2">2 年級</option><option value="3">3 年級</option><option value="4">4 年級</option><option value="5">5 年級以上</option>
-                            </select>
-                        </div>
-                    </div>
 
-                    <div class="modal-card">
-                        <div class="modal-card-title"><i class="ti ti-building-skyscraper" style="color: var(--success);"></i> 實習機構</div>
-                        <div class="field z-index-fix" style="z-index: 20;">
-                            <label class="field-label">機構 <span class="req">*</span></label>
+                        <div class="field z-index-fix" style="z-index: 20; margin-top: 16px;">
+                            <label class="field-label">實習機構 <span class="req">*</span></label>
                             <div class="search-input-wrap">
                                 <input type="text" id="input-institution" class="field-input" placeholder="搜尋機構名稱或統編..." autocomplete="off">
                                 <div id="institution-dropdown" class="search-dropdown custom-scroll"></div>
@@ -577,11 +549,12 @@ input[type=number] { -moz-appearance: textfield; }
                         <div id="inst-info-card" class="info-card" style="display: none;"></div>
                     </div>
 
-                    <div class="modal-card">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
-                            <div class="modal-card-title" style="border: none; padding: 0; margin: 0;"><i class="ti ti-layers-linked" style="color: var(--indigo);"></i> 關聯課程</div>
+                    <div class="clean-section">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px solid var(--brand-light); padding-bottom: 8px;">
+                            <div class="clean-section-title" style="border: none; padding: 0; margin: 0;"><i class="ti ti-layers-linked"></i> 關聯學分課程</div>
                             <span id="selected-course-count" style="font-size: 11px; font-weight: 700; color: var(--text-muted);">已選 0 門</span>
                         </div>
+                        
                         <div class="field z-index-fix" style="z-index: 10;">
                             <label class="field-label">搜尋課程 <span class="req">*</span></label>
                             <div class="search-input-wrap">
@@ -589,19 +562,20 @@ input[type=number] { -moz-appearance: textfield; }
                                 <div id="course-dropdown" class="search-dropdown custom-scroll"></div>
                             </div>
                         </div>
-                        <div id="selected-courses-container" style="display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; margin-top: 8px;">
+                        <div id="selected-courses-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;">
                             <div class="empty-state" style="padding: 20px;"><div class="empty-text">尚未加入課程</div></div>
                         </div>
                     </div>
                 </div>
 
-                <div class="fs-row fs-row-bottom">
-                    <div class="modal-card">
-                        <div class="modal-card-title"><i class="ti ti-clock" style="color: var(--warning);"></i> 實習條件與保障</div>
-                        <div class="form-grid-3">
+                <!-- 右半部 -->
+                <div>
+                    <div class="clean-section">
+                        <div class="clean-section-title"><i class="ti ti-clock"></i> 條件與保障</div>
+                        <div class="form-grid">
                             <div class="field">
                                 <label class="field-label">起訖時間 <span class="req">*</span></label>
-                                <input type="text" id="input-duration" class="field-input" placeholder="YYYY/MM/DD-YYYY/MM/DD" required>
+                                <input type="text" id="input-duration" class="field-input" placeholder="YYY/MM/DD-YYY/MM/DD" required>
                             </div>
                             <div class="field">
                                 <label class="field-label">總時數</label>
@@ -638,17 +612,17 @@ input[type=number] { -moz-appearance: textfield; }
                         </div>
                     </div>
 
-                    <div class="modal-card">
-                        <div class="modal-card-title"><i class="ti ti-building-community" style="color: var(--text-secondary);"></i> 行政歸屬與備註</div>
+                    <div class="clean-section">
+                        <div class="clean-section-title"><i class="ti ti-building-community"></i> 行政歸屬與備註</div>
                         <div class="field">
                             <label class="field-label">負責填報系所 <span class="req">*</span></label>
                             <select id="input-resp-dept" class="field-select" required>
                                 <option value="">請先選擇學生與關聯課程...</option>
                             </select>
                         </div>
-                        <div class="field" style="flex: 1;">
-                            <label class="field-label">備註</label>
-                            <textarea id="input-notes" class="field-input" placeholder="選填備註..." style="height: 100%; min-height: 80px; resize: none; padding-top: 10px;"></textarea>
+                        <div class="field" style="margin-top: 16px;">
+                            <label class="field-label">備註 (選填)</label>
+                            <textarea id="input-notes" class="field-input" placeholder="選填備註..." style="min-height: 80px; resize: none; padding-top: 10px;"></textarea>
                         </div>
                     </div>
                 </div>
@@ -656,6 +630,7 @@ input[type=number] { -moz-appearance: textfield; }
         </div>
     </div>
 
+    <!-- 匯入報表 MODAL -->
     <div id="import-report-modal" class="dialog-overlay">
         <div class="dialog-box" style="max-width: 800px;">
             <div class="dialog-header">
@@ -718,7 +693,6 @@ input[type=number] { -moz-appearance: textfield; }
 
         window.globalImportReportData = [];
 
-        // 定義全域格式化課程函數
         const formatCourseInfo = (c) => c ? `${c.academic_year}-${c.term}_${c.course_code}：${c.course_name}` : '';
 
         // --- COLUMNS SETTING STATE ---
@@ -761,7 +735,6 @@ input[type=number] { -moz-appearance: textfield; }
             styleEl.innerHTML = css;
         };
 
-        // 修改：新增 course (修習課程) 至篩選狀態
         const filterSelections = {
             dept: new Set(), grade: new Set(), inst_raw: new Set(), course: new Set(), resp_dept: new Set(),
             period: new Set(), proof: new Set(), insurance: new Set(), employment: new Set()
@@ -887,7 +860,6 @@ input[type=number] { -moz-appearance: textfield; }
             const container = document.getElementById('filter-container');
             const uniqueSortedDepts = [...new Set(globalDepts.map(d=>d.name))];
             
-            // 抓取被紀錄使用過的獨立課程
             const uniqueUsedCourses = [...new Set(allRecords.flatMap(r => r.courses || []))];
             const courseOptions = uniqueUsedCourses.map(cid => {
                 const c = allCourses.find(x => x.id === cid);
@@ -948,7 +920,6 @@ input[type=number] { -moz-appearance: textfield; }
                 </div>`;
             });
 
-            // ─── 新增自訂顯示欄位切換，更新圖標為 adjustments-horizontal，並使用粗體 ───
             html += `
             <div class="flex-spacer"></div>
             <div class="filter-pill-wrap" id="pill-wrap-col-toggle">
@@ -1006,10 +977,8 @@ input[type=number] { -moz-appearance: textfield; }
         window.clearFilter = (type) => {
             filterSelections[type].clear();
             document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = false);
-            
             const searchInput = document.getElementById(`search-${type}-input`);
             if (searchInput) searchInput.value = '';
-            
             currentPage = 1; window.updatePillActive(type); window.renderTable();
         };
        
@@ -1044,7 +1013,7 @@ input[type=number] { -moz-appearance: textfield; }
             const stuInput = document.getElementById('input-student'); const stuDropdown = document.getElementById('student-dropdown');
             const instInput = document.getElementById('input-institution'); const instDropdown = document.getElementById('institution-dropdown');
             const courseInput = document.getElementById('input-course-search'); const courseDropdown = document.getElementById('course-dropdown');
-            const mainSearchInput = document.getElementById('search-input'); // 加入主搜尋框
+            const mainSearchInput = document.getElementById('search-input'); 
 
             const handleFocus = (dropdown) => { dropdown.classList.add('show'); };
 
@@ -1057,11 +1026,7 @@ input[type=number] { -moz-appearance: textfield; }
             courseInput?.addEventListener('focus', () => { handleFocus(courseDropdown); renderCourseDropdown(allCourses, courseInput.value); });
             courseInput?.addEventListener('input', () => { handleFocus(courseDropdown); renderCourseDropdown(allCourses, courseInput.value); });
 
-            // 修正：補上主搜尋框的即時搜尋事件
-            mainSearchInput?.addEventListener('input', () => { 
-                currentPage = 1; 
-                window.renderTable(); 
-            });
+            mainSearchInput?.addEventListener('input', () => { currentPage = 1; window.renderTable(); });
 
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('#input-student') && !e.target.closest('#student-dropdown')) stuDropdown?.classList.remove('show');
@@ -1283,7 +1248,17 @@ input[type=number] { -moz-appearance: textfield; }
 
         window.openModal = () => {
             if (!editingId) { 
-                document.getElementById('data-form')?.reset(); 
+                document.getElementById('input-student').value = '';
+                document.getElementById('input-grade').value = '';
+                document.getElementById('input-institution').value = '';
+                document.getElementById('input-duration').value = '';
+                document.getElementById('input-hours').value = '';
+                document.getElementById('input-period-type').value = '';
+                document.getElementById('input-proof-type').value = '';
+                document.getElementById('input-insurance').value = '';
+                document.getElementById('input-employment').value = '';
+                document.getElementById('input-notes').value = '';
+                
                 document.getElementById('student-info-card').style.display = 'none'; 
                 document.getElementById('inst-info-card').style.display = 'none';
                 selectedCourseIds = []; window.renderSelectedCourseChips();
@@ -1461,19 +1436,17 @@ input[type=number] { -moz-appearance: textfield; }
                     }
                 }
 
-                // 證明文件顏色邏輯
                 let proofBadge = 'badge-outline-gray';
                 if (data.proof_type === '合約') proofBadge = 'badge-outline-green';
                 else if (data.proof_type === '公函') proofBadge = 'badge-outline-blue';
                 else if (data.proof_type === '其他證明文件') proofBadge = 'badge-outline-amber';
 
-                // 投保情形顏色邏輯
                 let insBadge = 'badge-outline-gray';
                 if (data.insurance === '兩者皆有') insBadge = 'badge-outline-green';
                 else if (data.insurance === '僅校外實習保險') insBadge = 'badge-outline-indigo';
                 else if (data.insurance === '僅勞保') insBadge = 'badge-outline-blue';
                 else if (data.insurance === '兩者皆無') insBadge = 'badge-outline-red';
-              
+
                 tHtml += `
                 <tr class="${selectedIds.includes(data.id)?'selected':''}">
                     <td class="col-checkbox" style="text-align: center;">
@@ -1508,12 +1481,8 @@ input[type=number] { -moz-appearance: textfield; }
 
         window.exportToCSV = () => {
             if (filteredRecords.length === 0) { alert("沒有資料可供匯出！"); return; }
-            
-            // 標題列完美對齊 UI 表格 (共 15 欄)
             let csv = '\uFEFF學號,姓名,學系,年級,機構名稱,修習課程(學年-學期_代號：課程名稱),總學分,實習起訖時間,總時數,實習時間,證明文件,投保情形,勞雇關係,填報系所,備註\n';
-            
             filteredRecords.forEach(d => {
-                // 計算總學分
                 let totalCredits = 0;
                 let courseNames = (Array.isArray(d.courses) ? d.courses : []).map(cid => { 
                     const c = allCourses.find(x => x.id === cid); 
@@ -1524,27 +1493,13 @@ input[type=number] { -moz-appearance: textfield; }
                 const stuParts = (d.student_raw || '').split(' - ');
                 const stuId = stuParts[0] || '';
                 const stuName = stuParts[1] || '';
-                
-                // 抓取學系 (匯出完整名稱以利辨識)
                 const stu = allStudents.find(s => s.student_id === stuId);
                 const stuDept = stu ? stu.department : '';
 
                 csv += [
-                    stuId, 
-                    stuName, 
-                    stuDept, 
-                    d.grade, 
-                    d.inst_raw, 
-                    courseNames, 
-                    totalCredits, 
-                    d.duration, 
-                    d.hours !== undefined && d.hours !== '' ? d.hours : '', 
-                    d.period_type, 
-                    d.proof_type, 
-                    d.insurance, 
-                    d.employment, 
-                    d.resp_dept || '', 
-                    d.notes || ''
+                    stuId, stuName, stuDept, d.grade, d.inst_raw, courseNames, totalCredits, 
+                    d.duration, d.hours !== undefined && d.hours !== '' ? d.hours : '', 
+                    d.period_type, d.proof_type, d.insurance, d.employment, d.resp_dept || '', d.notes || ''
                 ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
             });
             const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
@@ -1587,23 +1542,20 @@ input[type=number] { -moz-appearance: textfield; }
                         }
                         cols.push(currentVal.trim());
 
-                        // 修改：欄位數防呆從 >= 12 改為 >= 14，以符合全新的 CSV 格式
                         if (cols.length >= 14) {
-                            const stuId = (cols[0] || '').trim().toUpperCase();  // 0: 學號
-                            const stuName = (cols[1] || '').trim();              // 1: 姓名
-                            // cols[2] 是學系 (由主檔自動帶入，匯入時忽略)
-                            const grade = cols[3];                               // 3: 年級
-                            const inst_raw = cols[4];                            // 4: 機構名稱
-                            const coursesRaw = cols[5];                          // 5: 修習課程
-                            // cols[6] 是總學分 (由主檔自動帶入，匯入時忽略)
-                            const duration = cols[7];                            // 7: 實習起訖時間
-                            const hours = cols[8] ? Number(cols[8]) : '';        // 8: 總時數
-                            const period_type = cols[9];                         // 9: 實習時間
-                            const proof_type = cols[10];                         // 10: 證明文件
-                            const insurance = cols[11];                          // 11: 投保情形
-                            const employment = cols[12];                         // 12: 勞雇關係
-                            const resp_dept = cols[13] || '';                    // 13: 填報系所
-                            const notes = cols[14] || '';                        // 14: 備註
+                            const stuId = (cols[0] || '').trim().toUpperCase();
+                            const stuName = (cols[1] || '').trim();
+                            const grade = cols[3];
+                            const inst_raw = cols[4];
+                            const coursesRaw = cols[5];
+                            const duration = cols[7];        
+                            const hours = cols[8] ? Number(cols[8]) : ''; 
+                            const period_type = cols[9];     
+                            const proof_type = cols[10];      
+                            const insurance = cols[11];      
+                            const employment = cols[12];     
+                            const resp_dept = cols[13] || ''; 
+                            const notes = cols[14] || '';   
 
                             if (!stuId || !inst_raw || !duration || !period_type || !proof_type || !insurance || !employment || !grade) {
                                 errorCount++;
@@ -1726,9 +1678,10 @@ input[type=number] { -moz-appearance: textfield; }
             const respDeptInput = document.getElementById('input-resp-dept').value;
             const hoursVal = document.getElementById('input-hours').value.trim();
             
-            const regex = /^\d{3,4}\/\d{2}\/\d{2}-\d{3,4}\/\d{2}\/\d{2}$/;
+            // 嚴格規定民國年格式 YYY/MM/DD-YYY/MM/DD (允許2~3位數年份)
+            const regex = /^\d{2,3}\/\d{2}\/\d{2}-\d{2,3}\/\d{2}\/\d{2}$/;
             
-            if (!regex.test(durationInput)) { alert("時間格式錯誤！格式應為：YYYY/MM/DD-YYYY/MM/DD"); return; }
+            if (!regex.test(durationInput)) { alert("時間格式錯誤！格式應為：YYY/MM/DD-YYY/MM/DD (例如：114/07/01-114/08/31)"); return; }
             if (selectedCourseIds.length === 0) { alert("請至少選擇一門關聯實習課程！"); return; }
             if (!respDeptInput) { alert("請選擇負責填報系所！"); return; }
 
