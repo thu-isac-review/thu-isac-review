@@ -8,10 +8,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
-    <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        /* ─── 核心樣式變數 (與主系統一致) ─── */
+        /* ─── 核心樣式變數 (與實習記錄管理一致) ─── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
         :root {
             --brand: #1a56db;
             --brand-hover: #1649c0;
@@ -45,34 +46,61 @@
             --transition: 150ms cubic-bezier(0.4,0,0.2,1);
         }
 
-        body { 
-            background-color: var(--bg); 
-            color: var(--text-primary);
-            margin: 0; padding: 0; 
-            font-family: 'Noto Sans TC', sans-serif; 
-            font-size: 13px;
+        html, body { 
+            height: 100%; overflow: hidden; 
+            font-family: 'Noto Sans TC', sans-serif; font-size: 13px; 
+            color: var(--text-primary); background: var(--bg); 
             -webkit-font-smoothing: antialiased; 
+            display: flex; flex-direction: column;
         }
-        
+
         /* ─── SCROLLBAR ─── */
         .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
         .custom-scroll::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
-        
+
         /* ─── 動畫 ─── */
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .ti-spin { animation: spin 1s linear infinite; display: inline-block; }
-        .animate-fade { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade { animation: pageFadeIn 0.3s ease-out forwards; opacity: 0; }
+        @keyframes pageFadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ─── HEADER & STATS ─── */
+        .page-header { padding: 24px; flex-shrink: 0; display: flex; flex-direction: column; gap: 24px; background: var(--bg); }
+        .stat-card {
+            background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+            padding: 20px 24px; display: flex; justify-content: space-between; align-items: center;
+            box-shadow: var(--shadow-sm);
+        }
+        .stat-label { font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; }
+        .stat-val { font-size: 32px; font-weight: 700; line-height: 1; font-family: system-ui, sans-serif; }
+        .stat-icon { width: 48px; height: 48px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 24px; }
+
+        /* ─── TOOLBAR ─── */
+        .toolbar {
+            padding: 12px 24px; background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 10px; flex-shrink: 0; flex-wrap: wrap; z-index: 5;
+        }
+        .search-wrap { position: relative; flex: 0 0 280px; }
+        .search-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px; }
+        .search-input {
+            width: 100%; height: 34px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface);
+            padding: 0 10px 0 34px; font-size: 13px; font-family: inherit; color: var(--text-primary); outline: none;
+            transition: border-color var(--transition), box-shadow var(--transition);
+        }
+        .search-input::placeholder { color: var(--text-muted); }
+        .search-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
+        
+        .flex-spacer { flex: 1; }
+        .v-divider { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; margin: 0 4px; }
+        .toolbar-actions { display: flex; align-items: center; gap: 8px; }
 
         /* ─── BUTTONS ─── */
         .btn {
             display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-            padding: 0 14px; height: 36px;
-            border-radius: var(--radius);
-            font-size: 13px; font-weight: 600; font-family: inherit;
-            cursor: pointer; border: none; white-space: nowrap;
+            padding: 0 14px; height: 34px; border-radius: var(--radius);
+            font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; border: none; white-space: nowrap;
             transition: all var(--transition); text-decoration: none;
         }
         .btn-primary { background: var(--brand); color: white; }
@@ -85,183 +113,195 @@
         .btn-indigo-solid:hover { background: #4338ca; }
         .btn-sm { height: 28px; padding: 0 10px; font-size: 11px; }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .btn i { font-size: 16px; display: inline-flex; align-items: center; justify-content: center; }
+        .btn i { font-size: 16px; }
 
-        /* ─── INPUTS ─── */
+        /* ─── INPUTS IN TABLE ─── */
         .field-input, .field-select {
-            width: 100%; height: 34px; border: 1px solid var(--border); border-radius: var(--radius);
-            background: var(--surface); padding: 0 12px; font-size: 13px; font-family: inherit; color: var(--text-primary); 
+            width: 100%; height: 32px; border: 1px solid var(--border); border-radius: var(--radius);
+            background: var(--surface); padding: 0 8px; font-size: 12px; font-family: inherit; color: var(--text-primary); 
             outline: none; transition: all var(--transition);
         }
         .field-input:focus, .field-select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); z-index: 5; position: relative; }
         .field-input:disabled, .field-select:disabled { opacity: 0.5; cursor: not-allowed; background: var(--bg); }
-        select.field-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; }
+        select.field-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 6px center; padding-right: 24px; }
         input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
         /* ─── TABLE ─── */
-        table { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; }
+        .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; position: relative; }
+        .table-scroll { flex: 1; overflow-x: auto; overflow-y: auto; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; min-width: 2600px; }
         th {
             padding: 12px 16px; text-align: left; 
             font-size: 11px; font-weight: 700; color: var(--text-muted);
             text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
-            background: var(--surface);
-            box-shadow: inset 0 -2px 0 var(--border); 
+            position: sticky; top: 0; z-index: 10;
+            background: var(--surface); box-shadow: inset 0 -2px 0 var(--border); 
         }
-        td { padding: 12px 16px; vertical-align: middle; border-bottom: 1px solid var(--border); background: var(--surface); transition: background-color 0.2s ease; }
+        td { padding: 8px 12px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); background: var(--surface); transition: background-color 0.2s; }
         tbody tr:hover td { background-color: #fafbff; }
 
+        /* ─── STICKY COLUMNS ─── */
         .sticky-col-1 { position: sticky; left: 0; z-index: 10; background: var(--surface); }
-        .sticky-col-2 { position: sticky; left: 50px; z-index: 10; background: var(--surface); }
-        .sticky-col-3 { position: sticky; left: 210px; z-index: 10; background: var(--surface); }
+        .sticky-col-2 { position: sticky; left: 60px; z-index: 10; background: var(--surface); }
+        .sticky-col-3 { position: sticky; left: 220px; z-index: 10; background: var(--surface); }
         .sticky-shadow::after { content: ''; position: absolute; top: 0; right: -6px; bottom: 0; width: 6px; background: linear-gradient(to right, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0) 100%); pointer-events: none; z-index: 15; }
         thead .sticky-col-1, thead .sticky-col-2, thead .sticky-col-3 { z-index: 20; background: var(--surface); }
 
+        .cell-primary { font-size: 13px; color: var(--text-primary); line-height: 1.4; }
+        .cell-primary.bold { font-weight: 700; }
+        .cell-secondary { font-size: 11px; color: var(--text-muted); margin-top: 2px; line-height: 1.4; font-weight: 500; }
+
+        /* ─── BADGES ─── */
+        .badge { display: inline-flex; align-items: center; justify-content: center; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+        .badge-outline-blue { background: var(--brand-light); color: var(--brand); border: 1px solid var(--brand-border); }
+
+        /* ─── PAGINATION ─── */
+        .pagination-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 24px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; gap: 10px;
+        }
+        .pagination-info { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+
         @media (max-width: 768px) {
+            .page-header { padding: 16px; gap: 16px; }
+            .stat-card { padding: 16px; }
             .sticky-col-2, .sticky-col-3 { position: static; left: auto; z-index: auto; }
             thead .sticky-col-2, thead .sticky-col-3 { z-index: auto; }
             .sticky-col-3.sticky-shadow::after { display: none; }
-            .sticky-col-1::after { content: ''; position: absolute; top: 0; right: -6px; bottom: 0; width: 6px; background: linear-gradient(to right, rgba(0,0,0,0.06) 0%, rgba(0,0,0,0) 100%); pointer-events: none; z-index: 15; }
+            .sticky-col-1.sticky-shadow::after { content: ''; position: absolute; top: 0; right: -6px; bottom: 0; width: 6px; background: linear-gradient(to right, rgba(0,0,0,0.06) 0%, rgba(0,0,0,0) 100%); pointer-events: none; z-index: 15; }
         }
-
-        /* Badges */
-        .badge { display: inline-flex; align-items: center; justify-content: center; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; }
-        .badge-outline-blue { background: var(--brand-light); color: var(--brand); border: 1px solid var(--brand-border); }
-        .cell-primary { font-size: 13px; color: var(--text-primary); line-height: 1.4; }
-        .cell-primary.bold { font-weight: 600; }
-        .cell-secondary { font-size: 11px; color: var(--text-muted); margin-top: 4px; line-height: 1.4; font-weight: 500; }
     </style>
 </head>
-<body class="h-[100dvh] flex flex-col overflow-hidden">
+<body>
 
-    <div class="flex-1 w-full h-full overflow-y-auto overflow-x-hidden flex flex-col custom-scroll">
-
-        <div class="shrink-0 px-4 md:px-10 pt-6 md:pt-10 pb-4 md:pb-6 z-20 animate-fade flex flex-col lg:flex-row justify-between items-start lg:items-end gap-5 lg:gap-0">
-            <div class="w-full">
-                <h1 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">批次匯入審查中心</h1>
-                <p class="text-slate-500 mt-2 font-bold text-xs md:text-sm">上傳總表後資料將安全暫存於雲端。請核實下方機構與紀錄細節，確認無誤後點擊放行。</p>
-            </div>
-            <div class="flex flex-row flex-wrap gap-2 w-full lg:w-auto">
-                <button onclick="window.downloadTemplate()" class="btn btn-secondary flex-1 lg:flex-none">
-                    <i class="ti ti-download"></i> 下載範本
-                </button>
-                <button id="btn-upload" onclick="document.getElementById('import-file').click()" class="btn btn-primary flex-1 lg:flex-none">
-                    <i class="ti ti-upload"></i> 上傳資料總表
-                </button>
-                <input type="file" id="import-file" accept=".csv" class="hidden" onchange="window.processImport(event)">
-            </div>
-        </div>
-
-        <div class="shrink-0 px-4 md:px-10 pb-4 md:pb-6 grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-6 animate-fade" style="animation-delay: 0.1s;">
-            <div class="bg-white p-5 md:p-6 rounded-2xl md:rounded-3xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-100 flex justify-between items-center">
+    <div id="main-view">
+        
+        <!-- HEADER & STATS -->
+        <div class="page-header animate-fade">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px;">
                 <div>
-                    <div class="text-xs md:text-sm text-slate-500 font-bold mb-1">待審核資料</div>
-                    <div class="text-3xl md:text-4xl font-black" style="color: var(--brand);" id="stat-pending">0</div>
+                    <h1 style="font-size: 20px; font-weight: 700; color: var(--text-primary); margin: 0 0 6px 0;">批次匯入審查中心</h1>
+                    <p style="font-size: 13px; color: var(--text-muted); margin: 0;">上傳總表後資料將安全暫存於雲端。請核實下方機構與紀錄細節，確認無誤後點擊放行。</p>
                 </div>
-                <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center text-xl md:text-2xl" style="background: var(--brand-light); color: var(--brand);">
-                    <i class="ti ti-file-text"></i>
-                </div>
-            </div>
-            <div class="bg-white p-5 md:p-6 rounded-2xl md:rounded-3xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-100 flex justify-between items-center">
-                <div>
-                    <div class="text-xs md:text-sm text-slate-500 font-bold mb-1">本次登入已核准</div>
-                    <div class="text-3xl md:text-4xl font-black" style="color: var(--success);" id="stat-approved">0</div>
-                </div>
-                <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center text-xl md:text-2xl" style="background: var(--success-bg); color: var(--success);">
-                    <i class="ti ti-check"></i>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <button onclick="window.downloadTemplate()" class="btn btn-secondary">
+                        <i class="ti ti-download"></i> <span class="btn-text">下載範本</span>
+                    </button>
+                    <button id="btn-upload" onclick="document.getElementById('import-file').click()" class="btn btn-indigo-solid">
+                        <i class="ti ti-upload"></i> <span class="btn-text">上傳資料總表</span>
+                    </button>
+                    <input type="file" id="import-file" accept=".csv" style="display:none;" onchange="window.processImport(event)">
                 </div>
             </div>
-            <div class="bg-white p-5 md:p-6 rounded-2xl md:rounded-3xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-100 flex justify-between items-center">
-                <div>
-                    <div class="text-xs md:text-sm text-slate-500 font-bold mb-1">匯入阻擋 (缺漏關鍵值)</div>
-                    <div class="text-3xl md:text-4xl font-black" style="color: var(--danger);" id="stat-error">0</div>
-                </div>
-                <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center text-xl md:text-2xl" style="background: var(--danger-bg); color: var(--danger);">
-                    <i class="ti ti-alert-circle"></i>
-                </div>
-            </div>
-        </div>
-
-        <div class="flex-1 flex flex-col shrink-0 min-h-[600px] md:min-h-0 px-4 md:px-10 pb-6 md:pb-10 animate-fade" style="animation-delay: 0.2s;">
-            <div class="bg-white rounded-2xl md:rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col flex-1 overflow-hidden relative min-h-0">
-                
-                <div class="px-4 md:px-8 py-4 md:py-5 border-b border-slate-100 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 shrink-0 z-20 bg-white">
-                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full lg:w-auto">
-                        <div class="relative w-full sm:w-72">
-                            <i class="ti ti-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
-                            <input type="text" id="search-input" oninput="window.renderStagingTable()" placeholder="搜尋學生、機構..." class="field-input pl-9 w-full">
-                        </div>
-                        <div class="flex items-center gap-2 w-full sm:w-auto hidden sm:flex">
-                            <span class="badge badge-outline-blue" id="badge-count">0 筆待審核</span>
-                        </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+                <div class="stat-card">
+                    <div>
+                        <div class="stat-label">待審核資料</div>
+                        <div class="stat-val" id="stat-pending" style="color: var(--brand);">0</div>
                     </div>
-                    <div class="flex flex-row gap-2 w-full lg:w-auto">
-                        <button onclick="window.clearAllStaging()" class="btn btn-secondary flex-1 lg:flex-none" style="color: var(--danger); border-color: var(--border);">
-                            <i class="ti ti-trash"></i> 清空暫存
-                        </button>
-                        <button onclick="window.approveAll()" class="btn btn-primary flex-[2] lg:flex-none">
-                            <i class="ti ti-checks"></i> 批次核准全部
-                        </button>
+                    <div class="stat-icon" style="background: var(--brand-light); color: var(--brand);"><i class="ti ti-file-text"></i></div>
+                </div>
+                <div class="stat-card">
+                    <div>
+                        <div class="stat-label">本次登入已核准</div>
+                        <div class="stat-val" id="stat-approved" style="color: var(--success);">0</div>
                     </div>
+                    <div class="stat-icon" style="background: var(--success-bg); color: var(--success);"><i class="ti ti-check"></i></div>
                 </div>
-
-                <div class="flex-1 overflow-auto custom-scroll relative bg-white min-h-0">
-                    <table>
-                        <colgroup>
-                            <col style="width: 60px;">  
-                            <col style="width: 160px;"> 
-                            <col style="width: 240px;"> 
-                            <col style="width: 140px;"> 
-                            <col style="width: 240px;"> 
-                            <col style="width: 150px;"> 
-                            <col style="width: 140px;"> 
-                            <col style="width: 280px;"> 
-                            <col style="width: 200px;"> 
-                            <col style="width: 100px;"> 
-                            <col style="width: 160px;"> 
-                            <col style="width: 160px;"> 
-                            <col style="width: 160px;"> 
-                            <col style="width: 120px;"> 
-                            <col style="width: 180px;"> 
-                        </colgroup>
-
-                        <thead class="sticky top-0 z-30">
-                            <tr>
-                                <th class="text-center sticky-col-1"><i class="ti ti-bolt" style="font-size: 16px;"></i></th>
-                                <th class="sticky-col-2">學生資訊</th>
-                                <th class="sticky-col-3 sticky-shadow">修習課程</th>
-                                <th class="pl-8">機構國別 <span style="color:var(--danger)">*</span></th>
-                                <th>機構名稱 <span style="color:var(--danger)">*</span></th>
-                                <th>統一編號</th>
-                                <th>縣市別</th>
-                                <th>通訊地址 <span style="color:var(--danger)">*</span></th>
-                                <th class="pl-8">實習起訖時間 <span style="color:var(--danger)">*</span></th>
-                                <th class="text-center">總時數 <span style="color:var(--danger)">*</span></th>
-                                <th>實習時間 <span style="color:var(--danger)">*</span></th>
-                                <th>證明文件 <span style="color:var(--danger)">*</span></th>
-                                <th>投保情形 <span style="color:var(--danger)">*</span></th>
-                                <th>勞雇關係 <span style="color:var(--danger)">*</span></th>
-                                <th>填報系所</th>
-                            </tr>
-                        </thead>
-                        <tbody id="staging-table-body">
-                            <tr>
-                                <td colspan="15" class="py-32 text-center border-none">
-                                    <div style="color: var(--brand); font-size: 36px; margin-bottom: 12px;">
-                                        <i class="ti ti-loader-2 ti-spin"></i>
-                                    </div>
-                                    <div class="cell-primary bold">與資料庫連線中...</div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="stat-card">
+                    <div>
+                        <div class="stat-label">匯入阻擋 (缺漏關鍵值)</div>
+                        <div class="stat-val" id="stat-error" style="color: var(--danger);">0</div>
+                    </div>
+                    <div class="stat-icon" style="background: var(--danger-bg); color: var(--danger);"><i class="ti ti-alert-circle"></i></div>
                 </div>
-                
-                <div class="bg-white border-t border-slate-100 px-4 md:px-8 py-3 md:py-4 flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0 md:rounded-b-[2rem]">
-                    <div id="pagination-info" class="cell-secondary">顯示 0 - 0 筆，共 0 筆資料</div>
-                </div>
-
             </div>
         </div>
+
+        <!-- TOOLBAR -->
+        <div class="toolbar animate-fade" style="animation-delay: 0.1s;">
+            <div class="search-wrap">
+                <i class="ti ti-search"></i>
+                <input type="text" id="search-input" oninput="window.renderStagingTable()" placeholder="搜尋學生、機構..." class="search-input">
+            </div>
+            <div style="display: flex; align-items: center; margin-left: 8px;">
+                <span class="badge badge-outline-blue" id="badge-count">0 筆待審核</span>
+            </div>
+            
+            <div class="flex-spacer"></div>
+            
+            <div class="toolbar-actions">
+                <button onclick="window.clearAllStaging()" class="btn btn-secondary" style="color: var(--danger); border-color: var(--border);">
+                    <i class="ti ti-trash"></i> <span class="btn-text">清空暫存</span>
+                </button>
+                <div class="v-divider"></div>
+                <button onclick="window.approveAll()" class="btn btn-primary">
+                    <i class="ti ti-checks"></i> <span class="btn-text">批次核准全部</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- TABLE WRAPPER -->
+        <div class="table-wrap animate-fade" style="animation-delay: 0.2s;">
+            <div class="table-scroll custom-scroll">
+                <table>
+                    <colgroup>
+                        <col style="width: 60px;">  
+                        <col style="width: 160px;"> 
+                        <col style="width: 240px;"> 
+                        <col style="width: 140px;"> 
+                        <col style="width: 240px;"> 
+                        <col style="width: 150px;"> 
+                        <col style="width: 140px;"> 
+                        <col style="width: 280px;"> 
+                        <col style="width: 200px;"> 
+                        <col style="width: 100px;"> 
+                        <col style="width: 160px;"> 
+                        <col style="width: 160px;"> 
+                        <col style="width: 160px;"> 
+                        <col style="width: 120px;"> 
+                        <col style="width: 180px;"> 
+                    </colgroup>
+
+                    <thead>
+                        <tr>
+                            <th class="sticky-col-1" style="text-align: center;"><i class="ti ti-bolt" style="font-size: 16px;"></i></th>
+                            <th class="sticky-col-2">學生資訊</th>
+                            <th class="sticky-col-3 sticky-shadow">修習課程</th>
+                            <th style="padding-left: 24px;">機構國別 <span style="color: var(--danger);">*</span></th>
+                            <th>機構名稱 <span style="color: var(--danger);">*</span></th>
+                            <th>統一編號</th>
+                            <th>縣市別</th>
+                            <th>通訊地址 <span style="color: var(--danger);">*</span></th>
+                            <th style="padding-left: 24px;">實習起訖時間 <span style="color: var(--danger);">*</span></th>
+                            <th style="text-align: center;">總時數 <span style="color: var(--danger);">*</span></th>
+                            <th>實習時間 <span style="color: var(--danger);">*</span></th>
+                            <th>證明文件 <span style="color: var(--danger);">*</span></th>
+                            <th>投保情形 <span style="color: var(--danger);">*</span></th>
+                            <th>勞雇關係 <span style="color: var(--danger);">*</span></th>
+                            <th>負責系所</th>
+                        </tr>
+                    </thead>
+                    <tbody id="staging-table-body">
+                        <tr>
+                            <td colspan="15" style="padding: 100px 0; text-align: center; border-bottom: none;">
+                                <div style="color: var(--brand); font-size: 36px; margin-bottom: 16px;">
+                                    <i class="ti ti-loader-2 ti-spin"></i>
+                                </div>
+                                <div class="cell-primary bold">與資料庫連線中...</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="pagination-bar">
+                <div class="pagination-info" id="pagination-info">顯示 0 - 0 筆，共 0 筆資料</div>
+                <div class="flex-spacer"></div>
+            </div>
+        </div>
+
     </div> 
 
     <script type="module">
@@ -338,7 +378,7 @@
             importErrorCount = 0; 
             const btn = document.getElementById('btn-upload');
             const originalHtml = btn.innerHTML;
-            btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 解析中';
+            btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> <span class="btn-text">解析中</span>';
             btn.disabled = true;
 
             const reader = new FileReader();
@@ -484,8 +524,8 @@
 
             if (filteredData.length === 0) {
                 tbody.innerHTML = `<tr>
-                    <td colspan="15" class="py-32 text-center border-none">
-                        <div style="color: var(--text-muted); font-size: 36px; margin-bottom: 12px;">
+                    <td colspan="15" style="padding: 100px 0; text-align: center; border-bottom: none;">
+                        <div style="color: var(--text-muted); font-size: 36px; margin-bottom: 12px; opacity: 0.4;">
                             <i class="ti ti-inbox"></i>
                         </div>
                         <div class="cell-primary bold" style="color: var(--text-secondary);">目前暫存區淨空或查無結果。</div>
@@ -497,7 +537,7 @@
             let html = '';
             filteredData.forEach(row => {
                 const id = row.id;
-                const courseBadges = row.coursesInfo.map(c => `<span class="badge badge-outline-blue mr-1 mb-1" style="font-weight: 500;"><span style="font-weight: 700; margin-right: 4px;">${c.code}</span>${c.name}</span>`).join('');
+                const courseBadges = row.coursesInfo.map(c => `<span class="badge badge-outline-blue" style="margin-right: 4px; margin-bottom: 4px; font-weight: 500;"><span style="font-weight: 700; margin-right: 4px;">${c.code}</span>${c.name}</span>`).join('');
                 
                 const isOverseas = row.inst_country !== '中華民國';
                 const taxDisabled = isOverseas ? 'disabled' : '';
@@ -505,12 +545,12 @@
 
                 html += `
                 <tr id="tr-${id}">
-                    <td class="text-center sticky-col-1">
-                        <div class="flex flex-col gap-1.5 px-1 items-center justify-center">
-                            <button onclick="window.approveRow('${id}')" class="btn btn-sm btn-primary w-full shadow-sm" title="核准放行">
+                    <td class="sticky-col-1" style="text-align: center; padding: 8px;">
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <button onclick="window.approveRow('${id}')" class="btn btn-sm btn-primary" style="width: 100%; padding: 0;" title="核准放行">
                                 放行
                             </button>
-                            <button onclick="window.deleteStaging('${id}')" class="btn btn-sm btn-secondary w-full shadow-sm" style="color: var(--danger); border-color: var(--danger-border);" title="刪除捨棄">
+                            <button onclick="window.deleteStaging('${id}')" class="btn btn-sm btn-secondary" style="width: 100%; padding: 0; color: var(--danger); border-color: var(--danger-border);" title="刪除捨棄">
                                 刪除
                             </button>
                         </div>
@@ -522,17 +562,17 @@
                     </td>
                     
                     <td class="sticky-col-3 sticky-shadow">
-                        <div class="w-full flex flex-wrap pt-1">${courseBadges || '-'}</div>
+                        <div style="display: flex; flex-wrap: wrap;">${courseBadges || '-'}</div>
                     </td>
                     
-                    <td class="pl-8">
+                    <td style="padding-left: 24px;">
                         ${makeSelect(row.inst_country, countryOptions, 'inst_country', id)}
                     </td>
                     <td>
-                        <input type="text" id="inst_name_${id}" class="field-input bold" value="${row.inst_name}" onblur="window.autoSave('${id}', 'inst_name', this.value)">
+                        <input type="text" id="inst_name_${id}" class="field-input" style="font-weight: 700;" value="${row.inst_name}" onblur="window.autoSave('${id}', 'inst_name', this.value)">
                     </td>
                     <td>
-                        <input type="text" id="inst_tax_${id}" class="field-input uppercase" value="${row.inst_tax}" ${taxDisabled} placeholder="${isOverseas?'海外免填':'統一編號'}" onblur="window.autoSave('${id}', 'inst_tax', this.value)">
+                        <input type="text" id="inst_tax_${id}" class="field-input" style="text-transform: uppercase;" value="${row.inst_tax}" ${taxDisabled} placeholder="${isOverseas?'海外免填':'統一編號'}" onblur="window.autoSave('${id}', 'inst_tax', this.value)">
                     </td>
                     <td>
                         <select id="inst_city_${id}" class="field-select" ${cityDisabled} onchange="window.autoSave('${id}', 'inst_city', this.value)">
@@ -544,11 +584,11 @@
                         <input type="text" id="inst_addr_${id}" class="field-input" value="${row.inst_addr}" onblur="window.autoSave('${id}', 'inst_addr', this.value)">
                     </td>
 
-                    <td class="pl-8">
+                    <td style="padding-left: 24px;">
                         <input type="text" id="duration_${id}" class="field-input" value="${row.duration}" onblur="window.autoSave('${id}', 'duration', this.value)" placeholder="YYY/MM/DD-YYY/MM/DD">
                     </td>
                     <td>
-                        <input type="number" id="hours_${id}" class="field-input text-center bold" value="${row.hours}" onblur="window.autoSave('${id}', 'hours', Number(this.value))">
+                        <input type="number" id="hours_${id}" class="field-input" style="text-align: center; font-weight: 700; color: var(--success); background: var(--success-bg);" value="${row.hours}" onblur="window.autoSave('${id}', 'hours', Number(this.value))">
                     </td>
                     <td>${makeSelect(row.period_type, periodOptions, 'period_type', id)}</td>
                     <td>${makeSelect(row.proof_type, proofOptions, 'proof_type', id)}</td>
@@ -624,7 +664,7 @@
 
             const btn = document.querySelector('button[onclick="window.approveAll()"]');
             const oriHtml = btn.innerHTML;
-            btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 處理中...';
+            btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> <span class="btn-text">處理中...</span>';
             btn.disabled = true;
 
             for (let row of stagingData) { await window.approveRow(row.id); }
