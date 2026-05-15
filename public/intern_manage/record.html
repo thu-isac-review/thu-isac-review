@@ -204,8 +204,6 @@ html, body {
 /* ─── TABLE ─── */
 .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; position: relative; }
 .table-scroll { flex: 1; overflow-x: auto; overflow-y: auto; }
-
-/* 修改點 1：將表格的 min-width 放寬至 2400px 減少擁擠感 */
 table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; min-width: 2400px; }
 
 th {
@@ -223,7 +221,6 @@ th[data-sort]:hover { color: var(--text-secondary); }
 th .sort-icon { margin-left: 4px; font-size: 13px; opacity: 0.4; vertical-align: middle; }
 th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand); }
 
-/* 修改點 2：增加儲存格左右內距 (padding) 讓視覺更舒適 */
 td { padding: 16px 18px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); background: var(--surface); }
 tr:hover td { background: #fafbff; }
 tr.selected td { background: #f0f4ff; }
@@ -275,13 +272,16 @@ tr.selected td { background: #f0f4ff; }
 }
 .fs-topbar-left { display: flex; align-items: center; gap: 12px; }
 .fs-topbar-title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-left: 8px; }
-.fs-content { flex: 1; overflow-y: auto; padding: 40px 24px; display: flex; justify-content: center; }
 
+/* 修改重點 1：移除 display: flex; 以避免 padding collapse 問題，並大幅增加 padding-bottom 到 80px 確保底部有充足空間留白 */
+.fs-content { flex: 1; overflow-y: auto; padding: 40px 24px 80px 24px; }
+
+/* 修改重點 2：因為上層移除了 flex 居中對齊，這裡利用 margin: 0 auto; 讓版面維持完美水平置中 */
 .split-layout { 
   display: grid; grid-template-columns: 1fr 1fr; gap: 40px 48px; 
   width: 100%; max-width: 1100px; margin: 0 auto; align-items: start;
 }
-.clean-section { margin-bottom: 0; }
+.clean-section { margin-bottom: 24px; } /* 為每個 Section 底部加上固定的留白 */
 .clean-section-title { 
   font-size: 15px; font-weight: 700; color: var(--text-primary); 
   margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--brand-light); 
@@ -317,7 +317,6 @@ input[type=number] { -moz-appearance: textfield; }
 .search-item-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
 .search-item-desc { font-size: 11px; color: var(--text-muted); font-weight: 500; }
 
-/* 修改點 3：移除選單項目本身的 margin-bottom，讓容器的 gap 單獨控制間隙 */
 .selected-course-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--bg); border: 1px dashed var(--border); border-radius: var(--radius); }
 .selected-course-info { display: flex; flex-direction: column; gap: 4px; }
 .selected-course-top { display: flex; align-items: center; gap: 6px; }
@@ -347,7 +346,7 @@ input[type=number] { -moz-appearance: textfield; }
 .info-item-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
 .info-item-value { font-size: 14px; font-weight: 600; color: var(--text-primary); line-height: 1.4; }
 
-/* ─── 新增補回： IMPORT REPORT DIALOG 樣式 (修復 Bug 1 破圖問題) ─── */
+/* ─── IMPORT REPORT DIALOG ─── */
 .dialog-overlay {
     position: fixed; inset: 0; z-index: 400; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px);
     display: none; align-items: center; justify-content: center; padding: 20px;
@@ -380,7 +379,7 @@ input[type=number] { -moz-appearance: textfield; }
   .v-divider { display: none; }
   .form-grid { grid-template-columns: 1fr; }
   .fs-topbar { padding: 0 16px; }
-  .fs-content { padding: 16px; }
+  .fs-content { padding: 16px 16px 40px 16px; } /* 手機版底部留白 */
 
   .filter-row { flex-wrap: nowrap; overflow-x: auto; padding-right: 0; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
   .filter-row::-webkit-scrollbar { display: none; }
@@ -585,7 +584,7 @@ input[type=number] { -moz-appearance: textfield; }
                         </div>
                     </div>
                     
-                    <div id="selected-courses-container" class="custom-scroll" style="display: flex; flex-direction: column; gap: 4px; margin-top: 12px; overflow-y: auto;">
+                    <div id="selected-courses-container" class="custom-scroll" style="display: flex; flex-direction: column; gap: 4px; margin-top: 12px; margin-bottom: 8px; overflow-y: auto;">
                         <div class="empty-state" style="padding: 20px;"><div class="empty-text">尚未加入課程</div></div>
                     </div>
                 </div>
@@ -1151,7 +1150,6 @@ input[type=number] { -moz-appearance: textfield; }
             const container = document.getElementById('selected-courses-container'); 
             document.getElementById('selected-course-count').innerText = `已選 ${selectedCourseIds.length} 門`;
             
-            /* 修改點 5：精確控制三門課的高度 (約 200px 內)，超過才顯示捲軸 */
             if (selectedCourseIds.length > 3) {
                 container.style.maxHeight = '200px';
                 container.style.paddingRight = '6px';
