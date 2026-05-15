@@ -541,6 +541,14 @@ input[type=number] { -moz-appearance: textfield; }
                                 <button type="button" id="btn-info-inst" class="btn-info-pop" onclick="window.showInfoPopup('inst')" disabled title="查看機構詳情"><i class="ti ti-info-circle"></i></button>
                             </div>
                         </div>
+
+                        <div class="field z-index-fix" style="z-index: 10; margin-top: 16px;">
+                            <label class="field-label">搜尋並加入課程 <span class="req">*</span></label>
+                            <div class="search-input-wrap">
+                                <input type="text" id="input-course-search" class="field-input" placeholder="課程名稱、代號或系所..." autocomplete="off">
+                                <div id="course-dropdown" class="search-dropdown custom-scroll"></div>
+                            </div>
+                        </div>
                     </div>
             
                     <div class="clean-section stretch-section" style="display: flex; flex-direction: column;">
@@ -549,15 +557,7 @@ input[type=number] { -moz-appearance: textfield; }
                             <span id="selected-course-count" class="badge badge-outline-blue" style="font-size: 11px; padding: 4px 8px;">已選 0 門</span>
                         </div>
                         
-                        <div class="field z-index-fix" style="z-index: 10;">
-                            <label class="field-label">搜尋並加入課程 <span class="req">*</span></label>
-                            <div class="search-input-wrap">
-                                <input type="text" id="input-course-search" class="field-input" placeholder="課程名稱、代號或系所..." autocomplete="off">
-                                <div id="course-dropdown" class="search-dropdown custom-scroll"></div>
-                            </div>
-                        </div>
-                        
-                        <div id="selected-courses-container" class="custom-scroll" style="display: flex; flex-direction: column; gap: 4px; margin-top: 12px; overflow-y: auto; flex: 1; border: 1px solid var(--border); border-radius: var(--radius); padding: 8px; background: var(--surface); min-height: 120px;">
+                        <div id="selected-courses-container" class="custom-scroll" style="display: flex; flex-direction: column; gap: 4px; overflow-y: auto; flex: 1; border: 1px solid var(--border); border-radius: var(--radius); padding: 8px; background: var(--surface); min-height: 120px;">
                             <div class="empty-state" style="padding: 20px;"><div class="empty-text">尚未加入課程</div></div>
                         </div>
                     </div>
