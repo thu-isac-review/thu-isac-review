@@ -1167,14 +1167,6 @@ input[type=number] { -moz-appearance: textfield; }
         window.renderSelectedCourseChips = (skipRespUpdate = false) => {
             const container = document.getElementById('selected-courses-container'); 
             document.getElementById('selected-course-count').innerText = `已選 ${selectedCourseIds.length} 門`;
-            
-            if (selectedCourseIds.length > 3) {
-                container.style.maxHeight = '200px';
-                container.style.paddingRight = '6px';
-            } else {
-                container.style.maxHeight = 'none';
-                container.style.paddingRight = '0';
-            }
 
             if (selectedCourseIds.length === 0) { 
                 container.innerHTML = '<div class="empty-state" style="padding:20px;"><div class="empty-text">尚未加入課程</div></div>'; 
