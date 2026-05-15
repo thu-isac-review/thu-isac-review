@@ -686,7 +686,10 @@ input[type=number] { -moz-appearance: textfield; }
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 const p1 = getDoc(doc(db, "settings", "colleges")).then(snap => { if (snap.exists()) orderedColleges = snap.data().list.map(c => typeof c === 'string' ? { name: c, shortName: c } : c); });
-                const p2 = getDocs(collection(db, "departments")).then(snap => globalDepts = snap.docs.map(d => d.data()));
+                const p2 = getDocs(collection(db, "departments")).then(snap => {
+                    globalDepts = snap.docs.map(d => d.data());
+                    globalDepts.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
+                });
                 const p3 = getDocs(studentsCol).then(s => allStudents = s.docs.map(d => ({id: d.id, ...d.data()})));
                 const p4 = getDocs(instsCol).then(s => allInsts = s.docs.map(d => ({id: d.id, ...d.data()})));
                 const p5 = getDocs(coursesCol).then(s => { allCourses = s.docs.map(d => ({id: d.id, ...d.data()})); allCourses.sort((a,b) => (b.academic_year+b.term).localeCompare(a.academic_year+a.term)); });
