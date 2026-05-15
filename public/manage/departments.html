@@ -3,10 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>實習記錄管理</title>
+<title>系所清單管理</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<!-- Tabler Icons -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 
 <style>
@@ -34,7 +35,6 @@
   --danger-border: #fecaca;
   --warning: #d97706;
   --warning-bg: #fffbeb;
-  --warning-border: #fde68a;
   --indigo: #4f46e5;
   --indigo-bg: #e0e7ff;
   --indigo-border: #c7d2fe;
@@ -50,7 +50,7 @@
 
 html, body { 
   height: 100%; overflow: hidden; 
-  font-family: 'Noto Sans TC', sans-serif; font-size: 13px; 
+  font-family: 'Noto Sans TC', sans-serif; font-size: 14px; 
   color: var(--text-primary); background: var(--bg); 
   -webkit-font-smoothing: antialiased; 
   display: flex; flex-direction: column;
@@ -58,14 +58,11 @@ html, body {
 
 /* ─── SCROLLBAR ─── */
 .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
-.custom-scroll::-webkit-scrollbar-track { background: var(--surface); }
 .custom-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
-.custom-scroll::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 /* ─── 動畫 ─── */
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .ti-spin { animation: spin 1s linear infinite; display: inline-block; }
-@keyframes pageFadeIn { from { opacity: 0; transform: scale(0.99); } to { opacity: 1; transform: scale(1); } }
 
 /* ─── TOOLBAR ─── */
 .toolbar {
@@ -75,8 +72,7 @@ html, body {
   display: flex; align-items: center; gap: 10px;
   flex-shrink: 0; flex-wrap: wrap;
 }
-
-.search-wrap { position: relative; flex: 0 0 280px; }
+.search-wrap { position: relative; flex: 0 0 260px; }
 .search-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px; }
 .search-input {
   width: 100%; height: 34px;
@@ -110,19 +106,20 @@ html, body {
 .btn-secondary:hover { background: var(--bg); border-color: var(--border-strong); color: var(--text-primary); }
 .btn-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
 .btn-danger:hover { background: #fee2e2; }
+
+/* 實心底色按鈕系列 */
 .btn-success-solid { background: var(--success); color: white; border: 1px solid var(--success); }
 .btn-success-solid:hover { background: #047857; }
+.btn-warning-solid { background: var(--warning); color: white; border: 1px solid var(--warning); }
+.btn-warning-solid:hover { background: #b45309; }
 .btn-indigo-solid { background: var(--indigo); color: white; border: 1px solid var(--indigo); }
 .btn-indigo-solid:hover { background: #4338ca; }
+
 .btn-icon { width: 34px; padding: 0; justify-content: center; }
 .btn-icon.sm { width: 28px; height: 28px; }
-.btn-sm { height: 28px; padding: 0 10px; font-size: 11px; }
+.btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn i { font-size: 16px; display: inline-flex; align-items: center; justify-content: center; }
-
-/* ─── Expandable Course Badge (+N) ─── */
-.more-badge { display: inline-flex; align-items: center; justify-content: center; height: 24px; padding: 0 8px; border-radius: 99px; background: var(--border); color: var(--text-secondary); font-size: 11px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-left: auto; flex-shrink: 0; border: none; outline: none; }
-.more-badge:hover { background: var(--border-strong); color: var(--text-primary); }
 
 /* ─── FILTER ROW & BATCH BAR ─── */
 .filter-row {
@@ -138,37 +135,29 @@ html, body {
   padding: 0 10px; height: 28px;
   border: 1px solid var(--border);
   border-radius: 99px; background: var(--surface);
-  font-size: 11px; font-weight: 500; color: var(--text-secondary);
+  font-size: 12px; font-weight: 500; color: var(--text-secondary);
   cursor: pointer; transition: all var(--transition);
   white-space: nowrap;
 }
 .filter-pill:hover { border-color: var(--border-strong); color: var(--text-primary); }
 .filter-pill.active { border-color: var(--brand); background: var(--brand-light); color: var(--brand); }
 .filter-pill .pill-count { background: var(--brand); color: white; border-radius: 99px; font-size: 10px; font-weight: 700; padding: 0 5px; min-width: 16px; text-align: center; }
-.filter-pill i { font-size: 13px; transition: transform 0.2s; }
+.filter-pill i { font-size: 14px; transition: transform 0.2s; }
 .filter-pill-wrap.open .filter-pill i { transform: rotate(180deg); }
 
 .filter-dropdown {
   position: absolute; top: calc(100% + 6px); left: 0;
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius-lg); box-shadow: var(--shadow-md);
-  min-width: 220px; z-index: 100;
+  min-width: 200px; z-index: 100;
   display: none; flex-direction: column; overflow: hidden;
 }
 .filter-dropdown.show { display: flex; }
-
-.filter-dropdown-search { padding: 8px; border-bottom: 1px solid var(--border); }
-.filter-dropdown-search input { 
-  width: 100%; height: 30px; border: 1px solid var(--border); border-radius: var(--radius-sm); 
-  padding: 0 10px; font-size: 11px; outline: none; background: var(--bg); transition: 0.2s; 
-}
-.filter-dropdown-search input:focus { border-color: var(--brand); background: var(--surface); box-shadow: 0 0 0 2px rgba(26,86,219,0.1); }
-
 .filter-dropdown-list { max-height: 200px; overflow-y: auto; padding: 4px; }
 .filter-option {
   display: flex; align-items: center; gap: 8px;
   padding: 6px 8px; border-radius: var(--radius-sm);
-  cursor: pointer; font-size: 11px; color: var(--text-secondary);
+  cursor: pointer; font-size: 12px; color: var(--text-secondary);
   transition: background var(--transition);
 }
 .filter-option:hover { background: var(--bg); color: var(--text-primary); }
@@ -189,72 +178,73 @@ html, body {
 .batch-info span { font-size: 16px; font-weight: 700; }
 
 /* ─── TABLE ─── */
-.table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; position: relative; }
-.table-scroll { flex: 1; overflow-x: auto; overflow-y: auto; }
-table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; min-width: 1800px; }
-
+.table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; }
+.table-scroll { flex: 1; overflow: auto; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 900px; }
+thead { position: sticky; top: 0; z-index: 10; background: var(--surface); }
+thead tr { border-bottom: 2px solid var(--border); }
 th {
-  padding: 12px 16px; text-align: center; 
+  padding: 12px 16px; text-align: center;
   font-size: 11px; font-weight: 700; color: var(--text-muted);
   text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
-  position: sticky; top: 0; z-index: 10;
-  background: var(--surface);
-  box-shadow: inset 0 -2px 0 var(--border); 
 }
-
-th.col-actions {
-  position: sticky; right: 0; z-index: 20;
-  box-shadow: inset 0 -2px 0 var(--border), -4px 0 8px rgba(0,0,0,0.05); 
-}
-td.col-actions {
-  position: sticky; right: 0; z-index: 5;
-  background: var(--surface);
-  box-shadow: -4px 0 8px rgba(0,0,0,0.05);
-  border-bottom: 1px solid var(--border);
-}
-
 th[data-sort] { cursor: pointer; user-select: none; transition: color var(--transition); }
 th[data-sort]:hover { color: var(--text-secondary); }
-th .sort-icon { margin-left: 4px; font-size: 13px; opacity: 0.4; vertical-align: middle; }
+th .sort-icon { margin-left: 4px; font-size: 14px; opacity: 0.4; vertical-align: middle; }
 th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand); }
 
-td { padding: 14px 16px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); background: var(--surface); }
+td { padding: 12px 16px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); }
 tr:hover td { background: #fafbff; }
 tr.selected td { background: #f0f4ff; }
+tr.disabled td { opacity: 0.6; filter: grayscale(40%); background: var(--bg); }
 
 .cell-primary { font-size: 13px; color: var(--text-primary); line-height: 1.4; }
 .cell-primary.bold { font-weight: 600; }
-.cell-secondary { font-size: 11px; color: var(--text-muted); margin-top: 4px; line-height: 1.4; font-weight: 500; }
-.row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.cell-secondary { font-size: 11px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
 
-/* Badges for Table */
-.badge { display: inline-flex; align-items: center; justify-content: center; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; }
-.badge-outline-blue { background: var(--brand-light); color: var(--brand); border: 1px solid var(--brand-border); }
-.badge-outline-green { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
-.badge-outline-amber { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.badge-gray { background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; }
+
+/* ─── Expandable Contact Badge (+N) ─── */
+.more-badge { display: inline-flex; align-items: center; justify-content: center; height: 24px; padding: 0 8px; border-radius: 99px; background: var(--border); color: var(--text-secondary); font-size: 11px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-left: auto; flex-shrink: 0; border: none; outline: none; }
+.more-badge:hover { background: var(--border-strong); color: var(--text-primary); }
+
+/* ─── TOGGLE SWITCH ─── */
+.toggle { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
+.toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+.toggle-slider { width: 34px; height: 18px; background: var(--border-strong); border-radius: 20px; transition: 0.3s; position: relative; }
+.toggle-slider::before { content: ""; position: absolute; width: 12px; height: 12px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; box-shadow: var(--shadow-sm); }
+.toggle input:checked + .toggle-slider { background: var(--success); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(16px); }
+.toggle-label { margin-left: 8px; font-size: 11px; font-weight: 700; }
+.toggle-label.active { color: var(--success); }
+.toggle-label.inactive { color: var(--text-muted); }
+
+/* Row actions */
+.row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; opacity: 1; }
 
 /* ─── PAGINATION ─── */
 .pagination-bar {
   display: flex; align-items: center; justify-content: space-between;
   padding: 10px 24px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; gap: 10px;
 }
-.pagination-info { font-size: 11px; color: var(--text-muted); }
+.pagination-info { font-size: 12px; color: var(--text-muted); }
 .pagination-info strong { color: var(--text-primary); }
 .pagination-bar-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.per-page-select { height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 11px; font-family: inherit; color: var(--text-secondary); padding: 0 6px; cursor: pointer; outline: none; }
+.per-page-select { height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 12px; font-family: inherit; color: var(--text-secondary); padding: 0 6px; cursor: pointer; outline: none; }
 .pagination-controls { display: flex; align-items: center; gap: 4px; }
 .page-btn {
   min-width: 30px; height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface);
-  font-size: 11px; font-weight: 500; color: var(--text-secondary);
+  font-size: 12px; font-weight: 500; color: var(--text-secondary);
   cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0 8px; transition: all var(--transition);
 }
 .page-btn:hover:not(:disabled) { background: var(--bg); border-color: var(--border-strong); }
 .page-btn.active { background: var(--brand); color: white; border-color: var(--brand); font-weight: 700; }
 .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* ─── UNIFIED DIALOG MODALS (For Standard Modals) ─── */
+/* ─── UNIFIED DIALOG MODALS ─── */
 .dialog-overlay {
-  position: fixed; inset: 0; z-index: 300;
+  position: fixed; inset: 0; z-index: 200;
   background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
   display: none; align-items: center; justify-content: center; padding: 24px;
 }
@@ -282,374 +272,418 @@ tr.selected td { background: #f0f4ff; }
 .dialog-body { padding: 24px; overflow-y: auto; max-height: calc(85vh - 130px); }
 .dialog-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg); }
 
-/* ─── FULL SCREEN MODAL (For Record Form) ─── */
-.fs-modal {
-  position: fixed; inset: 0; background: var(--bg); z-index: 200;
-  display: none; flex-direction: column; height: 100vh; width: 100vw;
-  animation: pageFadeIn 0.25s ease-out;
-}
-.fs-modal.open { display: flex; }
-.fs-topbar {
-  height: 60px; background: var(--surface); border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0;
-  box-shadow: var(--shadow-sm); z-index: 10;
-}
-.fs-topbar-left { display: flex; align-items: center; gap: 12px; }
-.fs-topbar-title { font-size: 16px; font-weight: 700; color: var(--text-primary); }
-.fs-content { flex: 1; overflow-y: auto; padding: 24px; display: flex; justify-content: center; }
-.fs-container { width: 100%; max-width: 1400px; display: flex; flex-direction: column; gap: 20px; }
-
-/* Modal Cards & Grid */
-.modal-card {
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
-  padding: 20px; display: flex; flex-direction: column; box-shadow: var(--shadow-sm);
-  position: relative;
-}
-.modal-card-title { font-size: 13px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
-.modal-card-title i { font-size: 18px; }
-
-.fs-row { display: grid; gap: 20px; }
-.fs-row-top { grid-template-columns: 1fr 1fr 1.2fr; }
-.fs-row-bottom { grid-template-columns: 1.5fr 1fr; }
-
 /* ─── FORM ELEMENTS INSIDE DIALOG ─── */
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
-.field:last-child { margin-bottom: 0; }
-.field-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); }
+.form-section-title { font-size: 13px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px; }
+.form-section-title i { color: var(--text-muted); font-size: 16px; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
 .field-label .req { color: var(--danger); margin-left: 2px; }
 .field-input, .field-select {
-  width: 100%; height: 38px; border: 1px solid var(--border); border-radius: var(--radius);
-  background: var(--surface); padding: 0 12px; font-size: 13px; font-family: inherit; color: var(--text-primary); outline: none; transition: all var(--transition);
+  width: 100%; height: 36px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--bg); padding: 0 12px; font-size: 13px; font-family: inherit; color: var(--text-primary); outline: none; transition: all var(--transition);
 }
-.field-input:focus, .field-select:focus, textarea.field-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
-.field-input:disabled, .field-select:disabled { opacity: 0.5; cursor: not-allowed; background: var(--bg); }
+.field-input:focus, .field-select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); background: var(--surface); }
 select.field-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; }
-input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-input[type=number] { -moz-appearance: textfield; }
 
-/* Search Dropdowns in Modal */
-.search-input-wrap { position: relative; }
-.search-dropdown {
-  position: absolute; top: calc(100% + 4px); left: 0; width: 100%;
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-  box-shadow: var(--shadow-md); max-height: 200px; overflow-y: auto; z-index: 100; display: none;
+/* 滿版原生色盤輸入框美化 */
+.color-picker-solid {
+  width: 36px; height: 36px; padding: 0; cursor: pointer; 
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: none; overflow: hidden;
 }
-.search-dropdown.show { display: block; }
-.search-item { padding: 10px 12px; border-bottom: 1px solid var(--bg); cursor: pointer; transition: background var(--transition); }
-.search-item:hover { background: var(--bg); }
-.search-item:last-child { border-bottom: none; }
-.search-item-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
-.search-item-desc { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+.color-picker-solid::-webkit-color-swatch-wrapper { padding: 0; }
+.color-picker-solid::-webkit-color-swatch { border: none; border-radius: 0; }
 
-/* Info Cards in Modal */
-.info-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; display: flex; align-items: flex-start; gap: 12px; margin-top: 12px; }
-.info-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-.info-icon.student { background: var(--brand-light); color: var(--brand); }
-.info-icon.inst { background: var(--success-bg); color: var(--success); }
-.info-content { flex: 1; min-width: 0; }
-.info-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.info-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.4; }
+/* 修正 5: 自訂排序下拉選單 (向上彈出) */
+.custom-select-wrap { position: relative; width: 100px; outline: none; }
+.custom-select-display {
+  height: 36px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface); display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-primary); transition: all 0.2s;
+}
+.custom-select-display:hover { border-color: var(--brand-border); }
+.custom-select-options {
+  position: absolute; bottom: calc(100% + 4px); left: 0; width: 100%;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.1); z-index: 9999; max-height: 160px; overflow-y: auto;
+  opacity: 0; visibility: hidden; transform: translateY(5px); transition: all 0.2s;
+}
+.custom-select-wrap.open .custom-select-options { opacity: 1; visibility: visible; transform: translateY(0); }
+.custom-select-option { padding: 8px 12px; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.2s; }
+.custom-select-option:hover { background: var(--bg); color: var(--brand); }
+.custom-select-option.selected { background: var(--brand-light); color: var(--brand); font-weight: 700; }
 
-/* Selected Courses Box */
-.selected-course-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 8px; }
-.selected-course-item:last-child { margin-bottom: 0; }
-.selected-course-info { display: flex; flex-direction: column; gap: 4px; }
-.selected-course-top { display: flex; align-items: center; gap: 6px; }
-.selected-course-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
-.selected-course-code { font-size: 10px; font-weight: 700; background: var(--indigo-bg); color: var(--indigo); padding: 2px 6px; border-radius: 4px; }
-.selected-course-desc { font-size: 11px; color: var(--text-muted); }
-.btn-remove-course { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 16px; padding: 4px; border-radius: 4px; transition: all 0.2s; }
-.btn-remove-course:hover { color: var(--danger); background: var(--danger-bg); }
+/* Dynamic Contact Entry */
+.contact-entry {
+  display: flex; align-items: flex-start; gap: 10px; background: var(--bg);
+  padding: 12px; border-radius: var(--radius); border: 1px solid var(--border);
+}
 
 /* Empty state */
 .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
 .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
 .empty-text { font-size: 13px; font-weight: 600; }
 
-@media (max-width: 1024px) {
-  .fs-row-top, .fs-row-bottom { grid-template-columns: 1fr; }
-}
-
+/* ─── MOBILE RESPONSIVE ─── */
 @media (max-width: 768px) {
+  /* 修正 4: 手機版隱藏勾選功能相關區塊 */
   .col-checkbox { display: none !important; }
   #batch-bar { display: none !important; }
+
   .toolbar { padding: 12px 16px; justify-content: flex-end; }
   .search-wrap { flex: 0 0 100%; order: 1; margin-bottom: 8px; }
   .flex-spacer { display: none; }
-  .toolbar-actions { order: 2; width: 100%; justify-content: space-between; display: flex; gap: 8px; }
-  .toolbar-actions .btn { flex: 1; padding: 0 4px; font-size: 11px; margin: 0; }
+  .toolbar-actions { order: 2; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .toolbar-actions .btn { width: 100%; padding: 0 8px; font-size: 12px; margin: 0; }
   .v-divider { display: none; }
-  .form-grid, .form-grid-3 { grid-template-columns: 1fr; }
-  .fs-topbar { padding: 0 16px; }
-  .fs-content { padding: 16px; }
+
+  .filter-row { padding: 10px 16px; }
+  .pagination-bar { flex-direction: column; align-items: flex-start; padding: 12px 16px; gap: 12px; }
+  .pagination-bar-right { width: 100%; justify-content: space-between; }
+  .dialog-overlay { padding: 12px; }
+  
+  #dept-form, #college-modal-body { flex-direction: column !important; gap: 16px !important; }
+  #dept-form > div, #college-modal-body > div { width: 100% !important; margin: 0 !important; }
+  
+  .v-divider-modal { 
+    display: block !important; 
+    width: 100% !important; 
+    height: 1px !important; 
+    min-height: 1px !important; 
+    background-color: var(--border) !important; 
+    margin: 8px 0 !important; 
+    flex-shrink: 0 !important;
+  }
 }
 </style>
 </head>
 <body>
 
-    <div id="main-view" style="display: flex; flex-direction: column; height: 100%;">
-        <div class="toolbar">
-            <div class="search-wrap">
-                <i class="ti ti-search"></i>
-                <input type="text" id="search-input" placeholder="搜尋學號、姓名、機構..." class="search-input">
-            </div>
-            <div class="flex-spacer"></div>
-            <div class="toolbar-actions">
-                <button onclick="window.exportToCSV()" class="btn btn-success-solid">
-                    <i class="ti ti-file-export"></i> <span class="btn-text">匯出清單</span>
-                </button>
-                <button id="btn-import" onclick="document.getElementById('import-file').click()" class="btn btn-indigo-solid">
-                    <i class="ti ti-file-import"></i> <span class="btn-text">批次匯入</span>
-                </button>
-                <input type="file" id="import-file" accept=".csv" style="display:none;" onchange="window.handleImport(event)">
-                <div class="v-divider"></div>
-                <button onclick="window.openModal()" class="btn btn-primary">
-                    <i class="ti ti-plus"></i> <span class="btn-text">新增紀錄</span>
-                </button>
-            </div>
-        </div>
-
-        <div class="filter-row" id="filter-container">
-            <div class="flex-spacer" style="flex: 1;"></div>
-            <div class="filter-pill-wrap" id="pill-wrap-columns">
-                <button class="filter-pill" id="pill-columns" onclick="window.toggleDropdown('columns')">
-                    <i class="ti ti-layout-columns"></i> 顯示欄位
-                </button>
-                <div class="filter-dropdown" id="drop-columns" style="right: 0; left: auto; width: 180px;">
-                    <div class="filter-dropdown-list custom-scroll" id="column-toggle-list">
-                        </div>
-                </div>
-            </div>
-
-            <div id="batch-bar">
-                <div class="batch-info">
-                    <i class="ti ti-checks" style="font-size:18px;"></i> 已選 <span id="selected-count">0</span> 筆紀錄
-                </div>
-                <button id="btn-select-all-filtered" class="btn btn-sm btn-secondary" onclick="window.selectAllFiltered()">選取全部符合條件</button>
-                <button class="btn btn-sm btn-secondary" onclick="window.clearSelection()">取消選取</button>
-                <div class="flex-spacer"></div>
-                <button class="btn btn-sm btn-danger" onclick="window.batchDelete()"><i class="ti ti-trash"></i> 批次刪除</button>
-            </div>
-        </div>
-
-        <div class="table-wrap">
-            <div class="table-scroll custom-scroll">
-                <table>
-                    <thead>
-                        <tr>
-                            <th data-col="checkbox" class="col-checkbox" style="width: 4%;">
-                                <input type="checkbox" id="selectAll" onchange="window.toggleSelectPage(event)" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
-                            </th>
-                            <th data-col="student_id" data-sort="student_id" style="width: 8%;">學號 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-col="student_name" data-sort="student_name" style="width: 8%;">姓名 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-col="dept" data-sort="dept" style="width: 10%;">學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-col="grade" data-sort="grade" style="width: 5%;">年級 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-col="inst_raw" data-sort="inst_raw" style="width: 14%;">機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            
-                            <th data-col="courses" style="width: 14%;">修習課程</th>
-                            
-                            <th data-col="duration" data-sort="duration" style="width: 12%;">實習起訖時間 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-col="hours" data-sort="hours" style="width: 5%;">總時數 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-col="period_type" style="width: 8%;">實習時間</th>
-                            <th data-col="proof_type" style="width: 6%;">證明文件</th>
-                            <th data-col="insurance" style="width: 8%;">投保情形</th>
-                            <th data-col="employment" style="width: 5%;">勞雇關係</th>
-                            <th data-col="resp_dept" data-sort="resp_dept" style="width: 7%;">填報系所 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-col="actions" class="col-actions" style="width: 6%;">操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="table-body">
-                        <tr>
-                            <td colspan="15" class="empty-state">
-                                <i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i>
-                                <div class="empty-text">資料載入與驗證中...</div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            
-            <div class="pagination-bar">
-                <div class="pagination-info" id="pagination-info">共 0 筆</div>
-                <div class="pagination-bar-right">
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <span style="font-size:11px; color:var(--text-muted)">每頁顯示</span>
-                        <select class="per-page-select" id="per-page-select" onchange="window.changePerPage(this.value)">
-                            <option value="15">15 筆</option>
-                            <option value="25">25 筆</option>
-                            <option value="50">50 筆</option>
-                        </select>
-                    </div>
-                    <div class="pagination-controls" id="pagination-controls"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="data-modal" class="fs-modal">
-        <div class="fs-topbar">
-            <div class="fs-topbar-left">
-                <button class="btn-icon" onclick="window.closeModal()" style="border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary);"><i class="ti ti-arrow-left"></i></button>
-                <div class="fs-topbar-title" id="modal-title">新增實習紀錄</div>
-            </div>
-            <div style="display:flex; gap:10px;">
-                <button class="btn btn-secondary" onclick="window.closeModal()">取消</button>
-                <button class="btn btn-primary" id="btn-submit" onclick="window.submitForm()"><i class="ti ti-check"></i> 儲存紀錄</button>
-            </div>
+    <!-- ─── TOOLBAR ─── -->
+    <div class="toolbar">
+        <div class="search-wrap">
+            <i class="ti ti-search"></i>
+            <input type="text" id="search-input" placeholder="搜尋學系名稱或代碼..." class="search-input">
         </div>
         
-        <div class="fs-content custom-scroll">
-            <div class="fs-container">
-                <div class="fs-row fs-row-top">
-                    <div class="modal-card">
-                        <div class="modal-card-title"><i class="ti ti-user" style="color: var(--brand);"></i> 實習學生</div>
-                        <div class="field z-index-fix" style="z-index: 30;">
-                            <label class="field-label">學生 <span class="req">*</span></label>
-                            <div class="search-input-wrap">
-                                <input type="text" id="input-student" class="field-input" placeholder="搜尋學號或姓名..." autocomplete="off">
-                                <div id="student-dropdown" class="search-dropdown custom-scroll"></div>
-                            </div>
-                        </div>
-                        <div id="student-info-card" class="info-card" style="display: none;"></div>
-                        <div class="field" style="margin-top: auto; padding-top: 16px;">
-                            <label class="field-label">當學年年級 <span class="req">*</span></label>
-                            <select id="input-grade" class="field-select" required>
-                                <option value="">請選擇</option>
-                                <option value="1">1 年級</option><option value="2">2 年級</option><option value="3">3 年級</option><option value="4">4 年級</option><option value="5">5 年級以上</option>
-                            </select>
-                        </div>
-                    </div>
+        <div class="flex-spacer"></div>
+        
+        <div class="toolbar-actions">
+            <button onclick="exportToCSV()" class="btn btn-success-solid">
+                <i class="ti ti-file-export"></i> <span class="btn-text">匯出清單</span>
+            </button>
+            <button id="btn-import" onclick="document.getElementById('import-file').click()" class="btn btn-indigo-solid">
+                <i class="ti ti-file-import"></i> <span class="btn-text">批次匯入</span>
+            </button>
+            <input type="file" id="import-file" accept=".csv" style="display:none;" onchange="handleImport(event)">
+            <div class="v-divider"></div>
+            <button onclick="openCollegeModal()" class="btn btn-secondary">
+                <i class="ti ti-category"></i> <span class="btn-text">學院設定</span>
+            </button>
+            <button onclick="openDeptModal()" class="btn btn-primary">
+                <i class="ti ti-plus"></i> <span class="btn-text">新增系所</span>
+            </button>
+        </div>
+    </div>
 
-                    <div class="modal-card">
-                        <div class="modal-card-title"><i class="ti ti-building-skyscraper" style="color: var(--success);"></i> 實習機構</div>
-                        <div class="field z-index-fix" style="z-index: 20;">
-                            <label class="field-label">機構 <span class="req">*</span></label>
-                            <div class="search-input-wrap">
-                                <input type="text" id="input-institution" class="field-input" placeholder="搜尋機構名稱或統編..." autocomplete="off">
-                                <div id="institution-dropdown" class="search-dropdown custom-scroll"></div>
-                            </div>
-                        </div>
-                        <div id="inst-info-card" class="info-card" style="display: none;"></div>
-                    </div>
-
-                    <div class="modal-card">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
-                            <div class="modal-card-title" style="border: none; padding: 0; margin: 0;"><i class="ti ti-layers-linked" style="color: var(--indigo);"></i> 關聯課程</div>
-                            <span id="selected-course-count" style="font-size: 11px; font-weight: 700; color: var(--text-muted);">已選 0 門</span>
-                        </div>
-                        <div class="field z-index-fix" style="z-index: 10;">
-                            <label class="field-label">搜尋課程 <span class="req">*</span></label>
-                            <div class="search-input-wrap">
-                                <input type="text" id="input-course-search" class="field-input" placeholder="課程名稱、代號或系所..." autocomplete="off">
-                                <div id="course-dropdown" class="search-dropdown custom-scroll"></div>
-                            </div>
-                        </div>
-                        <div id="selected-courses-container" style="display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; margin-top: 8px;">
-                            <div class="empty-state" style="padding: 20px;"><div class="empty-text">尚未加入課程</div></div>
-                        </div>
-                    </div>
+    <!-- ─── FILTER ROW & BATCH BAR ─── -->
+    <div class="filter-row">
+        <!-- 學院篩選 -->
+        <div class="filter-pill-wrap" id="pill-wrap-college">
+            <button class="filter-pill" id="pill-college" onclick="toggleDropdown('college')">
+                全部學院 <i class="ti ti-chevron-down"></i>
+            </button>
+            <div class="filter-dropdown" id="drop-college">
+                <div class="filter-dropdown-list" id="college-options-container"></div>
+                <div class="filter-dropdown-footer">
+                    <button onclick="clearFilter('college')">清除此篩選</button>
                 </div>
+            </div>
+        </div>
 
-                <div class="fs-row fs-row-bottom">
-                    <div class="modal-card">
-                        <div class="modal-card-title"><i class="ti ti-clock" style="color: var(--warning);"></i> 實習條件與保障</div>
-                        <div class="form-grid-3">
-                            <div class="field">
-                                <label class="field-label">起訖時間 <span class="req">*</span></label>
-                                <input type="text" id="input-duration" class="field-input" placeholder="YYYY/MM/DD-YYYY/MM/DD" required>
-                            </div>
-                            <div class="field">
-                                <label class="field-label">總時數</label>
-                                <input type="number" id="input-hours" class="field-input" placeholder="可留空 (待補)" min="0">
-                            </div>
-                            <div class="field">
-                                <label class="field-label">實習時間 <span class="req">*</span></label>
-                                <select id="input-period-type" class="field-select" required>
-                                    <option value="">請選擇</option>
-                                    <option value="寒假實習">寒假實習</option><option value="暑假實習">暑假實習</option><option value="學期期間實習">學期期間實習</option><option value="單一學期實習">單一學期實習</option><option value="全學年">全學年</option>
-                                </select>
-                            </div>
-                            <div class="field">
-                                <label class="field-label">證明文件 <span class="req">*</span></label>
-                                <select id="input-proof-type" class="field-select" required>
-                                    <option value="">請選擇</option>
-                                    <option value="合約">合約</option><option value="公函">公函</option><option value="其他證明文件">其他證明文件</option>
-                                </select>
-                            </div>
-                            <div class="field">
-                                <label class="field-label">投保情形 <span class="req">*</span></label>
-                                <select id="input-insurance" class="field-select" required>
-                                    <option value="">請選擇</option>
-                                    <option value="僅校外實習保險">僅校外實習保險</option><option value="僅勞保">僅勞保</option><option value="兩者皆有">兩者皆有</option><option value="兩者皆無">兩者皆無</option>
-                                </select>
-                            </div>
-                            <div class="field">
-                                <label class="field-label">勞雇關係 <span class="req">*</span></label>
-                                <select id="input-employment" class="field-select" required>
-                                    <option value="">請選擇</option>
-                                    <option value="是">是</option><option value="否">否</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="modal-card">
-                        <div class="modal-card-title"><i class="ti ti-building-community" style="color: var(--text-secondary);"></i> 行政歸屬與備註</div>
-                        <div class="field">
-                            <label class="field-label">負責填報系所 <span class="req">*</span></label>
-                            <select id="input-resp-dept" class="field-select" required>
-                                <option value="">請先選擇學生與關聯課程...</option>
-                            </select>
-                        </div>
-                        <div class="field" style="flex: 1;">
-                            <label class="field-label">備註</label>
-                            <textarea id="input-notes" class="field-input" placeholder="選填備註..." style="height: 100%; min-height: 80px; resize: none; padding-top: 10px;"></textarea>
-                        </div>
-                    </div>
+        <!-- 狀態篩選 -->
+        <div class="filter-pill-wrap" id="pill-wrap-status">
+            <button class="filter-pill" id="pill-status" onclick="toggleDropdown('status')">
+                系統狀態 <i class="ti ti-chevron-down"></i>
+            </button>
+            <div class="filter-dropdown" id="drop-status">
+                <div class="filter-dropdown-list">
+                    <label class="filter-option">
+                        <input type="checkbox" class="filter-chk-status" value="active" onchange="toggleFilterCheck('status', 'active')">
+                        <span>啟用中</span>
+                    </label>
+                    <label class="filter-option">
+                        <input type="checkbox" class="filter-chk-status" value="inactive" onchange="toggleFilterCheck('status', 'inactive')">
+                        <span>已停用</span>
+                    </label>
                 </div>
+                <div class="filter-dropdown-footer">
+                    <button onclick="clearFilter('status')">清除此篩選</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 批次操作列 (實心按鈕設計) -->
+        <div id="batch-bar">
+            <div class="batch-info">
+                <i class="ti ti-checks" style="font-size:18px;"></i> 已選 <span id="selected-count">0</span> 筆系所
+            </div>
+            <button id="btn-select-all-filtered" class="btn btn-sm btn-secondary" onclick="selectAllFiltered()">選取全部符合條件</button>
+            <button class="btn btn-sm btn-secondary" onclick="clearSelection()">取消選取</button>
+            
+            <div class="flex-spacer"></div>
+            
+            <button class="btn btn-sm btn-success-solid" onclick="batchUpdateStatus(true)"><i class="ti ti-circle-check"></i> 批次啟用</button>
+            <button class="btn btn-sm btn-warning-solid" onclick="batchUpdateStatus(false)"><i class="ti ti-circle-x"></i> 批次停用</button>
+            <button class="btn btn-sm btn-danger" onclick="batchDelete()"><i class="ti ti-trash"></i> 批次刪除</button>
+        </div>
+    </div>
+
+    <!-- ─── TABLE AREA ─── -->
+    <div class="table-wrap">
+        <div class="table-scroll custom-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="col-checkbox" style="width: 5%;">
+                            <div style="display:flex; justify-content:center; align-items:center;">
+                                <input type="checkbox" id="selectAll" onchange="toggleSelectPage(event)" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
+                            </div>
+                        </th>
+                        <th data-sort="college" style="width: 12%;">學院 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="name" style="width: 23%;">學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="code" style="width: 12%;">系所代碼 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th style="width: 22%;">承辦窗口</th>
+                        <th style="width: 12%;">系統狀態</th>
+                        <th style="width: 14%;">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="dept-table-body">
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i>
+                            <div class="empty-text">資料載入中...</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- 分頁列 -->
+        <div class="pagination-bar">
+            <div class="pagination-info" id="pagination-info">共 0 筆</div>
+            <div class="pagination-bar-right">
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="font-size:12px; color:var(--text-muted)">每頁顯示</span>
+                    <select class="per-page-select" id="per-page-select" onchange="window.changePerPage(this.value)">
+                        <option value="10">10 筆</option>
+                        <option value="25">25 筆</option>
+                        <option value="50">50 筆</option>
+                    </select>
+                </div>
+                <div class="pagination-controls" id="pagination-controls"></div>
             </div>
         </div>
     </div>
 
-    <div id="import-report-modal" class="dialog-overlay">
+    <!-- ─── UNIFIED DIALOG MODAL: 學院設定 (雙欄左右版 / 上選下拉式編輯) ─── -->
+    <div id="college-modal" class="dialog-overlay">
         <div class="dialog-box" style="max-width: 800px;">
             <div class="dialog-header">
-                <h3><i class="ti ti-file-invoice"></i> 批次匯入結果報告</h3>
-                <button type="button" class="dialog-close" onclick="window.closeImportReportModal()"><i class="ti ti-x"></i></button>
+                <h3><i class="ti ti-category"></i> 學院設定管理</h3>
+                <button type="button" class="dialog-close" onclick="closeCollegeModal()"><i class="ti ti-x"></i></button>
             </div>
-            <div class="dialog-body custom-scroll" style="background: var(--bg);">
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px;">
-                    <div style="background: var(--success-bg); border: 1px solid var(--success-border); padding: 16px; border-radius: var(--radius); text-align: center;">
-                        <div id="report-success-count" style="font-size: 28px; font-weight: 700; color: var(--success); margin-bottom: 4px;">0</div>
-                        <div style="font-size: 11px; font-weight: 700; color: var(--success);">成功匯入 (筆)</div>
+            <div class="dialog-body custom-scroll" id="college-modal-body" style="display: flex; gap: 24px;">
+                
+                <!-- 左側：新增學院 -->
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
+                    <div style="display:flex; align-items:center; height:38px; border-bottom:1px solid var(--border); padding-bottom:8px; margin-bottom:0;">
+                        <div class="form-section-title" style="margin: 0;"><i class="ti ti-plus"></i> 新增學院</div>
                     </div>
-                    <div style="background: var(--warning-bg); border: 1px solid var(--warning-border); padding: 16px; border-radius: var(--radius); text-align: center;">
-                        <div id="report-warning-count" style="font-size: 28px; font-weight: 700; color: var(--warning); margin-bottom: 4px;">0</div>
-                        <div style="font-size: 11px; font-weight: 700; color: var(--warning);">異常綁定 (筆)</div>
+                    
+                    <div class="field">
+                        <label class="field-label">學院全名 <span class="req">*</span></label>
+                        <input type="text" id="new-college-name" placeholder="例如：管理學院" class="field-input">
                     </div>
-                    <div style="background: var(--danger-bg); border: 1px solid var(--danger-border); padding: 16px; border-radius: var(--radius); text-align: center;">
-                        <div id="report-error-count" style="font-size: 28px; font-weight: 700; color: var(--danger); margin-bottom: 4px;">0</div>
-                        <div style="font-size: 11px; font-weight: 700; color: var(--danger);">嚴重錯誤 (筆)</div>
+
+                    <div style="display: flex; gap: 12px; align-items: flex-end;">
+                        <div class="field" style="width: 36px; flex-shrink: 0;">
+                            <label class="field-label">代表色</label>
+                            <input type="color" id="new-college-color" value="#1a56db" class="color-picker-solid">
+                        </div>
+                        <div class="field" style="flex: 1;">
+                            <label class="field-label">學院簡稱 (選填)</label>
+                            <input type="text" id="new-college-short" placeholder="例如：管院" class="field-input">
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 8px;">
+                        <button onclick="addCollege()" class="btn btn-primary" style="width: 100%;">
+                            <i class="ti ti-plus"></i> 確認新增
+                        </button>
                     </div>
                 </div>
                 
-                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;">
-                    <div style="display: grid; grid-template-columns: 15% 15% 25% 45%; padding: 8px 12px; background: var(--bg); border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 700; color: var(--text-muted);">
-                        <div>狀態</div><div>Excel來源列</div><div>學號 / 姓名</div><div>詳細說明</div>
+                <!-- 中間分隔線 -->
+                <div class="v-divider-modal" style="width: 1px; background: var(--border); margin: 0;"></div>
+
+                <!-- 右側：現有學院清單 (下拉選擇、下半部編輯) -->
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 16px; min-height: 0;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; height:38px; border-bottom:1px solid var(--border); padding-bottom:8px; margin-bottom:0;">
+                        <div class="form-section-title" style="margin: 0;"><i class="ti ti-list"></i> 現有學院清單</div>
                     </div>
-                    <div id="report-details-container" class="custom-scroll" style="max-height: 240px; overflow-y: auto; font-size: 13px;">
+                    
+                    <!-- 標籤選擇區改為標準的下拉選單 -->
+                    <div class="field">
+                        <select id="college-select" class="field-select" onchange="window.selectCollegeToEdit(this.value)">
+                            <!-- Options populated by JS -->
+                        </select>
+                    </div>
+                    
+                    <!-- 編輯區塊 (下半部) -->
+                    <div id="college-edit-container" style="display: none; flex-direction: column; gap: 12px; padding: 16px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); margin-top: 4px;">
+                        <div class="form-section-title" style="margin-bottom: 0;"><i class="ti ti-settings"></i> 設定選取的學院</div>
+                        
+                        <div class="field">
+                            <label class="field-label">學院全名 <span class="req">*</span></label>
+                            <input type="text" id="edit-college-name" class="field-input">
                         </div>
+                        
+                        <div style="display: flex; gap: 12px; align-items: flex-end;">
+                            <div class="field" style="width: 36px; flex-shrink: 0;">
+                                <label class="field-label">代表色</label>
+                                <input type="color" id="edit-college-color" class="color-picker-solid">
+                            </div>
+                            <div class="field" style="flex: 1;">
+                                <label class="field-label">學院簡稱</label>
+                                <input type="text" id="edit-college-short" class="field-input">
+                            </div>
+                        </div>
+                        
+                        <!-- 操作按鈕列 (內含自訂數字排序 - 向上展開) -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                            <div class="field" style="width: 100px;">
+                                <div class="custom-select-wrap" id="sort-dropdown-wrap" tabindex="0">
+                                    <div class="custom-select-display" onclick="toggleSortDropdown(event)">
+                                        <span id="sort-dropdown-text">順序: 1</span>
+                                        <i class="ti ti-chevron-up"></i>
+                                    </div>
+                                    <div class="custom-select-options custom-scroll" id="sort-dropdown-options">
+                                        <!-- JS動態生成 1...N -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" class="btn btn-danger" onclick="removeActiveCollege()"><i class="ti ti-trash"></i> 刪除</button>
+                                <button type="button" class="btn btn-primary" onclick="saveActiveCollege()"><i class="ti ti-check"></i> 儲存</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div style="font-size: 11px; color: var(--text-muted); margin-top: 12px; font-weight: 500;">
-                    <i class="ti ti-info-circle" style="color: var(--brand);"></i> 提示：帶有「異常綁定」的資料依然會被匯入系統，您可以事後透過編輯功能或補齊主檔來修正。
-                </div>
+                
             </div>
             <div class="dialog-footer">
-                <button type="button" class="btn btn-secondary" onclick="window.closeImportReportModal()">關閉視窗</button>
-                <button type="button" class="btn btn-primary" onclick="window.downloadImportReport()">
-                    <i class="ti ti-download"></i> 下載詳細報表
+                <button type="button" class="btn btn-secondary" onclick="closeCollegeModal()">關閉</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── UNIFIED DIALOG MODAL: 新增/編輯系所單位 ─── -->
+    <div id="dept-modal" class="dialog-overlay">
+        <div class="dialog-box" style="max-width: 800px;">
+            <div class="dialog-header">
+                <h3 id="dept-modal-title"><i class="ti ti-school"></i> 新增系所單位</h3>
+                <button type="button" class="dialog-close" onclick="closeDeptModal()"><i class="ti ti-x"></i></button>
+            </div>
+            <form id="dept-form" class="dialog-body custom-scroll" style="display: flex; gap: 24px;">
+                
+                <!-- 左側：基本資訊 -->
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
+                    <!-- 標題對齊 (38px高) -->
+                    <div style="display:flex; align-items:center; height:38px; border-bottom:1px solid var(--border); padding-bottom:8px; margin-bottom:0;">
+                        <div class="form-section-title" style="margin: 0;"><i class="ti ti-info-circle"></i> 基本資訊</div>
+                    </div>
+                    
+                    <div class="field">
+                        <label class="field-label">所屬學院 <span class="req">*</span></label>
+                        <select id="input-college" required class="field-select"></select>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">系所代碼 <span class="req">*</span></label>
+                        <input type="text" id="input-code" required placeholder="例如：IM" class="field-input" style="text-transform:uppercase; font-weight:600;">
+                    </div>
+                    <div class="field">
+                        <label class="field-label">學系全名 <span class="req">*</span></label>
+                        <input type="text" id="input-name" required placeholder="例如：資訊管理學系" class="field-input">
+                    </div>
+                    <div class="field">
+                        <label class="field-label">簡稱 (選填)</label>
+                        <input type="text" id="input-short-name" placeholder="例如：資管系" class="field-input">
+                    </div>
+                </div>
+                
+                <!-- 中間分隔線 -->
+                <div class="v-divider-modal" style="width: 1px; background: var(--border); margin: 0;"></div>
+                
+                <!-- 右側：承辦窗口 (加入捲動限制) -->
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 16px; min-height: 0;">
+                    <!-- 標題對齊 (38px高，移除新增按鈕) -->
+                    <div style="display:flex; align-items:center; height:38px; border-bottom:1px solid var(--border); padding-bottom:8px; margin-bottom:0;">
+                        <div class="form-section-title" style="margin:0;"><i class="ti ti-users"></i> 承辦窗口</div>
+                    </div>
+                    
+                    <!-- 高度限制與捲動 -->
+                    <div id="contacts-container" class="custom-scroll" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:12px; padding-right:4px;">
+                        
+                        <!-- 固定渲染 3 組 -->
+                        <div class="contact-entry">
+                            <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="font-size:12px; font-weight:700; color:var(--text-muted); width:40px; flex-shrink:0;">姓名</span>
+                                    <input type="text" id="contact-name-0" placeholder="例如：陳助教" class="field-input" style="height:30px;">
+                                </div>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="font-size:12px; font-weight:700; color:var(--text-muted); width:40px; flex-shrink:0;">Email</span>
+                                    <input type="email" id="contact-email-0" placeholder="example@thu.edu.tw" class="field-input" style="height:30px; font-family:monospace;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="contact-entry">
+                            <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="font-size:12px; font-weight:700; color:var(--text-muted); width:40px; flex-shrink:0;">姓名</span>
+                                    <input type="text" id="contact-name-1" placeholder="(選填)" class="field-input" style="height:30px;">
+                                </div>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="font-size:12px; font-weight:700; color:var(--text-muted); width:40px; flex-shrink:0;">Email</span>
+                                    <input type="email" id="contact-email-1" placeholder="(選填)" class="field-input" style="height:30px; font-family:monospace;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="contact-entry">
+                            <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="font-size:12px; font-weight:700; color:var(--text-muted); width:40px; flex-shrink:0;">姓名</span>
+                                    <input type="text" id="contact-name-2" placeholder="(選填)" class="field-input" style="height:30px;">
+                                </div>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="font-size:12px; font-weight:700; color:var(--text-muted); width:40px; flex-shrink:0;">Email</span>
+                                    <input type="email" id="contact-email-2" placeholder="(選填)" class="field-input" style="height:30px; font-family:monospace;">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </form>
+            <div class="dialog-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeDeptModal()">取消</button>
+                <button type="button" id="btn-submit" class="btn btn-primary" onclick="submitDeptForm()">
+                    <i class="ti ti-check"></i> 確認儲存
                 </button>
             </div>
         </div>
@@ -658,299 +692,67 @@ input[type=number] { -moz-appearance: textfield; }
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc, serverTimestamp, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY", authDomain: "thu-isac-review.firebaseapp.com", projectId: "thu-isac-review", storageBucket: "thu-isac-review.firebasestorage.app", messagingSenderId: "453299876735", appId: "1:453299876735:web:1d8babca3315423161a04a" };
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app); 
+        const auth = getAuth(app);
         const db = getFirestore(app);
         
-        const recordsCol = collection(db, "internship_records");
-        const studentsCol = collection(db, "internship_students");
-        const instsCol = collection(db, "internship_institutions");
-        const coursesCol = collection(db, "internship_courses");
+        const deptCollection = collection(db, "departments");
+        const collegeDocRef = doc(db, "settings", "colleges");
+
+        let allDepts = []; 
+        let collegeList = []; 
+        let editingId = null; 
+        let currentPage = 1; 
+        let itemsPerPage = 10;
         
-        let allRecords = [], allStudents = [], allInsts = [], allCourses = [], editingId = null, currentPage = 1, itemsPerPage = 15, selectedIds = [], filteredRecords = [], selectedCourseIds = [];
-        let globalDepts = [], orderedColleges = [];
-
-        window.globalImportReportData = [];
-
-        const filterSelections = {
-            dept: new Set(), grade: new Set(), inst_raw: new Set(), resp_dept: new Set(),
-            period: new Set(), proof: new Set(), insurance: new Set(), employment: new Set()
-        };
-        const filterDefinitions = [
-            { key: 'dept', label: '學系', searchable: true },
-            { key: 'grade', label: '年級', searchable: false },
-            { key: 'inst_raw', label: '機構名稱', searchable: true },
-            { key: 'resp_dept', label: '填報系所', searchable: true },
-            { key: 'period', label: '實習時間', searchable: false },
-            { key: 'proof', label: '證明文件', searchable: false },
-            { key: 'insurance', label: '投保情形', searchable: false },
-            { key: 'employment', label: '勞雇關係', searchable: false }
-        ];
-
-        // 欄位顯示/隱藏設定定義
-        const tableColumns = [
-            { id: 'student_id', label: '學號' },
-            { id: 'student_name', label: '姓名' },
-            { id: 'dept', label: '學系' },
-            { id: 'grade', label: '年級' },
-            { id: 'inst_raw', label: '機構名稱' },
-            { id: 'courses', label: '修習課程' },
-            { id: 'duration', label: '實習起訖時間' },
-            { id: 'hours', label: '總時數' },
-            { id: 'period_type', label: '實習時間' },
-            { id: 'proof_type', label: '證明文件' },
-            { id: 'insurance', label: '投保情形' },
-            { id: 'employment', label: '勞雇關係' },
-            { id: 'resp_dept', label: '填報系所' }
-        ];
-
-        const getTime = (ts) => ts ? (ts.toMillis ? ts.toMillis() : (ts.seconds ? ts.seconds * 1000 : new Date(ts).getTime() || 0)) : 0;
-        const getColShort = (n) => { const c = orderedColleges.find(x => x.name === n); return c && c.shortName ? c.shortName : (n || '未知學院'); };
-        const getDeptShort = (n) => { const d = globalDepts.find(x => x.name === n); return d && d.shortName ? d.shortName : (n || '未知學系'); };
+        let selectedIds = [];
+        let filteredDepts = [];
+        
+        let filterCollegeSet = new Set();
+        let filterStatusSet = new Set();
+        let sortCol = 'sortOrder'; let sortDir = 'asc';
+        
+        let activeEditColIndex = -1;
+        let tempSortIndex = -1;
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                const p1 = getDoc(doc(db, "settings", "colleges")).then(snap => { if (snap.exists()) orderedColleges = snap.data().list.map(c => typeof c === 'string' ? { name: c, shortName: c } : c); });
-                const p2 = getDocs(collection(db, "departments")).then(snap => {
-                    globalDepts = snap.docs.map(d => d.data());
-                    globalDepts.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
+                onSnapshot(collegeDocRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        const rawList = docSnap.data().list || [];
+                        collegeList = rawList.map(c => {
+                            if (typeof c === 'string') return { name: c, shortName: c, color: '#1a56db' };
+                            return { ...c, color: c.color || '#1a56db' };
+                        });
+                    } else {
+                        collegeList = [
+                            {name: "文學院", shortName: "文院", color: "#eab308"}, 
+                            {name: "理學院", shortName: "理院", color: "#3b82f6"},
+                            {name: "工學院", shortName: "工院", color: "#14b8a6"}, 
+                            {name: "管理學院", shortName: "管院", color: "#f43f5e"}
+                        ];
+                        setDoc(collegeDocRef, { list: collegeList }); 
+                    }
+                    renderCollegeUI(); renderTable();
                 });
-                const p3 = getDocs(studentsCol).then(s => allStudents = s.docs.map(d => ({id: d.id, ...d.data()})));
-                const p4 = getDocs(instsCol).then(s => allInsts = s.docs.map(d => ({id: d.id, ...d.data()})));
-                const p5 = getDocs(coursesCol).then(s => { allCourses = s.docs.map(d => ({id: d.id, ...d.data()})); allCourses.sort((a,b) => (b.academic_year+b.term).localeCompare(a.academic_year+a.term)); });
-
-                Promise.all([p1, p2, p3, p4, p5]).then(() => {
-                    setupGlobalListeners();
-                    renderColumnToggles();
-                    onSnapshot(recordsCol, (snapshot) => {
-                        allRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                        renderFilterDropdowns(); // 每次資料更新後重新渲染以取得最新選項
-                        selectedIds = []; window.updateBatchActionBar(); window.renderTable();
-                    });
-                });
-            }
-        });
-
-        // ─── COLUMN TOGGLE LOGIC ───
-        function renderColumnToggles() {
-            const list = document.getElementById('column-toggle-list');
-            let html = '';
-            tableColumns.forEach(col => {
-                html += `
-                <label class="filter-option">
-                    <input type="checkbox" class="col-toggle-chk" value="${col.id}" checked onchange="window.updateColumnVisibility()"> 
-                    <span>${col.label}</span>
-                </label>`;
-            });
-            list.innerHTML = html;
-        }
-
-        window.updateColumnVisibility = () => {
-            let styleEl = document.getElementById('dynamic-col-styles');
-            if (!styleEl) {
-                styleEl = document.createElement('style');
-                styleEl.id = 'dynamic-col-styles';
-                document.head.appendChild(styleEl);
-            }
-            let css = '';
-            document.querySelectorAll('.col-toggle-chk').forEach(chk => {
-                if (!chk.checked) {
-                    const col = chk.value;
-                    css += `th[data-col="${col}"], td[data-col="${col}"] { display: none !important; }\n`;
-                }
-            });
-            styleEl.innerHTML = css;
-        };
-
-        // ─── FILTER LOGIC ───
-        window.filterDropdownItems = (input, containerId) => {
-            window.updateFilterVisibility();
-        };
-
-        window.updateFilterVisibility = () => {
-            const searchInputGlobal = document.getElementById('search-input');
-            const globalSearchTerm = searchInputGlobal ? searchInputGlobal.value.toLowerCase().trim() : '';
-
-            filterDefinitions.forEach(def => {
-                const key = def.key;
-                const availableValues = new Set();
                 
-                allRecords.forEach(d => {
-                    const matchSearch = (d.student_raw || '').toLowerCase().includes(globalSearchTerm) || (d.inst_raw || '').toLowerCase().includes(globalSearchTerm);
-                    let ok = matchSearch;
-
-                    if (key !== 'dept' && ok && filterSelections.dept.size > 0) {
-                        const stuId = (d.student_raw || '').split(' - ')[0];
-                        const stu = allStudents.find(s => s.student_id === stuId);
-                        ok = stu && filterSelections.dept.has(stu.department);
-                    }
-                    if (key !== 'grade' && ok && filterSelections.grade.size > 0) ok = filterSelections.grade.has(d.grade);
-                    if (key !== 'inst_raw' && ok && filterSelections.inst_raw.size > 0) ok = filterSelections.inst_raw.has(d.inst_raw);
-                    if (key !== 'resp_dept' && ok && filterSelections.resp_dept.size > 0) ok = filterSelections.resp_dept.has(d.resp_dept);
-                    if (key !== 'period' && ok && filterSelections.period.size > 0) ok = filterSelections.period.has(d.period_type);
-                    if (key !== 'proof' && ok && filterSelections.proof.size > 0) ok = filterSelections.proof.has(d.proof_type);
-                    if (key !== 'insurance' && ok && filterSelections.insurance.size > 0) ok = filterSelections.insurance.has(d.insurance);
-                    if (key !== 'employment' && ok && filterSelections.employment.size > 0) ok = filterSelections.employment.has(d.employment);
-
-                    if (ok) {
-                        if (key === 'dept') {
-                            const stuId = (d.student_raw || '').split(' - ')[0];
-                            const stu = allStudents.find(s => s.student_id === stuId);
-                            if (stu && stu.department) availableValues.add(stu.department);
-                        } else if (key === 'grade') {
-                            if (d.grade) availableValues.add(d.grade);
-                        } else if (key === 'inst_raw') {
-                            if (d.inst_raw) availableValues.add(d.inst_raw);
-                        } else if (key === 'resp_dept') {
-                            if (d.resp_dept) availableValues.add(d.resp_dept);
-                        } else if (key === 'period') {
-                            if (d.period_type) availableValues.add(d.period_type);
-                        } else if (key === 'proof') {
-                            if (d.proof_type) availableValues.add(d.proof_type);
-                        } else if (key === 'insurance') {
-                            if (d.insurance) availableValues.add(d.insurance);
-                        } else if (key === 'employment') {
-                            if (d.employment) availableValues.add(d.employment);
-                        }
-                    }
+                onSnapshot(deptCollection, (snapshot) => {
+                    allDepts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    selectedIds = [];
+                    updateBatchActionBar();
+                    renderTable();
+                }, (error) => {
+                    document.getElementById('dept-table-body').innerHTML = `<tr><td colspan="7" class="empty-state"><i class="ti ti-lock empty-icon" style="color:var(--danger); opacity:1;"></i><div class="empty-text">資料讀取失敗，權限不足。</div></td></tr>`;
                 });
-
-                const container = document.getElementById(`${key}-options-container`);
-                if (container) {
-                    const searchInputLocal = document.getElementById(`search-${key}-input`);
-                    const localSearchTerm = searchInputLocal ? searchInputLocal.value.toLowerCase().trim() : '';
-
-                    container.querySelectorAll('.filter-option').forEach(lbl => {
-                        const checkbox = lbl.querySelector('input[type="checkbox"]');
-                        const val = checkbox.value;
-                        const text = lbl.querySelector('span').textContent.toLowerCase();
-                        
-                        const isAvailable = availableValues.has(val) || checkbox.checked;
-                        const matchesLocalSearch = text.includes(localSearchTerm);
-
-                        if (isAvailable && matchesLocalSearch) {
-                            lbl.style.display = 'flex';
-                        } else {
-                            lbl.style.display = 'none';
-                        }
-                    });
-                }
-            });
-        };
-
-        function renderFilterDropdowns() {
-            const container = document.getElementById('filter-container');
-            const uniqueSortedDepts = [...new Set(globalDepts.map(d=>d.name))];
-            
-            const filterOptions = {
-                dept: uniqueSortedDepts.map(v=>({value:v, label: getDeptShort(v)})),
-                grade: ['1', '2', '3', '4', '5'].map(v=>({value:v, label: `${v} 年級${v==='5'?'以上':''}`})),
-                inst_raw: [...new Set(allRecords.map(r=>r.inst_raw))].filter(Boolean).sort().map(v=>({value:v, label:v})),
-                resp_dept: uniqueSortedDepts.map(v=>({value:v, label: getDeptShort(v)})),
-                period: ['寒假實習', '暑假實習', '學期期間實習', '單一學期實習', '全學年'].map(v=>({value:v, label:v})),
-                proof: ['合約', '公函', '其他證明文件'].map(v=>({value:v, label:v})),
-                insurance: ['僅校外實習保險', '僅勞保', '兩者皆有', '兩者皆無'].map(v=>({value:v, label:v})),
-                employment: ['是', '否'].map(v=>({value:v, label:v}))
-            };
-
-            let html = '';
-            filterDefinitions.forEach(def => {
-                const opts = filterOptions[def.key] || [];
-                let optionsHtml = '';
-                opts.forEach(opt => {
-                    const val = typeof opt === 'object' ? opt.value : opt;
-                    const lbl = typeof opt === 'object' ? opt.label : opt;
-                    const isChecked = filterSelections[def.key].has(val) ? 'checked' : '';
-                    optionsHtml += `
-                    <label class="filter-option">
-                        <input type="checkbox" class="filter-chk-${def.key}" value="${val}" onchange="window.toggleFilterCheck('${def.key}', '${val}')" ${isChecked}> 
-                        <span>${lbl}</span>
-                    </label>`;
-                });
-
-                let searchHtml = '';
-                if (def.searchable) {
-                    searchHtml = `
-                    <div class="filter-dropdown-search">
-                        <input type="text" id="search-${def.key}-input" placeholder="搜尋${def.label}..." onkeyup="window.filterDropdownItems(this, '${def.key}-options-container')">
-                    </div>`;
-                }
-
-                const isActive = filterSelections[def.key].size > 0 ? 'active' : '';
-                const btnContent = filterSelections[def.key].size > 0 ? `${def.label} <span class="pill-count">${filterSelections[def.key].size}</span>` : def.label;
-
-                html += `
-                <div class="filter-pill-wrap" id="pill-wrap-${def.key}">
-                    <button class="filter-pill ${isActive}" id="pill-${def.key}" onclick="window.toggleDropdown('${def.key}')">
-                        ${btnContent} <i class="ti ti-chevron-down"></i>
-                    </button>
-                    <div class="filter-dropdown" id="drop-${def.key}">
-                        ${searchHtml}
-                        <div class="filter-dropdown-list" id="${def.key}-options-container">${optionsHtml}</div>
-                        <div class="filter-dropdown-footer">
-                            <button onclick="window.clearFilter('${def.key}')">清除此篩選</button>
-                        </div>
-                    </div>
-                </div>`;
-            });
-            
-            container.querySelectorAll('.filter-pill-wrap:not(#pill-wrap-columns)').forEach(el => el.remove());
-            container.insertAdjacentHTML('afterbegin', html);
-            
-            window.updateFilterVisibility();
-        }
-
-        window.toggleDropdown = (type) => {
-            const drop = document.getElementById(`drop-${type}`);
-            const wrap = document.getElementById(`pill-wrap-${type}`);
-            const isOpen = drop.classList.contains('show');
-            document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
-            document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
-            if (!isOpen) { drop.classList.add('show'); wrap.classList.add('open'); }
-        };
-
-        window.toggleFilterCheck = (type, val) => {
-            const set = filterSelections[type];
-            if (set.has(val)) set.delete(val); else set.add(val);
-            document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
-            currentPage = 1; window.updatePillActive(type); window.renderTable();
-        };
-
-        window.updatePillActive = (type) => {
-            const set = filterSelections[type];
-            const def = filterDefinitions.find(d => d.key === type);
-            const pill = document.getElementById(`pill-${type}`);
-            if (set.size > 0) {
-                pill.classList.add('active');
-                pill.innerHTML = `${def.label} <span class="pill-count">${set.size}</span> <i class="ti ti-chevron-down"></i>`;
             } else {
-                pill.classList.remove('active');
-                pill.innerHTML = `${def.label} <i class="ti ti-chevron-down"></i>`;
-            }
-        };
-
-        window.clearFilter = (type) => {
-            filterSelections[type].clear();
-            document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = false);
-            const searchInput = document.getElementById(`search-${type}-input`);
-            if (searchInput) {
-                searchInput.value = '';
-            }
-            currentPage = 1; window.updatePillActive(type); window.renderTable();
-        };
-
-        document.addEventListener('click', e => {
-            if (!e.target.closest('.filter-pill-wrap')) {
-                document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
-                document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
+                document.getElementById('dept-table-body').innerHTML = `<tr><td colspan="7" class="empty-state"><i class="ti ti-shield-half empty-icon"></i><div class="empty-text">請先登入系統以存取資料。</div></td></tr>`;
             }
         });
 
         // ─── SORTING LOGIC ───
-        let sortCol = 'created_at'; let sortDir = 'desc';
         document.querySelectorAll('th[data-sort]').forEach(th => {
             th.onclick = () => {
                 const col = th.dataset.sort;
@@ -964,267 +766,248 @@ input[type=number] { -moz-appearance: textfield; }
                 
                 th.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
                 th.querySelector('.sort-icon').className = `ti ti-sort-${sortDir === 'asc' ? 'ascending' : 'descending'} sort-icon`;
-                window.renderTable();
+                renderTable();
             };
         });
 
-        // ─── SEARCH DROPDOWNS (STUDENT, INST, COURSE) ───
-        function setupGlobalListeners() {
-            const stuInput = document.getElementById('input-student'); const stuDropdown = document.getElementById('student-dropdown');
-            const instInput = document.getElementById('input-institution'); const instDropdown = document.getElementById('institution-dropdown');
-            const courseInput = document.getElementById('input-course-search'); const courseDropdown = document.getElementById('course-dropdown');
+        // ─── DROPDOWN & FILTER LOGIC ───
+        window.toggleDropdown = (type) => {
+            const drop = document.getElementById(`drop-${type}`);
+            const wrap = document.getElementById(`pill-wrap-${type}`);
+            const isOpen = drop.classList.contains('show');
+            document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
+            document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
+            if (!isOpen) { drop.classList.add('show'); wrap.classList.add('open'); }
+        };
 
-            const handleFocus = (dropdown) => { dropdown.classList.add('show'); };
-
-            stuInput?.addEventListener('focus', () => { handleFocus(stuDropdown); renderStudentDropdown(allStudents, stuInput.value); });
-            stuInput?.addEventListener('input', () => { handleFocus(stuDropdown); renderStudentDropdown(allStudents, stuInput.value); window.autoFillStudentInfo(); });
+        window.toggleFilterCheck = (type, val) => {
+            const chk = document.querySelector(`.filter-chk-${type}[value="${val}"]`);
+            if(chk) chk.checked = !chk.checked;
             
-            instInput?.addEventListener('focus', () => { handleFocus(instDropdown); renderInstDropdown(allInsts, instInput.value); });
-            instInput?.addEventListener('input', () => { handleFocus(instDropdown); renderInstDropdown(allInsts, instInput.value); window.autoFillInstInfo(); });
+            const set = type === 'college' ? filterCollegeSet : filterStatusSet;
+            if (set.has(val)) set.delete(val); else set.add(val);
             
-            courseInput?.addEventListener('focus', () => { handleFocus(courseDropdown); renderCourseDropdown(allCourses, courseInput.value); });
-            courseInput?.addEventListener('input', () => { handleFocus(courseDropdown); renderCourseDropdown(allCourses, courseInput.value); });
+            document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
+            currentPage = 1; updatePillActive(type); renderTable();
+        };
 
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('#input-student') && !e.target.closest('#student-dropdown')) stuDropdown?.classList.remove('show');
-                if (!e.target.closest('#input-institution') && !e.target.closest('#institution-dropdown')) instDropdown?.classList.remove('show');
-                if (!e.target.closest('#input-course-search') && !e.target.closest('#course-dropdown')) courseDropdown?.classList.remove('show');
-            });
-        }
-
-        window.updateRespDeptOptions = (preselectedValue = '') => {
-            const selectEl = document.getElementById('input-resp-dept');
-            if (!selectEl) return;
-
-            const stuMatch = document.getElementById('input-student').value.split(' - ')[0];
-            const stu = allStudents.find(s => s.student_id === stuMatch);
-            const stuDept = stu ? stu.department : null;
-
-            const courseDepts = selectedCourseIds.map(cid => {
-                const c = allCourses.find(x => x.id === cid);
-                return c ? c.department : null;
-            }).filter(Boolean);
-
-            const deptsSet = new Set();
-            if (stuDept) deptsSet.add(stuDept);
-            courseDepts.forEach(d => deptsSet.add(d));
-
-            const uniqueDepts = Array.from(deptsSet);
-
-            if (uniqueDepts.length === 0) {
-                selectEl.innerHTML = '<option value="">請先選擇學生與關聯課程...</option>';
-                return;
+        function updatePillActive(type) {
+            const set = type === 'college' ? filterCollegeSet : filterStatusSet;
+            const pill = document.getElementById(`pill-${type}`);
+            let typeName = type === 'college' ? '學院' : '系統狀態';
+            
+            if (set.size > 0) {
+                pill.classList.add('active');
+                pill.innerHTML = `${typeName} <span class="pill-count">${set.size}</span> <i class="ti ti-chevron-down"></i>`;
+            } else {
+                pill.classList.remove('active');
+                pill.innerHTML = `全部${typeName} <i class="ti ti-chevron-down"></i>`;
             }
-
-            const currentVal = preselectedValue || selectEl.value;
-            let html = '<option value="">請選擇負責填報系所...</option>';
-            uniqueDepts.forEach(d => {
-                const deptObj = globalDepts.find(x => x.name === d);
-                const dispName = deptObj && deptObj.shortName ? deptObj.shortName : d;
-                html += `<option value="${d}">${dispName}</option>`;
-            });
-
-            selectEl.innerHTML = html;
-            
-            if (uniqueDepts.includes(currentVal)) selectEl.value = currentVal;
-            else if (uniqueDepts.length === 1) selectEl.value = uniqueDepts[0]; 
-            else if (stuDept && uniqueDepts.includes(stuDept)) selectEl.value = stuDept; 
-        };
-
-        function renderStudentDropdown(list, term) {
-            const dropdown = document.getElementById('student-dropdown'); 
-            const val = term.split(' - ')[0].trim().toLowerCase(); 
-            const filtered = list.filter(s => s.student_id.toLowerCase().includes(val) || s.name.toLowerCase().includes(val));
-            if (filtered.length === 0) { dropdown.innerHTML = '<div style="padding:12px; text-align:center; font-size:11px; color:var(--text-muted);">查無相符學生</div>'; return; }
-            
-            let html = '';
-            filtered.slice(0, 30).forEach(s => {
-                html += `
-                <div class="search-item" onclick="window.selectStudent('${s.student_id}', '${s.name}')">
-                    <div class="search-item-title">${s.student_id} - ${s.name}</div>
-                    <div class="search-item-desc">${getColShort(s.college)} / ${getDeptShort(s.department)}</div>
-                </div>`;
-            });
-            dropdown.innerHTML = html;
         }
-        window.selectStudent = (id, name) => { 
-            document.getElementById('input-student').value = `${id} - ${name}`; 
-            document.getElementById('student-dropdown').classList.remove('show');
-            window.autoFillStudentInfo(); 
+
+        window.clearFilter = (type) => {
+            const set = type === 'college' ? filterCollegeSet : filterStatusSet;
+            set.clear();
+            document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = false);
+            currentPage = 1; updatePillActive(type); renderTable();
         };
 
-        function renderInstDropdown(list, term) {
-            const dropdown = document.getElementById('institution-dropdown'); 
-            const val = term.trim().toLowerCase();
-            const filtered = list.filter(i => i.name.toLowerCase().includes(val) || (i.tax_id && i.tax_id.toLowerCase().includes(val)));
-            if (filtered.length === 0) { dropdown.innerHTML = '<div style="padding:12px; text-align:center; font-size:11px; color:var(--text-muted);">查無相符機構</div>'; return; }
-            
-            let html = '';
-            filtered.slice(0, 30).forEach(i => {
-                html += `
-                <div class="search-item" onclick="window.selectInst('${i.name}')">
-                    <div class="search-item-title">${i.name}</div>
-                    <div class="search-item-desc">${i.tax_id || '統編：無統一編號'} | ${i.address || ''}</div>
-                </div>`;
-            });
-            dropdown.innerHTML = html;
-        }
-        window.selectInst = (name) => { 
-            document.getElementById('input-institution').value = name; 
-            document.getElementById('institution-dropdown').classList.remove('show');
-            window.autoFillInstInfo(); 
-        };
-
-        function renderCourseDropdown(list, term) {
-            const dropdown = document.getElementById('course-dropdown'); 
-            const val = term.trim().toLowerCase();
-            const available = list.filter(c => !selectedCourseIds.includes(c.id));
-            const filtered = available.filter(c => 
-                c.course_name.toLowerCase().includes(val) || c.course_code.toLowerCase().includes(val) || c.department.toLowerCase().includes(val)
-            );
-            
-            if (filtered.length === 0) { dropdown.innerHTML = '<div style="padding:12px; text-align:center; font-size:11px; color:var(--text-muted);">查無相符或可選擇之課程</div>'; return; }
-
-            let html = '';
-            filtered.slice(0, 30).forEach(c => {
-                html += `
-                <div class="search-item" onclick="window.selectCourse('${c.id}')">
-                    <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
-                        <span style="font-size:13px; font-weight:700; color:var(--text-primary);">${c.academic_year}-${c.term}</span>
-                        <span style="font-size:10px; font-weight:700; background:var(--brand-light); color:var(--brand); padding:2px 4px; border-radius:4px;">${c.course_code}</span>
-                        <span style="font-size:13px; font-weight:700; color:var(--text-primary);">${c.course_name}</span>
-                    </div>
-                    <div class="search-item-desc">開課院系：${getColShort(c.college)} / ${getDeptShort(c.department)} | ${c.credits}學分</div>
-                </div>`;
-            });
-            dropdown.innerHTML = html;
-        }
-        window.selectCourse = (id) => { 
-            if (!selectedCourseIds.includes(id)) selectedCourseIds.push(id); 
-            document.getElementById('input-course-search').value = ''; 
-            document.getElementById('course-dropdown').classList.remove('show');
-            window.renderSelectedCourseChips(); 
-        };
-
-        window.renderSelectedCourseChips = (skipRespUpdate = false) => {
-            const container = document.getElementById('selected-courses-container'); 
-            const counter = document.getElementById('selected-course-count');
-            if(counter) counter.innerText = `已選 ${selectedCourseIds.length} 門`;
-            
-            if (selectedCourseIds.length === 0) { 
-                container.innerHTML = '<div class="empty-state" style="padding:20px;"><div class="empty-text">尚未加入課程</div></div>'; 
-                if (!skipRespUpdate) window.updateRespDeptOptions(); 
-                return; 
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.filter-pill-wrap')) {
+                document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
+                document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
             }
-            
-            let html = '';
-            selectedCourseIds.forEach(id => {
-                const c = allCourses.find(x => x.id === id); if (!c) return;
-                html += `
-                <div class="selected-course-item">
-                    <div class="selected-course-info">
-                        <div class="selected-course-top">
-                            <span class="selected-course-title">${c.academic_year}-${c.term}</span>
-                            <span class="selected-course-code">${c.course_code}</span>
-                            <span class="selected-course-title">${c.course_name}</span>
-                        </div>
-                        <div class="selected-course-desc">開課院系：${getColShort(c.college)} / ${getDeptShort(c.department)} | ${c.credits}學分</div>
+            // Close custom sort dropdown
+            if (!e.target.closest('.custom-select-wrap')) {
+                document.getElementById('sort-dropdown-wrap')?.classList.remove('open');
+            }
+        });
+
+        // ─── COLLEGE MANAGEMENT ───
+        function renderCollegeUI() {
+            document.getElementById('college-options-container').innerHTML = collegeList.map(c => `
+                <label class="filter-option">
+                    <input type="checkbox" class="filter-chk-college" value="${c.name}" onchange="toggleFilterCheck('college', '${c.name}')"> 
+                    <span>${c.shortName || c.name}</span>
+                </label>
+            `).join('');
+            document.querySelectorAll(`.filter-chk-college`).forEach(c => c.checked = filterCollegeSet.has(c.value));
+
+            document.getElementById('input-college').innerHTML = `<option value="">請選擇學院...</option>` + collegeList.map(c => `<option value="${c.name}">${c.shortName || c.name}</option>`).join('');
+
+            // 下拉選擇現有學院
+            document.getElementById('college-select').innerHTML = `<option value="-1">請選擇要編輯的學院...</option>` + 
+                collegeList.map((c, index) => `<option value="${index}" ${activeEditColIndex === index ? 'selected' : ''}>${c.name}</option>`).join('');
+
+            // 下半部編輯表單渲染
+            if (activeEditColIndex >= 0 && activeEditColIndex < collegeList.length) {
+                const c = collegeList[activeEditColIndex];
+                tempSortIndex = activeEditColIndex;
+                document.getElementById('college-edit-container').style.display = 'flex';
+                document.getElementById('edit-college-name').value = c.name;
+                document.getElementById('edit-college-short').value = c.shortName || '';
+                document.getElementById('edit-college-color').value = c.color;
+                
+                // 渲染 1...N 排序選項
+                document.getElementById('sort-dropdown-text').innerText = `順序: ${tempSortIndex + 1}`;
+                document.getElementById('sort-dropdown-options').innerHTML = collegeList.map((_, i) => `
+                    <div class="custom-select-option ${i === tempSortIndex ? 'selected' : ''}" onclick="window.selectSortOption(${i})">
+                        順序 ${i + 1}
                     </div>
-                    <button type="button" class="btn-remove-course" onclick="window.removeCourse('${c.id}')"><i class="ti ti-x"></i></button>
-                </div>`;
-            });
-            container.innerHTML = html;
-            if (!skipRespUpdate) window.updateRespDeptOptions();
+                `).join('');
+                
+            } else {
+                document.getElementById('college-edit-container').style.display = 'none';
+            }
+        }
+
+        window.openCollegeModal = () => document.getElementById('college-modal').classList.add('open');
+        window.closeCollegeModal = () => { 
+            document.getElementById('college-modal').classList.remove('open');
+            activeEditColIndex = -1;
+            renderCollegeUI();
+        };
+
+        window.addCollege = async () => {
+            const nameVal = document.getElementById('new-college-name').value.trim();
+            const shortVal = document.getElementById('new-college-short').value.trim();
+            const colorVal = document.getElementById('new-college-color').value;
+            if (!nameVal) { alert('請填寫學院全名'); return; }
+            if (collegeList.some(c => c.name === nameVal)) { alert("此學院已存在！"); return; }
+            await updateDoc(collegeDocRef, { list: [...collegeList, { name: nameVal, shortName: shortVal || nameVal, color: colorVal }] });
+            document.getElementById('new-college-name').value = '';
+            document.getElementById('new-college-short').value = '';
+            activeEditColIndex = collegeList.length; 
         };
         
-        window.removeCourse = (id) => { selectedCourseIds = selectedCourseIds.filter(cid => cid !== id); window.renderSelectedCourseChips(); };
-
-        window.autoFillStudentInfo = (skipRespUpdate = false) => {
-            const inputVal = document.getElementById('input-student').value; 
-            const card = document.getElementById('student-info-card');
-            const studentIdMatch = inputVal.split(' - ')[0]; 
-            const stu = allStudents.find(s => s.student_id === studentIdMatch);
-            
-            if (stu) {
-                card.innerHTML = `
-                    <div class="info-icon student"><i class="ti ti-user"></i></div>
-                    <div class="info-content">
-                        <div class="info-title">${stu.name} (${stu.student_id})</div>
-                        <div class="info-desc">${getColShort(stu.college)} / ${getDeptShort(stu.department)}</div>
-                    </div>`;
-                card.style.display = 'flex';
-            } else { 
-                card.innerHTML = `<div style="font-size:11px; font-weight:700; color:var(--danger); padding:4px;">查無主檔，將建立獨立紀錄</div>`; 
-                card.style.display = 'flex'; 
-            }
-            if (!skipRespUpdate) window.updateRespDeptOptions();
+        window.selectCollegeToEdit = (val) => {
+            activeEditColIndex = parseInt(val);
+            renderCollegeUI();
         };
-
-        window.autoFillInstInfo = () => {
-            const inputVal = document.getElementById('input-institution').value; 
-            const card = document.getElementById('inst-info-card');
-            const inst = allInsts.find(i => i.name === inputVal);
-            if (inst) {
-                card.innerHTML = `
-                    <div class="info-icon inst"><i class="ti ti-building-skyscraper"></i></div>
-                    <div class="info-content">
-                        <div class="info-title">${inst.name}</div>
-                        <div class="info-desc">${inst.tax_id || '無統編'} | ${inst.address || ''}</div>
-                    </div>`;
-                card.style.display = 'flex';
-            } else { 
-                card.innerHTML = `<div style="font-size:11px; font-weight:700; color:var(--danger); padding:4px;">查無主檔，將建立獨立紀錄</div>`; 
-                card.style.display = 'flex'; 
-            }
-        };
-
-        // ─── BATCH & TABLE LOGIC ───
-        window.toggleSelectPage = (e) => {
-            const isChecked = e.target.checked; const startIndex = (currentPage - 1) * itemsPerPage;
-            const paginatedIds = filteredRecords.slice(startIndex, startIndex + itemsPerPage).map(d => d.id);
-            if (isChecked) paginatedIds.forEach(id => { if (!selectedIds.includes(id)) selectedIds.push(id); });
-            else selectedIds = selectedIds.filter(id => !paginatedIds.includes(id));
-            window.updateBatchActionBar(); window.renderTable();
-        };
-
-        window.toggleSelect = (id) => { const idx = selectedIds.indexOf(id); if (idx === -1) selectedIds.push(id); else selectedIds.splice(idx, 1); window.updateBatchActionBar(); window.renderTable(); };
-        window.selectAllFiltered = () => { selectedIds = filteredRecords.map(d => d.id); window.updateBatchActionBar(); window.renderTable(); };
-        window.clearSelection = () => { selectedIds = []; window.updateBatchActionBar(); window.renderTable(); };
         
-        window.updateBatchActionBar = () => { 
-            const bar = document.getElementById('batch-bar'); const count = document.getElementById('selected-count'); const btn = document.getElementById('btn-select-all-filtered'); 
-            if (selectedIds.length > 0) { 
-                bar.classList.add('visible'); count.innerText = selectedIds.length; 
-                if (selectedIds.length < filteredRecords.length) { 
-                    btn.style.display = 'inline-flex'; btn.innerText = `選取全部符合條件 (${filteredRecords.length})`; 
-                } else btn.style.display = 'none'; 
-            } else bar.classList.remove('visible'); 
+        window.toggleSortDropdown = (e) => {
+            e.stopPropagation();
+            document.getElementById('sort-dropdown-wrap').classList.toggle('open');
+        };
+        
+        window.selectSortOption = (newIdx) => {
+            tempSortIndex = newIdx;
+            document.getElementById('sort-dropdown-text').innerText = `順序: ${tempSortIndex + 1}`;
+            document.getElementById('sort-dropdown-wrap').classList.remove('open');
+            
+            document.getElementById('sort-dropdown-options').innerHTML = collegeList.map((_, i) => `
+                <div class="custom-select-option ${i === tempSortIndex ? 'selected' : ''}" onclick="window.selectSortOption(${i})">
+                    順序 ${i + 1}
+                </div>
+            `).join('');
+        };
+        
+        window.saveActiveCollege = async () => {
+            if (activeEditColIndex < 0) return;
+            const nameVal = document.getElementById('edit-college-name').value.trim();
+            const shortVal = document.getElementById('edit-college-short').value.trim();
+            const colorVal = document.getElementById('edit-college-color').value;
+            if (!nameVal) { alert('請填寫學院全名'); return; }
+            
+            let newList = [...collegeList]; 
+            const updatedItem = { name: nameVal, shortName: shortVal || nameVal, color: colorVal };
+            
+            newList.splice(activeEditColIndex, 1);
+            newList.splice(tempSortIndex, 0, updatedItem);
+            
+            await updateDoc(collegeDocRef, { list: newList });
+            activeEditColIndex = tempSortIndex;
+            renderCollegeUI();
+        };
+        
+        window.removeActiveCollege = async () => {
+            if (activeEditColIndex < 0) return;
+            if (confirm(`確定移除「${collegeList[activeEditColIndex].name}」嗎？`)) {
+                await updateDoc(collegeDocRef, { list: collegeList.filter((_, i) => i !== activeEditColIndex) });
+                activeEditColIndex = -1;
+            }
         };
 
-        window.batchDelete = async () => { if (!confirm(`確定刪除 ${selectedIds.length} 筆紀錄？`)) return; try { for (let id of selectedIds) await deleteDoc(doc(db, "internship_records", id)); selectedIds = []; window.updateBatchActionBar(); } catch (e) { alert(e.message); } };
-
-        window.openModal = () => {
+        // ─── DEPARTMENT MANAGEMENT ───
+        window.openDeptModal = () => {
             if (!editingId) { 
-                document.getElementById('data-form').reset(); 
-                document.getElementById('student-info-card').style.display = 'none'; 
-                document.getElementById('inst-info-card').style.display = 'none';
-                selectedCourseIds = []; window.renderSelectedCourseChips();
-                document.getElementById('input-resp-dept').innerHTML = '<option value="">請先選擇學生與關聯課程...</option>';
-                document.getElementById('modal-title').innerText = '新增實習紀錄';
+                document.getElementById('dept-form').reset();
+                for(let i=0; i<3; i++) {
+                    document.getElementById(`contact-name-${i}`).value = '';
+                    document.getElementById(`contact-email-${i}`).value = '';
+                }
+                document.getElementById('dept-modal-title').innerHTML = '<i class="ti ti-school" style="color:var(--brand)"></i> 新增系所單位';
             }
-            document.getElementById('main-view').style.display = 'none'; 
-            document.getElementById('data-modal').classList.add('open'); 
+            document.getElementById('dept-modal').classList.add('open');
+        };
+        window.closeDeptModal = () => { document.getElementById('dept-modal').classList.remove('open'); editingId = null; };
+
+        window.submitDeptForm = async () => {
+            const btn = document.getElementById('btn-submit');
+            
+            // 固定抓取 3 組欄位，過濾空白
+            const contacts = [];
+            for(let i=0; i<3; i++) {
+                const n = document.getElementById(`contact-name-${i}`).value.trim();
+                const e = document.getElementById(`contact-email-${i}`).value.trim();
+                if (n || e) contacts.push({ name: n, email: e });
+            }
+
+            const payload = {
+                college: document.getElementById('input-college').value.trim(), 
+                code: document.getElementById('input-code').value.toUpperCase().trim(),
+                name: document.getElementById('input-name').value.trim(), 
+                shortName: document.getElementById('input-short-name').value.trim(), 
+                contacts
+            };
+
+            if(!payload.college || !payload.code || !payload.name) { alert("請填寫必填欄位！"); return; }
+            
+            btn.disabled = true; 
+            btn.innerHTML = `<i class="ti ti-loader-2 ti-spin"></i> 儲存中...`;
+
+            try {
+                if (editingId) await updateDoc(doc(db, "departments", editingId), { ...payload, updated_at: serverTimestamp() });
+                else {
+                    const maxOrder = allDepts.length > 0 ? Math.max(...allDepts.map(d => d.sortOrder || 0)) : 0;
+                    await addDoc(deptCollection, { ...payload, sortOrder: maxOrder + 10, is_active: true, created_at: serverTimestamp() });
+                }
+                closeDeptModal();
+            } catch (err) { alert(err.message); }
+            finally { 
+                btn.disabled = false; 
+                btn.innerHTML = `<i class="ti ti-check"></i> 確認儲存`; 
+            }
         };
 
-        window.closeModal = () => { 
-            document.getElementById('data-modal').classList.remove('open'); 
-            document.getElementById('main-view').style.display = 'flex'; 
-            editingId = null; 
+        window.editDept = (id) => {
+            const dept = allDepts.find(d => d.id === id);
+            if (!dept) return;
+            editingId = id;
+            document.getElementById('input-college').value = dept.college; 
+            document.getElementById('input-code').value = dept.code;
+            document.getElementById('input-name').value = dept.name; 
+            document.getElementById('input-short-name').value = dept.shortName || '';
+            
+            // 填入 3 組聯絡人，不足的清空
+            for(let i=0; i<3; i++) {
+                if (dept.contacts && dept.contacts[i]) {
+                    document.getElementById(`contact-name-${i}`).value = dept.contacts[i].name || '';
+                    document.getElementById(`contact-email-${i}`).value = dept.contacts[i].email || '';
+                } else {
+                    document.getElementById(`contact-name-${i}`).value = '';
+                    document.getElementById(`contact-email-${i}`).value = '';
+                }
+            }
+            
+            document.getElementById('dept-modal-title').innerHTML = '<i class="ti ti-edit" style="color:var(--brand)"></i> 編輯系所單位';
+            document.getElementById('dept-modal').classList.add('open');
         };
 
-        window.toggleCourseExpand = (id) => {
-            const el = document.getElementById(`expand-course-${id}`);
-            const icon = document.getElementById(`icon-course-${id}`);
+        // 開合式選單切換
+        window.toggleContactExpand = (id) => {
+            const el = document.getElementById(`expand-${id}`);
+            const icon = document.getElementById(`icon-${id}`);
             if (el.style.display === 'none') {
                 el.style.display = 'block';
                 icon.style.transform = 'rotate(180deg)';
@@ -1233,72 +1016,116 @@ input[type=number] { -moz-appearance: textfield; }
                 icon.style.transform = 'rotate(0deg)';
             }
         };
-        
-        window.changePage = (p) => { currentPage = p; window.renderTable(); };
-        window.changePerPage = (val) => { itemsPerPage = Number(val); currentPage = 1; window.renderTable(); };
 
-        window.renderTable = () => {
-            const tbody = document.getElementById('table-body'); 
-            const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
+        // ─── BATCH SELECTION & TABLE ───
+        window.toggleSelectPage = (e) => {
+            const isChecked = e.target.checked;
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const currentPaginatedIds = filteredDepts.slice(startIndex, startIndex + itemsPerPage).map(d => d.id);
+            
+            if (isChecked) {
+                currentPaginatedIds.forEach(id => { if (!selectedIds.includes(id)) selectedIds.push(id); });
+            } else {
+                selectedIds = selectedIds.filter(id => !currentPaginatedIds.includes(id));
+            }
+            updateBatchActionBar(); renderTable();
+        };
 
-            filteredRecords = allRecords.filter(d => {
-                const matchSearch = (d.student_raw || '').toLowerCase().includes(searchTerm) || (d.inst_raw || '').toLowerCase().includes(searchTerm);
-                
-                let ok = matchSearch;
-                
-                if (ok && filterSelections.dept.size > 0) {
-                    const stuId = (d.student_raw || '').split(' - ')[0];
-                    const stu = allStudents.find(s => s.student_id === stuId);
-                    ok = stu && filterSelections.dept.has(stu.department);
+        window.toggleSelect = (id) => {
+            const index = selectedIds.indexOf(id);
+            if (index === -1) selectedIds.push(id); else selectedIds.splice(index, 1);
+            updateBatchActionBar(); renderTable();
+        };
+
+        window.selectAllFiltered = () => {
+            selectedIds = filteredDepts.map(d => d.id);
+            updateBatchActionBar(); renderTable();
+        };
+
+        window.clearSelection = () => {
+            selectedIds = [];
+            updateBatchActionBar(); renderTable();
+        };
+
+        function updateBatchActionBar() {
+            const bar = document.getElementById('batch-bar');
+            const count = document.getElementById('selected-count');
+            const btnSelectAll = document.getElementById('btn-select-all-filtered');
+            
+            if (selectedIds.length > 0) {
+                bar.classList.add('visible');
+                count.innerText = selectedIds.length;
+                if (selectedIds.length < filteredDepts.length) {
+                    btnSelectAll.style.display = 'inline-flex';
+                    btnSelectAll.innerText = `選取全部符合條件 (${filteredDepts.length})`;
+                } else {
+                    btnSelectAll.style.display = 'none';
                 }
-                if (ok && filterSelections.grade.size > 0) ok = filterSelections.grade.has(d.grade);
-                if (ok && filterSelections.inst_raw.size > 0) ok = filterSelections.inst_raw.has(d.inst_raw);
-                if (ok && filterSelections.resp_dept.size > 0) ok = filterSelections.resp_dept.has(d.resp_dept);
+            } else {
+                bar.classList.remove('visible');
+            }
+        }
 
-                if (ok && filterSelections.period.size > 0) ok = filterSelections.period.has(d.period_type);
-                if (ok && filterSelections.proof.size > 0) ok = filterSelections.proof.has(d.proof_type);
-                if (ok && filterSelections.insurance.size > 0) ok = filterSelections.insurance.has(d.insurance);
-                if (ok && filterSelections.employment.size > 0) ok = filterSelections.employment.has(d.employment);
-                
-                return ok;
+        window.batchUpdateStatus = async (status) => {
+            if (!confirm(`確定要將選取的 ${selectedIds.length} 個系所全部${status ? '啟用' : '停用'}嗎？`)) return;
+            try {
+                for (let id of selectedIds) await updateDoc(doc(db, "departments", id), { is_active: status });
+                clearSelection();
+            } catch (e) { alert("批次更新發生錯誤: " + e.message); }
+        };
+
+        window.batchDelete = async () => {
+            if (!confirm(`警告：確定要刪除選取的 ${selectedIds.length} 個系所嗎？\n此操作無法復原！`)) return;
+            try {
+                for (let id of selectedIds) await deleteDoc(doc(db, "departments", id));
+                clearSelection();
+            } catch (e) { alert("批次刪除發生錯誤: " + e.message); }
+        };
+
+        window.changePage = (page) => { currentPage = page; renderTable(); };
+        window.changePerPage = (val) => { itemsPerPage = Number(val); currentPage = 1; renderTable(); };
+
+        function renderTable() {
+            const tbody = document.getElementById('dept-table-body');
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+
+            filteredDepts = allDepts.filter(d => {
+                const matchSearch = d.name.toLowerCase().includes(searchTerm) || (d.shortName && d.shortName.toLowerCase().includes(searchTerm)) || d.code.toLowerCase().includes(searchTerm) || (d.contacts && d.contacts.some(c => c.name.includes(searchTerm)));
+                const matchCollege = filterCollegeSet.size === 0 || filterCollegeSet.has(d.college);
+                const statusStr = d.is_active ? 'active' : 'inactive';
+                const matchStatus = filterStatusSet.size === 0 || filterStatusSet.has(statusStr);
+                return matchSearch && matchCollege && matchStatus;
             });
 
-            // Sorting - Add logic for all the split columns
-            filteredRecords.sort((a, b) => {
-                let valA = ''; let valB = '';
+            if (sortCol) {
+                filteredDepts.sort((a, b) => {
+                    let valA = a[sortCol] || ''; let valB = b[sortCol] || '';
+                    if (sortCol === 'sortOrder') {
+                        valA = a.sortOrder || 999; valB = b.sortOrder || 999;
+                        if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+                        if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+                        return 0;
+                    } else if (sortCol === 'name' || sortCol === 'college') {
+                        valA = sortCol === 'name' ? (a.shortName || a.name) : a.college;
+                        valB = sortCol === 'name' ? (b.shortName || b.name) : b.college;
+                        valA = valA ? valA.toString() : '';
+                        valB = valB ? valB.toString() : '';
+                        const result = valA.localeCompare(valB, 'zh-TW');
+                        return sortDir === 'asc' ? result : -result;
+                    } else {
+                        valA = valA.toString().toLowerCase(); valB = valB.toString().toLowerCase();
+                        if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+                        if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+                        return 0;
+                    }
+                });
+            }
 
-                if (sortCol === 'created_at') { valA = getTime(a.created_at); valB = getTime(b.created_at); }
-                else if (sortCol === 'student_id') {
-                    valA = (a.student_raw || '').split(' - ')[0] || '';
-                    valB = (b.student_raw || '').split(' - ')[0] || '';
-                }
-                else if (sortCol === 'student_name') {
-                    valA = (a.student_raw || '').split(' - ')[1] || '';
-                    valB = (b.student_raw || '').split(' - ')[1] || '';
-                }
-                else if (sortCol === 'dept') {
-                    const stuA = allStudents.find(s => s.student_id === (a.student_raw || '').split(' - ')[0]);
-                    valA = stuA ? getDeptShort(stuA.department) : '';
-                    const stuB = allStudents.find(s => s.student_id === (b.student_raw || '').split(' - ')[0]);
-                    valB = stuB ? getDeptShort(stuB.department) : '';
-                }
-                else if (sortCol === 'resp_dept') {
-                    valA = a.resp_dept ? getDeptShort(a.resp_dept) : '';
-                    valB = b.resp_dept ? getDeptShort(b.resp_dept) : '';
-                }
-                else { 
-                    valA = (a[sortCol] || '').toString().toLowerCase(); 
-                    valB = (b[sortCol] || '').toString().toLowerCase(); 
-                }
-
-                if (valA < valB) return sortDir === 'asc' ? -1 : 1;
-                if (valA > valB) return sortDir === 'asc' ? 1 : -1;
-                return 0;
-            });
-
-            const total = filteredRecords.length; const tPages = Math.max(1, Math.ceil(total / itemsPerPage));
-            if (currentPage > tPages) currentPage = tPages;
-            const start = (currentPage - 1) * itemsPerPage; const items = filteredRecords.slice(start, start + itemsPerPage);
+            const total = filteredDepts.length;
+            const totalPages = Math.max(1, Math.ceil(total / itemsPerPage));
+            if (currentPage > totalPages) currentPage = totalPages;
+            const start = (currentPage - 1) * itemsPerPage;
+            const items = filteredDepts.slice(start, start + itemsPerPage);
 
             if (total > 0) {
                 document.getElementById('pagination-info').innerHTML = `共 <strong>${total}</strong> 筆，顯示第 ${start + 1}–${Math.min(start + itemsPerPage, total)} 筆`;
@@ -1308,127 +1135,151 @@ input[type=number] { -moz-appearance: textfield; }
             
             let pHtml = `<button class="page-btn" onclick="window.changePage(${currentPage-1})" ${currentPage<=1?'disabled':''}><i class="ti ti-chevron-left"></i></button>`;
             const pages = [];
-            for (let p=1; p<=tPages; p++) {
-                if (p===1 || p===tPages || Math.abs(p-currentPage)<=1) pages.push(p);
+            for (let p=1; p<=totalPages; p++) {
+                if (p===1 || p===totalPages || Math.abs(p-currentPage)<=1) pages.push(p);
                 else if (pages[pages.length-1] !== '…') pages.push('…');
             }
             pages.forEach(p => {
                 if (p === '…') pHtml += `<span class="page-btn" style="cursor:default;border:none">…</span>`;
                 else pHtml += `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="window.changePage(${p})">${p}</button>`;
             });
-            pHtml += `<button class="page-btn" onclick="window.changePage(${currentPage+1})" ${currentPage>=tPages?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
+            pHtml += `<button class="page-btn" onclick="window.changePage(${currentPage+1})" ${currentPage>=totalPages?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
             document.getElementById('pagination-controls').innerHTML = pHtml;
-            
-            document.getElementById('selectAll').checked = items.length > 0 && items.every(i => selectedIds.includes(i.id));
 
-            if (total === 0) { tbody.innerHTML = `<tr><td colspan="15" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">找不到符合條件的紀錄。</div></td></tr>`; return; }
+            const currentPaginatedIds = items.map(d => d.id);
+            const isAllVisibleSelected = currentPaginatedIds.length > 0 && currentPaginatedIds.every(id => selectedIds.includes(id));
+            document.getElementById('selectAll').checked = isAllVisibleSelected;
 
-            let tHtml = '';
-            items.forEach(data => {
-                const stuParts = (data.student_raw || '').split(' - ');
-                const stuId = stuParts[0] || '';
-                const stuName = stuParts[1] || '';
+            if (total === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">找不到符合條件的系所。</div></td></tr>`;
+                return;
+            }
+
+            let html = '';
+            items.forEach((data, idx) => {
+                let contactsHtml = '';
+                let contactAlign = 'left';
                 
-                const stu = allStudents.find(s => s.student_id === stuId);
-                const stuDept = stu ? getDeptShort(stu.department) : '未綁定學系';
-
-                // 組合課程
-                let coursesHtml = '<span style="color:var(--text-muted); font-size:12px; font-weight:600;">無關聯課程</span>';
-                if (Array.isArray(data.courses) && data.courses.length > 0) {
-                    const cObjs = data.courses.map(cid => allCourses.find(x => x.id === cid)).filter(Boolean);
-                    if (cObjs.length > 0) {
-                        const formatC = (c) => `${c.academic_year}-${c.term}_${c.course_code}：${c.course_name}`;
-                        const firstCourse = formatC(cObjs[0]);
-                        
-                        if (cObjs.length === 1) {
-                            coursesHtml = `<div class="cell-primary" style="font-weight: normal; text-align: left;">${firstCourse}</div>`;
-                        } else {
-                            const otherCoursesHtml = cObjs.slice(1).map(c => `
-                                <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-                                    <div style="width:4px; height:4px; border-radius:50%; background:var(--brand); flex-shrink:0;"></div>
-                                    <div class="cell-primary" style="font-weight: normal; text-align: left; font-size:12px;">${formatC(c)}</div>
-                                </div>
-                            `).join('');
-                            
-                            coursesHtml = `
-                                <div style="display:flex; flex-direction:column; width:100%;">
-                                    <div style="display:flex; align-items:center; justify-content:space-between; gap: 8px; width:100%;">
-                                        <div class="cell-primary" style="font-weight: normal; text-align: left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${firstCourse}">${firstCourse}</div>
-                                        <button type="button" class="more-badge" onclick="window.toggleCourseExpand('${data.id}')">
-                                            +${cObjs.length - 1} <i class="ti ti-chevron-down" id="icon-course-${data.id}" style="margin-left:4px; font-size:12px; transition:0.2s;"></i>
-                                        </button>
-                                    </div>
-                                    <div id="expand-course-${data.id}" style="display:none; margin-top:8px; padding-top:8px; border-top:1px dashed var(--border); text-align: left;">
-                                        ${otherCoursesHtml}
+                if (data.contacts && data.contacts.length > 0) {
+                    const firstContact = data.contacts[0];
+                    const initial = firstContact.name ? firstContact.name.charAt(0) : 'U';
+                    let extraHtml = '';
+                    
+                    // 修正 1: 改為開合式選單 (Accordion)
+                    if (data.contacts.length > 1) {
+                        const otherContactsHtml = data.contacts.slice(1).map(c => {
+                            const cInit = c.name ? c.name.charAt(0) : 'U';
+                            return `
+                                <div style="display:flex; align-items:center; gap:10px; margin-bottom: 8px;">
+                                    <div style="width:28px; height:28px; border-radius:50%; background:var(--bg); border:1px solid var(--border); color:var(--text-secondary); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0;">${cInit}</div>
+                                    <div style="min-width:0; text-align:left;">
+                                        <div class="cell-primary bold" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size: 13px;">${c.name || '未填寫'}</div>
+                                        <div class="cell-secondary" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px; font-size: 11px;">${c.email || ''}</div>
                                     </div>
                                 </div>
                             `;
-                        }
+                        }).join('');
+
+                        extraHtml = `
+                            <button type="button" class="more-badge" onclick="window.toggleContactExpand('${data.id}')">
+                                +${data.contacts.length - 1} <i class="ti ti-chevron-down" id="icon-${data.id}" style="margin-left:4px; font-size:12px; transition:0.2s;"></i>
+                            </button>
+                        `;
+
+                        contactsHtml = `
+                            <div style="display:flex; flex-direction:column; width:100%;">
+                                <div style="display:flex; align-items:center; gap:10px; flex-wrap:nowrap; width:100%;">
+                                    <div style="width:32px; height:32px; border-radius:50%; background:var(--brand-light); border:1px solid var(--brand-border); color:var(--brand); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0;">${initial}</div>
+                                    <div style="min-width:0; text-align:left;">
+                                        <div class="cell-primary bold" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${firstContact.name || '未填寫'}</div>
+                                        <div class="cell-secondary" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px;">${firstContact.email || ''}</div>
+                                    </div>
+                                    ${extraHtml}
+                                </div>
+                                <div id="expand-${data.id}" style="display:none; margin-top:12px; padding-top:12px; border-top:1px dashed var(--border);">
+                                    ${otherContactsHtml}
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        contactsHtml = `
+                            <div style="display:flex; align-items:center; gap:10px; flex-wrap:nowrap; width:100%;">
+                                <div style="width:32px; height:32px; border-radius:50%; background:var(--brand-light); border:1px solid var(--brand-border); color:var(--brand); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0;">${initial}</div>
+                                <div style="min-width:0; text-align:left;">
+                                    <div class="cell-primary bold" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${firstContact.name || '未填寫'}</div>
+                                    <div class="cell-secondary" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px;">${firstContact.email || ''}</div>
+                                </div>
+                            </div>
+                        `;
                     }
+                } else {
+                    contactsHtml = `<span class="badge badge-gray">- 尚未設定 -</span>`;
+                    contactAlign = 'center';
                 }
 
-                tHtml += `
-                <tr class="${selectedIds.includes(data.id)?'selected':''}">
-                    <td data-col="checkbox" class="col-checkbox" style="text-align: center;">
-                        <input type="checkbox" value="${data.id}" onchange="window.toggleSelect('${data.id}')" ${selectedIds.includes(data.id)?'checked':''} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
+                const colObj = collegeList.find(c => c.name === data.college);
+                const colDispName = colObj && colObj.shortName ? colObj.shortName : data.college;
+                const colColor = colObj && colObj.color ? colObj.color : '#1a56db';
+                const isChecked = selectedIds.includes(data.id) ? 'checked' : '';
+
+                html += `
+                <tr class="${isChecked ? 'selected' : ''} ${!data.is_active ? 'disabled' : ''}">
+                    <td class="col-checkbox" style="text-align: center;">
+                        <div style="display:flex; justify-content:center; align-items:center;">
+                            <input type="checkbox" value="${data.id}" onchange="toggleSelect('${data.id}')" ${isChecked} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
+                        </div>
                     </td>
-                    <td data-col="student_id" style="text-align: center;"><div class="cell-primary bold">${stuId}</div></td>
-                    <td data-col="student_name" style="text-align: center;"><div class="cell-primary bold">${stuName}</div></td>
-                    <td data-col="dept" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${stuDept}</div></td>
-                    <td data-col="grade" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.grade || '-'}</div></td>
-                    <td data-col="inst_raw" style="text-align: left;"><div class="cell-primary bold">${data.inst_raw}</div></td>
-                    
-                    <td data-col="courses" style="text-align: center; vertical-align: middle;">${coursesHtml}</td>
-                    
-                    <td data-col="duration" style="text-align: center;"><div class="cell-primary bold">${data.duration || '-'}</div></td>
-                    <td data-col="hours" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.hours !== undefined && data.hours !== '' ? data.hours : '-'}</div></td>
-                    <td data-col="period_type" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.period_type || '-'}</div></td>
-                    <td data-col="proof_type" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.proof_type || '-'}</div></td>
-                    <td data-col="insurance" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.insurance || '-'}</div></td>
-                    <td data-col="employment" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.employment || '-'}</div></td>
-                    <td data-col="resp_dept" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</div></td>
-                    <td data-col="actions" class="col-actions">
+                    <td style="text-align: center;">
+                        <span class="badge" style="color:#ffffff; background:${colColor}; border:1px solid ${colColor};">${colDispName}</span>
+                    </td>
+                    <td style="text-align: left;">
+                        <div class="cell-primary bold">${data.shortName || data.name}</div>
+                        ${data.shortName ? `<div class="cell-secondary">${data.name}</div>` : ''}
+                    </td>
+                    <td style="text-align: center;"><div class="cell-secondary" style="font-size:13px; font-weight:500;">${data.code}</div></td>
+                    <td style="text-align: ${contactAlign};">${contactsHtml}</td>
+                    <td style="text-align: center;">
+                        <div style="display:flex; justify-content:center;">
+                            <label class="toggle">
+                                <input type="checkbox" ${data.is_active ? 'checked' : ''} onchange="window.toggleStatus('${data.id}', ${data.is_active})">
+                                <span class="toggle-slider"></span>
+                                <span class="toggle-label ${data.is_active ? 'active' : 'inactive'}">${data.is_active ? '啟用' : '停用'}</span>
+                            </label>
+                        </div>
+                    </td>
+                    <td style="text-align: center;">
                         <div class="row-actions">
-                            <button onclick="window.editData('${data.id}')" class="btn btn-secondary btn-icon sm" title="編輯"><i class="ti ti-edit"></i></button>
-                            <button onclick="window.deleteData('${data.id}', '${stuName}')" class="btn btn-icon sm" style="color:var(--danger); border-color:var(--danger-border);" title="刪除"><i class="ti ti-trash"></i></button>
+                            <button onclick="window.editDept('${data.id}')" class="btn btn-secondary btn-icon sm" title="編輯"><i class="ti ti-edit"></i></button>
+                            <button onclick="window.deleteDept('${data.id}', '${data.name}')" class="btn btn-icon sm" style="color:var(--danger); border-color:var(--danger-border);" title="刪除"><i class="ti ti-trash"></i></button>
                         </div>
                     </td>
                 </tr>`;
             });
-            tbody.innerHTML = tHtml;
+            tbody.innerHTML = html;
+        }
 
-            // 在每次重新渲染後，更新欄位顯示隱藏的狀態
-            window.updateColumnVisibility();
-            // 在每次重新渲染後，更新過濾器聯動狀態
-            window.updateFilterVisibility();
+        window.toggleStatus = async (id, status) => await updateDoc(doc(db, "departments", id), { is_active: !status });
+        
+        window.deleteDept = async (id, name) => {
+            if (confirm(`確定要刪除「${name}」嗎？此操作無法復原。`)) {
+                await deleteDoc(doc(db, "departments", id));
+            }
         };
 
         window.exportToCSV = () => {
-            if (filteredRecords.length === 0) { alert("沒有資料可供匯出！"); return; }
-            let csv = '\uFEFF學號,學生姓名,當學年年級,實習機構名稱,關聯課程(學年-學期_代號),負責填報系所,實習起訖時間,核定時數,實習時間分類,證明文件類型,投保情形,勞雇關係,備註\n';
-            filteredRecords.forEach(d => {
-                let courseNames = (Array.isArray(d.courses) ? d.courses : []).map(cid => { 
-                    const c = allCourses.find(x => x.id === cid); 
-                    return c ? `${c.academic_year}-${c.term}_${c.course_code}` : ''; 
-                }).filter(Boolean).join('、');
-                
-                const stuParts = (d.student_raw || '').split(' - ');
-                const stuId = stuParts[0] || '';
-                const stuName = stuParts[1] || '';
-
-                csv += [stuId, stuName, d.grade, d.inst_raw, courseNames, d.resp_dept || '', d.duration, d.hours !== undefined ? d.hours : '', d.period_type, d.proof_type, d.insurance, d.employment, d.notes || ''].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+            if (allDepts.length === 0) { alert("沒有資料可供匯出！"); return; }
+            let csv = '\uFEFF學院,系所代碼,學系全名,學系簡稱,聯絡人資訊(姓名(email), 姓名(email)),系統狀態\n';
+            let sorted = [...allDepts].sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
+            sorted.forEach(d => {
+                let status = d.is_active ? '啟用' : '停用';
+                let contactsStr = d.contacts && d.contacts.length > 0 
+                    ? d.contacts.map(c => `${c.name || ''}(${c.email || ''})`).join(', ') : '';
+                csv += [d.college, d.code, d.name, d.shortName || '', contactsStr, status].map(v => `"${(v+'').replace(/"/g, '""')}"`).join(',') + '\n';
             });
-            const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-            link.download = `實習紀錄總表_${new Date().toISOString().split('T')[0]}.csv`; link.click();
-        };
-
-        window.closeImportReportModal = () => { document.getElementById('import-report-modal').classList.remove('open'); };
-        window.downloadImportReport = () => {
-            if (!window.globalImportReportData || window.globalImportReportData.length === 0) return;
-            let csv = '\uFEFF狀態,Excel來源列,學號姓名,詳細說明\n';
-            window.globalImportReportData.forEach(r => csv += `"${r.status}","${r.rows}","${r.student}","${r.message}"\n`);
-            const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-            link.download = `批次匯入結果報告_${new Date().toISOString().split('T')[0]}.csv`; link.click();
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+            link.download = `ISAC系所清單_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
         };
 
         window.handleImport = async (e) => {
@@ -1443,14 +1294,13 @@ input[type=number] { -moz-appearance: textfield; }
             reader.onload = async (event) => {
                 try {
                     const rows = event.target.result.split('\n').map(row => row.trim()).filter(row => row);
-                    
-                    const recordsMap = new Map();
-                    window.globalImportReportData = []; 
-                    
-                    let successCount = 0; let warningCount = 0; let errorCount = 0;
+                    let maxOrder = allDepts.length > 0 ? Math.max(...allDepts.map(d => d.sortOrder || 0)) : 0;
+                    let addedCount = 0;
                     
                     for (let i = 1; i < rows.length; i++) {
-                        let cols = []; let inQuotes = false; let currentVal = '';
+                        let cols = [];
+                        let inQuotes = false;
+                        let currentVal = '';
                         for (let char of rows[i]) {
                             if (char === '"') { inQuotes = !inQuotes; }
                             else if (char === ',' && !inQuotes) { cols.push(currentVal.trim()); currentVal = ''; }
@@ -1458,208 +1308,39 @@ input[type=number] { -moz-appearance: textfield; }
                         }
                         cols.push(currentVal.trim());
 
-                        if (cols.length >= 12) {
-                            const stuId = (cols[0] || '').trim().toUpperCase();
-                            const stuName = (cols[1] || '').trim();
-                            const grade = cols[2];
-                            const inst_raw = cols[3];
-                            const coursesRaw = cols[4];
-                            const resp_dept = cols[5] || ''; 
-                            const duration = cols[6];        
-                            const hours = cols[7] ? Number(cols[7]) : ''; 
-                            const period_type = cols[8];     
-                            const proof_type = cols[9];      
-                            const insurance = cols[10];      
-                            const employment = cols[11];     
-                            const notes = cols[12] || '';    
+                        if (cols.length >= 3) {
+                            const college = cols[0] || '';
+                            const code = (cols[1] || '').toUpperCase();
+                            const name = cols[2] || '';
+                            const shortName = cols[3] || '';
+                            const contactsRaw = cols[4] || '';
+                            const statusStr = cols[5] || '啟用';
 
-                            if (!stuId || !inst_raw || !duration || !period_type || !proof_type || !insurance || !employment || !grade) {
-                                errorCount++;
-                                window.globalImportReportData.push({ status: '錯誤', rows: `第 ${i+1} 列`, student: stuName || '未知', message: '缺少必填欄位 (學號、機構、時間、保險、年級等)' });
-                                continue;
+                            if(!college || !code || !name) continue; 
+
+                            let contacts = [];
+                            if (contactsRaw) {
+                                contacts = contactsRaw.split(',').map(str => {
+                                    const match = str.trim().match(/^(.*?)\s*\((.*?)\)$/);
+                                    if (match) { return { name: match[1].trim(), email: match[2].trim() }; } 
+                                    else { return { name: str.trim(), email: '' }; }
+                                }).filter(c => c.name || c.email);
                             }
 
-                            const key = `${stuId}|${inst_raw}|${duration}|${grade}|${period_type}|${proof_type}|${insurance}|${employment}`;
-
-                            if (!recordsMap.has(key)) {
-                                recordsMap.set(key, {
-                                    student_raw: `${stuId} - ${stuName}`, stuId: stuId, stuName: stuName, grade, inst_raw, duration, hours: hours !== '' ? hours : 0, 
-                                    period_type, proof_type, insurance, employment, notes, resp_dept, coursesRawList: [], courseIds: [], sourceRows: [] 
-                                });
-                            } else if (hours !== '') {
-                                const groupRecord = recordsMap.get(key);
-                                groupRecord.hours += hours; 
-                                groupRecord.sourceRows.push(i+1);
-                            }
-
-                            const groupRecord = recordsMap.get(key);
-                            if (notes && !groupRecord.notes.includes(notes)) {
-                                groupRecord.notes = groupRecord.notes ? `${groupRecord.notes}；${notes}` : notes;
-                            }
-                            
-                            if (coursesRaw) {
-                                const cTokens = coursesRaw.split(/[、,]/).map(s => s.trim()).filter(Boolean);
-                                groupRecord.coursesRawList.push(...cTokens);
-                            }
-
-                        } else {
-                            errorCount++;
-                            window.globalImportReportData.push({ status: '錯誤', rows: `第 ${i+1} 列`, student: '-', message: '欄位數量不足，可能格式跑掉' });
+                            const is_active = (statusStr.trim() !== '停用');
+                            maxOrder += 10;
+                            await addDoc(deptCollection, { college, code, name, shortName, contacts, is_active, sortOrder: maxOrder, created_at: serverTimestamp() });
+                            addedCount++;
                         }
                     }
-
-                    let parsedRows = [];
-                    for (const [key, record] of recordsMap.entries()) {
-                        let rowWarnings = [];
-                        
-                        const studentMatch = allStudents.find(s => s.student_id.toUpperCase() === record.stuId);
-                        if (!studentMatch) rowWarnings.push("未綁定系統學生主檔");
-                        
-                        const instMatch = allInsts.find(inst => inst.name === record.inst_raw);
-                        if (!instMatch) rowWarnings.push("未綁定系統機構主檔");
-
-                        let uniqueCourses = [...new Set(record.coursesRawList)];
-                        uniqueCourses.forEach(token => {
-                            const cMatch = token.match(/(\d+-\d+)[_：:](.+)/);
-                            if (cMatch) {
-                                const sem = cMatch[1]; const code = cMatch[2];
-                                const match = allCourses.find(c => c.semester === sem && c.course_code === code);
-                                if (match) { if (!record.courseIds.includes(match.id)) record.courseIds.push(match.id); } 
-                                else rowWarnings.push(`找不到課程「${token}」`);
-                            } else {
-                                const match = allCourses.find(c => `${c.academic_year}-${c.term}_${c.course_code}` === token || `${c.academic_year}-${c.term}：${c.course_code}` === token);
-                                if (match) { if (!record.courseIds.includes(match.id)) record.courseIds.push(match.id); } 
-                                else rowWarnings.push(`無法識別課程「${token}」`);
-                            }
-                        });
-
-                        if (record.courseIds.length === 0) rowWarnings.push("無法綁定任何實習課程");
-
-                        const payload = {
-                            student_raw: record.student_raw, grade: record.grade, inst_raw: record.inst_raw, courses: record.courseIds, duration: record.duration,
-                            hours: record.hours, period_type: record.period_type, proof_type: record.proof_type, insurance: record.insurance,
-                            employment: record.employment, notes: record.notes, 
-                            resp_dept: record.resp_dept || (studentMatch ? studentMatch.department : ''), 
-                            created_at: serverTimestamp()
-                        };
-
-                        if (rowWarnings.length > 0) {
-                            warningCount++;
-                            window.globalImportReportData.push({ status: '警告', rows: `合併列 [${record.sourceRows.join(',')}]`, student: `${record.stuId} - ${record.stuName}`, message: rowWarnings.join('、') });
-                        } else {
-                            successCount++;
-                            window.globalImportReportData.push({ status: '成功', rows: `合併列 [${record.sourceRows.join(',')}]`, student: `${record.stuId} - ${record.stuName}`, message: '完美匯入並綁定' });
-                        }
-                        parsedRows.push(payload);
-                    }
-
-                    let addedCount = 0;
-                    for (let payload of parsedRows) { await addDoc(recordsCol, payload); addedCount++; }
-
-                    document.getElementById('report-success-count').innerText = successCount;
-                    document.getElementById('report-warning-count').innerText = warningCount;
-                    document.getElementById('report-error-count').innerText = errorCount;
-
-                    const detailsContainer = document.getElementById('report-details-container');
-                    let detailsHtml = '';
-                    window.globalImportReportData.forEach(item => {
-                        let statusColor = item.status === '成功' ? 'var(--success)' : (item.status === '警告' ? 'var(--warning)' : 'var(--danger)');
-                        let statusBg = item.status === '成功' ? 'var(--success-bg)' : (item.status === '警告' ? 'var(--warning-bg)' : 'var(--danger-bg)');
-
-                        detailsHtml += `
-                            <div style="display: grid; grid-template-columns: 15% 15% 25% 45%; padding: 10px 12px; border-bottom: 1px solid var(--border); align-items: center;">
-                                <div><span style="background:${statusBg}; color:${statusColor}; padding:2px 6px; border-radius:4px; font-weight:700; font-size:10px;">${item.status}</span></div>
-                                <div style="font-family:monospace; color:var(--text-muted);">${item.rows}</div>
-                                <div style="font-weight:700; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.student}</div>
-                                <div style="color:var(--text-secondary);">${item.message}</div>
-                            </div>
-                        `;
-                    });
-                    detailsContainer.innerHTML = detailsHtml;
-
-                    document.getElementById('import-report-modal').classList.add('open');
-
-                } catch (error) { 
-                    alert("解析匯入檔時發生不可預期的錯誤：\n" + error.message); 
-                } finally { 
-                    btn.innerHTML = originalHtml; btn.disabled = false; e.target.value = ''; 
-                }
+                    alert(`✅ 成功匯入 ${addedCount} 筆系所資料！`);
+                } catch (error) { alert("匯入失敗，請確認檔案格式是否與匯出範本完全相同。\n" + error.message); } 
+                finally { btn.innerHTML = originalHtml; btn.disabled = false; e.target.value = ''; }
             };
             reader.readAsText(file);
         };
 
-        window.submitForm = async () => {
-            const btn = document.getElementById('btn-submit');
-            const durationInput = document.getElementById('input-duration').value.trim();
-            const respDeptInput = document.getElementById('input-resp-dept').value;
-            const hoursVal = document.getElementById('input-hours').value.trim();
-            
-            // 嚴格規定 YYYY/MM/DD 格式
-            const regex = /^\d{3,4}\/\d{2}\/\d{2}-\d{3,4}\/\d{2}\/\d{2}$/;
-            
-            if (!regex.test(durationInput)) { alert("時間格式錯誤！格式應為：YYYY/MM/DD-YYYY/MM/DD"); return; }
-            if (selectedCourseIds.length === 0) { alert("請至少選擇一門關聯實習課程！"); return; }
-            if (!respDeptInput) { alert("請選擇負責填報系所！"); return; }
-
-            const payload = { 
-                student_raw: document.getElementById('input-student').value.trim(), 
-                grade: document.getElementById('input-grade').value,
-                inst_raw: document.getElementById('input-institution').value.trim(), 
-                period_type: document.getElementById('input-period-type').value,
-                duration: durationInput, 
-                insurance: document.getElementById('input-insurance').value, 
-                employment: document.getElementById('input-employment').value, 
-                proof_type: document.getElementById('input-proof-type').value, 
-                hours: hoursVal === '' ? '' : Number(hoursVal), 
-                resp_dept: respDeptInput, 
-                notes: document.getElementById('input-notes').value.trim(), 
-                courses: selectedCourseIds
-            };
-
-            if(!payload.student_raw || !payload.inst_raw || !payload.duration || !payload.grade || !payload.period_type || !payload.proof_type || !payload.insurance || !payload.employment || !payload.resp_dept) { alert("請完成所有包含 * 號之必填選單與欄位設定！"); return; }
-            
-            btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 儲存中...';
-            try {
-                if (editingId) await updateDoc(doc(db, "internship_records", editingId), { ...payload, updated_at: serverTimestamp() });
-                else await addDoc(recordsCol, { ...payload, created_at: serverTimestamp() });
-                window.closeModal();
-            } catch (err) { alert("儲存發生錯誤：" + err.message); } 
-            finally { btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> 儲存紀錄'; }
-        };
-
-        window.editData = (id) => {
-            const data = allRecords.find(d => d.id === id); if (!data) return;
-            editingId = id;
-            document.getElementById('input-student').value = data.student_raw || '';
-            document.getElementById('input-institution').value = data.inst_raw || '';
-            document.getElementById('input-duration').value = data.duration || '';
-            document.getElementById('input-hours').value = data.hours !== undefined && data.hours !== '' ? data.hours : '';
-            document.getElementById('input-notes').value = data.notes || '';
-            
-            document.getElementById('input-grade').value = data.grade || '';
-            document.getElementById('input-period-type').value = data.period_type || '';
-            document.getElementById('input-proof-type').value = data.proof_type || '';
-            document.getElementById('input-insurance').value = data.insurance || '';
-            document.getElementById('input-employment').value = data.employment || '';
-
-            window.autoFillStudentInfo(true); 
-            window.autoFillInstInfo();
-            selectedCourseIds = Array.isArray(data.courses) ? [...data.courses] : [];
-            window.renderSelectedCourseChips(true);
-            
-            window.updateRespDeptOptions(data.resp_dept);
-
-            document.getElementById('modal-title').innerText = '編輯實習紀錄';
-            document.getElementById('main-view').style.display = 'none';
-            document.getElementById('data-modal').classList.add('open');
-        };
-
-        window.deleteData = async (id, name) => {
-            if (confirm(`警告：確定要刪除「${name}」的這筆實習紀錄嗎？\n此操作無法復原。`)) {
-                await deleteDoc(doc(db, "internship_records", id));
-                window.renderTable();
-            }
-        };
+        document.getElementById('search-input').addEventListener('input', () => { currentPage = 1; renderTable(); });
     </script>
 </body>
 </html>
