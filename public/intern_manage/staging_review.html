@@ -35,9 +35,6 @@
             --warning: #d97706;
             --warning-bg: #fffbeb;
             --warning-border: #fde68a;
-            --indigo: #4f46e5;
-            --indigo-bg: #e0e7ff;
-            --indigo-border: #c7d2fe;
             --radius-sm: 6px;
             --radius: 8px;
             --radius-lg: 12px;
@@ -132,7 +129,7 @@
         select.field-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 6px center; padding-right: 24px; }
         input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
-        /* ─── TABLE ─── */
+        /* ─── Saas Table Style ─── */
         .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; position: relative; }
         .table-scroll { flex: 1; overflow-x: auto; overflow-y: auto; }
         table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; min-width: 2500px; }
@@ -160,13 +157,24 @@
         .badge { display: inline-flex; align-items: center; justify-content: center; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; }
         .badge-outline-blue { background: var(--brand-light); color: var(--brand); border: 1px solid var(--brand-border); }
 
-        /* ─── PAGINATION ─── */
+        /* ─── PAGINATION BAR ─── */
         .pagination-bar {
             display: flex; align-items: center; justify-content: space-between;
             padding: 10px 24px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; gap: 10px;
         }
-        .pagination-info { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+        .pagination-info { font-size: 11px; color: var(--text-muted); }
         .pagination-info strong { color: var(--text-primary); }
+        .pagination-bar-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .per-page-select { height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 11px; font-family: inherit; color: var(--text-secondary); padding: 0 6px; cursor: pointer; outline: none; }
+        .pagination-controls { display: flex; align-items: center; gap: 4px; }
+        .page-btn {
+            min-width: 30px; height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface);
+            font-size: 11px; font-weight: 500; color: var(--text-secondary);
+            cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0 8px; transition: all var(--transition);
+        }
+        .page-btn:hover:not(:disabled) { background: var(--bg); border-color: var(--border-strong); }
+        .page-btn.active { background: var(--brand); color: white; border-color: var(--brand); font-weight: 700; }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
         .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
         .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
@@ -200,7 +208,7 @@
 
             <div class="search-wrap">
                 <i class="ti ti-search"></i>
-                <input type="text" id="search-input" oninput="window.renderStagingTable()" placeholder="搜尋學生、機構..." class="search-input">
+                <input type="text" id="search-input" oninput="window.renderStagingTable(true)" placeholder="搜尋學生、機構..." class="search-input">
             </div>
             <div style="display: flex; align-items: center; margin-left: 8px;">
                 <span class="badge badge-outline-blue" id="badge-count" style="font-size: 12px;">0 筆待審核</span>
@@ -283,8 +291,20 @@
                 </table>
             </div>
             
+            <!-- PAGINATION BAR (還原與記錄管理一致) -->
             <div class="pagination-bar">
-                <div class="pagination-info" id="pagination-info">顯示 0 - 0 筆，共 0 筆資料</div>
+                <div class="pagination-info" id="pagination-info">共 <strong>0</strong> 筆</div>
+                <div class="pagination-bar-right">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <span style="font-size:11px; color:var(--text-muted)">每頁顯示</span>
+                        <select class="per-page-select" id="per-page-select" onchange="window.changePerPage(this.value)">
+                            <option value="15">15 筆</option>
+                            <option value="25">25 筆</option>
+                            <option value="50">50 筆</option>
+                        </select>
+                    </div>
+                    <div class="pagination-controls" id="pagination-controls"></div>
+                </div>
             </div>
         </div>
     </div> 
@@ -306,6 +326,10 @@
         let filteredData = [];
         let selectedIds = [];
         
+        // 分頁狀態變數 (對齊主檔)
+        let currentPage = 1;
+        let itemsPerPage = 15;
+        
         const CITIES = ["臺北市","新北市","基隆市","桃園市","新竹縣","新竹市","苗栗縣","臺中市","彰化縣","南投縣","雲林縣","嘉義縣","嘉義市","臺南市","高雄市","屏東縣","宜蘭縣","花蓮縣","臺東縣","澎湖縣","金門縣","連江縣"];
         const periodOptions = ['寒假實習', '暑假實習', '學期期間實習', '單一學期實習', '全學年'];
         const proofOptions = ['合約', '公函', '其他證明文件'];
@@ -326,9 +350,9 @@
 
                 onSnapshot(collection(db, "internship_staging"), (snapshot) => {
                     stagingData = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                    selectedIds = selectedIds.filter(id => stagingData.some(d => d.id === id)); // Clean up selected
+                    selectedIds = selectedIds.filter(id => stagingData.some(d => d.id === id)); 
                     window.updateBatchActionBar();
-                    window.renderStagingTable();
+                    window.renderStagingTable(false);
                 });
             }
         });
@@ -426,6 +450,7 @@
                     });
 
                     await batch.commit();
+                    currentPage = 1; // 匯入完切回第一頁
                 } catch (error) { 
                     alert("處理發生錯誤：\n" + error.message); 
                 } finally {
@@ -437,23 +462,6 @@
             reader.readAsText(file);
         };
 
-        window.handleRowCountryChange = (docId) => {
-            const countryEl = document.getElementById(`inst_country_${docId}`);
-            const taxEl = document.getElementById(`inst_tax_${docId}`);
-            const cityEl = document.getElementById(`inst_city_${docId}`);
-            
-            if (countryEl.value !== '中華民國') {
-                taxEl.value = ''; taxEl.disabled = true;
-                cityEl.value = ''; cityEl.disabled = true;
-            } else {
-                taxEl.disabled = false;
-                cityEl.disabled = false;
-            }
-            window.autoSave(docId, 'inst_country', countryEl.value);
-            window.autoSave(docId, 'inst_tax', taxEl.value);
-            window.autoSave(docId, 'inst_city', cityEl.value);
-        };
-
         window.autoSave = (docId, field, value) => {
             const record = stagingData.find(d => d.id === docId);
             if(record && record[field] !== value) {
@@ -461,30 +469,45 @@
             }
         };
 
-        /* ─── BATCH SELECTION LOGIC ─── */
+        /* ─── 分頁與顯示數量切換函數 ─── */
+        window.changePage = (p) => {
+            currentPage = p;
+            window.renderStagingTable(false);
+        };
+
+        window.changePerPage = (val) => {
+            itemsPerPage = Number(val);
+            currentPage = 1;
+            window.renderStagingTable(false);
+        };
+
+        /* ─── 批次核准與勾選邏輯 ─── */
         window.toggleSelectPage = (e) => {
             const isChecked = e.target.checked;
-            const currentIds = filteredData.map(d => d.id);
+            const start = (currentPage - 1) * itemsPerPage;
+            const paginatedItems = filteredData.slice(start, start + itemsPerPage);
+            const currentIds = paginatedItems.map(d => d.id);
+            
             if (isChecked) {
                 currentIds.forEach(id => { if (!selectedIds.includes(id)) selectedIds.push(id); });
             } else {
                 selectedIds = selectedIds.filter(id => !currentIds.includes(id));
             }
             window.updateBatchActionBar();
-            window.renderStagingTable();
+            window.renderStagingTable(false);
         };
 
         window.toggleSelect = (id) => {
             const idx = selectedIds.indexOf(id);
             if (idx === -1) selectedIds.push(id); else selectedIds.splice(idx, 1);
             window.updateBatchActionBar();
-            window.renderStagingTable();
+            window.renderStagingTable(false);
         };
 
         window.clearSelection = () => {
             selectedIds = [];
             window.updateBatchActionBar();
-            window.renderStagingTable();
+            window.renderStagingTable(false);
         };
 
         window.updateBatchActionBar = () => {
@@ -508,16 +531,16 @@
 
         window.batchApproveSelected = async () => {
             if (!confirm(`確定要放行寫入選取的 ${selectedIds.length} 筆資料嗎？`)) return;
-            // 這裡為了簡化，直接跑迴圈呼叫原本的單筆 approve 邏輯
             for (let id of selectedIds) { await window.approveRow(id, true); }
             window.clearSelection();
         };
 
-        /* ─── TABLE RENDERING ─── */
-        window.renderStagingTable = () => {
+        /* ─── TABLE & PAGINATION RENDERING ─── */
+        window.renderStagingTable = (resetPage = false) => {
             const tbody = document.getElementById('staging-table-body');
             const searchTerm = (document.getElementById('search-input').value || '').toLowerCase();
             
+            // 1. 全域過濾
             filteredData = stagingData.filter(d => 
                 (d.stuName || '').toLowerCase().includes(searchTerm) || 
                 (d.inst_name || '').toLowerCase().includes(searchTerm)
@@ -525,15 +548,41 @@
 
             document.getElementById('badge-count').innerText = `${stagingData.length} 筆待審核`;
             
-            if (filteredData.length > 0) {
-                document.getElementById('pagination-info').innerHTML = `顯示 1 - ${filteredData.length} 筆，共 <strong>${filteredData.length}</strong> 筆資料`;
+            if (resetPage) currentPage = 1;
+
+            const total = filteredData.length;
+            const tPages = Math.max(1, Math.ceil(total / itemsPerPage));
+            if (currentPage > tPages) currentPage = tPages;
+
+            // 2. 切出當頁資料段
+            const start = (currentPage - 1) * itemsPerPage;
+            const pageItems = filteredData.slice(start, start + itemsPerPage);
+
+            // 3. 更新分頁文字 (完全比照主檔標準格式)
+            if (total > 0) {
+                document.getElementById('pagination-info').innerHTML = `共 <strong>${total}</strong> 筆，顯示第 ${start + 1}–${Math.min(start + itemsPerPage, total)} 筆`;
             } else {
-                document.getElementById('pagination-info').innerHTML = `共 <strong>0</strong> 筆資料`;
+                document.getElementById('pagination-info').innerHTML = `共 <strong>0</strong> 筆`;
             }
 
-            document.getElementById('selectAll').checked = filteredData.length > 0 && filteredData.every(d => selectedIds.includes(d.id));
+            // 4. 渲染分頁頁碼按鈕 (還原 Lin Dong-mao 風格算法)
+            let pHtml = `<button class="page-btn" onclick="window.changePage(${currentPage-1})" ${currentPage<=1?'disabled':''}><i class="ti ti-chevron-left"></i></button>`;
+            const pages = [];
+            for (let p=1; p<=tPages; p++) {
+                if (p===1 || p===tPages || Math.abs(p-currentPage)<=1) pages.push(p);
+                else if (pages[pages.length-1] !== '…') pages.push('…');
+            }
+            pages.forEach(p => {
+                if (p === '…') pHtml += `<span class="page-btn" style="cursor:default;border:none">…</span>`;
+                else pHtml += `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="window.changePage(${p})">${p}</button>`;
+            });
+            pHtml += `<button class="page-btn" onclick="window.changePage(${currentPage+1})" ${currentPage>=tPages?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
+            document.getElementById('pagination-controls').innerHTML = pHtml;
 
-            if (filteredData.length === 0) {
+            // 全選勾選狀態設定
+            document.getElementById('selectAll').checked = pageItems.length > 0 && pageItems.every(d => selectedIds.includes(d.id));
+
+            if (pageItems.length === 0) {
                 tbody.innerHTML = `<tr>
                     <td colspan="16" class="empty-state">
                         <div class="empty-icon"><i class="ti ti-inbox"></i></div>
@@ -544,7 +593,7 @@
             }
 
             let html = '';
-            filteredData.forEach(row => {
+            pageItems.forEach(row => {
                 const id = row.id;
                 const courseBadges = row.coursesInfo.map(c => `<span class="badge badge-outline-blue" style="margin-right: 4px; margin-bottom: 4px; font-weight: 500;"><span style="font-weight: 700; margin-right: 4px;">${c.code}</span>${c.name}</span>`).join('');
                 
