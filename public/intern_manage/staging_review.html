@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
     
     <style>
-        /* ─── 核心樣式變數 ─── */
+        /* ─── 核心樣式變數 (繼承主設計系統) ─── */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
@@ -35,12 +35,16 @@
             --warning: #d97706;
             --warning-bg: #fffbeb;
             --warning-border: #fde68a;
+            --indigo: #4f46e5;
+            --indigo-bg: #e0e7ff;
+            --indigo-border: #c7d2fe;
             --radius-sm: 6px;
             --radius: 8px;
             --radius-lg: 12px;
             --radius-xl: 16px;
             --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
             --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.04);
             --transition: 150ms cubic-bezier(0.4,0,0.2,1);
         }
 
@@ -61,6 +65,7 @@
         /* ─── 動畫 ─── */
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .ti-spin { animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
         /* ─── TOOLBAR ─── */
         .toolbar {
@@ -70,6 +75,7 @@
             display: flex; align-items: center; gap: 10px;
             flex-shrink: 0; flex-wrap: wrap; position: relative;
         }
+
         .search-wrap { position: relative; flex: 0 0 280px; }
         .search-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px; }
         .search-input {
@@ -89,7 +95,7 @@
             display: inline-flex; align-items: center; justify-content: center; gap: 6px;
             padding: 0 14px; height: 34px; border-radius: var(--radius);
             font-size: 13px; font-weight: 600; font-family: inherit;
-            cursor: pointer; border: none; white-space: nowrap; transition: all var(--transition);
+            cursor: pointer; border: none; white-space: nowrap; transition: all var(--transition); text-decoration: none;
         }
         .btn-primary { background: var(--brand); color: white; }
         .btn-primary:hover { background: var(--brand-hover); }
@@ -109,27 +115,15 @@
 
         /* ─── BATCH BAR ─── */
         #batch-bar {
-            display: none; align-items: center; gap: 12px; padding: 8px 24px;
-            background: var(--brand-light); border-bottom: 1px solid var(--brand-border); flex-shrink: 0;
-            position: absolute; top: 0; left: 0; right: 0; height: 100%; z-index: 20;
+            display: none; align-items: center; gap: 12px; padding: 0 24px;
+            background: var(--brand-light); flex-shrink: 0;
+            position: absolute; inset: 0; z-index: 20;
         }
         #batch-bar.visible { display: flex; animation: slideDown 0.2s ease-out; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
         .batch-info { font-size: 13px; font-weight: 600; color: var(--brand); display: flex; align-items: center; gap: 8px; }
         .batch-info span { font-size: 16px; font-weight: 700; }
 
-        /* ─── INPUTS IN TABLE ─── */
-        .field-input, .field-select {
-            width: 100%; height: 32px; border: 1px solid var(--border); border-radius: var(--radius-sm);
-            background: var(--surface); padding: 0 8px; font-size: 12px; font-family: inherit; color: var(--text-primary); 
-            outline: none; transition: all var(--transition);
-        }
-        .field-input:focus, .field-select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); z-index: 5; position: relative; }
-        .field-input:disabled, .field-select:disabled { opacity: 0.5; cursor: not-allowed; background: var(--bg); color: var(--text-muted); }
-        select.field-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 6px center; padding-right: 24px; }
-        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-
-        /* ─── Saas Table Style ─── */
+        /* ─── TABLE STYLE ─── */
         .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; position: relative; }
         .table-scroll { flex: 1; overflow-x: auto; overflow-y: auto; }
         table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; min-width: 2500px; }
@@ -144,14 +138,25 @@
         th.col-actions { position: sticky; right: 0; z-index: 20; box-shadow: inset 0 -2px 0 var(--border), -4px 0 8px rgba(0,0,0,0.05); text-align: center; }
         td.col-actions { position: sticky; right: 0; z-index: 5; background: var(--surface); box-shadow: -4px 0 8px rgba(0,0,0,0.05); border-bottom: 1px solid var(--border); }
         
-        td { padding: 12px 16px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); background: var(--surface); transition: background-color 0.2s; }
+        td { padding: 12px 16px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); background: var(--surface); }
         tr:hover td { background-color: #fafbff; }
         tr.selected td { background-color: #f0f4ff; }
 
         .cell-primary { font-size: 13px; color: var(--text-primary); line-height: 1.4; }
-        .cell-primary.bold { font-weight: 700; }
+        .cell-primary.bold { font-weight: 600; }
         .cell-secondary { font-size: 11px; color: var(--text-muted); margin-top: 4px; line-height: 1.4; font-weight: 500; }
         .row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; }
+
+        /* ─── INPUTS IN TABLE ─── */
+        .field-input, .field-select {
+            width: 100%; height: 34px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+            background: var(--surface); padding: 0 10px; font-size: 12px; font-family: inherit; color: var(--text-primary); 
+            outline: none; transition: all var(--transition);
+        }
+        .field-input:focus, .field-select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); z-index: 5; position: relative; }
+        .field-input:disabled, .field-select:disabled { opacity: 0.5; cursor: not-allowed; background: var(--bg); color: var(--text-muted); }
+        select.field-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 6px center; padding-right: 24px; }
+        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
         /* Badges */
         .badge { display: inline-flex; align-items: center; justify-content: center; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; }
@@ -194,7 +199,7 @@
 </head>
 <body>
 
-    <div id="main-view">
+    <div id="main-view" style="display: flex; flex-direction: column; height: 100%;">
         <div class="toolbar">
             <div id="batch-bar">
                 <div class="batch-info">
@@ -211,7 +216,7 @@
                 <input type="text" id="search-input" oninput="window.renderStagingTable(true)" placeholder="搜尋學生、機構..." class="search-input">
             </div>
             <div style="display: flex; align-items: center; margin-left: 8px;">
-                <span class="badge badge-outline-blue" id="badge-count" style="font-size: 12px;">0 筆待審核</span>
+                <span class="badge badge-outline-blue" id="badge-count" style="font-size: 11px;">0 筆待審核</span>
             </div>
             
             <div class="flex-spacer"></div>
@@ -238,23 +243,7 @@
             <div class="table-scroll custom-scroll">
                 <table>
                     <colgroup>
-                        <col style="width: 3%;">   <!-- Checkbox -->
-                        <col style="width: 10%;">  <!-- 學生資訊 -->
-                        <col style="width: 15%;">  <!-- 修習課程 -->
-                        <col style="width: 7%;">   <!-- 機構國別 -->
-                        <col style="width: 12%;">  <!-- 機構名稱 -->
-                        <col style="width: 8%;">   <!-- 統一編號 -->
-                        <col style="width: 7%;">   <!-- 縣市別 -->
-                        <col style="width: 12%;">  <!-- 通訊地址 -->
-                        <col style="width: 12%;">  <!-- 起訖時間 -->
-                        <col style="width: 6%;">   <!-- 總時數 -->
-                        <col style="width: 8%;">   <!-- 實習時間 -->
-                        <col style="width: 8%;">   <!-- 證明文件 -->
-                        <col style="width: 8%;">   <!-- 投保情形 -->
-                        <col style="width: 6%;">   <!-- 勞雇關係 -->
-                        <col style="width: 8%;">   <!-- 負責系所 -->
-                        <col style="width: 6%;">   <!-- 操作 -->
-                    </colgroup>
+                        <col style="width: 3%;">   <col style="width: 10%;">  <col style="width: 15%;">  <col style="width: 7%;">   <col style="width: 12%;">  <col style="width: 8%;">   <col style="width: 7%;">   <col style="width: 12%;">  <col style="width: 12%;">  <col style="width: 6%;">   <col style="width: 8%;">   <col style="width: 8%;">   <col style="width: 8%;">   <col style="width: 6%;">   <col style="width: 8%;">   <col style="width: 6%;">   </colgroup>
 
                     <thead>
                         <tr>
@@ -291,7 +280,6 @@
                 </table>
             </div>
             
-            <!-- PAGINATION BAR (還原與記錄管理一致) -->
             <div class="pagination-bar">
                 <div class="pagination-info" id="pagination-info">共 <strong>0</strong> 筆</div>
                 <div class="pagination-bar-right">
@@ -326,7 +314,6 @@
         let filteredData = [];
         let selectedIds = [];
         
-        // 分頁狀態變數 (對齊主檔)
         let currentPage = 1;
         let itemsPerPage = 15;
         
@@ -450,7 +437,7 @@
                     });
 
                     await batch.commit();
-                    currentPage = 1; // 匯入完切回第一頁
+                    currentPage = 1; 
                 } catch (error) { 
                     alert("處理發生錯誤：\n" + error.message); 
                 } finally {
@@ -469,7 +456,6 @@
             }
         };
 
-        /* ─── 分頁與顯示數量切換函數 ─── */
         window.changePage = (p) => {
             currentPage = p;
             window.renderStagingTable(false);
@@ -481,7 +467,6 @@
             window.renderStagingTable(false);
         };
 
-        /* ─── 批次核准與勾選邏輯 ─── */
         window.toggleSelectPage = (e) => {
             const isChecked = e.target.checked;
             const start = (currentPage - 1) * itemsPerPage;
@@ -535,12 +520,10 @@
             window.clearSelection();
         };
 
-        /* ─── TABLE & PAGINATION RENDERING ─── */
         window.renderStagingTable = (resetPage = false) => {
             const tbody = document.getElementById('staging-table-body');
             const searchTerm = (document.getElementById('search-input').value || '').toLowerCase();
             
-            // 1. 全域過濾
             filteredData = stagingData.filter(d => 
                 (d.stuName || '').toLowerCase().includes(searchTerm) || 
                 (d.inst_name || '').toLowerCase().includes(searchTerm)
@@ -554,18 +537,15 @@
             const tPages = Math.max(1, Math.ceil(total / itemsPerPage));
             if (currentPage > tPages) currentPage = tPages;
 
-            // 2. 切出當頁資料段
             const start = (currentPage - 1) * itemsPerPage;
             const pageItems = filteredData.slice(start, start + itemsPerPage);
 
-            // 3. 更新分頁文字 (完全比照主檔標準格式)
             if (total > 0) {
                 document.getElementById('pagination-info').innerHTML = `共 <strong>${total}</strong> 筆，顯示第 ${start + 1}–${Math.min(start + itemsPerPage, total)} 筆`;
             } else {
                 document.getElementById('pagination-info').innerHTML = `共 <strong>0</strong> 筆`;
             }
 
-            // 4. 渲染分頁頁碼按鈕 (還原 Lin Dong-mao 風格算法)
             let pHtml = `<button class="page-btn" onclick="window.changePage(${currentPage-1})" ${currentPage<=1?'disabled':''}><i class="ti ti-chevron-left"></i></button>`;
             const pages = [];
             for (let p=1; p<=tPages; p++) {
@@ -579,7 +559,6 @@
             pHtml += `<button class="page-btn" onclick="window.changePage(${currentPage+1})" ${currentPage>=tPages?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
             document.getElementById('pagination-controls').innerHTML = pHtml;
 
-            // 全選勾選狀態設定
             document.getElementById('selectAll').checked = pageItems.length > 0 && pageItems.every(d => selectedIds.includes(d.id));
 
             if (pageItems.length === 0) {
