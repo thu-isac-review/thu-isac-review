@@ -252,15 +252,15 @@
                             </th>
                             <th>學生資訊</th>
                             <th>修習課程</th>
-                            <th>機構國別 <span style="color:var(--danger)">*</span></th>
+                            <th>國別 <span style="color:var(--danger)">*</span></th>
                             <th>機構名稱 <span style="color:var(--danger)">*</span></th>
                             <th>統一編號</th>
                             <th>縣市別</th>
-                            <th>通訊地址 <span style="color:var(--danger)">*</span></th>
-                            <th>起訖時間 (Y/M/D) <span style="color:var(--danger)">*</span></th>
-                            <th style="text-align: center;">總時數 <span style="color:var(--danger)">*</span></th>
-                            <th>時間分類 <span style="color:var(--danger)">*</span></th>
-                            <th>證明文件 <span style="color:var(--danger)">*</span></th>
+                            <th>實習場所地址 <span style="color:var(--danger)">*</span></th>
+                            <th>實習起訖時間 <span style="color:var(--danger)">*</span></th>
+                            <th style="text-align: center;">總時數</th>
+                            <th>實習時間 <span style="color:var(--danger)">*</span></th>
+                            <th>證明文件類型 <span style="color:var(--danger)">*</span></th>
                             <th>投保情形 <span style="color:var(--danger)">*</span></th>
                             <th>勞雇關係 <span style="color:var(--danger)">*</span></th>
                             <th>負責系所</th>
@@ -393,7 +393,7 @@
                         const stu_college = cols[9]; const stu_dept = cols[10]; const stu_id = (cols[11] || '').toUpperCase(); 
                         const stu_name = cols[12]; const grade = cols[13]; const stu_gender = cols[14] || '男';
                         const period_type = cols[15]; const duration = cols[16]; const inst_country = cols[17] || '中華民國';
-                        const proof_type = cols[18]; const hours = Number(cols[19]) || 0; const insurance = cols[20]; 
+                        const proof_type = cols[18]; const hours = cols[19].trim() === '' ? '' : Number(cols[19]); const insurance = cols[20]; 
                         const employment = cols[21]; const inst_name = cols[22]; const inst_tax = cols[23];
                         const inst_city = cols[24]; const inst_addr = cols[25]; const stu_nat = cols[26] || '本國籍';
                         const resp_dept = cols[27];
@@ -619,7 +619,7 @@
                         <input type="text" id="duration_${id}" class="field-input" value="${row.duration}" onblur="window.autoSave('${id}', 'duration', this.value)" placeholder="YYY/MM/DD-YYY/MM/DD">
                     </td>
                     <td>
-                        <input type="number" id="hours_${id}" class="field-input" style="text-align: center; font-weight: 700; color: var(--success); background: var(--success-bg); border-color: var(--success-border);" value="${row.hours}" onblur="window.autoSave('${id}', 'hours', Number(this.value))">
+                        <input type="number" id="hours_${id}" class="field-input" style="text-align: center; font-weight: 700; color: var(--success); background: var(--success-bg); border-color: var(--success-border);" value="${row.hours}" onblur="window.autoSave('${id}', 'hours', this.value === '' ? '' : Number(this.value))">
                     </td>
                     <td>${makeSelect(row.period_type, periodOptions, 'period_type', id)}</td>
                     <td>${makeSelect(row.proof_type, proofOptions, 'proof_type', id)}</td>
@@ -652,14 +652,15 @@
             const inst_addr = document.getElementById(`inst_addr_${id}`).value.trim();
             
             const duration = document.getElementById(`duration_${id}`).value.trim();
-            const hours = Number(document.getElementById(`hours_${id}`).value);
+            const hoursVal = document.getElementById(`hours_${id}`).value;
+            const hours = hoursVal === '' ? '' : Number(hoursVal);
             const period_type = document.getElementById(`period_type_${id}`).value;
             const proof_type = document.getElementById(`proof_type_${id}`).value;
             const insurance = document.getElementById(`insurance_${id}`).value;
             const employment = document.getElementById(`employment_${id}`).value;
             const resp_dept = document.getElementById(`resp_dept_${id}`).value.trim();
 
-            if (!inst_name || !duration || !hours || !period_type || !proof_type || !insurance || !employment) {
+            if (!inst_name || !duration || !period_type || !proof_type || !insurance || !employment) {
                 if(!skipAlert) alert(`資料不完整！請確認必填欄位皆已填寫。`); 
                 return false;
             }
