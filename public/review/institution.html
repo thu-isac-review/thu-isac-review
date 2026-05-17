@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 
 <style>
-/* ─── 核心樣式變數 (承襲實習資料管理風格) ─── */
+/* ─── 核心樣式變數 ─── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
@@ -62,40 +62,14 @@ html, body {
 .ti-spin { animation: spin 1s linear infinite; display: inline-block; }
 
 /* ─── TOOLBAR ─── */
-.toolbar {
-  padding: 12px 24px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; gap: 10px;
-  flex-shrink: 0; flex-wrap: wrap;
-}
-
+.toolbar { padding: 12px 24px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; flex-wrap: wrap; }
 .search-wrap { position: relative; flex: 0 0 260px; }
 .search-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px; }
-.search-input {
-  width: 100%; height: 34px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
-  padding: 0 10px 0 34px;
-  font-size: 13px; font-family: inherit;
-  color: var(--text-primary); outline: none;
-  transition: border-color var(--transition), box-shadow var(--transition);
-}
-.search-input::placeholder { color: var(--text-muted); }
+.search-input { width: 100%; height: 34px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: 0 10px 0 34px; font-size: 13px; font-family: inherit; color: var(--text-primary); outline: none; transition: border-color var(--transition), box-shadow var(--transition); }
 .search-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
-
 .flex-spacer { flex: 1; }
 
-/* ─── BUTTONS ─── */
-.btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  padding: 0 14px; height: 34px;
-  border-radius: var(--radius);
-  font-size: 13px; font-weight: 600; font-family: inherit;
-  cursor: pointer; border: none; white-space: nowrap;
-  transition: all var(--transition); text-decoration: none;
-}
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 14px; height: 34px; border-radius: var(--radius); font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; border: none; white-space: nowrap; transition: all var(--transition); }
 .btn-primary { background: var(--brand); color: white; border: 1px solid var(--brand); }
 .btn-primary:hover { background: var(--brand-hover); }
 .btn-secondary { background: var(--surface); color: var(--text-secondary); border: 1px solid var(--border); }
@@ -103,21 +77,8 @@ html, body {
 .btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
 
 /* ─── FILTER ROW ─── */
-.filter-row {
-  padding: 10px 24px;
-  background: var(--bg);
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; gap: 8px;
-  flex-shrink: 0; flex-wrap: wrap; position: relative;
-}
-.filter-pill {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 0 10px; height: 28px;
-  border: 1px solid var(--border);
-  border-radius: 99px; background: var(--surface);
-  font-size: 12px; font-weight: 500; color: var(--text-secondary);
-  cursor: pointer; transition: all var(--transition);
-}
+.filter-row { padding: 10px 24px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
+.filter-pill { display: inline-flex; align-items: center; gap: 5px; padding: 0 10px; height: 28px; border: 1px solid var(--border); border-radius: 99px; background: var(--surface); font-size: 12px; font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: all var(--transition); }
 .filter-pill:hover { border-color: var(--border-strong); color: var(--text-primary); }
 .filter-pill.active { border-color: var(--brand); background: var(--brand-light); color: var(--brand); }
 
@@ -125,77 +86,50 @@ html, body {
 .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; }
 .table-scroll { flex: 1; overflow: auto; }
 table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 800px; }
-
-th {
-  padding: 12px 16px; text-align: center; 
-  font-size: 11px; font-weight: 700; color: var(--text-muted);
-  text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
-  position: sticky; top: 0; z-index: 10;
-  background: var(--surface);
-  box-shadow: inset 0 -2px 0 var(--border); 
-}
-
+th { padding: 12px 16px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; white-space: nowrap; position: sticky; top: 0; z-index: 10; background: var(--surface); box-shadow: inset 0 -2px 0 var(--border); }
 td { padding: 12px 16px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); }
 tr:hover td { background: #fafbff; }
-
 .cell-primary { font-size: 13px; color: var(--text-primary); line-height: 1.4; }
 .cell-primary.bold { font-weight: 600; }
 
-/* Status Badges */
 .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
 .badge-success { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
 .badge-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
 .badge-warning { background: var(--warning-bg); color: var(--warning); border: 1px solid #fcd34d; }
 .badge-secondary { background: var(--bg); color: var(--text-secondary); border: 1px solid var(--border-strong); }
 
-/* ─── PAGINATION ─── */
-.pagination-bar {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 24px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; gap: 10px;
-}
+.pagination-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; gap: 10px; }
 .pagination-info { font-size: 12px; color: var(--text-muted); }
 .pagination-info strong { color: var(--text-primary); }
-.pagination-bar-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.per-page-select { height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 12px; padding: 0 6px; outline: none; }
-.page-btn {
-  min-width: 30px; height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface);
-  font-size: 12px; font-weight: 500; color: var(--text-secondary);
-  cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0 8px;
-}
+.page-btn { min-width: 30px; height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 12px; font-weight: 500; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0 8px; }
 .page-btn:hover:not(:disabled) { background: var(--bg); border-color: var(--border-strong); }
 .page-btn.active { background: var(--brand); color: white; border-color: var(--brand); font-weight: 700; }
 .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* ─── DIALOG MODALS ─── */
-.dialog-overlay {
-  position: fixed; inset: 0; z-index: 200;
-  background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
-  display: none; align-items: center; justify-content: center; padding: 24px;
-}
+.dialog-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; padding: 24px; }
 .dialog-overlay.open { display: flex; }
+.dialog-box { background: var(--surface); border-radius: var(--radius-xl); box-shadow: 0 20px 60px rgba(0,0,0,0.2); width: 100%; display: flex; flex-direction: column; overflow: hidden; animation: dialogIn 0.2s ease-out; }
+@keyframes dialogIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 
-.dialog-box {
-  background: var(--surface); border-radius: var(--radius-xl);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-  width: 100%; display: flex; flex-direction: column; overflow: hidden;
-  animation: dialogIn 0.25s cubic-bezier(0.16,1,0.3,1);
-}
-@keyframes dialogIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } }
-
-.dialog-header {
-  padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between; background: var(--surface);
-}
+.dialog-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--surface); }
 .dialog-header h3 { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: var(--text-primary); }
 .dialog-header h3 i { font-size: 22px; color: var(--brand); }
 .dialog-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted); }
-.dialog-body { padding: 24px; overflow-y: auto; max-height: calc(90vh - 100px); }
+.dialog-body { padding: 24px; overflow-y: auto; max-height: calc(95vh - 100px); }
 
-/* ─── SPLIT LAYOUT ─── */
-.split-layout { display: flex; gap: 24px; align-items: stretch; }
-.split-left { flex: 6; min-width: 0; display: flex; flex-direction: column; }
+/* ─── 修正版 SPLIT LAYOUT ─── */
+.split-layout { 
+    display: flex; gap: 24px; align-items: stretch; flex-wrap: nowrap; height: 100%;
+}
+/* 左側自適應並避免撐破 */
+.split-left { 
+    flex: 1; min-width: 0; display: flex; flex-direction: column; 
+    overflow-x: auto; 
+}
+/* 右側固定寬度 */
 .split-right { 
-    flex: 4; min-width: 0; background: var(--bg); 
+    width: 420px; flex-shrink: 0; background: var(--bg); 
     padding: 20px; border-radius: var(--radius-lg); border: 1px solid var(--border); 
     display: flex; flex-direction: column;
 }
@@ -203,37 +137,28 @@ tr:hover td { background: #fafbff; }
 .form-section-title { font-size: 14px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
 .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
 .field-label { font-size: 12px; font-weight: 700; color: var(--text-secondary); }
-.field-input, .field-select {
-  width: 100%; height: 38px; border: 1px solid var(--border); border-radius: var(--radius);
-  background: var(--surface); padding: 0 12px; font-size: 13px; outline: none; transition: 0.2s;
-}
+.field-input, .field-select { width: 100%; height: 38px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: 0 12px; font-size: 13px; outline: none; transition: 0.2s; }
 .field-input:focus, .field-select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
 
 .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
 
-/* 子表格樣式 (系所清單與學生展開用) */
-.inner-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-.inner-table th { background: var(--bg); font-size: 12px; padding: 12px; border-bottom: 1px solid var(--border); text-align: center; color: var(--text-secondary); }
+/* 子表格樣式 */
+.inner-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; min-width: 500px; }
+.inner-table th { background: var(--bg); font-size: 12px; padding: 12px; border-bottom: 1px solid var(--border); text-align: center; color: var(--text-secondary); white-space: nowrap; }
 .inner-table td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 13px; text-align: center; }
 .inner-table tr.dept-row { cursor: pointer; transition: 0.2s; }
 .inner-table tr.dept-row:hover { background: var(--brand-light); }
-.inner-table tr.dept-row.active { background: var(--indigo-bg); border-left: 3px solid var(--indigo); }
+.inner-table tr.dept-row.active { background: var(--indigo-bg); border-left: 4px solid var(--indigo); }
 .student-row { display: none; background: #fafbff; }
 .student-row.show { display: table-row; }
-.student-cell { padding-left: 30px !important; border-bottom: 1px dashed var(--border-strong) !important; font-size: 12px !important; text-align: left !important; color: var(--text-secondary); }
+.student-cell { padding-left: 24px !important; border-bottom: 1px dashed var(--border-strong) !important; font-size: 12px !important; text-align: left !important; color: var(--text-secondary); }
 
-/* 學生選擇清單 */
-.student-check-list {
-    border: 1px solid var(--border); border-radius: var(--radius); padding: 8px;
-    max-height: 240px; overflow-y: auto; background: var(--surface); display: flex; flex-direction: column; gap: 4px;
+/* 試算結果框 */
+.preview-box {
+    margin-top: -6px; margin-bottom: 16px; padding: 12px; 
+    background: var(--surface); border: 1px dashed var(--border-strong); 
+    border-radius: var(--radius); font-size: 13px;
 }
-.student-check-item {
-    display: flex; align-items: center; gap: 10px; padding: 8px 10px;
-    border-radius: var(--radius-sm); cursor: pointer; transition: 0.2s; border: 1px solid transparent;
-}
-.student-check-item:hover { background: var(--bg); border-color: var(--border); }
-.student-check-item input[type="checkbox"] { accent-color: var(--indigo); cursor: pointer; width: 16px; height: 16px; }
-.student-check-item span { font-size: 13px; color: var(--text-primary); flex: 1; display: flex; align-items: center; justify-content: space-between; }
 </style>
 </head>
 <body>
@@ -254,7 +179,7 @@ tr:hover td { background: #fafbff; }
     <div class="filter-row">
         <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-right: 8px;">機構整體狀態：</span>
         <button class="filter-pill active" id="filter-all" onclick="setFilter('all')">全部機構</button>
-        <button class="filter-pill" id="filter-pass" onclick="setFilter('pass')">全部系所皆通過</button>
+        <button class="filter-pill" id="filter-pass" onclick="setFilter('pass')">審查皆通過有效</button>
         <button class="filter-pill" id="filter-attention" onclick="setFilter('attention')">需注意 (含逾期/未評估)</button>
         <button class="filter-pill" id="filter-empty" onclick="setFilter('empty')">無關聯實習紀錄</button>
     </div>
@@ -266,7 +191,7 @@ tr:hover td { background: #fafbff; }
                     <tr>
                         <th style="width: 25%;">實習機構名稱</th>
                         <th style="width: 15%;">統一編號</th>
-                        <th style="width: 15%;">關聯系所數</th>
+                        <th style="width: 15%;">關聯學期群組數</th>
                         <th style="width: 15%;">關聯學生總數</th>
                         <th style="width: 18%;">機構整體審查狀態</th>
                         <th style="width: 12%;">操作</th>
@@ -286,21 +211,18 @@ tr:hover td { background: #fafbff; }
         <div class="pagination-bar">
             <div class="pagination-info" id="pagination-info">共 0 筆</div>
             <div class="pagination-bar-right">
-                <div style="display:flex; align-items:center; gap:6px;">
-                    <span style="font-size:12px; color:var(--text-muted)">每頁顯示</span>
-                    <select class="per-page-select" id="per-page-select" onchange="window.changePerPage(this.value)">
-                        <option value="15">15 筆</option>
-                        <option value="25">25 筆</option>
-                        <option value="50">50 筆</option>
-                    </select>
-                </div>
+                <select class="per-page-select" id="per-page-select" onchange="window.changePerPage(this.value)">
+                    <option value="15">15 筆/頁</option>
+                    <option value="25">25 筆/頁</option>
+                    <option value="50">50 筆/頁</option>
+                </select>
                 <div style="display: flex; gap: 4px;" id="pagination-controls"></div>
             </div>
         </div>
     </div>
 
     <div id="manage-modal" class="dialog-overlay">
-        <div class="dialog-box" style="max-width: 1200px; width: 95%;">
+        <div class="dialog-box" style="max-width: 1400px; width: 95%;">
             <div class="dialog-header">
                 <h3 id="manage-modal-title">
                     <i class="ti ti-building-skyscraper"></i> 
@@ -312,41 +234,35 @@ tr:hover td { background: #fafbff; }
             <div class="dialog-body custom-scroll">
                 <div class="split-layout">
                     
-                    <div class="split-left">
-                        <div class="form-section-title"><i class="ti ti-list-details"></i> 關聯系所狀況 (點擊列可切換評估對象)</div>
-                        <table class="inner-table" style="background: var(--surface);">
+                    <div class="split-left custom-scroll">
+                        <div class="form-section-title"><i class="ti ti-list-details"></i> 關聯系所與學期狀況 (點擊列可切換評估對象)</div>
+                        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+                            <i class="ti ti-info-circle"></i> 系統已將學生依「填報系所 + 實習年份與期間」自動分群，評估紀錄獨立計算不流用。
+                        </div>
+                        
+                        <table class="inner-table">
                             <thead>
                                 <tr>
-                                    <th style="text-align: left; width: 35%;">負責填報系所</th>
-                                    <th style="width: 15%;">總學生數</th>
-                                    <th style="width: 20%;">審查涵蓋率</th>
-                                    <th style="width: 30%;">整體審查狀態</th>
+                                    <th style="text-align: left; width: 45%;">評估群組 (系所 + 實習年份期間)</th>
+                                    <th style="width: 15%;">總人數</th>
+                                    <th style="width: 20%;">該學期審查涵蓋率</th>
+                                    <th style="width: 20%;">群組整體狀態</th>
                                 </tr>
                             </thead>
-                            <tbody id="dept-list-tbody">
+                            <tbody id="group-list-tbody">
                                 </tbody>
                         </table>
                     </div>
 
                     <div class="split-right">
                         <div class="form-section-title" style="color: var(--indigo); border-color: var(--indigo-border);">
-                            <i class="ti ti-clipboard-check"></i> 登錄評估紀錄
+                            <i class="ti ti-clipboard-check"></i> 登錄群組評估紀錄
                         </div>
                         
                         <div class="field">
-                            <label class="field-label">選擇評估系所 <span style="color:var(--danger)">*</span></label>
-                            <select id="input-eval-dept" class="field-select" onchange="window.onEvalDeptChange()" style="border-color: var(--indigo-border); background: var(--surface);">
+                            <label class="field-label">目前選擇評估的群組 <span style="color:var(--danger)">*</span></label>
+                            <select id="input-eval-group" class="field-select" onchange="window.onEvalGroupChange()" style="border-color: var(--indigo-border); background: var(--surface); font-weight: 700;">
                                 </select>
-                        </div>
-                        
-                        <div class="field" style="flex: 1;">
-                            <label class="field-label">
-                                選擇套用學生 <span style="color:var(--danger)">*</span> 
-                                <span style="font-weight:normal; color:var(--text-muted); font-size:11px; margin-left:4px;">(預設勾選異常者)</span>
-                            </label>
-                            <div id="eval-student-list" class="student-check-list custom-scroll">
-                                <div class="empty-state" style="padding: 20px;"><i class="ti ti-hand-click" style="font-size:24px; margin-bottom:8px;"></i><br>請先選擇左側系所</div>
-                            </div>
                         </div>
 
                         <div style="display: flex; gap: 12px;">
@@ -365,14 +281,18 @@ tr:hover td { background: #fafbff; }
                             </div>
                         </div>
 
-                        <div class="field">
+                        <div id="eval-preview-box" class="preview-box">
+                            <div style="text-align: center; color: var(--text-muted); padding: 10px;">請先選擇群組並輸入日期進行試算</div>
+                        </div>
+
+                        <div class="field" style="flex: 1;">
                             <label class="field-label">評估說明 / 備註</label>
-                            <textarea id="input-eval-remarks" class="field-input custom-scroll" placeholder="請簡述機構審查與評估狀況..." style="min-height: 80px; resize: none; padding: 10px; line-height: 1.5;"></textarea>
+                            <textarea id="input-eval-remarks" class="field-input custom-scroll" placeholder="請簡述機構審查與評估狀況..." style="height: 100%; min-height: 80px; resize: none; padding: 10px; line-height: 1.5;"></textarea>
                         </div>
 
                         <div style="text-align: right; margin-top: 8px;">
                             <button type="button" id="btn-submit" class="btn btn-primary" style="background: var(--indigo); border-color: var(--indigo); width: 100%;" onclick="submitEvaluation()">
-                                <i class="ti ti-device-floppy"></i> 確認批次儲存
+                                <i class="ti ti-device-floppy"></i> 儲存並自動套用至該群組
                             </button>
                         </div>
                     </div>
@@ -405,6 +325,7 @@ tr:hover td { background: #fafbff; }
         let itemsPerPage = 15;
         
         let currentActiveInst = null;
+        let currentActiveGroupObj = null;
 
         // 民國年字串轉西元年 Date 物件
         function parseROCStartDate(durationStr) {
@@ -441,62 +362,80 @@ tr:hover td { background: #fafbff; }
             return d && d.shortName ? d.shortName : n; 
         };
 
-        // ─── 核心彙整邏輯 (逐筆獨立計算) ───
+        // ─── 核心彙整邏輯 (依學系+學期分群) ───
         function aggregateData() {
             if (allInstitutions.length === 0) return;
 
             aggregatedData = allInstitutions.map(inst => {
                 let instRecords = allRecords.filter(r => r.inst_raw === inst.name);
-                
-                let deptsObj = {};
+                let groupsObj = {};
                 let totalStudents = 0;
 
                 instRecords.forEach(r => {
                     let targetDept = r.resp_dept || '未設定系所';
-
-                    if(!deptsObj[targetDept]) {
-                        deptsObj[targetDept] = { records: [] };
-                    }
-
                     let sDateObj = parseROCStartDate(r.duration);
                     let sDateStr = r.duration ? r.duration.split('-')[0].trim() : '-';
+                    
+                    // 萃取年份與期間作為分群依據 (例：114年 暑假實習)
+                    let startYear = r.duration && r.duration.includes('/') ? r.duration.split('/')[0].trim() : '未知年份';
+                    let pType = r.period_type || '未知期間';
+                    
+                    // 建立獨立群組 Key
+                    let groupKey = `${targetDept}_${startYear}_${pType}`;
+
+                    if(!groupsObj[groupKey]) {
+                        groupsObj[groupKey] = { 
+                            groupKey: groupKey,
+                            dept_name: targetDept,
+                            startYear: startYear,
+                            periodType: pType,
+                            groupLabel: `${getDeptShort(targetDept)} | ${startYear}年 ${pType}`,
+                            records: [],
+                            eval_date: r.eval_date || null,
+                            eval_result: r.eval_result || null,
+                            eval_remarks: r.eval_remarks || null
+                        };
+                    }
+
                     let statusObj = calculateRecordStatus(sDateObj, r.eval_date);
 
-                    deptsObj[targetDept].records.push({
+                    groupsObj[groupKey].records.push({
                         ...r,
                         start_date_obj: sDateObj,
                         start_date_str: sDateStr,
                         statusObj: statusObj
                     });
 
+                    // 同步群組最新的評估紀錄
+                    if (r.eval_date && (!groupsObj[groupKey].eval_date || new Date(r.eval_date) > new Date(groupsObj[groupKey].eval_date))) {
+                        groupsObj[groupKey].eval_date = r.eval_date;
+                        groupsObj[groupKey].eval_result = r.eval_result;
+                        groupsObj[groupKey].eval_remarks = r.eval_remarks;
+                    }
+
                     totalStudents++;
                 });
 
-                let departments = Object.keys(deptsObj).map(deptName => {
-                    let d = deptsObj[deptName];
-                    let totalInDept = d.records.length;
-                    let validCount = d.records.filter(r => r.statusObj.code === 'pass').length;
+                // 結算每個群組的狀態
+                let groups = Object.keys(groupsObj).map(k => {
+                    let g = groupsObj[k];
+                    let totalInGroup = g.records.length;
+                    let validCount = g.records.filter(r => r.statusObj.code === 'pass').length;
                     
-                    let deptStatus;
-                    if (totalInDept === 0) deptStatus = { code: 'empty', label: '無紀錄', class: 'badge-secondary' };
-                    else if (validCount === totalInDept) deptStatus = { code: 'pass', label: '皆在效期內', class: 'badge-success' };
-                    else deptStatus = { code: 'attention', label: '部分逾期/未評估', class: 'badge-warning' };
+                    let groupStatus;
+                    if (totalInGroup === 0) groupStatus = { code: 'empty', label: '無紀錄', class: 'badge-secondary' };
+                    else if (validCount === totalInGroup) groupStatus = { code: 'pass', label: '皆在效期內', class: 'badge-success' };
+                    else groupStatus = { code: 'attention', label: '部分逾期/未評估', class: 'badge-warning' };
 
-                    return { 
-                        dept_name: deptName, 
-                        records: d.records, 
-                        totalCount: totalInDept,
-                        validCount: validCount,
-                        status: deptStatus 
-                    };
+                    return { ...g, totalCount: totalInGroup, validCount: validCount, status: groupStatus };
                 });
 
-                let overallStatus = getOverallStatus(departments);
+                let overallStatus = getOverallStatus(groups);
 
                 return { 
                     ...inst, 
-                    departments, 
-                    deptCount: departments.length,
+                    groups, 
+                    groupCount: groups.length,
                     totalStudents,
                     overallStatus 
                 };
@@ -515,14 +454,14 @@ tr:hover td { background: #fafbff; }
 
             if (diffDays >= 0 && diffDays <= 365) return { code: 'pass', label: '有效 (1年內)', class: 'badge-success' };
             else if (diffDays < 0) return { code: 'expired', label: '異常 (晚於實習)', class: 'badge-warning' };
-            else return { code: 'expired', label: '逾期 (>1年)', class: 'badge-danger' };
+            else return { code: 'expired', label: '逾期失效 (>1年)', class: 'badge-danger' };
         }
 
-        function getOverallStatus(departments) {
-            if (departments.length === 0) return { code: 'empty', label: '無關聯實習紀錄', class: 'badge-secondary', icon: 'ti-inbox' };
-            let hasAttention = departments.some(d => d.status.code === 'attention');
+        function getOverallStatus(groups) {
+            if (groups.length === 0) return { code: 'empty', label: '無關聯實習紀錄', class: 'badge-secondary', icon: 'ti-inbox' };
+            let hasAttention = groups.some(g => g.status.code === 'attention');
             if (hasAttention) return { code: 'attention', label: '需注意 (含逾期/未評估)', class: 'badge-warning', icon: 'ti-alert-circle' };
-            return { code: 'pass', label: '全部系所皆通過', class: 'badge-success', icon: 'ti-circle-check' };
+            return { code: 'pass', label: '全學期皆通過有效', class: 'badge-success', icon: 'ti-circle-check' };
         }
 
         window.setFilter = (filterVal) => {
@@ -546,24 +485,22 @@ tr:hover td { background: #fafbff; }
             filteredData.sort((a, b) => b.totalStudents - a.totalStudents);
             renderTable();
             
-            // Modal 呈現時即時更新畫面狀態 (保持目前的選項)
+            // Modal 呈現時即時更新畫面狀態
             if(document.getElementById('manage-modal').classList.contains('open') && currentActiveInst) {
                 const updatedInst = aggregatedData.find(i => i.id === currentActiveInst.id);
                 if(updatedInst) {
                     currentActiveInst = updatedInst;
                     
-                    // 紀錄當前選取的系所，更新後還原
                     const activeRow = document.querySelector('.dept-row.active');
-                    const activeDeptName = activeRow ? activeRow.getAttribute('data-dept') : null;
+                    const activeKey = activeRow ? activeRow.getAttribute('data-groupkey') : null;
                     
-                    renderDeptListTable();
-                    renderEvalDeptSelect();
+                    renderGroupListTable();
+                    renderEvalGroupSelect();
 
-                    if(activeDeptName) {
-                        window.selectDeptForEval(activeDeptName);
-                    } else if (currentActiveInst.departments.length > 0) {
-                        // 預設選擇第一筆
-                        window.selectDeptForEval(currentActiveInst.departments[0].dept_name);
+                    if(activeKey) {
+                        window.selectGroupForEval(activeKey);
+                    } else if (currentActiveInst.groups.length > 0) {
+                        window.selectGroupForEval(currentActiveInst.groups[0].groupKey);
                     }
                 }
             }
@@ -605,14 +542,14 @@ tr:hover td { background: #fafbff; }
                 <tr>
                     <td><div class="cell-primary bold">${data.name}</div></td>
                     <td class="text-center"><div class="cell-primary" style="font-family: monospace;">${dispTaxId}</div></td>
-                    <td class="text-center"><div class="cell-primary">${data.deptCount} 系</div></td>
+                    <td class="text-center"><div class="cell-primary">${data.groupCount} 群組</div></td>
                     <td class="text-center"><div class="cell-primary">${data.totalStudents} 人</div></td>
                     <td class="text-center">
                         <span class="badge ${st.class}"><i class="ti ${st.icon}"></i> ${st.label}</span>
                     </td>
                     <td class="text-center">
-                        <button onclick="window.openManageModal('${data.id}')" class="btn btn-secondary btn-sm" ${data.deptCount === 0 ? 'disabled' : ''}>
-                            <i class="ti ti-clipboard-list"></i> 管理各系評估
+                        <button onclick="window.openManageModal('${data.id}')" class="btn btn-secondary btn-sm" ${data.groupCount === 0 ? 'disabled' : ''}>
+                            <i class="ti ti-clipboard-list"></i> 管理審查
                         </button>
                     </td>
                 </tr>`;
@@ -631,18 +568,16 @@ tr:hover td { background: #fafbff; }
 
             document.getElementById('view-inst-name').innerText = currentActiveInst.name;
             
-            // 初始化表單
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('input-eval-date').value = today;
             document.getElementById('input-eval-result').value = '';
             document.getElementById('input-eval-remarks').value = '';
 
-            renderDeptListTable();
-            renderEvalDeptSelect();
+            renderGroupListTable();
+            renderEvalGroupSelect();
 
-            if (currentActiveInst.departments.length > 0) {
-                // 預設點擊展開並選擇第一筆系所
-                window.selectDeptForEval(currentActiveInst.departments[0].dept_name);
+            if (currentActiveInst.groups.length > 0) {
+                window.selectGroupForEval(currentActiveInst.groups[0].groupKey);
             }
 
             document.getElementById('manage-modal').classList.add('open');
@@ -651,47 +586,47 @@ tr:hover td { background: #fafbff; }
         window.closeManageModal = () => {
             document.getElementById('manage-modal').classList.remove('open');
             currentActiveInst = null;
+            currentActiveGroupObj = null;
         };
 
-        // 渲染左側系所表
-        function renderDeptListTable() {
-            const tbody = document.getElementById('dept-list-tbody');
+        // 渲染左側群組表
+        function renderGroupListTable() {
+            const tbody = document.getElementById('group-list-tbody');
             
-            let depts = [...currentActiveInst.departments];
-            depts.sort((a, b) => {
+            let groups = [...currentActiveInst.groups];
+            groups.sort((a, b) => {
                 if(a.status.code === 'attention' && b.status.code !== 'attention') return -1;
                 if(a.status.code !== 'attention' && b.status.code === 'attention') return 1;
-                return b.totalCount - a.totalCount;
+                // 同狀態下，依年份降冪排
+                return (b.startYear || '').localeCompare(a.startYear || '');
             });
 
-            if (depts.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="padding: 30px; color: var(--text-muted);">無關聯的系所紀錄。</td></tr>`;
+            if (groups.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="padding: 30px; color: var(--text-muted);">無關聯的紀錄。</td></tr>`;
                 return;
             }
 
             let html = '';
-            depts.forEach(d => {
-                const dispDept = getDeptShort(d.dept_name);
-                const safeId = d.dept_name.replace(/[^a-zA-Z0-9]/g, '_');
-                const coverageColor = d.validCount === d.totalCount ? 'var(--success)' : 'var(--danger)';
+            groups.forEach(g => {
+                const safeId = g.groupKey.replace(/[^a-zA-Z0-9]/g, '_');
+                const coverageColor = g.validCount === g.totalCount ? 'var(--success)' : 'var(--danger)';
 
-                // 系所摘要列 (綁定點擊事件，自動連動右側)
                 html += `
-                <tr class="dept-row dept-row-id-${safeId}" data-dept="${d.dept_name}" onclick="window.selectDeptForEval('${d.dept_name}')">
+                <tr class="dept-row dept-row-id-${safeId}" data-groupkey="${g.groupKey}" onclick="window.selectGroupForEval('${g.groupKey}')">
                     <td style="text-align: left; font-weight: 700; display: flex; align-items: center; gap: 8px;">
                         <i id="icon-expand-${safeId}" class="ti ti-chevron-right" style="color: var(--text-muted); transition: 0.2s;"></i>
-                        ${dispDept}
+                        ${g.groupLabel}
                     </td>
-                    <td>${d.totalCount} 人</td>
+                    <td>${g.totalCount} 人</td>
                     <td>
-                        <div style="font-weight: 700; color: ${coverageColor};">${d.validCount} / ${d.totalCount}</div>
+                        <div style="font-weight: 700; color: ${coverageColor};">${g.validCount} / ${g.totalCount}</div>
                     </td>
-                    <td><span class="badge ${d.status.class}">${d.status.label}</span></td>
+                    <td><span class="badge ${g.status.class}">${g.status.label}</span></td>
                 </tr>`;
 
-                // 展開的學生名單
-                d.records.sort((a, b) => (b.start_date_obj || 0) - (a.start_date_obj || 0)); 
-                d.records.forEach(r => {
+                // 該群組內學生明細
+                g.records.sort((a, b) => (b.start_date_obj || 0) - (a.start_date_obj || 0)); 
+                g.records.forEach(r => {
                     const stuName = (r.student_raw || '').split(' - ')[1] || r.student_raw;
                     html += `
                     <tr class="student-row student-row-${safeId}">
@@ -711,23 +646,23 @@ tr:hover td { background: #fafbff; }
             tbody.innerHTML = html;
         }
 
-        // 渲染右側系所下拉選單
-        function renderEvalDeptSelect() {
-            const selectEl = document.getElementById('input-eval-dept');
+        // 渲染右側群組下拉選單
+        function renderEvalGroupSelect() {
+            const selectEl = document.getElementById('input-eval-group');
             if(!currentActiveInst) return;
 
-            let html = '<option value="">請選擇要評估的系所...</option>';
-            currentActiveInst.departments.forEach(d => {
-                html += `<option value="${d.dept_name}">${getDeptShort(d.dept_name)} (共 ${d.totalCount} 人)</option>`;
+            let html = '<option value="">請選擇要評估的群組...</option>';
+            currentActiveInst.groups.forEach(g => {
+                html += `<option value="${g.groupKey}">${g.groupLabel} (共 ${g.totalCount} 人)</option>`;
             });
             selectEl.innerHTML = html;
         }
 
         // 左側點擊連動右側
-        window.selectDeptForEval = (deptName) => {
-            const safeId = deptName.replace(/[^a-zA-Z0-9]/g, '_');
+        window.selectGroupForEval = (groupKey) => {
+            const safeId = groupKey.replace(/[^a-zA-Z0-9]/g, '_');
             
-            // 處理左側 UI 樣式與展開
+            // 處理左側 UI 展開與高亮
             document.querySelectorAll('.dept-row').forEach(r => {
                 r.classList.remove('active');
                 const i = r.querySelector('i');
@@ -744,70 +679,86 @@ tr:hover td { background: #fafbff; }
 
             document.querySelectorAll(`.student-row-${safeId}`).forEach(r => r.classList.add('show'));
 
-            // 連動右側下拉選單並觸發更新學生名單
-            const selectEl = document.getElementById('input-eval-dept');
-            selectEl.value = deptName;
-            window.onEvalDeptChange();
+            // 連動右側下拉選單
+            const selectEl = document.getElementById('input-eval-group');
+            selectEl.value = groupKey;
+            window.onEvalGroupChange();
         };
 
-        // 當右側下拉選單改變時，更新學生勾選清單
-        window.onEvalDeptChange = () => {
-            const deptName = document.getElementById('input-eval-dept').value;
-            const listContainer = document.getElementById('eval-student-list');
+        // ─── 右側群組變更與自動試算邏輯 ───
+        window.onEvalGroupChange = () => {
+            const groupKey = document.getElementById('input-eval-group').value;
             
-            if (!deptName) {
-                listContainer.innerHTML = '<div class="empty-state" style="padding: 20px;"><i class="ti ti-hand-click" style="font-size:24px; margin-bottom:8px;"></i><br>請先選擇上方系所</div>';
+            if (!groupKey) {
+                currentActiveGroupObj = null;
+                document.getElementById('eval-preview-box').innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 10px;">請先選擇群組並輸入日期進行試算</div>';
                 return;
             }
 
-            const deptData = currentActiveInst.departments.find(d => d.dept_name === deptName);
-            if(!deptData) return;
+            currentActiveGroupObj = currentActiveInst.groups.find(g => g.groupKey === groupKey);
+            if(!currentActiveGroupObj) return;
 
-            let checkHtml = '';
-            
-            // 異常者排前面
-            let sortedRecords = [...deptData.records].sort((a,b) => {
-                let aFail = a.statusObj.code !== 'pass';
-                let bFail = b.statusObj.code !== 'pass';
-                if(aFail && !bFail) return -1;
-                if(!aFail && bFail) return 1;
-                return 0;
-            });
+            // 帶入該群組既有的評估資料
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('input-eval-date').value = currentActiveGroupObj.eval_date || today;
+            document.getElementById('input-eval-result').value = currentActiveGroupObj.eval_result || '';
+            document.getElementById('input-eval-remarks').value = currentActiveGroupObj.eval_remarks || '';
 
-            sortedRecords.forEach(r => {
-                const stuName = (r.student_raw || '').split(' - ')[1] || r.student_raw;
-                const isPass = r.statusObj.code === 'pass';
-                const checkedStr = isPass ? '' : 'checked';
-                const colorStr = isPass ? 'var(--text-muted)' : 'var(--text-primary)';
-                
-                checkHtml += `
-                <label class="student-check-item">
-                    <input type="checkbox" class="eval-stu-checkbox" value="${r.id}" ${checkedStr}>
-                    <span style="color: ${colorStr};">
-                        <strong style="width: 70px;">${stuName}</strong> 
-                        <div style="color: var(--text-muted); font-size: 11px;">起日: <span style="font-family: monospace;">${r.start_date_str}</span></div>
-                        <div style="font-size: 10px; padding: 2px 6px; border-radius: 4px; background: ${isPass ? 'var(--bg)' : 'var(--warning-bg)'}; color: ${isPass ? 'var(--text-muted)' : 'var(--warning)'}; border: 1px solid ${isPass ? 'var(--border)' : '#fcd34d'};">
-                            ${r.statusObj.label}
-                        </div>
-                    </span>
-                </label>`;
-            });
-            
-            listContainer.innerHTML = checkHtml;
+            // 觸發試算
+            window.triggerPreview();
 
-            // 若使用者是手動去改動右側下拉，則也要反向把左側焦點同步
-            const safeId = deptName.replace(/[^a-zA-Z0-9]/g, '_');
+            // 若使用者手動改動下拉，反向同步左側
+            const safeId = groupKey.replace(/[^a-zA-Z0-9]/g, '_');
             const targetRow = document.querySelector(`.dept-row-id-${safeId}`);
             if(targetRow && !targetRow.classList.contains('active')) {
-                // 模擬點擊來展開左側對應列
-                window.selectDeptForEval(deptName); 
+                window.selectGroupForEval(groupKey); 
             }
         };
 
+        window.triggerPreview = () => {
+            const evalDateStr = document.getElementById('input-eval-date').value;
+            const previewBox = document.getElementById('eval-preview-box');
+            
+            if(!evalDateStr || !currentActiveGroupObj) {
+                previewBox.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 10px;">日期不完整，無法試算</div>';
+                return;
+            }
+
+            let passCount = 0;
+            let failCount = 0;
+
+            currentActiveGroupObj.records.forEach(r => {
+                const st = calculateRecordStatus(r.start_date_obj, evalDateStr);
+                if(st.code === 'pass') passCount++;
+                else failCount++;
+            });
+
+            const allPass = failCount === 0;
+
+            previewBox.innerHTML = `
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="font-weight: 700; color: var(--text-primary);"><i class="ti ti-calculator"></i> 自動試算結果：</div>
+                    <div style="display: flex; gap: 12px;">
+                        <div style="flex: 1; padding: 10px; border-radius: var(--radius-sm); background: var(--success-bg); border: 1px solid var(--success-border); color: var(--success); text-align: center; font-weight: 700;">
+                            <div style="font-size: 20px; margin-bottom: 4px;">${passCount} 筆</div>
+                            <div style="font-size: 11px;">有效 (一年內)</div>
+                        </div>
+                        <div style="flex: 1; padding: 10px; border-radius: var(--radius-sm); background: ${failCount > 0 ? 'var(--danger-bg)' : 'var(--bg)'}; border: 1px solid ${failCount > 0 ? 'var(--danger-border)' : 'var(--border)'}; color: ${failCount > 0 ? 'var(--danger)' : 'var(--text-muted)'}; text-align: center; font-weight: 700;">
+                            <div style="font-size: 20px; margin-bottom: 4px;">${failCount} 筆</div>
+                            <div style="font-size: 11px;">逾期或異常</div>
+                        </div>
+                    </div>
+                    ${allPass ? '<div style="font-size: 11px; color: var(--success); text-align: center; font-weight: 600; margin-top: 4px;">太棒了！此日期涵蓋了本群組所有的實習生。</div>' : '<div style="font-size: 11px; color: var(--warning); text-align: center; font-weight: 600; margin-top: 4px;">注意：有學生實習起日距離此評估日超過一年。</div>'}
+                </div>
+            `;
+        };
+
+        // 監聽日期變更，即時試算
+        document.getElementById('input-eval-date').addEventListener('input', window.triggerPreview);
+
         window.submitEvaluation = async () => {
-            const deptName = document.getElementById('input-eval-dept').value;
-            if (!currentActiveInst || !deptName) {
-                alert("請先選擇要評估的系所！"); return;
+            if (!currentActiveInst || !currentActiveGroupObj) {
+                alert("請先選擇要評估的群組！"); return;
             }
 
             const evalDate = document.getElementById('input-eval-date').value;
@@ -819,14 +770,6 @@ tr:hover td { background: #fafbff; }
                 return;
             }
 
-            const checkboxes = document.querySelectorAll('.eval-stu-checkbox:checked');
-            const selectedRecordIds = Array.from(checkboxes).map(cb => cb.value);
-
-            if (selectedRecordIds.length === 0) {
-                alert("請至少勾選一位要套用此評估紀錄的學生！");
-                return;
-            }
-
             const btn = document.getElementById('btn-submit');
             btn.disabled = true;
             btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 批次儲存中...';
@@ -834,8 +777,9 @@ tr:hover td { background: #fafbff; }
             try {
                 const batch = writeBatch(db);
                 
-                selectedRecordIds.forEach(recordId => {
-                    const recordRef = doc(db, "internship_records", recordId);
+                // 自動套用至目前群組下的所有學生
+                currentActiveGroupObj.records.forEach(r => {
+                    const recordRef = doc(db, "internship_records", r.id);
                     batch.update(recordRef, {
                         eval_date: evalDate,
                         eval_result: evalResult,
@@ -845,13 +789,12 @@ tr:hover td { background: #fafbff; }
                 });
 
                 await batch.commit();
-                // 成功後不關閉視窗，讓使用者能直接看到左側與右側狀態翻綠 (由 snapshot 觸發 UI 更新)
                 
             } catch (err) {
                 alert("儲存失敗：" + err.message);
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="ti ti-device-floppy"></i> 確認批次儲存';
+                btn.innerHTML = '<i class="ti ti-device-floppy"></i> 儲存並自動套用至該群組';
             }
         };
 
