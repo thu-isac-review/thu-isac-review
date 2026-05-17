@@ -41,124 +41,86 @@
   --radius: 8px;
   --radius-lg: 12px;
   --radius-xl: 16px;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
   --transition: 150ms cubic-bezier(0.4,0,0.2,1);
 }
 
-html, body { 
-  height: 100%; overflow: hidden; 
-  font-family: 'Noto Sans TC', sans-serif; font-size: 14px; 
-  color: var(--text-primary); background: var(--bg); 
-  -webkit-font-smoothing: antialiased; 
-  display: flex; flex-direction: column;
-}
-
-/* ─── SCROLLBAR ─── */
+html, body { height: 100%; overflow: hidden; font-family: 'Noto Sans TC', sans-serif; font-size: 14px; color: var(--text-primary); background: var(--bg); display: flex; flex-direction: column; }
 .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
 .custom-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
-
-/* ─── 動畫 ─── */
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .ti-spin { animation: spin 1s linear infinite; display: inline-block; }
 
-/* ─── TOOLBAR ─── */
-.toolbar { padding: 12px 24px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; flex-wrap: wrap; }
+/* ─── TOOLBAR & FILTER ─── */
+.toolbar { padding: 12px 24px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .search-wrap { position: relative; flex: 0 0 260px; }
 .search-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px; }
-.search-input { width: 100%; height: 34px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: 0 10px 0 34px; font-size: 13px; font-family: inherit; color: var(--text-primary); outline: none; transition: border-color var(--transition), box-shadow var(--transition); }
+.search-input { width: 100%; height: 34px; border: 1px solid var(--border); border-radius: var(--radius); padding: 0 10px 0 34px; font-size: 13px; outline: none; }
 .search-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
 .flex-spacer { flex: 1; }
 
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 14px; height: 34px; border-radius: var(--radius); font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; border: none; white-space: nowrap; transition: all var(--transition); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 14px; height: 34px; border-radius: var(--radius); font-size: 13px; font-weight: 600; cursor: pointer; border: none; white-space: nowrap; transition: 0.2s; }
 .btn-primary { background: var(--brand); color: white; border: 1px solid var(--brand); }
 .btn-primary:hover { background: var(--brand-hover); }
 .btn-secondary { background: var(--surface); color: var(--text-secondary); border: 1px solid var(--border); }
 .btn-secondary:hover { background: var(--bg); border-color: var(--border-strong); color: var(--text-primary); }
 .btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
 
-/* ─── FILTER ROW ─── */
-.filter-row { padding: 10px 24px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
-.filter-pill { display: inline-flex; align-items: center; gap: 5px; padding: 0 10px; height: 28px; border: 1px solid var(--border); border-radius: 99px; background: var(--surface); font-size: 12px; font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: all var(--transition); }
-.filter-pill:hover { border-color: var(--border-strong); color: var(--text-primary); }
+.filter-row { padding: 10px 24px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.filter-pill { padding: 0 12px; height: 28px; border: 1px solid var(--border); border-radius: 99px; background: var(--surface); font-size: 12px; font-weight: 500; color: var(--text-secondary); cursor: pointer; }
+.filter-pill:hover { border-color: var(--border-strong); }
 .filter-pill.active { border-color: var(--brand); background: var(--brand-light); color: var(--brand); }
 
-/* ─── TABLE ─── */
-.table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; }
+/* ─── MAIN TABLE ─── */
+.table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); }
 .table-scroll { flex: 1; overflow: auto; }
-table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 800px; }
-th { padding: 12px 16px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; white-space: nowrap; position: sticky; top: 0; z-index: 10; background: var(--surface); box-shadow: inset 0 -2px 0 var(--border); }
-td { padding: 12px 16px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 900px; }
+th { padding: 12px 16px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted); position: sticky; top: 0; background: var(--surface); box-shadow: inset 0 -1px 0 var(--border); }
+td { padding: 12px 16px; vertical-align: middle; border-bottom: 1px solid var(--border); }
 tr:hover td { background: #fafbff; }
-.cell-primary { font-size: 13px; color: var(--text-primary); line-height: 1.4; }
-.cell-primary.bold { font-weight: 600; }
-
 .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
 .badge-success { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
 .badge-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
 .badge-warning { background: var(--warning-bg); color: var(--warning); border: 1px solid #fcd34d; }
 .badge-secondary { background: var(--bg); color: var(--text-secondary); border: 1px solid var(--border-strong); }
 
-.pagination-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; gap: 10px; }
-.pagination-info { font-size: 12px; color: var(--text-muted); }
-.pagination-info strong { color: var(--text-primary); }
-.page-btn { min-width: 30px; height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 12px; font-weight: 500; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0 8px; }
-.page-btn:hover:not(:disabled) { background: var(--bg); border-color: var(--border-strong); }
-.page-btn.active { background: var(--brand); color: white; border-color: var(--brand); font-weight: 700; }
-.page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-/* ─── DIALOG MODALS ─── */
+/* ─── MODALS ─── */
 .dialog-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; padding: 24px; }
 .dialog-overlay.open { display: flex; }
+/* 層級設定 */
+#manage-modal { z-index: 200; }
+#add-eval-modal { z-index: 210; }
+
 .dialog-box { background: var(--surface); border-radius: var(--radius-xl); box-shadow: 0 20px 60px rgba(0,0,0,0.2); width: 100%; display: flex; flex-direction: column; overflow: hidden; animation: dialogIn 0.2s ease-out; }
 @keyframes dialogIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-
-.dialog-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--surface); }
-.dialog-header h3 { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: var(--text-primary); }
-.dialog-header h3 i { font-size: 22px; color: var(--brand); }
+.dialog-header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.dialog-header h3 { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
 .dialog-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted); }
-.dialog-body { padding: 24px; overflow-y: auto; max-height: calc(95vh - 100px); }
+.dialog-body { padding: 24px; overflow-y: auto; max-height: calc(90vh - 80px); }
 
-/* ─── 修正版 SPLIT LAYOUT ─── */
-.split-layout { 
-    display: flex; gap: 24px; align-items: stretch; flex-wrap: nowrap; height: 100%;
-}
-/* 左側自適應並避免撐破 */
-.split-left { 
-    flex: 1; min-width: 0; display: flex; flex-direction: column; 
-    overflow-x: auto; 
-}
-/* 右側固定寬度 */
-.split-right { 
-    width: 420px; flex-shrink: 0; background: var(--bg); 
-    padding: 20px; border-radius: var(--radius-lg); border: 1px solid var(--border); 
-    display: flex; flex-direction: column;
-}
+/* ─── SPLIT LAYOUT ─── */
+.split-layout { display: flex; gap: 24px; align-items: stretch; }
+.split-left { flex: 5; min-width: 0; display: flex; flex-direction: column; }
+.split-right { flex: 4; min-width: 350px; background: var(--bg); border-radius: var(--radius-lg); border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
 
-.form-section-title { font-size: 14px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
+.right-header { padding: 16px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.right-content { padding: 16px; overflow-y: auto; flex: 1; }
+
+.inner-table { width: 100%; border-collapse: collapse; min-width: 500px; }
+.inner-table th { background: var(--bg); font-size: 12px; padding: 10px; border-bottom: 1px solid var(--border); }
+.inner-table td { padding: 12px 10px; border-bottom: 1px solid var(--border); font-size: 13px; text-align: center; }
+.inner-table tr.cohort-row { cursor: pointer; transition: 0.2s; }
+.inner-table tr.cohort-row:hover { background: var(--brand-light); }
+.inner-table tr.cohort-row.active { background: var(--indigo-bg); border-left: 4px solid var(--indigo); }
+
+/* 評估卡片 */
+.eval-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; margin-bottom: 12px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 8px; }
+.eval-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--border); padding-bottom: 8px; }
+
+/* ─── FORMS ─── */
 .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
 .field-label { font-size: 12px; font-weight: 700; color: var(--text-secondary); }
-.field-input, .field-select { width: 100%; height: 38px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: 0 12px; font-size: 13px; outline: none; transition: 0.2s; }
-.field-input:focus, .field-select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
-
-.empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
-
-/* 子表格樣式 */
-.inner-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; min-width: 500px; }
-.inner-table th { background: var(--bg); font-size: 12px; padding: 12px; border-bottom: 1px solid var(--border); text-align: center; color: var(--text-secondary); white-space: nowrap; }
-.inner-table td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 13px; text-align: center; }
-.inner-table tr.dept-row { cursor: pointer; transition: 0.2s; }
-.inner-table tr.dept-row:hover { background: var(--brand-light); }
-.inner-table tr.dept-row.active { background: var(--indigo-bg); border-left: 4px solid var(--indigo); }
-.student-row { display: none; background: #fafbff; }
-.student-row.show { display: table-row; }
-.student-cell { padding-left: 24px !important; border-bottom: 1px dashed var(--border-strong) !important; font-size: 12px !important; text-align: left !important; color: var(--text-secondary); }
-
-/* 試算結果框 */
-.preview-box {
-    margin-top: -6px; margin-bottom: 16px; padding: 12px; 
-    background: var(--surface); border: 1px dashed var(--border-strong); 
-    border-radius: var(--radius); font-size: 13px;
-}
+.field-input, .field-select { width: 100%; height: 38px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); padding: 0 12px; font-size: 13px; outline: none; }
+.field-input:focus, .field-select:focus { border-color: var(--brand); background: var(--surface); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
 </style>
 </head>
 <body>
@@ -166,22 +128,15 @@ tr:hover td { background: #fafbff; }
     <div class="toolbar">
         <div class="search-wrap">
             <i class="ti ti-search"></i>
-            <input type="text" id="search-input" placeholder="搜尋機構名稱或統編..." class="search-input">
-        </div>
-        <div class="flex-spacer"></div>
-        <div class="toolbar-actions">
-            <button class="btn btn-secondary" onclick="window.location.reload()">
-                <i class="ti ti-refresh"></i> 重新整理
-            </button>
+            <input type="text" id="search-input" placeholder="搜尋機構名稱..." class="search-input">
         </div>
     </div>
 
     <div class="filter-row">
-        <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-right: 8px;">機構整體狀態：</span>
-        <button class="filter-pill active" id="filter-all" onclick="setFilter('all')">全部機構</button>
-        <button class="filter-pill" id="filter-pass" onclick="setFilter('pass')">審查皆通過有效</button>
-        <button class="filter-pill" id="filter-attention" onclick="setFilter('attention')">需注意 (含逾期/未評估)</button>
-        <button class="filter-pill" id="filter-empty" onclick="setFilter('empty')">無關聯實習紀錄</button>
+        <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-right: 8px;">機構審查狀態：</span>
+        <button class="filter-pill active" onclick="setFilter('all')">全部</button>
+        <button class="filter-pill" onclick="setFilter('pass')">審查皆通過有效</button>
+        <button class="filter-pill" onclick="setFilter('attention')">有梯次逾期/未評估</button>
     </div>
 
     <div class="table-wrap">
@@ -189,114 +144,106 @@ tr:hover td { background: #fafbff; }
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 25%;">實習機構名稱</th>
-                        <th style="width: 15%;">統一編號</th>
-                        <th style="width: 15%;">關聯學期群組數</th>
+                        <th style="width: 30%;">實習機構名稱</th>
+                        <th style="width: 15%;">歷史總實習梯次</th>
                         <th style="width: 15%;">關聯學生總數</th>
-                        <th style="width: 18%;">機構整體審查狀態</th>
-                        <th style="width: 12%;">操作</th>
+                        <th style="width: 20%;">機構整體狀態 (依梯次判定)</th>
+                        <th style="width: 20%;">操作</th>
                     </tr>
                 </thead>
                 <tbody id="table-body">
-                    <tr>
-                        <td colspan="6" class="empty-state">
-                            <i class="ti ti-loader-2 ti-spin" style="font-size: 24px; color:var(--brand);"></i>
-                            <div style="margin-top: 8px; font-size: 13px;">機構與紀錄彙整中...</div>
-                        </td>
-                    </tr>
+                    <tr><td colspan="5" style="text-align:center; padding: 40px; color:var(--text-muted);">載入中...</td></tr>
                 </tbody>
             </table>
-        </div>
-        
-        <div class="pagination-bar">
-            <div class="pagination-info" id="pagination-info">共 0 筆</div>
-            <div class="pagination-bar-right">
-                <select class="per-page-select" id="per-page-select" onchange="window.changePerPage(this.value)">
-                    <option value="15">15 筆/頁</option>
-                    <option value="25">25 筆/頁</option>
-                    <option value="50">50 筆/頁</option>
-                </select>
-                <div style="display: flex; gap: 4px;" id="pagination-controls"></div>
-            </div>
         </div>
     </div>
 
     <div id="manage-modal" class="dialog-overlay">
-        <div class="dialog-box" style="max-width: 1400px; width: 95%;">
+        <div class="dialog-box" style="max-width: 1200px; width: 95%;">
             <div class="dialog-header">
-                <h3 id="manage-modal-title">
-                    <i class="ti ti-building-skyscraper"></i> 
-                    <span id="view-inst-name" style="margin-left: 4px;"></span>
-                </h3>
+                <h3><i class="ti ti-building"></i> <span id="view-inst-name"></span> - 各系梯次與評估狀況</h3>
                 <button type="button" class="dialog-close" onclick="closeManageModal()"><i class="ti ti-x"></i></button>
             </div>
             
-            <div class="dialog-body custom-scroll">
+            <div class="dialog-body custom-scroll" style="padding: 20px; background: var(--bg);">
                 <div class="split-layout">
                     
-                    <div class="split-left custom-scroll">
-                        <div class="form-section-title"><i class="ti ti-list-details"></i> 關聯系所與學期狀況 (點擊列可切換評估對象)</div>
-                        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
-                            <i class="ti ti-info-circle"></i> 系統已將學生依「填報系所 + 實習年份與期間」自動分群，評估紀錄獨立計算不流用。
+                    <div class="split-left">
+                        <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                            <i class="ti ti-list-details"></i> 各系實習梯次清單
+                            <span style="font-weight: normal; font-size: 12px; color: var(--text-muted); margin-left: 8px;">(同系所+同學年期+同開始日為一梯次)</span>
                         </div>
-                        
-                        <table class="inner-table">
+                        <table class="inner-table" style="background: var(--surface); box-shadow: var(--shadow-sm);">
                             <thead>
                                 <tr>
-                                    <th style="text-align: left; width: 45%;">評估群組 (系所 + 實習年份期間)</th>
-                                    <th style="width: 15%;">總人數</th>
-                                    <th style="width: 20%;">該學期審查涵蓋率</th>
-                                    <th style="width: 20%;">群組整體狀態</th>
+                                    <th style="text-align: left; width: 25%;">負責學系</th>
+                                    <th style="width: 20%;">課程學年期</th>
+                                    <th style="width: 20%;">實習開始日</th>
+                                    <th style="width: 15%;">梯次人數</th>
+                                    <th style="width: 20%;">該梯次審查狀態</th>
                                 </tr>
                             </thead>
-                            <tbody id="group-list-tbody">
+                            <tbody id="cohort-list-tbody">
                                 </tbody>
                         </table>
                     </div>
 
                     <div class="split-right">
-                        <div class="form-section-title" style="color: var(--indigo); border-color: var(--indigo-border);">
-                            <i class="ti ti-clipboard-check"></i> 登錄群組評估紀錄
-                        </div>
-                        
-                        <div class="field">
-                            <label class="field-label">目前選擇評估的群組 <span style="color:var(--danger)">*</span></label>
-                            <select id="input-eval-group" class="field-select" onchange="window.onEvalGroupChange()" style="border-color: var(--indigo-border); background: var(--surface); font-weight: 700;">
-                                </select>
-                        </div>
-
-                        <div style="display: flex; gap: 12px;">
-                            <div class="field" style="flex: 1;">
-                                <label class="field-label">本次評估日期 <span style="color:var(--danger)">*</span></label>
-                                <input type="date" id="input-eval-date" required class="field-input">
+                        <div class="right-header">
+                            <div style="font-size: 14px; font-weight: 700; color: var(--indigo);">
+                                <i class="ti ti-history"></i> <span id="right-panel-title">請選擇左側梯次</span>
                             </div>
-                            <div class="field" style="flex: 1;">
-                                <label class="field-label">評估結果 <span style="color:var(--danger)">*</span></label>
-                                <select id="input-eval-result" required class="field-select">
-                                    <option value="">請選擇結果</option>
-                                    <option value="通過">通過</option>
-                                    <option value="有條件通過">有條件通過</option>
-                                    <option value="不通過">不通過</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div id="eval-preview-box" class="preview-box">
-                            <div style="text-align: center; color: var(--text-muted); padding: 10px;">請先選擇群組並輸入日期進行試算</div>
-                        </div>
-
-                        <div class="field" style="flex: 1;">
-                            <label class="field-label">評估說明 / 備註</label>
-                            <textarea id="input-eval-remarks" class="field-input custom-scroll" placeholder="請簡述機構審查與評估狀況..." style="height: 100%; min-height: 80px; resize: none; padding: 10px; line-height: 1.5;"></textarea>
-                        </div>
-
-                        <div style="text-align: right; margin-top: 8px;">
-                            <button type="button" id="btn-submit" class="btn btn-primary" style="background: var(--indigo); border-color: var(--indigo); width: 100%;" onclick="submitEvaluation()">
-                                <i class="ti ti-device-floppy"></i> 儲存並自動套用至該群組
+                            <button id="btn-open-add" class="btn btn-primary btn-sm" style="display: none; background: var(--indigo); border-color: var(--indigo);" onclick="openAddEvalModal()">
+                                <i class="ti ti-plus"></i> 新增評估
                             </button>
                         </div>
+                        <div class="right-content custom-scroll" id="eval-history-list">
+                            <div style="text-align:center; padding:40px; color:var(--text-muted); font-size:13px;">點擊左側梯次以檢視相關評估紀錄</div>
+                        </div>
                     </div>
+
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="add-eval-modal" class="dialog-overlay">
+        <div class="dialog-box" style="max-width: 450px;">
+            <div class="dialog-header" style="border-bottom-color: var(--indigo-border);">
+                <h3 style="color: var(--indigo);"><i class="ti ti-clipboard-plus"></i> 登錄機構評估紀錄</h3>
+                <button type="button" class="dialog-close" onclick="closeAddEvalModal()"><i class="ti ti-x"></i></button>
+            </div>
+            
+            <div class="dialog-body">
+                <div style="margin-bottom: 16px; padding: 12px; background: var(--indigo-bg); border-radius: var(--radius); color: var(--indigo); font-size: 12px; font-weight: 600;">
+                    您正在為 <strong id="add-eval-dept"></strong> 於 <strong id="add-eval-inst"></strong> 新增一筆獨立的評估紀錄。<br>
+                    此紀錄將會自動套用於未來或過去一年內的相關實習梯次。
+                </div>
+
+                <div class="field">
+                    <label class="field-label">本次評估日期 (西元年) <span style="color:var(--danger)">*</span></label>
+                    <input type="date" id="input-eval-date" required class="field-input">
+                </div>
+                <div class="field">
+                    <label class="field-label">評估結果 <span style="color:var(--danger)">*</span></label>
+                    <select id="input-eval-result" required class="field-select">
+                        <option value="">請選擇</option>
+                        <option value="通過">通過</option>
+                        <option value="有條件通過">有條件通過</option>
+                        <option value="不通過">不通過</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label class="field-label">評估說明 / 備註</label>
+                    <textarea id="input-eval-remarks" class="field-input" placeholder="可選填..." style="min-height: 80px; resize: none; padding: 10px;"></textarea>
+                </div>
+            </div>
+            
+            <div class="dialog-header" style="background: var(--bg); justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn btn-secondary" onclick="closeAddEvalModal()">取消</button>
+                <button type="button" id="btn-submit-eval" class="btn btn-primary" style="background: var(--indigo); border-color: var(--indigo);" onclick="submitEvaluation()">
+                    <i class="ti ti-check"></i> 確認儲存
+                </button>
             </div>
         </div>
     </div>
@@ -304,497 +251,311 @@ tr:hover td { background: #fafbff; }
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, doc, writeBatch, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY", authDomain: "thu-isac-review.firebaseapp.com", projectId: "thu-isac-review", storageBucket: "thu-isac-review.firebasestorage.app", messagingSenderId: "453299876735", appId: "1:453299876735:web:1d8babca3315423161a04a" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app); 
         const db = getFirestore(app);
         
+        // 資料集
         const institutionsCol = collection(db, "internship_institutions");
         const recordsCol = collection(db, "internship_records"); 
+        const evaluationsCol = collection(db, "institution_evaluations"); // 【新獨立資料表】
         
         let allInstitutions = [];
         let allRecords = []; 
-        let globalDepts = [];
+        let allEvaluations = [];
+        
         let aggregatedData = [];
         let filteredData = [];
-        
         let currentFilter = 'all';
-        let currentPage = 1; 
-        let itemsPerPage = 15;
         
-        let currentActiveInst = null;
-        let currentActiveGroupObj = null;
+        let activeInstId = null;
+        let activeCohortKey = null;
 
-        // 民國年字串轉西元年 Date 物件
+        // 轉換民國年日期
         function parseROCStartDate(durationStr) {
             if (!durationStr || !durationStr.includes('-')) return null;
             let startPart = durationStr.split('-')[0].trim(); 
             let parts = startPart.split('/');
             if (parts.length !== 3) return null;
-            let year = parseInt(parts[0], 10) + 1911;
-            let month = parseInt(parts[1], 10) - 1; 
-            let day = parseInt(parts[2], 10);
-            return new Date(year, month, day);
+            return new Date(parseInt(parts[0], 10) + 1911, parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
         }
 
-        onAuthStateChanged(auth, async (user) => {
+        onAuthStateChanged(auth, (user) => {
             if (user) {
-                const deptSnap = await getDocs(collection(db, "departments"));
-                globalDepts = deptSnap.docs.map(d => d.data());
-
-                onSnapshot(institutionsCol, (instSnap) => {
-                    allInstitutions = instSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    aggregateData();
-                });
-                onSnapshot(recordsCol, (recSnap) => {
-                    allRecords = recSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    aggregateData();
-                });
+                onSnapshot(institutionsCol, (snap) => { allInstitutions = snap.docs.map(d => ({ id: d.id, ...d.data() })); runAggregation(); });
+                onSnapshot(recordsCol, (snap) => { allRecords = snap.docs.map(d => ({ id: d.id, ...d.data() })); runAggregation(); });
+                onSnapshot(evaluationsCol, (snap) => { allEvaluations = snap.docs.map(d => ({ id: d.id, ...d.data() })); runAggregation(); });
             } else {
-                document.getElementById('table-body').innerHTML = `<tr><td colspan="6" class="empty-state">請先登入系統以存取資料。</td></tr>`;
+                document.getElementById('table-body').innerHTML = `<tr><td colspan="5" style="text-align:center;">請先登入。</td></tr>`;
             }
         });
 
-        const getDeptShort = (n) => { 
-            const d = globalDepts.find(x => x.name === n); 
-            return d && d.shortName ? d.shortName : n; 
-        };
-
-        // ─── 核心彙整邏輯 (依學系+學期分群) ───
-        function aggregateData() {
-            if (allInstitutions.length === 0) return;
+        // ─── 核心彙整邏輯 (依系所+學年期+開始日分群) ───
+        function runAggregation() {
+            if (allInstitutions.length === 0 || allRecords.length === 0) return;
 
             aggregatedData = allInstitutions.map(inst => {
                 let instRecords = allRecords.filter(r => r.inst_raw === inst.name);
-                let groupsObj = {};
+                
+                let cohortsObj = {};
                 let totalStudents = 0;
 
                 instRecords.forEach(r => {
-                    let targetDept = r.resp_dept || '未設定系所';
+                    let dept = r.resp_dept || '未設定系所';
+                    // 取得課程學年期 (假設欄位為 term 或 semester)
+                    let term = r.term || r.semester || '未指定學年期';
                     let sDateObj = parseROCStartDate(r.duration);
-                    let sDateStr = r.duration ? r.duration.split('-')[0].trim() : '-';
+                    let sDateStr = r.duration ? r.duration.split('-')[0].trim() : '未知日期';
                     
-                    // 萃取年份與期間作為分群依據 (例：114年 暑假實習)
-                    let startYear = r.duration && r.duration.includes('/') ? r.duration.split('/')[0].trim() : '未知年份';
-                    let pType = r.period_type || '未知期間';
-                    
-                    // 建立獨立群組 Key
-                    let groupKey = `${targetDept}_${startYear}_${pType}`;
+                    let cohortKey = `${dept}_${term}_${sDateStr}`;
 
-                    if(!groupsObj[groupKey]) {
-                        groupsObj[groupKey] = { 
-                            groupKey: groupKey,
-                            dept_name: targetDept,
-                            startYear: startYear,
-                            periodType: pType,
-                            groupLabel: `${getDeptShort(targetDept)} | ${startYear}年 ${pType}`,
-                            records: [],
-                            eval_date: r.eval_date || null,
-                            eval_result: r.eval_result || null,
-                            eval_remarks: r.eval_remarks || null
+                    if(!cohortsObj[cohortKey]) {
+                        cohortsObj[cohortKey] = {
+                            cohortKey: cohortKey,
+                            dept: dept,
+                            term: term,
+                            startDateStr: sDateStr,
+                            startDateObj: sDateObj,
+                            count: 0
                         };
                     }
-
-                    let statusObj = calculateRecordStatus(sDateObj, r.eval_date);
-
-                    groupsObj[groupKey].records.push({
-                        ...r,
-                        start_date_obj: sDateObj,
-                        start_date_str: sDateStr,
-                        statusObj: statusObj
-                    });
-
-                    // 同步群組最新的評估紀錄
-                    if (r.eval_date && (!groupsObj[groupKey].eval_date || new Date(r.eval_date) > new Date(groupsObj[groupKey].eval_date))) {
-                        groupsObj[groupKey].eval_date = r.eval_date;
-                        groupsObj[groupKey].eval_result = r.eval_result;
-                        groupsObj[groupKey].eval_remarks = r.eval_remarks;
-                    }
-
+                    cohortsObj[cohortKey].count++;
                     totalStudents++;
                 });
 
-                // 結算每個群組的狀態
-                let groups = Object.keys(groupsObj).map(k => {
-                    let g = groupsObj[k];
-                    let totalInGroup = g.records.length;
-                    let validCount = g.records.filter(r => r.statusObj.code === 'pass').length;
+                // 為每個梯次計算狀態：去 allEvaluations 找該系對該機構的「有效評估」
+                let cohorts = Object.values(cohortsObj).map(cohort => {
+                    // 找出該機構、該系的所有歷史評估
+                    let evalsForDept = allEvaluations.filter(e => e.inst_name === inst.name && e.dept_name === cohort.dept);
                     
-                    let groupStatus;
-                    if (totalInGroup === 0) groupStatus = { code: 'empty', label: '無紀錄', class: 'badge-secondary' };
-                    else if (validCount === totalInGroup) groupStatus = { code: 'pass', label: '皆在效期內', class: 'badge-success' };
-                    else groupStatus = { code: 'attention', label: '部分逾期/未評估', class: 'badge-warning' };
+                    let hasValidEval = false;
+                    if(cohort.startDateObj) {
+                        for(let e of evalsForDept) {
+                            if(!e.eval_date) continue;
+                            let eDate = new Date(e.eval_date);
+                            let diffDays = (cohort.startDateObj.getTime() - eDate.getTime()) / (1000 * 3600 * 24);
+                            if(diffDays >= 0 && diffDays <= 365) {
+                                hasValidEval = true;
+                                break;
+                            }
+                        }
+                    }
 
-                    return { ...g, totalCount: totalInGroup, validCount: validCount, status: groupStatus };
+                    cohort.status = hasValidEval 
+                        ? { code: 'pass', label: '合規 (有涵蓋評估)', class: 'badge-success' }
+                        : { code: 'attention', label: '異常/未涵蓋', class: 'badge-danger' };
+                    
+                    return cohort;
                 });
 
-                let overallStatus = getOverallStatus(groups);
+                // 機構整體狀態
+                let overallStatus;
+                if(cohorts.length === 0) overallStatus = { code: 'empty', label: '無關聯紀錄', class: 'badge-secondary', icon: 'ti-minus' };
+                else if(cohorts.some(c => c.status.code === 'attention')) overallStatus = { code: 'attention', label: '需注意 (部分梯次異常)', class: 'badge-warning', icon: 'ti-alert-circle' };
+                else overallStatus = { code: 'pass', label: '全部梯次皆合規', class: 'badge-success', icon: 'ti-check' };
 
-                return { 
-                    ...inst, 
-                    groups, 
-                    groupCount: groups.length,
-                    totalStudents,
-                    overallStatus 
-                };
+                return { ...inst, cohorts, totalStudents, overallStatus };
             });
 
-            processAndRender();
+            processAndRenderMain();
         }
 
-        function calculateRecordStatus(startDateObj, evalDateStr) {
-            if (!startDateObj) return { code: 'none', label: '無實習起日', class: 'badge-secondary' };
-            if (!evalDateStr) return { code: 'none', label: '未評估', class: 'badge-secondary' };
+        window.setFilter = (f) => { currentFilter = f; document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active')); event.target.classList.add('active'); processAndRenderMain(); };
 
-            const evalDateObj = new Date(evalDateStr);
-            const diffTime = startDateObj.getTime() - evalDateObj.getTime();
-            const diffDays = diffTime / (1000 * 3600 * 24);
-
-            if (diffDays >= 0 && diffDays <= 365) return { code: 'pass', label: '有效 (1年內)', class: 'badge-success' };
-            else if (diffDays < 0) return { code: 'expired', label: '異常 (晚於實習)', class: 'badge-warning' };
-            else return { code: 'expired', label: '逾期失效 (>1年)', class: 'badge-danger' };
-        }
-
-        function getOverallStatus(groups) {
-            if (groups.length === 0) return { code: 'empty', label: '無關聯實習紀錄', class: 'badge-secondary', icon: 'ti-inbox' };
-            let hasAttention = groups.some(g => g.status.code === 'attention');
-            if (hasAttention) return { code: 'attention', label: '需注意 (含逾期/未評估)', class: 'badge-warning', icon: 'ti-alert-circle' };
-            return { code: 'pass', label: '全學期皆通過有效', class: 'badge-success', icon: 'ti-circle-check' };
-        }
-
-        window.setFilter = (filterVal) => {
-            currentFilter = filterVal;
-            document.querySelectorAll('.filter-pill').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`filter-${filterVal}`).classList.add('active');
-            currentPage = 1;
-            processAndRender();
-        };
-
-        function processAndRender() {
-            const searchTerm = document.getElementById('search-input').value.toLowerCase();
-
-            filteredData = aggregatedData.filter(d => {
-                const searchStr = `${d.name || ''} ${d.tax_id || ''}`.toLowerCase();
-                const matchSearch = searchStr.includes(searchTerm);
-                const matchFilter = currentFilter === 'all' || d.overallStatus.code === currentFilter;
-                return matchSearch && matchFilter;
-            });
-
-            filteredData.sort((a, b) => b.totalStudents - a.totalStudents);
-            renderTable();
+        function processAndRenderMain() {
+            filteredData = aggregatedData.filter(d => (currentFilter === 'all' || d.overallStatus.code === currentFilter));
+            filteredData.sort((a,b) => b.totalStudents - a.totalStudents);
             
-            // Modal 呈現時即時更新畫面狀態
-            if(document.getElementById('manage-modal').classList.contains('open') && currentActiveInst) {
-                const updatedInst = aggregatedData.find(i => i.id === currentActiveInst.id);
-                if(updatedInst) {
-                    currentActiveInst = updatedInst;
-                    
-                    const activeRow = document.querySelector('.dept-row.active');
-                    const activeKey = activeRow ? activeRow.getAttribute('data-groupkey') : null;
-                    
-                    renderGroupListTable();
-                    renderEvalGroupSelect();
-
-                    if(activeKey) {
-                        window.selectGroupForEval(activeKey);
-                    } else if (currentActiveInst.groups.length > 0) {
-                        window.selectGroupForEval(currentActiveInst.groups[0].groupKey);
-                    }
-                }
-            }
-        }
-
-        window.renderTable = () => {
             const tbody = document.getElementById('table-body');
-            const total = filteredData.length;
-            const totalPages = Math.max(1, Math.ceil(total / itemsPerPage));
-            if (currentPage > totalPages) currentPage = totalPages;
-            
-            const start = (currentPage - 1) * itemsPerPage;
-            const paginatedItems = filteredData.slice(start, start + itemsPerPage);
-
-            document.getElementById('pagination-info').innerHTML = total > 0 
-                ? `共 <strong>${total}</strong> 筆機構，顯示第 ${start + 1}–${Math.min(start + itemsPerPage, total)} 筆`
-                : `共 <strong>0</strong> 筆機構`;
-
-            let pHtml = `<button class="page-btn" onclick="window.changePage(${currentPage-1})" ${currentPage<=1?'disabled':''}><i class="ti ti-chevron-left"></i></button>`;
-            for (let p=1; p<=totalPages; p++) {
-                if (p===1 || p===totalPages || Math.abs(p-currentPage)<=1) {
-                    pHtml += `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="window.changePage(${p})">${p}</button>`;
-                }
-            }
-            pHtml += `<button class="page-btn" onclick="window.changePage(${currentPage+1})" ${currentPage>=totalPages?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
-            document.getElementById('pagination-controls').innerHTML = pHtml;
-
-            if (total === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><i class="ti ti-inbox" style="font-size:24px; margin-bottom:8px; display:block;"></i>找不到符合條件的機構。</td></tr>`;
+            if(filteredData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 30px;">找不到符合的機構。</td></tr>`;
                 return;
             }
 
             let html = '';
-            paginatedItems.forEach(data => {
-                const st = data.overallStatus;
-                const dispTaxId = (data.country === '中華民國' && data.tax_id) ? data.tax_id : '<span style="color: var(--text-muted)">-</span>';
-
+            filteredData.forEach(d => {
                 html += `
                 <tr>
-                    <td><div class="cell-primary bold">${data.name}</div></td>
-                    <td class="text-center"><div class="cell-primary" style="font-family: monospace;">${dispTaxId}</div></td>
-                    <td class="text-center"><div class="cell-primary">${data.groupCount} 群組</div></td>
-                    <td class="text-center"><div class="cell-primary">${data.totalStudents} 人</div></td>
+                    <td><div class="cell-primary bold">${d.name}</div></td>
+                    <td class="text-center"><div class="cell-primary">${d.cohorts.length} 梯次</div></td>
+                    <td class="text-center"><div class="cell-primary">${d.totalStudents} 人</div></td>
+                    <td class="text-center"><span class="badge ${d.overallStatus.class}"><i class="ti ${d.overallStatus.icon}"></i> ${d.overallStatus.label}</span></td>
                     <td class="text-center">
-                        <span class="badge ${st.class}"><i class="ti ${st.icon}"></i> ${st.label}</span>
-                    </td>
-                    <td class="text-center">
-                        <button onclick="window.openManageModal('${data.id}')" class="btn btn-secondary btn-sm" ${data.groupCount === 0 ? 'disabled' : ''}>
-                            <i class="ti ti-clipboard-list"></i> 管理審查
+                        <button class="btn btn-secondary btn-sm" onclick="openManageModal('${d.id}')">
+                            <i class="ti ti-list"></i> 管理審查
                         </button>
                     </td>
                 </tr>`;
             });
             tbody.innerHTML = html;
+
+            // 若 Modal 開啟中則重新渲染內容
+            if(document.getElementById('manage-modal').classList.contains('open') && activeInstId) {
+                renderManageModalContent();
+            }
+        }
+
+        // ─── 綜合管理視窗 邏輯 ───
+        window.openManageModal = (id) => {
+            activeInstId = id;
+            activeCohortKey = null;
+            document.getElementById('manage-modal').classList.add('open');
+            renderManageModalContent();
         };
 
-        window.changePage = (page) => { currentPage = page; renderTable(); };
-        window.changePerPage = (val) => { itemsPerPage = Number(val); currentPage = 1; processAndRender(); };
-        document.getElementById('search-input').addEventListener('input', () => { currentPage = 1; processAndRender(); });
+        window.closeManageModal = () => { document.getElementById('manage-modal').classList.remove('open'); };
 
-        // ─── 綜合管理 Modal (左右連動邏輯) ───
-        window.openManageModal = (instId) => {
-            currentActiveInst = aggregatedData.find(i => i.id === instId);
-            if (!currentActiveInst) return;
+        function renderManageModalContent() {
+            let inst = aggregatedData.find(i => i.id === activeInstId);
+            if(!inst) return;
+            document.getElementById('view-inst-name').innerText = inst.name;
 
-            document.getElementById('view-inst-name').innerText = currentActiveInst.name;
-            
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('input-eval-date').value = today;
-            document.getElementById('input-eval-result').value = '';
-            document.getElementById('input-eval-remarks').value = '';
+            // 渲染左側梯次表
+            let tbody = document.getElementById('cohort-list-tbody');
+            if(inst.cohorts.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px;">無實習梯次</td></tr>`;
+            } else {
+                // 排序：異常排前，然後依開始日新到舊
+                let sortedCohorts = [...inst.cohorts].sort((a,b) => {
+                    if(a.status.code === 'attention' && b.status.code !== 'attention') return -1;
+                    if(a.status.code !== 'attention' && b.status.code === 'attention') return 1;
+                    return (b.startDateObj || 0) - (a.startDateObj || 0);
+                });
 
-            renderGroupListTable();
-            renderEvalGroupSelect();
-
-            if (currentActiveInst.groups.length > 0) {
-                window.selectGroupForEval(currentActiveInst.groups[0].groupKey);
+                let html = '';
+                sortedCohorts.forEach(c => {
+                    let safeId = c.cohortKey.replace(/[^a-zA-Z0-9]/g, '_');
+                    let isActive = (activeCohortKey === c.cohortKey) ? 'active' : '';
+                    html += `
+                    <tr class="cohort-row ${isActive}" id="row-${safeId}" onclick="selectCohort('${c.cohortKey}')">
+                        <td style="text-align:left; font-weight:700;">${c.dept}</td>
+                        <td>${c.term}</td>
+                        <td style="font-family:monospace;">${c.startDateStr}</td>
+                        <td>${c.count} 人</td>
+                        <td><span class="badge ${c.status.class}">${c.status.label}</span></td>
+                    </tr>`;
+                });
+                tbody.innerHTML = html;
             }
 
-            document.getElementById('manage-modal').classList.add('open');
-        };
+            // 如果有選定梯次，更新右側，否則重置右側
+            if(activeCohortKey) {
+                renderRightPanel();
+            } else if (inst.cohorts.length > 0) {
+                // 預設點選第一筆
+                selectCohort(inst.cohorts[0].cohortKey);
+            }
+        }
 
-        window.closeManageModal = () => {
-            document.getElementById('manage-modal').classList.remove('open');
-            currentActiveInst = null;
-            currentActiveGroupObj = null;
-        };
-
-        // 渲染左側群組表
-        function renderGroupListTable() {
-            const tbody = document.getElementById('group-list-tbody');
+        window.selectCohort = (key) => {
+            activeCohortKey = key;
+            document.querySelectorAll('.cohort-row').forEach(r => r.classList.remove('active'));
+            let safeId = key.replace(/[^a-zA-Z0-9]/g, '_');
+            document.getElementById(`row-${safeId}`).classList.add('active');
             
-            let groups = [...currentActiveInst.groups];
-            groups.sort((a, b) => {
-                if(a.status.code === 'attention' && b.status.code !== 'attention') return -1;
-                if(a.status.code !== 'attention' && b.status.code === 'attention') return 1;
-                // 同狀態下，依年份降冪排
-                return (b.startYear || '').localeCompare(a.startYear || '');
-            });
+            renderRightPanel();
+        };
 
-            if (groups.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="padding: 30px; color: var(--text-muted);">無關聯的紀錄。</td></tr>`;
+        function renderRightPanel() {
+            let inst = aggregatedData.find(i => i.id === activeInstId);
+            let cohort = inst.cohorts.find(c => c.cohortKey === activeCohortKey);
+            if(!cohort) return;
+
+            document.getElementById('right-panel-title').innerText = `${cohort.dept} - 歷史評估紀錄`;
+            document.getElementById('btn-open-add').style.display = 'inline-flex';
+
+            let listDiv = document.getElementById('eval-history-list');
+            
+            // 找出該系所有的歷史評估
+            let evals = allEvaluations.filter(e => e.inst_name === inst.name && e.dept_name === cohort.dept);
+            evals.sort((a,b) => new Date(b.eval_date) - new Date(a.eval_date)); // 新到舊
+
+            if(evals.length === 0) {
+                listDiv.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-muted);">此系所尚未建立針對本機構的評估紀錄。</div>`;
                 return;
             }
 
             let html = '';
-            groups.forEach(g => {
-                const safeId = g.groupKey.replace(/[^a-zA-Z0-9]/g, '_');
-                const coverageColor = g.validCount === g.totalCount ? 'var(--success)' : 'var(--danger)';
+            evals.forEach(e => {
+                // 判斷這筆歷史紀錄是否能涵蓋 "當前選定的梯次"
+                let isCovering = false;
+                if(cohort.startDateObj && e.eval_date) {
+                    let eDate = new Date(e.eval_date);
+                    let diffDays = (cohort.startDateObj.getTime() - eDate.getTime()) / (1000 * 3600 * 24);
+                    if(diffDays >= 0 && diffDays <= 365) isCovering = true;
+                }
+
+                let coverBadge = isCovering 
+                    ? `<span style="font-size:12px; color:var(--success); font-weight:700;"><i class="ti ti-circle-check"></i> 可涵蓋本梯次 (${cohort.count}人)</span>`
+                    : `<span style="font-size:12px; color:var(--text-muted);"><i class="ti ti-x"></i> 無法涵蓋本梯次</span>`;
 
                 html += `
-                <tr class="dept-row dept-row-id-${safeId}" data-groupkey="${g.groupKey}" onclick="window.selectGroupForEval('${g.groupKey}')">
-                    <td style="text-align: left; font-weight: 700; display: flex; align-items: center; gap: 8px;">
-                        <i id="icon-expand-${safeId}" class="ti ti-chevron-right" style="color: var(--text-muted); transition: 0.2s;"></i>
-                        ${g.groupLabel}
-                    </td>
-                    <td>${g.totalCount} 人</td>
-                    <td>
-                        <div style="font-weight: 700; color: ${coverageColor};">${g.validCount} / ${g.totalCount}</div>
-                    </td>
-                    <td><span class="badge ${g.status.class}">${g.status.label}</span></td>
-                </tr>`;
-
-                // 該群組內學生明細
-                g.records.sort((a, b) => (b.start_date_obj || 0) - (a.start_date_obj || 0)); 
-                g.records.forEach(r => {
-                    const stuName = (r.student_raw || '').split(' - ')[1] || r.student_raw;
-                    html += `
-                    <tr class="student-row student-row-${safeId}">
-                        <td colspan="4" class="student-cell">
-                            <div style="display: flex; justify-content: space-between; align-items: center; padding-right: 16px;">
-                                <div style="display: flex; align-items: center; gap: 16px;">
-                                    <span style="font-weight: 600; color: var(--text-primary); width: 80px;">${stuName}</span>
-                                    <span><i class="ti ti-calendar" style="font-size: 14px; vertical-align: text-bottom;"></i> 實習起日：<span style="font-family: monospace; color: var(--brand); font-weight: 600;">${r.start_date_str}</span></span>
-                                    <span><i class="ti ti-clipboard-check" style="font-size: 14px; vertical-align: text-bottom;"></i> 評估日：<span style="font-family: monospace;">${r.eval_date || '無'}</span></span>
-                                </div>
-                                <span class="badge ${r.statusObj.class}" style="transform: scale(0.9);">${r.statusObj.label}</span>
-                            </div>
-                        </td>
-                    </tr>`;
-                });
-            });
-            tbody.innerHTML = html;
-        }
-
-        // 渲染右側群組下拉選單
-        function renderEvalGroupSelect() {
-            const selectEl = document.getElementById('input-eval-group');
-            if(!currentActiveInst) return;
-
-            let html = '<option value="">請選擇要評估的群組...</option>';
-            currentActiveInst.groups.forEach(g => {
-                html += `<option value="${g.groupKey}">${g.groupLabel} (共 ${g.totalCount} 人)</option>`;
-            });
-            selectEl.innerHTML = html;
-        }
-
-        // 左側點擊連動右側
-        window.selectGroupForEval = (groupKey) => {
-            const safeId = groupKey.replace(/[^a-zA-Z0-9]/g, '_');
-            
-            // 處理左側 UI 展開與高亮
-            document.querySelectorAll('.dept-row').forEach(r => {
-                r.classList.remove('active');
-                const i = r.querySelector('i');
-                if(i) i.classList.replace('ti-chevron-down', 'ti-chevron-right');
-            });
-            document.querySelectorAll('.student-row').forEach(r => r.classList.remove('show'));
-
-            const targetRow = document.querySelector(`.dept-row-id-${safeId}`);
-            if(targetRow) {
-                targetRow.classList.add('active');
-                const i = targetRow.querySelector('i');
-                if(i) i.classList.replace('ti-chevron-right', 'ti-chevron-down');
-            }
-
-            document.querySelectorAll(`.student-row-${safeId}`).forEach(r => r.classList.add('show'));
-
-            // 連動右側下拉選單
-            const selectEl = document.getElementById('input-eval-group');
-            selectEl.value = groupKey;
-            window.onEvalGroupChange();
-        };
-
-        // ─── 右側群組變更與自動試算邏輯 ───
-        window.onEvalGroupChange = () => {
-            const groupKey = document.getElementById('input-eval-group').value;
-            
-            if (!groupKey) {
-                currentActiveGroupObj = null;
-                document.getElementById('eval-preview-box').innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 10px;">請先選擇群組並輸入日期進行試算</div>';
-                return;
-            }
-
-            currentActiveGroupObj = currentActiveInst.groups.find(g => g.groupKey === groupKey);
-            if(!currentActiveGroupObj) return;
-
-            // 帶入該群組既有的評估資料
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('input-eval-date').value = currentActiveGroupObj.eval_date || today;
-            document.getElementById('input-eval-result').value = currentActiveGroupObj.eval_result || '';
-            document.getElementById('input-eval-remarks').value = currentActiveGroupObj.eval_remarks || '';
-
-            // 觸發試算
-            window.triggerPreview();
-
-            // 若使用者手動改動下拉，反向同步左側
-            const safeId = groupKey.replace(/[^a-zA-Z0-9]/g, '_');
-            const targetRow = document.querySelector(`.dept-row-id-${safeId}`);
-            if(targetRow && !targetRow.classList.contains('active')) {
-                window.selectGroupForEval(groupKey); 
-            }
-        };
-
-        window.triggerPreview = () => {
-            const evalDateStr = document.getElementById('input-eval-date').value;
-            const previewBox = document.getElementById('eval-preview-box');
-            
-            if(!evalDateStr || !currentActiveGroupObj) {
-                previewBox.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 10px;">日期不完整，無法試算</div>';
-                return;
-            }
-
-            let passCount = 0;
-            let failCount = 0;
-
-            currentActiveGroupObj.records.forEach(r => {
-                const st = calculateRecordStatus(r.start_date_obj, evalDateStr);
-                if(st.code === 'pass') passCount++;
-                else failCount++;
-            });
-
-            const allPass = failCount === 0;
-
-            previewBox.innerHTML = `
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    <div style="font-weight: 700; color: var(--text-primary);"><i class="ti ti-calculator"></i> 自動試算結果：</div>
-                    <div style="display: flex; gap: 12px;">
-                        <div style="flex: 1; padding: 10px; border-radius: var(--radius-sm); background: var(--success-bg); border: 1px solid var(--success-border); color: var(--success); text-align: center; font-weight: 700;">
-                            <div style="font-size: 20px; margin-bottom: 4px;">${passCount} 筆</div>
-                            <div style="font-size: 11px;">有效 (一年內)</div>
-                        </div>
-                        <div style="flex: 1; padding: 10px; border-radius: var(--radius-sm); background: ${failCount > 0 ? 'var(--danger-bg)' : 'var(--bg)'}; border: 1px solid ${failCount > 0 ? 'var(--danger-border)' : 'var(--border)'}; color: ${failCount > 0 ? 'var(--danger)' : 'var(--text-muted)'}; text-align: center; font-weight: 700;">
-                            <div style="font-size: 20px; margin-bottom: 4px;">${failCount} 筆</div>
-                            <div style="font-size: 11px;">逾期或異常</div>
-                        </div>
+                <div class="eval-card" style="${isCovering ? 'border-left: 4px solid var(--success);' : ''}">
+                    <div class="eval-card-header">
+                        <div style="font-weight: 700; font-family: monospace; font-size: 15px;"><i class="ti ti-calendar"></i> ${e.eval_date}</div>
+                        <span class="badge ${e.eval_result === '通過' ? 'badge-success' : 'badge-warning'}">${e.eval_result}</span>
                     </div>
-                    ${allPass ? '<div style="font-size: 11px; color: var(--success); text-align: center; font-weight: 600; margin-top: 4px;">太棒了！此日期涵蓋了本群組所有的實習生。</div>' : '<div style="font-size: 11px; color: var(--warning); text-align: center; font-weight: 600; margin-top: 4px;">注意：有學生實習起日距離此評估日超過一年。</div>'}
-                </div>
-            `;
+                    <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">備註：${e.eval_remarks || '無'}</div>
+                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end;">
+                        ${coverBadge}
+                    </div>
+                </div>`;
+            });
+            listDiv.innerHTML = html;
+        }
+
+        // ─── 新增評估彈窗 邏輯 ───
+        window.openAddEvalModal = () => {
+            let inst = aggregatedData.find(i => i.id === activeInstId);
+            let cohort = inst.cohorts.find(c => c.cohortKey === activeCohortKey);
+            if(!inst || !cohort) return;
+
+            document.getElementById('add-eval-dept').innerText = cohort.dept;
+            document.getElementById('add-eval-inst').innerText = inst.name;
+            
+            document.getElementById('input-eval-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('input-eval-result').value = '';
+            document.getElementById('input-eval-remarks').value = '';
+
+            document.getElementById('add-eval-modal').classList.add('open');
         };
 
-        // 監聽日期變更，即時試算
-        document.getElementById('input-eval-date').addEventListener('input', window.triggerPreview);
+        window.closeAddEvalModal = () => { document.getElementById('add-eval-modal').classList.remove('open'); };
 
         window.submitEvaluation = async () => {
-            if (!currentActiveInst || !currentActiveGroupObj) {
-                alert("請先選擇要評估的群組！"); return;
-            }
+            let inst = aggregatedData.find(i => i.id === activeInstId);
+            let cohort = inst.cohorts.find(c => c.cohortKey === activeCohortKey);
+            if(!inst || !cohort) return;
 
-            const evalDate = document.getElementById('input-eval-date').value;
-            const evalResult = document.getElementById('input-eval-result').value;
-            const evalRemarks = document.getElementById('input-eval-remarks').value.trim();
+            const dateVal = document.getElementById('input-eval-date').value;
+            const resVal = document.getElementById('input-eval-result').value;
+            const remVal = document.getElementById('input-eval-remarks').value.trim();
 
-            if (!evalDate || !evalResult) {
-                alert("請填寫「本次評估日期」與「評估結果」！");
-                return;
-            }
+            if(!dateVal || !resVal) { alert("請填寫評估日期與結果！"); return; }
 
-            const btn = document.getElementById('btn-submit');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 批次儲存中...';
+            const btn = document.getElementById('btn-submit-eval');
+            btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 儲存中...';
 
             try {
-                const batch = writeBatch(db);
-                
-                // 自動套用至目前群組下的所有學生
-                currentActiveGroupObj.records.forEach(r => {
-                    const recordRef = doc(db, "internship_records", r.id);
-                    batch.update(recordRef, {
-                        eval_date: evalDate,
-                        eval_result: evalResult,
-                        eval_remarks: evalRemarks,
-                        updated_at: serverTimestamp()
-                    });
+                // 將新評估寫入獨立的 institution_evaluations 資料表
+                await addDoc(evaluationsCol, {
+                    inst_name: inst.name,
+                    dept_name: cohort.dept,
+                    eval_date: dateVal,
+                    eval_result: resVal,
+                    eval_remarks: remVal,
+                    created_at: serverTimestamp()
                 });
 
-                await batch.commit();
-                
-            } catch (err) {
-                alert("儲存失敗：" + err.message);
+                closeAddEvalModal();
+                // 儲存成功後，onSnapshot 會偵測到新資料並自動重新執行 runAggregation()，畫面會自動更新
+            } catch(e) {
+                alert("儲存失敗：" + e.message);
             } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="ti ti-device-floppy"></i> 儲存並自動套用至該群組';
+                btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> 確認儲存';
             }
         };
 
