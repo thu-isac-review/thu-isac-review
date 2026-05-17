@@ -168,14 +168,11 @@ tr:hover td { background: #fafbff; }
 
 /* ─── DIALOG MODALS ─── */
 .dialog-overlay {
-  position: fixed; inset: 0; 
+  position: fixed; inset: 0; z-index: 200;
   background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
   display: none; align-items: center; justify-content: center; padding: 24px;
 }
 .dialog-overlay.open { display: flex; }
-/* 分層 z-index 控制：系所清單 200, 評估表單 210 */
-#dept-list-modal { z-index: 200; }
-#eval-form-modal { z-index: 210; }
 
 .dialog-box {
   background: var(--surface); border-radius: var(--radius-xl);
@@ -189,28 +186,38 @@ tr:hover td { background: #fafbff; }
   padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
   display: flex; align-items: center; justify-content: space-between; background: var(--surface);
 }
-.dialog-header h3 { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: var(--text-primary); }
-.dialog-header h3 i { font-size: 20px; color: var(--brand); }
+.dialog-header h3 { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: var(--text-primary); }
+.dialog-header h3 i { font-size: 22px; color: var(--brand); }
 .dialog-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted); }
-.dialog-body { padding: 24px; overflow-y: auto; max-height: calc(85vh - 130px); }
-.dialog-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg); }
+.dialog-body { padding: 24px; overflow-y: auto; max-height: calc(90vh - 100px); }
 
-.form-section-title { font-size: 13px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px; margin-bottom: 16px; }
-.field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
-.field-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
-.field-input, .field-select {
-  width: 100%; height: 36px; border: 1px solid var(--border); border-radius: var(--radius);
-  background: var(--bg); padding: 0 12px; font-size: 13px; outline: none;
+/* ─── SPLIT LAYOUT ─── */
+.split-layout { display: flex; gap: 24px; align-items: stretch; }
+.split-left { flex: 6; min-width: 0; display: flex; flex-direction: column; }
+.split-right { 
+    flex: 4; min-width: 0; background: var(--bg); 
+    padding: 20px; border-radius: var(--radius-lg); border: 1px solid var(--border); 
+    display: flex; flex-direction: column;
 }
-.field-input:focus, .field-select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); background: var(--surface); }
+
+.form-section-title { font-size: 14px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.field-label { font-size: 12px; font-weight: 700; color: var(--text-secondary); }
+.field-input, .field-select {
+  width: 100%; height: 38px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface); padding: 0 12px; font-size: 13px; outline: none; transition: 0.2s;
+}
+.field-input:focus, .field-select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
 
 .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
 
 /* 子表格樣式 (系所清單與學生展開用) */
 .inner-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-.inner-table th { background: var(--bg); font-size: 11px; padding: 10px; border-bottom: 1px solid var(--border); }
-.inner-table td { padding: 10px; border-bottom: 1px solid var(--border); font-size: 13px; text-align: center; }
-.inner-table tr.dept-row:hover td { background: var(--bg); }
+.inner-table th { background: var(--bg); font-size: 12px; padding: 12px; border-bottom: 1px solid var(--border); text-align: center; color: var(--text-secondary); }
+.inner-table td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 13px; text-align: center; }
+.inner-table tr.dept-row { cursor: pointer; transition: 0.2s; }
+.inner-table tr.dept-row:hover { background: var(--brand-light); }
+.inner-table tr.dept-row.active { background: var(--indigo-bg); border-left: 3px solid var(--indigo); }
 .student-row { display: none; background: #fafbff; }
 .student-row.show { display: table-row; }
 .student-cell { padding-left: 30px !important; border-bottom: 1px dashed var(--border-strong) !important; font-size: 12px !important; text-align: left !important; color: var(--text-secondary); }
@@ -218,15 +225,15 @@ tr:hover td { background: #fafbff; }
 /* 學生選擇清單 */
 .student-check-list {
     border: 1px solid var(--border); border-radius: var(--radius); padding: 8px;
-    max-height: 160px; overflow-y: auto; background: var(--surface);
+    max-height: 240px; overflow-y: auto; background: var(--surface); display: flex; flex-direction: column; gap: 4px;
 }
 .student-check-item {
-    display: flex; align-items: center; gap: 8px; padding: 6px 8px;
-    border-radius: var(--radius-sm); cursor: pointer; transition: 0.2s;
+    display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+    border-radius: var(--radius-sm); cursor: pointer; transition: 0.2s; border: 1px solid transparent;
 }
-.student-check-item:hover { background: var(--bg); }
-.student-check-item input[type="checkbox"] { accent-color: var(--brand); cursor: pointer; }
-.student-check-item span { font-size: 12px; color: var(--text-primary); }
+.student-check-item:hover { background: var(--bg); border-color: var(--border); }
+.student-check-item input[type="checkbox"] { accent-color: var(--indigo); cursor: pointer; width: 16px; height: 16px; }
+.student-check-item span { font-size: 13px; color: var(--text-primary); flex: 1; display: flex; align-items: center; justify-content: space-between; }
 </style>
 </head>
 <body>
@@ -292,90 +299,84 @@ tr:hover td { background: #fafbff; }
         </div>
     </div>
 
-    <div id="dept-list-modal" class="dialog-overlay">
-        <div class="dialog-box" style="max-width: 900px;">
+    <div id="manage-modal" class="dialog-overlay">
+        <div class="dialog-box" style="max-width: 1200px; width: 95%;">
             <div class="dialog-header">
-                <h3 id="dept-modal-title"><i class="ti ti-building"></i> 機構各系審查狀況</h3>
-                <button type="button" class="dialog-close" onclick="closeDeptModal()"><i class="ti ti-x"></i></button>
+                <h3 id="manage-modal-title">
+                    <i class="ti ti-building-skyscraper"></i> 
+                    <span id="view-inst-name" style="margin-left: 4px;"></span>
+                </h3>
+                <button type="button" class="dialog-close" onclick="closeManageModal()"><i class="ti ti-x"></i></button>
             </div>
-            <div class="dialog-body custom-scroll" style="background: var(--bg);">
-                
-                <div style="background: var(--surface); padding: 16px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <div style="font-size: 11px; color: var(--text-muted); font-weight: 700; margin-bottom: 4px;">目前檢視機構</div>
-                        <div id="view-inst-name" style="font-size: 16px; font-weight: 700; color: var(--text-primary);"></div>
+            
+            <div class="dialog-body custom-scroll">
+                <div class="split-layout">
+                    
+                    <div class="split-left">
+                        <div class="form-section-title"><i class="ti ti-list-details"></i> 關聯系所狀況 (點擊列可切換評估對象)</div>
+                        <table class="inner-table" style="background: var(--surface);">
+                            <thead>
+                                <tr>
+                                    <th style="text-align: left; width: 35%;">負責填報系所</th>
+                                    <th style="width: 15%;">總學生數</th>
+                                    <th style="width: 20%;">審查涵蓋率</th>
+                                    <th style="width: 30%;">整體審查狀態</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dept-list-tbody">
+                                </tbody>
+                        </table>
+                    </div>
+
+                    <div class="split-right">
+                        <div class="form-section-title" style="color: var(--indigo); border-color: var(--indigo-border);">
+                            <i class="ti ti-clipboard-check"></i> 登錄評估紀錄
+                        </div>
+                        
+                        <div class="field">
+                            <label class="field-label">選擇評估系所 <span style="color:var(--danger)">*</span></label>
+                            <select id="input-eval-dept" class="field-select" onchange="window.onEvalDeptChange()" style="border-color: var(--indigo-border); background: var(--surface);">
+                                </select>
+                        </div>
+                        
+                        <div class="field" style="flex: 1;">
+                            <label class="field-label">
+                                選擇套用學生 <span style="color:var(--danger)">*</span> 
+                                <span style="font-weight:normal; color:var(--text-muted); font-size:11px; margin-left:4px;">(預設勾選異常者)</span>
+                            </label>
+                            <div id="eval-student-list" class="student-check-list custom-scroll">
+                                <div class="empty-state" style="padding: 20px;"><i class="ti ti-hand-click" style="font-size:24px; margin-bottom:8px;"></i><br>請先選擇左側系所</div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 12px;">
+                            <div class="field" style="flex: 1;">
+                                <label class="field-label">本次評估日期 <span style="color:var(--danger)">*</span></label>
+                                <input type="date" id="input-eval-date" required class="field-input">
+                            </div>
+                            <div class="field" style="flex: 1;">
+                                <label class="field-label">評估結果 <span style="color:var(--danger)">*</span></label>
+                                <select id="input-eval-result" required class="field-select">
+                                    <option value="">請選擇結果</option>
+                                    <option value="通過">通過</option>
+                                    <option value="有條件通過">有條件通過</option>
+                                    <option value="不通過">不通過</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="field-label">評估說明 / 備註</label>
+                            <textarea id="input-eval-remarks" class="field-input custom-scroll" placeholder="請簡述機構審查與評估狀況..." style="min-height: 80px; resize: none; padding: 10px; line-height: 1.5;"></textarea>
+                        </div>
+
+                        <div style="text-align: right; margin-top: 8px;">
+                            <button type="button" id="btn-submit" class="btn btn-primary" style="background: var(--indigo); border-color: var(--indigo); width: 100%;" onclick="submitEvaluation()">
+                                <i class="ti ti-device-floppy"></i> 確認批次儲存
+                            </button>
+                        </div>
                     </div>
                 </div>
-
-                <div class="form-section-title"><i class="ti ti-list-details"></i> 關聯系所清單與審查涵蓋率</div>
-                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
-                    <i class="ti ti-info-circle"></i> 點擊系所列可展開查看個別學生的實習起迄與審查狀態。
-                </div>
-                
-                <table class="inner-table" style="background: var(--surface);">
-                    <thead>
-                        <tr>
-                            <th style="text-align: left; width: 30%;">負責填報系所</th>
-                            <th style="width: 15%;">總學生數</th>
-                            <th style="width: 20%;">審查涵蓋率</th>
-                            <th style="width: 20%;">整體審查狀態</th>
-                            <th style="width: 15%;">操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="dept-list-tbody">
-                        </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <div id="eval-form-modal" class="dialog-overlay">
-        <div class="dialog-box" style="max-width: 550px;">
-            <div class="dialog-header" style="border-bottom-color: var(--indigo-border);">
-                <h3 style="color: var(--indigo);"><i class="ti ti-clipboard-check"></i> 登錄系所評估紀錄</h3>
-                <button type="button" class="dialog-close" onclick="closeEvalModal()"><i class="ti ti-x"></i></button>
-            </div>
-            
-            <form id="data-form" class="dialog-body custom-scroll">
-                
-                <div style="background: var(--indigo-light); border: 1px solid var(--indigo-border); padding: 12px; border-radius: var(--radius); margin-bottom: 16px;">
-                    <p style="font-size: 12px; color: var(--indigo); font-weight: 600; line-height: 1.5; margin: 0;">
-                        您正在登錄 <strong id="eval-target-dept"></strong> 對 <strong id="eval-target-inst"></strong> 的評估紀錄。<br>
-                        系統將依據您勾選的學生，同步寫入評估日期，重新計算是否符合「實習開始日回推一年內」的規範。
-                    </p>
-                </div>
-                
-                <div class="field">
-                    <label class="field-label">本次評估日期 (西元年) <span style="color:var(--danger)">*</span></label>
-                    <input type="date" id="input-eval-date" required class="field-input">
-                </div>
-                
-                <div class="field">
-                    <label class="field-label">選擇要套用此評估的學生 <span style="color:var(--danger)">*</span> <span style="font-weight: normal; color: var(--text-muted); text-transform: none; margin-left: 4px;">(預設勾選逾期或未評估者)</span></label>
-                    <div id="eval-student-list" class="student-check-list custom-scroll">
-                        </div>
-                </div>
-
-                <div class="field">
-                    <label class="field-label">評估結果 <span style="color:var(--danger)">*</span></label>
-                    <select id="input-eval-result" required class="field-select">
-                        <option value="">請選擇評估結果</option>
-                        <option value="通過">通過</option>
-                        <option value="有條件通過">有條件通過</option>
-                        <option value="不通過">不通過</option>
-                    </select>
-                </div>
-                <div class="field">
-                    <label class="field-label">評估說明 / 備註</label>
-                    <textarea id="input-eval-remarks" class="field-input" placeholder="請簡述機構審查與評估狀況..." style="min-height: 80px; resize: none; padding: 10px; line-height: 1.5;"></textarea>
-                </div>
-            </form>
-            
-            <div class="dialog-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeEvalModal()">取消</button>
-                <button type="button" id="btn-submit" class="btn btn-primary" style="background: var(--indigo); border-color: var(--indigo);" onclick="submitEvaluation()">
-                    <i class="ti ti-check"></i> 確認批次儲存
-                </button>
             </div>
         </div>
     </div>
@@ -404,23 +405,21 @@ tr:hover td { background: #fafbff; }
         let itemsPerPage = 15;
         
         let currentActiveInst = null;
-        let currentActiveDeptName = null;
 
-        // 【核心修正1】將「民國年字串(YYY/MM/DD-YYY/MM/DD)」轉換為西元年 Date 物件
+        // 民國年字串轉西元年 Date 物件
         function parseROCStartDate(durationStr) {
             if (!durationStr || !durationStr.includes('-')) return null;
-            let startPart = durationStr.split('-')[0].trim(); // 取得開始區間
+            let startPart = durationStr.split('-')[0].trim(); 
             let parts = startPart.split('/');
             if (parts.length !== 3) return null;
-            let year = parseInt(parts[0], 10) + 1911; // 轉為西元
-            let month = parseInt(parts[1], 10) - 1; // JS 的月份是 0-11
+            let year = parseInt(parts[0], 10) + 1911;
+            let month = parseInt(parts[1], 10) - 1; 
             let day = parseInt(parts[2], 10);
             return new Date(year, month, day);
         }
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // 載入系所對照表以顯示簡稱
                 const deptSnap = await getDocs(collection(db, "departments"));
                 globalDepts = deptSnap.docs.map(d => d.data());
 
@@ -442,7 +441,7 @@ tr:hover td { background: #fafbff; }
             return d && d.shortName ? d.shortName : n; 
         };
 
-        // ─── 核心彙整邏輯 (落實逐筆獨立計算) ───
+        // ─── 核心彙整邏輯 (逐筆獨立計算) ───
         function aggregateData() {
             if (allInstitutions.length === 0) return;
 
@@ -459,11 +458,8 @@ tr:hover td { background: #fafbff; }
                         deptsObj[targetDept] = { records: [] };
                     }
 
-                    // 1. 轉換此學生的實習開始日
                     let sDateObj = parseROCStartDate(r.duration);
                     let sDateStr = r.duration ? r.duration.split('-')[0].trim() : '-';
-
-                    // 2. 獨立計算此學生的審查狀態
                     let statusObj = calculateRecordStatus(sDateObj, r.eval_date);
 
                     deptsObj[targetDept].records.push({
@@ -476,7 +472,6 @@ tr:hover td { background: #fafbff; }
                     totalStudents++;
                 });
 
-                // 計算每個系的整體狀態 (需所有學生皆為 pass 才算 pass)
                 let departments = Object.keys(deptsObj).map(deptName => {
                     let d = deptsObj[deptName];
                     let totalInDept = d.records.length;
@@ -510,32 +505,23 @@ tr:hover td { background: #fafbff; }
             processAndRender();
         }
 
-        // 【核心修正2】精準計算單一紀錄是否有效 (0 ~ 365天)
         function calculateRecordStatus(startDateObj, evalDateStr) {
             if (!startDateObj) return { code: 'none', label: '無實習起日', class: 'badge-secondary' };
             if (!evalDateStr) return { code: 'none', label: '未評估', class: 'badge-secondary' };
 
             const evalDateObj = new Date(evalDateStr);
-            
-            // 將時間差轉為天數
             const diffTime = startDateObj.getTime() - evalDateObj.getTime();
             const diffDays = diffTime / (1000 * 3600 * 24);
 
-            if (diffDays >= 0 && diffDays <= 365) {
-                return { code: 'pass', label: '有效 (1年內)', class: 'badge-success' };
-            } else if (diffDays < 0) {
-                return { code: 'expired', label: '異常 (晚於實習)', class: 'badge-warning' };
-            } else {
-                return { code: 'expired', label: '逾期 (>1年)', class: 'badge-danger' };
-            }
+            if (diffDays >= 0 && diffDays <= 365) return { code: 'pass', label: '有效 (1年內)', class: 'badge-success' };
+            else if (diffDays < 0) return { code: 'expired', label: '異常 (晚於實習)', class: 'badge-warning' };
+            else return { code: 'expired', label: '逾期 (>1年)', class: 'badge-danger' };
         }
 
         function getOverallStatus(departments) {
             if (departments.length === 0) return { code: 'empty', label: '無關聯實習紀錄', class: 'badge-secondary', icon: 'ti-inbox' };
-            
             let hasAttention = departments.some(d => d.status.code === 'attention');
             if (hasAttention) return { code: 'attention', label: '需注意 (含逾期/未評估)', class: 'badge-warning', icon: 'ti-alert-circle' };
-            
             return { code: 'pass', label: '全部系所皆通過', class: 'badge-success', icon: 'ti-circle-check' };
         }
 
@@ -560,12 +546,25 @@ tr:hover td { background: #fafbff; }
             filteredData.sort((a, b) => b.totalStudents - a.totalStudents);
             renderTable();
             
-            // 若 Modal 1 呈開啟狀態，即時更新資料
-            if(document.getElementById('dept-list-modal').classList.contains('open') && currentActiveInst) {
+            // Modal 呈現時即時更新畫面狀態 (保持目前的選項)
+            if(document.getElementById('manage-modal').classList.contains('open') && currentActiveInst) {
                 const updatedInst = aggregatedData.find(i => i.id === currentActiveInst.id);
                 if(updatedInst) {
                     currentActiveInst = updatedInst;
+                    
+                    // 紀錄當前選取的系所，更新後還原
+                    const activeRow = document.querySelector('.dept-row.active');
+                    const activeDeptName = activeRow ? activeRow.getAttribute('data-dept') : null;
+                    
                     renderDeptListTable();
+                    renderEvalDeptSelect();
+
+                    if(activeDeptName) {
+                        window.selectDeptForEval(activeDeptName);
+                    } else if (currentActiveInst.departments.length > 0) {
+                        // 預設選擇第一筆
+                        window.selectDeptForEval(currentActiveInst.departments[0].dept_name);
+                    }
                 }
             }
         }
@@ -612,8 +611,8 @@ tr:hover td { background: #fafbff; }
                         <span class="badge ${st.class}"><i class="ti ${st.icon}"></i> ${st.label}</span>
                     </td>
                     <td class="text-center">
-                        <button onclick="window.openDeptModal('${data.id}')" class="btn btn-secondary btn-sm" ${data.deptCount === 0 ? 'disabled' : ''}>
-                            <i class="ti ti-list"></i> 檢視各系審查
+                        <button onclick="window.openManageModal('${data.id}')" class="btn btn-secondary btn-sm" ${data.deptCount === 0 ? 'disabled' : ''}>
+                            <i class="ti ti-clipboard-list"></i> 管理各系評估
                         </button>
                     </td>
                 </tr>`;
@@ -625,37 +624,36 @@ tr:hover td { background: #fafbff; }
         window.changePerPage = (val) => { itemsPerPage = Number(val); currentPage = 1; processAndRender(); };
         document.getElementById('search-input').addEventListener('input', () => { currentPage = 1; processAndRender(); });
 
-        // ─── MODAL 1: 系所清單與學生展開 ───
-        window.openDeptModal = (instId) => {
+        // ─── 綜合管理 Modal (左右連動邏輯) ───
+        window.openManageModal = (instId) => {
             currentActiveInst = aggregatedData.find(i => i.id === instId);
             if (!currentActiveInst) return;
 
             document.getElementById('view-inst-name').innerText = currentActiveInst.name;
-            renderDeptListTable();
+            
+            // 初始化表單
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('input-eval-date').value = today;
+            document.getElementById('input-eval-result').value = '';
+            document.getElementById('input-eval-remarks').value = '';
 
-            document.getElementById('dept-list-modal').classList.add('open');
+            renderDeptListTable();
+            renderEvalDeptSelect();
+
+            if (currentActiveInst.departments.length > 0) {
+                // 預設點擊展開並選擇第一筆系所
+                window.selectDeptForEval(currentActiveInst.departments[0].dept_name);
+            }
+
+            document.getElementById('manage-modal').classList.add('open');
         };
 
-        window.closeDeptModal = () => {
-            document.getElementById('dept-list-modal').classList.remove('open');
+        window.closeManageModal = () => {
+            document.getElementById('manage-modal').classList.remove('open');
             currentActiveInst = null;
         };
 
-        window.toggleStudentRows = (deptName) => {
-            const safeId = deptName.replace(/[^a-zA-Z0-9]/g, '_');
-            const rows = document.querySelectorAll(`.student-row-${safeId}`);
-            const icon = document.getElementById(`icon-expand-${safeId}`);
-            
-            let isExpanding = false;
-            rows.forEach(r => {
-                if(r.classList.contains('show')) r.classList.remove('show');
-                else { r.classList.add('show'); isExpanding = true; }
-            });
-            
-            if(isExpanding) icon.style.transform = 'rotate(180deg)';
-            else icon.style.transform = 'rotate(0deg)';
-        };
-
+        // 渲染左側系所表
         function renderDeptListTable() {
             const tbody = document.getElementById('dept-list-tbody');
             
@@ -667,7 +665,7 @@ tr:hover td { background: #fafbff; }
             });
 
             if (depts.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="padding: 30px; color: var(--text-muted);">無關聯的系所紀錄。</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" style="padding: 30px; color: var(--text-muted);">無關聯的系所紀錄。</td></tr>`;
                 return;
             }
 
@@ -675,15 +673,13 @@ tr:hover td { background: #fafbff; }
             depts.forEach(d => {
                 const dispDept = getDeptShort(d.dept_name);
                 const safeId = d.dept_name.replace(/[^a-zA-Z0-9]/g, '_');
-                
-                // 決定涵蓋率文字顏色
                 const coverageColor = d.validCount === d.totalCount ? 'var(--success)' : 'var(--danger)';
 
-                // 系所摘要列 (點擊整列可展開)
+                // 系所摘要列 (綁定點擊事件，自動連動右側)
                 html += `
-                <tr class="dept-row" style="cursor: pointer;" onclick="window.toggleStudentRows('${d.dept_name}')">
-                    <td style="text-align: left; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                        <i id="icon-expand-${safeId}" class="ti ti-chevron-down" style="color: var(--text-muted); transition: 0.2s;"></i>
+                <tr class="dept-row dept-row-id-${safeId}" data-dept="${d.dept_name}" onclick="window.selectDeptForEval('${d.dept_name}')">
+                    <td style="text-align: left; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                        <i id="icon-expand-${safeId}" class="ti ti-chevron-right" style="color: var(--text-muted); transition: 0.2s;"></i>
                         ${dispDept}
                     </td>
                     <td>${d.totalCount} 人</td>
@@ -691,25 +687,20 @@ tr:hover td { background: #fafbff; }
                         <div style="font-weight: 700; color: ${coverageColor};">${d.validCount} / ${d.totalCount}</div>
                     </td>
                     <td><span class="badge ${d.status.class}">${d.status.label}</span></td>
-                    <td>
-                        <button onclick="event.stopPropagation(); window.openEvalModal('${d.dept_name}')" class="btn btn-sm btn-secondary" style="color: var(--indigo); border-color: var(--indigo-border);">
-                            <i class="ti ti-pencil"></i> 登錄評估
-                        </button>
-                    </td>
                 </tr>`;
 
-                // 該系所底下的個別學生列 (預設隱藏)
-                d.records.sort((a, b) => (b.start_date_obj || 0) - (a.start_date_obj || 0)); // 日期新的在上面
+                // 展開的學生名單
+                d.records.sort((a, b) => (b.start_date_obj || 0) - (a.start_date_obj || 0)); 
                 d.records.forEach(r => {
                     const stuName = (r.student_raw || '').split(' - ')[1] || r.student_raw;
                     html += `
                     <tr class="student-row student-row-${safeId}">
-                        <td colspan="5" class="student-cell">
+                        <td colspan="4" class="student-cell">
                             <div style="display: flex; justify-content: space-between; align-items: center; padding-right: 16px;">
                                 <div style="display: flex; align-items: center; gap: 16px;">
                                     <span style="font-weight: 600; color: var(--text-primary); width: 80px;">${stuName}</span>
                                     <span><i class="ti ti-calendar" style="font-size: 14px; vertical-align: text-bottom;"></i> 實習起日：<span style="font-family: monospace; color: var(--brand); font-weight: 600;">${r.start_date_str}</span></span>
-                                    <span><i class="ti ti-clipboard-check" style="font-size: 14px; vertical-align: text-bottom;"></i> 本筆評估日：<span style="font-family: monospace;">${r.eval_date || '無'}</span></span>
+                                    <span><i class="ti ti-clipboard-check" style="font-size: 14px; vertical-align: text-bottom;"></i> 評估日：<span style="font-family: monospace;">${r.eval_date || '無'}</span></span>
                                 </div>
                                 <span class="badge ${r.statusObj.class}" style="transform: scale(0.9);">${r.statusObj.label}</span>
                             </div>
@@ -720,29 +711,61 @@ tr:hover td { background: #fafbff; }
             tbody.innerHTML = html;
         }
 
-        // ─── MODAL 2: 評估登錄 (智慧勾選功能) ───
-        window.openEvalModal = (deptName) => {
-            if (!currentActiveInst) return;
-            currentActiveDeptName = deptName;
+        // 渲染右側系所下拉選單
+        function renderEvalDeptSelect() {
+            const selectEl = document.getElementById('input-eval-dept');
+            if(!currentActiveInst) return;
+
+            let html = '<option value="">請選擇要評估的系所...</option>';
+            currentActiveInst.departments.forEach(d => {
+                html += `<option value="${d.dept_name}">${getDeptShort(d.dept_name)} (共 ${d.totalCount} 人)</option>`;
+            });
+            selectEl.innerHTML = html;
+        }
+
+        // 左側點擊連動右側
+        window.selectDeptForEval = (deptName) => {
+            const safeId = deptName.replace(/[^a-zA-Z0-9]/g, '_');
+            
+            // 處理左側 UI 樣式與展開
+            document.querySelectorAll('.dept-row').forEach(r => {
+                r.classList.remove('active');
+                const i = r.querySelector('i');
+                if(i) i.classList.replace('ti-chevron-down', 'ti-chevron-right');
+            });
+            document.querySelectorAll('.student-row').forEach(r => r.classList.remove('show'));
+
+            const targetRow = document.querySelector(`.dept-row-id-${safeId}`);
+            if(targetRow) {
+                targetRow.classList.add('active');
+                const i = targetRow.querySelector('i');
+                if(i) i.classList.replace('ti-chevron-right', 'ti-chevron-down');
+            }
+
+            document.querySelectorAll(`.student-row-${safeId}`).forEach(r => r.classList.add('show'));
+
+            // 連動右側下拉選單並觸發更新學生名單
+            const selectEl = document.getElementById('input-eval-dept');
+            selectEl.value = deptName;
+            window.onEvalDeptChange();
+        };
+
+        // 當右側下拉選單改變時，更新學生勾選清單
+        window.onEvalDeptChange = () => {
+            const deptName = document.getElementById('input-eval-dept').value;
+            const listContainer = document.getElementById('eval-student-list');
+            
+            if (!deptName) {
+                listContainer.innerHTML = '<div class="empty-state" style="padding: 20px;"><i class="ti ti-hand-click" style="font-size:24px; margin-bottom:8px;"></i><br>請先選擇上方系所</div>';
+                return;
+            }
 
             const deptData = currentActiveInst.departments.find(d => d.dept_name === deptName);
-            const dispDept = getDeptShort(deptName);
+            if(!deptData) return;
 
-            document.getElementById('eval-target-inst').innerText = currentActiveInst.name;
-            document.getElementById('eval-target-dept').innerText = dispDept;
-            document.getElementById('eval-target-count').innerText = deptData.totalCount;
-
-            // 預設給今天的日期
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('input-eval-date').value = today;
-            document.getElementById('input-eval-result').value = '';
-            document.getElementById('input-eval-remarks').value = '';
-
-            // 渲染學生勾選清單 (智慧預選：只有「未評估」或「逾期」的預設打勾)
-            const listContainer = document.getElementById('eval-student-list');
             let checkHtml = '';
             
-            // 排序：先顯示異常的，再顯示有效的
+            // 異常者排前面
             let sortedRecords = [...deptData.records].sort((a,b) => {
                 let aFail = a.statusObj.code !== 'pass';
                 let bFail = b.statusObj.code !== 'pass';
@@ -760,27 +783,32 @@ tr:hover td { background: #fafbff; }
                 checkHtml += `
                 <label class="student-check-item">
                     <input type="checkbox" class="eval-stu-checkbox" value="${r.id}" ${checkedStr}>
-                    <span style="color: ${colorStr}; display: flex; gap: 8px; align-items: center; width: 100%;">
-                        <strong style="width: 60px;">${stuName}</strong> 
-                        (起日: ${r.start_date_str}) 
-                        <div style="margin-left: auto; font-size: 10px; padding: 2px 4px; border-radius: 4px; background: ${isPass ? 'var(--bg)' : 'var(--warning-bg)'}; color: ${isPass ? 'var(--text-muted)' : 'var(--warning)'}; border: 1px solid ${isPass ? 'var(--border)' : '#fcd34d'};">
-                            目前狀態: ${r.statusObj.label}
+                    <span style="color: ${colorStr};">
+                        <strong style="width: 70px;">${stuName}</strong> 
+                        <div style="color: var(--text-muted); font-size: 11px;">起日: <span style="font-family: monospace;">${r.start_date_str}</span></div>
+                        <div style="font-size: 10px; padding: 2px 6px; border-radius: 4px; background: ${isPass ? 'var(--bg)' : 'var(--warning-bg)'}; color: ${isPass ? 'var(--text-muted)' : 'var(--warning)'}; border: 1px solid ${isPass ? 'var(--border)' : '#fcd34d'};">
+                            ${r.statusObj.label}
                         </div>
                     </span>
                 </label>`;
             });
+            
             listContainer.innerHTML = checkHtml;
 
-            document.getElementById('eval-form-modal').classList.add('open');
-        };
-
-        window.closeEvalModal = () => {
-            document.getElementById('eval-form-modal').classList.remove('open');
-            currentActiveDeptName = null;
+            // 若使用者是手動去改動右側下拉，則也要反向把左側焦點同步
+            const safeId = deptName.replace(/[^a-zA-Z0-9]/g, '_');
+            const targetRow = document.querySelector(`.dept-row-id-${safeId}`);
+            if(targetRow && !targetRow.classList.contains('active')) {
+                // 模擬點擊來展開左側對應列
+                window.selectDeptForEval(deptName); 
+            }
         };
 
         window.submitEvaluation = async () => {
-            if (!currentActiveInst || !currentActiveDeptName) return;
+            const deptName = document.getElementById('input-eval-dept').value;
+            if (!currentActiveInst || !deptName) {
+                alert("請先選擇要評估的系所！"); return;
+            }
 
             const evalDate = document.getElementById('input-eval-date').value;
             const evalResult = document.getElementById('input-eval-result').value;
@@ -791,7 +819,6 @@ tr:hover td { background: #fafbff; }
                 return;
             }
 
-            // 取得使用者勾選的學生紀錄 IDs
             const checkboxes = document.querySelectorAll('.eval-stu-checkbox:checked');
             const selectedRecordIds = Array.from(checkboxes).map(cb => cb.value);
 
@@ -818,13 +845,13 @@ tr:hover td { background: #fafbff; }
                 });
 
                 await batch.commit();
-                closeEvalModal();
+                // 成功後不關閉視窗，讓使用者能直接看到左側與右側狀態翻綠 (由 snapshot 觸發 UI 更新)
                 
             } catch (err) {
                 alert("儲存失敗：" + err.message);
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="ti ti-check"></i> 確認批次儲存';
+                btn.innerHTML = '<i class="ti ti-device-floppy"></i> 確認批次儲存';
             }
         };
 
