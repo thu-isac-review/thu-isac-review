@@ -91,11 +91,22 @@ tr:hover td { background: #fafbff; }
 .cell-primary.bold { font-weight: 600; }
 .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
 
+/* ─── BADGES ─── */
 .badge { display: inline-flex; align-items: center; justify-content: center; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; }
 .badge-success { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
 .badge-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
 .badge-warning { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
 .badge-secondary { background: var(--bg); color: var(--text-secondary); border: 1px solid var(--border-strong); }
+
+/* 比照實習紀錄的 Badge 樣式 */
+.badge-outline-blue { background: var(--brand-light); color: var(--brand); border: 1px solid var(--brand-border); }
+.badge-outline-green { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+.badge-outline-amber { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+.badge-outline-red { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
+.badge-outline-indigo { background: var(--indigo-bg); color: var(--indigo); border: 1px solid var(--indigo-border); }
+.badge-outline-gray { background: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; }
+.more-badge { display: inline-flex; align-items: center; justify-content: center; height: 24px; padding: 0 8px; border-radius: 99px; background: var(--border); color: var(--text-secondary); font-size: 11px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-left: auto; flex-shrink: 0; border: none; outline: none; }
+.more-badge:hover { background: var(--border-strong); color: var(--text-primary); }
 
 .pagination-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; gap: 10px; }
 .pagination-info { font-size: 12px; color: var(--text-muted); }
@@ -111,6 +122,7 @@ tr:hover td { background: #fafbff; }
 .dialog-overlay.open { display: flex; }
 #manage-modal { z-index: 200; }
 #add-eval-modal { z-index: 210; }
+#cohort-details-modal { z-index: 220; } /* 第三層視窗 */
 
 .dialog-box { background: var(--surface); border-radius: var(--radius-xl); box-shadow: 0 20px 60px rgba(0,0,0,0.2); width: 100%; display: flex; flex-direction: column; overflow: hidden; animation: dialogIn 0.2s ease-out; max-height: 95vh; }
 @keyframes dialogIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
@@ -141,7 +153,6 @@ tr:hover td { background: #fafbff; }
 .inner-table tr.cohort-row:hover td { background: #fafbff; }
 .inner-table tr.cohort-row.active td { background: #f0f4ff; border-left: 3px solid var(--brand); }
 
-/* 右側歷史評估的條列式表格專用設定 */
 .eval-table th { background: var(--bg); box-shadow: inset 0 -1px 0 var(--border); padding: 10px 12px; }
 .eval-table td { padding: 10px 12px; font-size: 12px; }
 .eval-table tr:hover td { background: var(--bg); }
@@ -230,15 +241,16 @@ tr:hover td { background: #fafbff; }
                             <span style="font-size: 11px; color: var(--text-muted); font-weight: 500; margin-left: 8px;">(同系所+同學年+同學期+同起日為一梯次)</span>
                         </div>
                         <div class="custom-scroll" style="flex: 1; overflow-x: auto; overflow-y: auto;">
-                            <table class="inner-table">
+                            <table class="inner-table" style="min-width: 600px;">
                                 <thead>
                                     <tr>
-                                        <th style="text-align: left; width: 20%;">負責學系</th>
+                                        <th style="text-align: left; width: 16%;">負責學系</th>
                                         <th style="width: 12%;">學年度</th>
-                                        <th style="width: 12%;">學期</th>
-                                        <th style="width: 20%;">實習開始日</th>
-                                        <th style="width: 15%;">梯次人數</th>
-                                        <th style="width: 21%;">梯次狀態</th>
+                                        <th style="width: 10%;">學期</th>
+                                        <th style="width: 16%;">實習開始日</th>
+                                        <th style="width: 12%;">梯次人數</th>
+                                        <th style="width: 18%;">梯次狀態</th>
+                                        <th style="width: 16%;">操作</th>
                                     </tr>
                                 </thead>
                                 <tbody id="cohort-list-tbody">
@@ -334,6 +346,38 @@ tr:hover td { background: #fafbff; }
         </div>
     </div>
 
+    <div id="cohort-details-modal" class="dialog-overlay" style="z-index: 250;">
+        <div class="dialog-box" style="max-width: 1400px; width: 95%; height: 90vh;">
+            <div class="dialog-header">
+                <h3><i class="ti ti-users" style="color: var(--brand);"></i> <span id="cohort-details-title">梯次學生明細</span></h3>
+                <button type="button" class="dialog-close" onclick="closeCohortDetailsModal()"><i class="ti ti-x"></i></button>
+            </div>
+            <div class="dialog-body custom-scroll" style="padding: 0; background: var(--surface);">
+                <table class="inner-table" style="border: none; border-radius: 0; min-width: 1300px;">
+                    <thead>
+                        <tr>
+                            <th style="width: 8%;">學號</th>
+                            <th style="width: 7%;">姓名</th>
+                            <th style="width: 7%;">學系</th>
+                            <th style="width: 5%;">年級</th>
+                            <th style="width: 18%;">修習課程</th>
+                            <th style="width: 5%;">總學分</th>
+                            <th style="width: 12%;">實習起訖時間</th>
+                            <th style="width: 5%;">總時數</th>
+                            <th style="width: 8%;">實習時間</th>
+                            <th style="width: 8%;">證明文件</th>
+                            <th style="width: 8%;">投保情形</th>
+                            <th style="width: 5%;">勞雇關係</th>
+                            <th style="width: 4%;">填報系所</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cohort-details-tbody">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -348,12 +392,13 @@ tr:hover td { background: #fafbff; }
         const recordsCol = collection(db, "internship_records"); 
         const evaluationsCol = collection(db, "institution_evaluations"); 
         const coursesCol = collection(db, "internship_courses");
+        const studentsCol = collection(db, "internship_students"); // 為了彈跳視窗對應姓名與學系
         
-        let allInstitutions = [], allRecords = [], allEvaluations = [], allCourses = [];
+        let allInstitutions = [], allRecords = [], allEvaluations = [], allCourses = [], allStudents = [];
         let aggregatedData = [], filteredData = [], globalDepts = [];
         let currentFilter = 'all', currentPage = 1, itemsPerPage = 15;
         let activeInstId = null, activeCohortKey = null;
-        let editingEvalId = null; // 用於追蹤正在編輯的評估紀錄
+        let editingEvalId = null;
 
         // 統一解析民國年字串為 Date 物件
         function parseROCDate(dateStr) {
@@ -363,7 +408,6 @@ tr:hover td { background: #fafbff; }
             return new Date(parseInt(parts[0], 10) + 1911, parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
         }
 
-        // 民國年輸入框自動格式化
         window.formatROCDate = (input) => {
             let val = input.value.replace(/[^\d]/g, '');
             if (val.length === 7) {
@@ -373,13 +417,15 @@ tr:hover td { background: #fafbff; }
             }
         };
 
+        const formatCourseInfo = (c) => c ? `${c.academic_year}-${c.term}_${c.course_code}：${c.course_name}` : '';
+
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const deptSnap = await getDocs(collection(db, "departments"));
                 globalDepts = deptSnap.docs.map(d => d.data());
-                // 依照後台 sortOrder 排序
                 globalDepts.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
 
+                onSnapshot(studentsCol, (snap) => { allStudents = snap.docs.map(d => ({id: d.id, ...d.data()})); });
                 onSnapshot(coursesCol, (snap) => { allCourses = snap.docs.map(d => ({id: d.id, ...d.data()})); });
                 onSnapshot(institutionsCol, (snap) => { allInstitutions = snap.docs.map(d => ({id: d.id, ...d.data()})); runAggregation(); });
                 onSnapshot(recordsCol, (snap) => { allRecords = snap.docs.map(d => ({id: d.id, ...d.data()})); runAggregation(); });
@@ -405,7 +451,6 @@ tr:hover td { background: #fafbff; }
                     let sDateObj = parseROCDate(r.duration);
                     let sDateStr = r.duration ? r.duration.split('-')[0].trim() : '未知日期';
                     
-                    // 學年、學期拆分
                     let acadYear = '無紀錄';
                     let term = '-';
                     if (r.courses && r.courses.length > 0) {
@@ -420,10 +465,12 @@ tr:hover td { background: #fafbff; }
 
                     if(!cohortsObj[cohortKey]) {
                         cohortsObj[cohortKey] = {
-                            cohortKey: cohortKey, dept: dept, acadYear: acadYear, term: term, startDateStr: sDateStr, startDateObj: sDateObj, count: 0
+                            cohortKey: cohortKey, dept: dept, acadYear: acadYear, term: term, startDateStr: sDateStr, startDateObj: sDateObj, count: 0,
+                            records: [] // 儲存屬於此梯次的原始學生紀錄
                         };
                     }
                     cohortsObj[cohortKey].count++;
+                    cohortsObj[cohortKey].records.push(r);
                     totalStudents++;
                 });
 
@@ -534,7 +581,7 @@ tr:hover td { background: #fafbff; }
 
             let tbody = document.getElementById('cohort-list-tbody');
             if(inst.cohorts.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="empty-state" style="padding:40px;">此機構目前無實習梯次</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="empty-state" style="padding:40px;">此機構目前無實習梯次</td></tr>`;
             } else {
                 let sortedCohorts = [...inst.cohorts].sort((a,b) => {
                     if(a.status.code === 'attention' && b.status.code !== 'attention') return -1;
@@ -547,24 +594,25 @@ tr:hover td { background: #fafbff; }
                     let safeId = c.cohortKey.replace(/[^a-zA-Z0-9]/g, '_');
                     let isActive = (activeCohortKey === c.cohortKey) ? 'active' : '';
                     html += `
-                    <tr class="cohort-row ${isActive}" id="row-${safeId}" onclick="selectCohort('${c.cohortKey}')">
-                        <td style="text-align:left; font-weight:700;">${getDeptShort(c.dept)}</td>
-                        <td>${c.acadYear}</td>
-                        <td>${c.term}</td>
-                        <td style="font-family:monospace; font-weight:600;">${c.startDateStr}</td>
-                        <td style="font-weight:700; color:var(--brand);">${c.count} 人</td>
-                        <td><span class="badge ${c.status.class}">${c.status.label}</span></td>
-                    </tr>`;
+                        <tr class="cohort-row ${isActive}" id="row-${safeId}" onclick="selectCohort('${c.cohortKey}')">
+                            <td style="text-align:left; font-weight:700;">${getDeptShort(c.dept)}</td>
+                            <td>${c.acadYear}</td>
+                            <td>${c.term}</td>
+                            <td style="font-family:monospace; font-weight:600;">${c.startDateStr}</td>
+                            <td style="font-weight:700; color:var(--brand);">${c.count} 人</td>
+                            <td><span class="badge ${c.status.class}">${c.status.label}</span></td>
+                            <td>
+                                <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); openCohortDetailsModal('${c.cohortKey}')">
+                                    <i class="ti ti-search"></i> 查看明細
+                                </button>
+                            </td>
+                        </tr>
+                    `;
                 });
                 tbody.innerHTML = html;
             }
 
-            // 右側始終顯示全部評估，無需再判定下拉選單
-            if (!isUpdate && inst.cohorts.length > 0) {
-                selectCohort(inst.cohorts[0].cohortKey); // 給個視覺焦點，但右側會顯示全部
-            } else {
-                window.renderRightPanel();
-            }
+            window.renderRightPanel();
         }
 
         window.selectCohort = (key) => {
@@ -574,7 +622,7 @@ tr:hover td { background: #fafbff; }
             const tr = document.getElementById(`row-${safeId}`);
             if(tr) tr.classList.add('active');
             
-            // 點擊左側只是為了高亮，右側維持顯示全機構評估
+            // 點擊左側維持顯示全機構評估
             window.renderRightPanel();
         };
 
@@ -582,10 +630,8 @@ tr:hover td { background: #fafbff; }
             let inst = aggregatedData.find(i => i.id === activeInstId);
             let listTbody = document.getElementById('eval-history-list');
             
-            // 抓出該機構下 "所有系所" 的歷史評估
             let evals = allEvaluations.filter(e => e.inst_name === inst.name);
             
-            // 依照民國年日期反向排序 (新到舊)
             evals.sort((a,b) => {
                 let dA = parseROCDate(a.eval_date)?.getTime() || 0;
                 let dB = parseROCDate(b.eval_date)?.getTime() || 0;
@@ -642,6 +688,119 @@ tr:hover td { background: #fafbff; }
             listTbody.innerHTML = html;
         };
 
+        // ─── 第三層彈跳視窗：查看梯次明細 ───
+        window.openCohortDetailsModal = (cohortKey) => {
+            let inst = aggregatedData.find(i => i.id === activeInstId);
+            if(!inst) return;
+            let cohort = inst.cohorts.find(c => c.cohortKey === cohortKey);
+            if(!cohort) return;
+
+            document.getElementById('cohort-details-title').innerText = `${inst.name} - ${getDeptShort(cohort.dept)} (${cohort.acadYear}-${cohort.term}) 學生明細`;
+            
+            let tbody = document.getElementById('cohort-details-tbody');
+            let html = '';
+
+            cohort.records.forEach(data => {
+                const stuParts = (data.student_raw || '').split(' - ');
+                const stuId = stuParts[0] || '';
+                const stuName = stuParts[1] || '';
+                
+                const stu = allStudents.find(s => s.student_id === stuId);
+                const stuDept = stu ? getDeptShort(stu.department) : '未綁定學系';
+
+                const courseCount = Array.isArray(data.courses) ? data.courses.length : 0;
+                let totalCredits = 0;
+                let courseObjs = [];
+                if (courseCount > 0) {
+                    data.courses.forEach(cid => {
+                        const c = allCourses.find(x => x.id === cid);
+                        if (c) {
+                            totalCredits += Number(c.credits || 0);
+                            courseObjs.push(c);
+                        }
+                    });
+                }
+
+                let coursesHtml = '-';
+                if (courseObjs.length > 0) {
+                    const badgeStyle = 'max-width: 100%; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle;';
+                    const firstCourseTag = `<span class="badge badge-outline-blue" style="${badgeStyle}" title="${formatCourseInfo(courseObjs[0])}">${formatCourseInfo(courseObjs[0])}</span>`;
+                    
+                    if (courseObjs.length > 1) {
+                        const otherCoursesHtml = courseObjs.slice(1).map(c => `
+                            <div style="margin-top: 4px;">
+                                <span class="badge badge-outline-blue" style="${badgeStyle}" title="${formatCourseInfo(c)}">${formatCourseInfo(c)}</span>
+                            </div>
+                        `).join('');
+
+                        coursesHtml = `
+                            <div style="display:flex; flex-direction:column; width:100%;">
+                                <div style="display:flex; align-items:center; justify-content:space-between; gap:6px; width:100%;">
+                                    <div style="flex: 1; min-width: 0; text-align: left; display: flex;">${firstCourseTag}</div>
+                                    <button type="button" class="more-badge" onclick="window.toggleCourseExpand('${data.id}')">
+                                        +${courseObjs.length - 1} <i class="ti ti-chevron-down" id="icon-course-${data.id}" style="margin-left:4px; font-size:12px; transition:0.2s;"></i>
+                                    </button>
+                                </div>
+                                <div id="expand-course-${data.id}" style="display:none; margin-top:4px; text-align: left;">
+                                    ${otherCoursesHtml}
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        coursesHtml = `<div style="text-align: left;">${firstCourseTag}</div>`;
+                    }
+                }
+
+                let proofBadge = 'badge-outline-gray';
+                if (data.proof_type === '合約') proofBadge = 'badge-outline-green';
+                else if (data.proof_type === '公函') proofBadge = 'badge-outline-blue';
+                else if (data.proof_type === '其他證明文件') proofBadge = 'badge-outline-amber';
+
+                let insBadge = 'badge-outline-gray';
+                if (data.insurance === '兩者皆有') insBadge = 'badge-outline-green';
+                else if (data.insurance === '僅校外實習保險') insBadge = 'badge-outline-indigo';
+                else if (data.insurance === '僅勞保') insBadge = 'badge-outline-blue';
+                else if (data.insurance === '兩者皆無') insBadge = 'badge-outline-red';
+
+                html += `
+                <tr>
+                    <td style="text-align: center;"><div class="cell-primary bold">${stuId}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary bold">${stuName}</div></td>
+                    <td style="text-align: center;">${stuDept}</td>
+                    <td style="text-align: center;">${data.grade || '-'}</td>
+                    <td style="text-align: left;">${coursesHtml}</td>
+                    <td style="text-align: center;">${totalCredits}</td>
+                    <td style="text-align: center;"><div class="cell-primary bold">${data.duration || '-'}</div></td>
+                    <td style="text-align: center;">${data.hours !== undefined && data.hours !== '' ? data.hours : '-'}</td>
+                    <td style="text-align: center;">${data.period_type || '-'}</td>
+                    <td style="text-align: center;"><div class="badge ${proofBadge}">${data.proof_type || '-'}</div></td>
+                    <td style="text-align: center;"><div class="badge ${insBadge}">${data.insurance || '-'}</div></td>
+                    <td style="text-align: center;">${data.employment || '-'}</td>
+                    <td style="text-align: center;">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</td>
+                </tr>`;
+            });
+            
+            tbody.innerHTML = html;
+            document.getElementById('cohort-details-modal').classList.add('open');
+        };
+
+        window.closeCohortDetailsModal = () => {
+            document.getElementById('cohort-details-modal').classList.remove('open');
+        };
+
+        window.toggleCourseExpand = (id) => {
+            const el = document.getElementById(`expand-course-${id}`);
+            const icon = document.getElementById(`icon-course-${id}`);
+            if(!el || !icon) return;
+            if (el.style.display === 'none') {
+                el.style.display = 'block';
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                el.style.display = 'none';
+                icon.style.transform = 'rotate(0deg)';
+            }
+        };
+
         // ─── 刪除評估紀錄 ───
         window.deleteEvaluation = async (evalId) => {
             if (confirm('確定要刪除這筆評估紀錄嗎？刪除後可能會導致該系所的部分學生梯次變為異常狀態。')) {
@@ -666,9 +825,8 @@ tr:hover td { background: #fafbff; }
             let deptHtml = '<option value="">請選擇負責評估之系所</option>';
             globalDepts.forEach(d => { deptHtml += `<option value="${d.name}">${d.shortName || d.name}</option>`; });
             selectEl.innerHTML = deptHtml;
-            selectEl.value = ''; // 不預設任何系所
+            selectEl.value = ''; 
 
-            // 預設今日 (轉換為民國年格式)
             const today = new Date();
             const yyy = today.getFullYear() - 1911;
             const mm = String(today.getMonth() + 1).padStart(2, '0');
