@@ -98,7 +98,6 @@ tr:hover td { background: #fafbff; }
 .badge-warning { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
 .badge-secondary { background: var(--bg); color: var(--text-secondary); border: 1px solid var(--border-strong); }
 
-/* 比照實習紀錄的 Badge 樣式 */
 .badge-outline-blue { background: var(--brand-light); color: var(--brand); border: 1px solid var(--brand-border); }
 .badge-outline-green { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
 .badge-outline-amber { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
@@ -122,7 +121,7 @@ tr:hover td { background: #fafbff; }
 .dialog-overlay.open { display: flex; }
 #manage-modal { z-index: 200; }
 #add-eval-modal { z-index: 210; }
-#cohort-details-modal { z-index: 220; } /* 第三層視窗 */
+#cohort-details-modal { z-index: 220; } 
 
 .dialog-box { background: var(--surface); border-radius: var(--radius-xl); box-shadow: 0 20px 60px rgba(0,0,0,0.2); width: 100%; display: flex; flex-direction: column; overflow: hidden; animation: dialogIn 0.2s ease-out; max-height: 95vh; }
 @keyframes dialogIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
@@ -132,30 +131,23 @@ tr:hover td { background: #fafbff; }
 .dialog-close:hover { color: var(--danger); }
 .dialog-body { padding: 24px; overflow-y: auto; flex: 1; }
 
-/* ─── SPLIT LAYOUT (支援手機模式) ─── */
+/* ─── SPLIT LAYOUT (統一寬度與樣式) ─── */
 .split-layout { display: flex; gap: 24px; align-items: stretch; height: 100%; }
-.split-left { flex: 5; min-width: 0; display: flex; flex-direction: column; }
-.split-right { flex: 7; min-width: 0; background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+.split-panel { flex: 1; min-width: 0; background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
 
-.right-header { padding: 16px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px; }
-.right-content { overflow-y: auto; flex: 1; padding: 0; }
+.panel-header { padding: 16px 20px; border-bottom: 1px solid var(--border); background: var(--surface); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
 
-/* ─── INNER TABLE (統一風格) ─── */
-.inner-table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 500px; }
+/* ─── INNER TABLE (完全統一) ─── */
+.inner-table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 600px; }
 .inner-table th { 
     background: var(--surface); font-size: 11px; font-weight: 700; color: var(--text-muted); 
     text-transform: uppercase; letter-spacing: 0.05em; padding: 12px 16px; 
     border-bottom: 1px solid var(--border); box-shadow: inset 0 -2px 0 var(--border); 
-    position: sticky; top: 0; z-index: 10; text-align: center;
+    position: sticky; top: 0; z-index: 10; text-align: center; white-space: nowrap;
 }
 .inner-table td { padding: 14px 16px; font-size: 13px; border-bottom: 1px solid var(--border); background: var(--surface); vertical-align: middle; text-align: center; color: var(--text-primary); }
-.inner-table tr.cohort-row { cursor: pointer; transition: 0.2s; }
-.inner-table tr.cohort-row:hover td { background: #fafbff; }
-.inner-table tr.cohort-row.active td { background: #f0f4ff; border-left: 3px solid var(--brand); }
-
-.eval-table th { background: var(--bg); box-shadow: inset 0 -1px 0 var(--border); padding: 10px 12px; }
-.eval-table td { padding: 10px 12px; font-size: 12px; }
-.eval-table tr:hover td { background: var(--bg); }
+/* 移除左側特有的 Hover 反白 */
+.inner-table tr:hover td { background: #fafbff; }
 
 /* ─── FORMS ─── */
 .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
@@ -168,12 +160,10 @@ tr:hover td { background: #fafbff; }
 @media (max-width: 768px) {
     .dialog-overlay { padding: 12px; }
     .split-layout { flex-direction: column; height: auto; gap: 16px; }
-    .split-left { min-height: 350px; }
-    .split-right { min-width: 100%; min-height: 400px; }
+    .split-panel { min-height: 400px; }
     .toolbar { flex-direction: column; align-items: stretch; }
     .search-wrap { flex: none; width: 100%; }
-    .right-header { flex-direction: column; align-items: stretch; }
-    .right-header > div { display: flex; justify-content: space-between; width: 100%; }
+    .info-card-flex { flex-direction: column; gap: 12px !important; }
 }
 </style>
 </head>
@@ -225,31 +215,57 @@ tr:hover td { background: #fafbff; }
     </div>
 
     <div id="manage-modal" class="dialog-overlay">
-        <div class="dialog-box" style="max-width: 1400px; width: 95%;">
+        <div class="dialog-box" style="max-width: 1500px; width: 98%;">
             <div class="dialog-header">
-                <h3><i class="ti ti-building" style="color: var(--brand);"></i> <span id="view-inst-name"></span> - 各系梯次與評估狀況</h3>
+                <h3><i class="ti ti-building" style="color: var(--brand);"></i> 機構審查總覽</h3>
                 <button type="button" class="dialog-close" onclick="closeManageModal()"><i class="ti ti-x"></i></button>
             </div>
             
             <div class="dialog-body custom-scroll" style="padding: 24px; background: var(--bg); display: flex; flex-direction: column;">
+                
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 24px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 12px; flex-shrink: 0;">
+                    <div style="font-size: 18px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                        <i class="ti ti-building-skyscraper" style="color: var(--brand);"></i> 
+                        <span id="info-inst-name">機構名稱</span>
+                    </div>
+                    <div class="info-card-flex" style="display: flex; gap: 32px; font-size: 13px; color: var(--text-secondary);">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="ti ti-id" style="font-size: 16px; color: var(--text-muted);"></i>
+                            <span id="info-tax-id">-</span>
+                            <span style="color: var(--border-strong);">|</span>
+                            <span id="info-industry">-</span>
+                            <span style="color: var(--border-strong);">|</span>
+                            <span id="info-type">-</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="ti ti-map-pin" style="font-size: 16px; color: var(--text-muted);"></i>
+                            <span id="info-country">-</span>
+                            <span style="color: var(--border-strong);">|</span>
+                            <span id="info-address">-</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="split-layout">
                     
-                    <div class="split-left" style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; display: flex; flex-direction: column;">
-                        <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); background: var(--surface); display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-                            <i class="ti ti-list-details" style="color: var(--text-secondary); font-size: 18px;"></i>
-                            <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">各系實習梯次清單</span>
-                            <span style="font-size: 11px; color: var(--text-muted); font-weight: 500; margin-left: 8px;">(同系所+同學年+同學期+同起日為一梯次)</span>
+                    <div class="split-panel">
+                        <div class="panel-header">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <i class="ti ti-list-details" style="color: var(--text-secondary); font-size: 18px;"></i>
+                                <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">各系實習梯次清單</span>
+                                <span style="font-size: 11px; color: var(--text-muted); font-weight: 500; margin-left: 8px;" class="hidden sm:inline">(同系+同學年期+同起日為一梯次)</span>
+                            </div>
                         </div>
                         <div class="custom-scroll" style="flex: 1; overflow-x: auto; overflow-y: auto;">
-                            <table class="inner-table" style="min-width: 600px;">
+                            <table class="inner-table" style="min-width: 650px;">
                                 <thead>
                                     <tr>
-                                        <th style="text-align: left; width: 16%;">負責學系</th>
+                                        <th style="text-align: left; width: 18%;">負責學系</th>
                                         <th style="width: 12%;">學年度</th>
                                         <th style="width: 10%;">學期</th>
                                         <th style="width: 16%;">實習開始日</th>
                                         <th style="width: 12%;">梯次人數</th>
-                                        <th style="width: 18%;">梯次狀態</th>
+                                        <th style="width: 16%;">梯次狀態</th>
                                         <th style="width: 16%;">操作</th>
                                     </tr>
                                 </thead>
@@ -259,19 +275,18 @@ tr:hover td { background: #fafbff; }
                         </div>
                     </div>
 
-                    <div class="split-right">
-                        <div class="right-header">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <div style="font-size: 15px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
-                                    <i class="ti ti-history" style="color: var(--indigo); font-size: 18px;"></i> 機構總評估紀錄一覽
-                                </div>
-                                <button class="btn btn-primary btn-sm" style="background: var(--indigo); border-color: var(--indigo);" onclick="openAddEvalModal()">
-                                    <i class="ti ti-plus"></i> 新增評估
-                                </button>
+                    <div class="split-panel">
+                        <div class="panel-header">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <i class="ti ti-history" style="color: var(--indigo); font-size: 18px;"></i>
+                                <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">機構總評估紀錄一覽</span>
                             </div>
+                            <button class="btn btn-primary btn-sm" style="background: var(--indigo); border-color: var(--indigo);" onclick="openAddEvalModal()">
+                                <i class="ti ti-plus"></i> 新增評估
+                            </button>
                         </div>
-                        <div class="right-content custom-scroll">
-                            <table class="inner-table eval-table" style="min-width: 650px;">
+                        <div class="custom-scroll" style="flex: 1; overflow-x: auto; overflow-y: auto;">
+                            <table class="inner-table" style="min-width: 700px;">
                                 <thead>
                                     <tr>
                                         <th style="width: 16%; text-align: left;">評估學系</th>
@@ -392,15 +407,14 @@ tr:hover td { background: #fafbff; }
         const recordsCol = collection(db, "internship_records"); 
         const evaluationsCol = collection(db, "institution_evaluations"); 
         const coursesCol = collection(db, "internship_courses");
-        const studentsCol = collection(db, "internship_students"); // 為了彈跳視窗對應姓名與學系
+        const studentsCol = collection(db, "internship_students"); 
         
         let allInstitutions = [], allRecords = [], allEvaluations = [], allCourses = [], allStudents = [];
         let aggregatedData = [], filteredData = [], globalDepts = [];
         let currentFilter = 'all', currentPage = 1, itemsPerPage = 15;
-        let activeInstId = null, activeCohortKey = null;
+        let activeInstId = null;
         let editingEvalId = null;
 
-        // 統一解析民國年字串為 Date 物件
         function parseROCDate(dateStr) {
             if (!dateStr) return null;
             let parts = dateStr.split('-')[0].trim().split('/');
@@ -437,7 +451,6 @@ tr:hover td { background: #fafbff; }
 
         const getDeptShort = (n) => { const d = globalDepts.find(x => x.name === n); return d && d.shortName ? d.shortName : n; };
 
-        // ─── 核心彙整邏輯 ───
         function runAggregation() {
             if (allInstitutions.length === 0 || allRecords.length === 0) return;
 
@@ -466,7 +479,7 @@ tr:hover td { background: #fafbff; }
                     if(!cohortsObj[cohortKey]) {
                         cohortsObj[cohortKey] = {
                             cohortKey: cohortKey, dept: dept, acadYear: acadYear, term: term, startDateStr: sDateStr, startDateObj: sDateObj, count: 0,
-                            records: [] // 儲存屬於此梯次的原始學生紀錄
+                            records: [] 
                         };
                     }
                     cohortsObj[cohortKey].count++;
@@ -567,7 +580,7 @@ tr:hover td { background: #fafbff; }
 
         // ─── 綜合管理視窗 邏輯 ───
         window.openManageModal = (id) => {
-            activeInstId = id; activeCohortKey = null;
+            activeInstId = id;
             document.getElementById('manage-modal').classList.add('open');
             renderManageModalContent(false);
         };
@@ -577,8 +590,16 @@ tr:hover td { background: #fafbff; }
         function renderManageModalContent(isUpdate) {
             let inst = aggregatedData.find(i => i.id === activeInstId);
             if(!inst) return;
-            document.getElementById('view-inst-name').innerText = inst.name;
+            
+            // 填寫機構資訊卡片
+            document.getElementById('info-inst-name').innerText = inst.name || '-';
+            document.getElementById('info-tax-id').innerText = inst.tax_id || '無統編資料';
+            document.getElementById('info-industry').innerText = inst.industry || '未註明行業別';
+            document.getElementById('info-type').innerText = inst.type || '未註明實習場所';
+            document.getElementById('info-country').innerText = inst.country || '未註明國別';
+            document.getElementById('info-address').innerText = inst.address || '未註明地址';
 
+            // 左側梯次清單
             let tbody = document.getElementById('cohort-list-tbody');
             if(inst.cohorts.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="7" class="empty-state" style="padding:40px;">此機構目前無實習梯次</td></tr>`;
@@ -591,10 +612,8 @@ tr:hover td { background: #fafbff; }
 
                 let html = '';
                 sortedCohorts.forEach(c => {
-                    let safeId = c.cohortKey.replace(/[^a-zA-Z0-9]/g, '_');
-                    let isActive = (activeCohortKey === c.cohortKey) ? 'active' : '';
                     html += `
-                        <tr class="cohort-row ${isActive}" id="row-${safeId}" onclick="selectCohort('${c.cohortKey}')">
+                        <tr>
                             <td style="text-align:left; font-weight:700;">${getDeptShort(c.dept)}</td>
                             <td>${c.acadYear}</td>
                             <td>${c.term}</td>
@@ -602,7 +621,7 @@ tr:hover td { background: #fafbff; }
                             <td style="font-weight:700; color:var(--brand);">${c.count} 人</td>
                             <td><span class="badge ${c.status.class}">${c.status.label}</span></td>
                             <td>
-                                <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); openCohortDetailsModal('${c.cohortKey}')">
+                                <button class="btn btn-secondary btn-sm" onclick="openCohortDetailsModal('${c.cohortKey}')">
                                     <i class="ti ti-search"></i> 查看明細
                                 </button>
                             </td>
@@ -612,19 +631,9 @@ tr:hover td { background: #fafbff; }
                 tbody.innerHTML = html;
             }
 
+            // 右側始終顯示全部評估
             window.renderRightPanel();
         }
-
-        window.selectCohort = (key) => {
-            activeCohortKey = key;
-            document.querySelectorAll('.cohort-row').forEach(r => r.classList.remove('active'));
-            let safeId = key.replace(/[^a-zA-Z0-9]/g, '_');
-            const tr = document.getElementById(`row-${safeId}`);
-            if(tr) tr.classList.add('active');
-            
-            // 點擊左側維持顯示全機構評估
-            window.renderRightPanel();
-        };
 
         window.renderRightPanel = () => {
             let inst = aggregatedData.find(i => i.id === activeInstId);
@@ -651,7 +660,6 @@ tr:hover td { background: #fafbff; }
                 if (isPass && e.eval_date) {
                     let eDate = parseROCDate(e.eval_date);
                     if(eDate) {
-                        // 只比對同一個系所的梯次
                         inst.cohorts.filter(c => c.dept === e.dept_name).forEach(c => {
                             if(c.startDateObj) {
                                 let diffDays = (c.startDateObj.getTime() - eDate.getTime()) / (1000 * 3600 * 24);
