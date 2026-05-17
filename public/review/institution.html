@@ -70,6 +70,8 @@ html, body { height: 100%; overflow: hidden; font-family: 'Noto Sans TC', sans-s
 .btn-primary:hover { background: var(--brand-hover); }
 .btn-secondary { background: var(--surface); color: var(--text-secondary); border: 1px solid var(--border); }
 .btn-secondary:hover { background: var(--bg); border-color: var(--border-strong); color: var(--text-primary); }
+.btn-icon { width: 30px; height: 30px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius); cursor: pointer; transition: 0.2s; border: 1px solid transparent; background: transparent; }
+.btn-icon:hover { background: var(--bg); border-color: var(--border); }
 .btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
 
 .filter-row { padding: 10px 24px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
@@ -110,21 +112,21 @@ tr:hover td { background: #fafbff; }
 #manage-modal { z-index: 200; }
 #add-eval-modal { z-index: 210; }
 
-.dialog-box { background: var(--surface); border-radius: var(--radius-xl); box-shadow: 0 20px 60px rgba(0,0,0,0.2); width: 100%; display: flex; flex-direction: column; overflow: hidden; animation: dialogIn 0.2s ease-out; }
+.dialog-box { background: var(--surface); border-radius: var(--radius-xl); box-shadow: 0 20px 60px rgba(0,0,0,0.2); width: 100%; display: flex; flex-direction: column; overflow: hidden; animation: dialogIn 0.2s ease-out; max-height: 95vh; }
 @keyframes dialogIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-.dialog-header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--surface); }
-.dialog-header h3 { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: var(--text-primary); margin: 0; }
+.dialog-header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--surface); flex-shrink: 0; }
+.dialog-header h3 { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: var(--text-primary); margin: 0; }
 .dialog-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted); transition: 0.2s; }
 .dialog-close:hover { color: var(--danger); }
-.dialog-body { padding: 24px; overflow-y: auto; max-height: calc(90vh - 80px); }
+.dialog-body { padding: 24px; overflow-y: auto; flex: 1; }
 
-/* ─── SPLIT LAYOUT ─── */
+/* ─── SPLIT LAYOUT (支援手機模式) ─── */
 .split-layout { display: flex; gap: 24px; align-items: stretch; height: 100%; }
-.split-left { flex: 6; min-width: 0; display: flex; flex-direction: column; }
-.split-right { flex: 4; min-width: 350px; background: var(--bg); border-radius: var(--radius-lg); border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+.split-left { flex: 5; min-width: 0; display: flex; flex-direction: column; }
+.split-right { flex: 6; min-width: 0; background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
 
-.right-header { padding: 16px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px; }
-.right-content { padding: 16px; overflow-y: auto; flex: 1; }
+.right-header { padding: 16px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px; }
+.right-content { overflow-y: auto; flex: 1; padding: 0; }
 
 /* ─── INNER TABLE (統一風格) ─── */
 .inner-table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 500px; }
@@ -139,10 +141,10 @@ tr:hover td { background: #fafbff; }
 .inner-table tr.cohort-row:hover td { background: #fafbff; }
 .inner-table tr.cohort-row.active td { background: #f0f4ff; }
 
-/* 評估卡片 */
-.eval-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 8px; transition: 0.2s; }
-.eval-card:hover { box-shadow: var(--shadow); }
-.eval-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--border); padding-bottom: 10px; }
+/* 右側歷史評估的條列式表格專用設定 */
+.eval-table th { background: var(--bg); box-shadow: inset 0 -1px 0 var(--border); padding: 10px 12px; }
+.eval-table td { padding: 10px 12px; font-size: 12px; }
+.eval-table tr:hover td { background: var(--bg); }
 
 /* ─── FORMS ─── */
 .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
@@ -150,6 +152,18 @@ tr:hover td { background: #fafbff; }
 .field-label .req { color: var(--danger); margin-left: 2px; }
 .field-input, .field-select { width: 100%; height: 38px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: 0 12px; font-size: 13px; outline: none; transition: 0.2s; }
 .field-input:focus, .field-select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
+
+/* ─── 手機版響應式設定 ─── */
+@media (max-width: 768px) {
+    .dialog-overlay { padding: 12px; }
+    .split-layout { flex-direction: column; height: auto; gap: 16px; }
+    .split-left { min-height: 350px; }
+    .split-right { min-width: 100%; min-height: 400px; }
+    .toolbar { flex-direction: column; align-items: stretch; }
+    .search-wrap { flex: none; width: 100%; }
+    .right-header { flex-direction: column; align-items: stretch; }
+    .right-header > div { display: flex; justify-content: space-between; width: 100%; }
+}
 </style>
 </head>
 <body>
@@ -200,7 +214,7 @@ tr:hover td { background: #fafbff; }
     </div>
 
     <div id="manage-modal" class="dialog-overlay">
-        <div class="dialog-box" style="max-width: 1300px; width: 95%; height: 90vh;">
+        <div class="dialog-box" style="max-width: 1400px; width: 95%;">
             <div class="dialog-header">
                 <h3><i class="ti ti-building" style="color: var(--brand);"></i> <span id="view-inst-name"></span> - 各系梯次與評估狀況</h3>
                 <button type="button" class="dialog-close" onclick="closeManageModal()"><i class="ti ti-x"></i></button>
@@ -210,12 +224,12 @@ tr:hover td { background: #fafbff; }
                 <div class="split-layout">
                     
                     <div class="split-left" style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; display: flex; flex-direction: column;">
-                        <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); background: var(--surface); display: flex; align-items: center; gap: 8px;">
+                        <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); background: var(--surface); display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
                             <i class="ti ti-list-details" style="color: var(--text-secondary); font-size: 18px;"></i>
                             <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">各系實習梯次清單</span>
-                            <span style="font-size: 12px; color: var(--text-muted); font-weight: 500; margin-left: 8px;">(同系所 + 同學年期 + 同開始日為一梯次)</span>
+                            <span style="font-size: 11px; color: var(--text-muted); font-weight: 500; margin-left: 8px;">(同系所+同學年期+同開始日為一梯次)</span>
                         </div>
-                        <div class="custom-scroll" style="flex: 1; overflow-y: auto;">
+                        <div class="custom-scroll" style="flex: 1; overflow-x: auto; overflow-y: auto;">
                             <table class="inner-table">
                                 <thead>
                                     <tr>
@@ -234,9 +248,9 @@ tr:hover td { background: #fafbff; }
 
                     <div class="split-right">
                         <div class="right-header">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
                                 <div style="font-size: 15px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
-                                    <i class="ti ti-history" style="color: var(--indigo); font-size: 18px;"></i> 系所評估紀錄
+                                    <i class="ti ti-history" style="color: var(--indigo); font-size: 18px;"></i> 歷史評估紀錄
                                 </div>
                                 <button class="btn btn-primary btn-sm" style="background: var(--indigo); border-color: var(--indigo);" onclick="openAddEvalModal()">
                                     <i class="ti ti-plus"></i> 新增評估
@@ -249,8 +263,22 @@ tr:hover td { background: #fafbff; }
                                 </select>
                             </div>
                         </div>
-                        <div class="right-content custom-scroll" id="eval-history-list">
-                            <div class="empty-state">請由上方選擇學系以檢視評估紀錄</div>
+                        <div class="right-content custom-scroll">
+                            <table class="inner-table eval-table" style="min-width: 600px;">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 15%;">評估日期</th>
+                                        <th style="width: 12%;">評估人</th>
+                                        <th style="width: 12%;">結果</th>
+                                        <th style="width: 25%; text-align: left;">備註</th>
+                                        <th style="width: 20%;">涵蓋合法學生</th>
+                                        <th style="width: 16%;">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="eval-history-list">
+                                    <tr><td colspan="6" class="empty-state">請由上方選擇學系以檢視評估紀錄</td></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
@@ -262,14 +290,14 @@ tr:hover td { background: #fafbff; }
     <div id="add-eval-modal" class="dialog-overlay">
         <div class="dialog-box" style="max-width: 450px;">
             <div class="dialog-header" style="border-bottom-color: var(--indigo-border);">
-                <h3 style="color: var(--indigo);"><i class="ti ti-clipboard-plus"></i> 登錄機構評估紀錄</h3>
+                <h3 style="color: var(--indigo);"><i class="ti ti-clipboard-plus"></i> <span id="modal-eval-title">登錄機構評估紀錄</span></h3>
                 <button type="button" class="dialog-close" onclick="closeAddEvalModal()"><i class="ti ti-x"></i></button>
             </div>
             
-            <div class="dialog-body">
-                <div style="margin-bottom: 20px; padding: 12px 16px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
-                    您正在為 <strong id="add-eval-inst" style="color: var(--text-primary);"></strong> 新增一筆獨立的評估紀錄。<br>
-                    <span style="color: var(--danger); font-size: 12px;">* 儲存後，系統將自動比對並涵蓋一年內開始實習的學生梯次。</span>
+            <div class="dialog-body custom-scroll">
+                <div style="margin-bottom: 20px; padding: 12px 16px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); font-size: 12px; color: var(--text-secondary); line-height: 1.5;">
+                    您正在為 <strong id="add-eval-inst" style="color: var(--text-primary);"></strong> 新增評估紀錄。<br>
+                    <span style="color: var(--danger);">* 儲存後，系統將自動比對並涵蓋該系所一年內開始實習的學生梯次。</span>
                 </div>
 
                 <div class="field">
@@ -279,8 +307,12 @@ tr:hover td { background: #fafbff; }
                     </select>
                 </div>
                 <div class="field">
-                    <label class="field-label">本次評估日期 (西元年) <span class="req">*</span></label>
-                    <input type="date" id="input-eval-date" required class="field-input">
+                    <label class="field-label">本次評估日期 (民國年) <span class="req">*</span></label>
+                    <input type="text" id="input-eval-date" required class="field-input" placeholder="例如：114/01/01 或直接輸入 1140101" onblur="window.formatROCDate(this)">
+                </div>
+                <div class="field">
+                    <label class="field-label">評估人 <span class="req">*</span></label>
+                    <input type="text" id="input-evaluator" required class="field-input" placeholder="請輸入評估人姓名/職稱">
                 </div>
                 <div class="field">
                     <label class="field-label">評估結果 <span class="req">*</span></label>
@@ -297,7 +329,7 @@ tr:hover td { background: #fafbff; }
                 </div>
             </div>
             
-            <div class="dialog-header" style="background: var(--bg); justify-content: flex-end; gap: 10px;">
+            <div class="dialog-header" style="background: var(--bg); justify-content: flex-end; gap: 10px; border-top: 1px solid var(--border); border-bottom: none;">
                 <button type="button" class="btn btn-secondary" onclick="closeAddEvalModal()">取消</button>
                 <button type="button" id="btn-submit-eval" class="btn btn-primary" style="background: var(--indigo); border-color: var(--indigo);" onclick="submitEvaluation()">
                     <i class="ti ti-check"></i> 確認儲存
@@ -309,14 +341,13 @@ tr:hover td { background: #fafbff; }
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, addDoc, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY", authDomain: "thu-isac-review.firebaseapp.com", projectId: "thu-isac-review", storageBucket: "thu-isac-review.firebasestorage.app", messagingSenderId: "453299876735", appId: "1:453299876735:web:1d8babca3315423161a04a" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app); 
         const db = getFirestore(app);
         
-        // 資料集
         const institutionsCol = collection(db, "internship_institutions");
         const recordsCol = collection(db, "internship_records"); 
         const evaluationsCol = collection(db, "institution_evaluations"); 
@@ -326,19 +357,31 @@ tr:hover td { background: #fafbff; }
         let aggregatedData = [], filteredData = [], globalDepts = [];
         let currentFilter = 'all', currentPage = 1, itemsPerPage = 15;
         let activeInstId = null, activeCohortKey = null;
+        let editingEvalId = null; // 用於追蹤正在編輯的評估紀錄
 
-        function parseROCStartDate(durationStr) {
-            if (!durationStr || !durationStr.includes('-')) return null;
-            let startPart = durationStr.split('-')[0].trim(); 
-            let parts = startPart.split('/');
+        // 統一解析民國年字串為 Date 物件
+        function parseROCDate(dateStr) {
+            if (!dateStr) return null;
+            let parts = dateStr.split('-')[0].trim().split('/');
             if (parts.length !== 3) return null;
             return new Date(parseInt(parts[0], 10) + 1911, parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
         }
+
+        // 民國年輸入框自動格式化
+        window.formatROCDate = (input) => {
+            let val = input.value.replace(/[^\d]/g, '');
+            if (val.length === 7) {
+                input.value = `${val.substring(0,3)}/${val.substring(3,5)}/${val.substring(5,7)}`;
+            } else if (val.length === 6) {
+                input.value = `${val.substring(0,2)}/${val.substring(2,4)}/${val.substring(4,6)}`;
+            }
+        };
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const deptSnap = await getDocs(collection(db, "departments"));
                 globalDepts = deptSnap.docs.map(d => d.data());
+                globalDepts.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
 
                 onSnapshot(coursesCol, (snap) => { allCourses = snap.docs.map(d => ({id: d.id, ...d.data()})); });
                 onSnapshot(institutionsCol, (snap) => { allInstitutions = snap.docs.map(d => ({id: d.id, ...d.data()})); runAggregation(); });
@@ -362,10 +405,9 @@ tr:hover td { background: #fafbff; }
 
                 instRecords.forEach(r => {
                     let dept = r.resp_dept || '未綁定系所';
-                    let sDateObj = parseROCStartDate(r.duration);
+                    let sDateObj = parseROCDate(r.duration);
                     let sDateStr = r.duration ? r.duration.split('-')[0].trim() : '未知日期';
                     
-                    // 修正：抓取第一門課程的學年期
                     let termStr = '無課程紀錄';
                     if (r.courses && r.courses.length > 0) {
                         let c = allCourses.find(x => x.id === r.courses[0]);
@@ -389,8 +431,10 @@ tr:hover td { background: #fafbff; }
                     
                     if(cohort.startDateObj) {
                         for(let e of evalsForDept) {
-                            if(!e.eval_date || e.eval_result !== '通過' && e.eval_result !== '有條件通過') continue;
-                            let eDate = new Date(e.eval_date);
+                            if(!e.eval_date || (e.eval_result !== '通過' && e.eval_result !== '有條件通過')) continue;
+                            let eDate = parseROCDate(e.eval_date);
+                            if (!eDate) continue;
+
                             let diffDays = (cohort.startDateObj.getTime() - eDate.getTime()) / (1000 * 3600 * 24);
                             if(diffDays >= 0 && diffDays <= 365) { hasValidEval = true; break; }
                         }
@@ -486,7 +530,6 @@ tr:hover td { background: #fafbff; }
             if(!inst) return;
             document.getElementById('view-inst-name').innerText = inst.name;
 
-            // 渲染左側
             let tbody = document.getElementById('cohort-list-tbody');
             if(inst.cohorts.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="5" class="empty-state" style="padding:40px;">此機構目前無實習梯次</td></tr>`;
@@ -513,7 +556,7 @@ tr:hover td { background: #fafbff; }
                 tbody.innerHTML = html;
             }
 
-            // 更新右側下拉選單
+            // 更新右側下拉選單 (依後台設定排序)
             const selectEl = document.getElementById('right-dept-select');
             const currentSelectedDept = selectEl.value;
             let deptHtml = '<option value="">請選擇學系</option>';
@@ -526,7 +569,7 @@ tr:hover td { background: #fafbff; }
                 selectEl.value = currentSelectedDept;
                 window.renderRightPanel();
             } else if (!isUpdate && inst.cohorts.length > 0) {
-                selectCohort(inst.cohorts[0].cohortKey); // 自動選第一個梯次，並連動選單
+                selectCohort(inst.cohorts[0].cohortKey);
             } else {
                 window.renderRightPanel();
             }
@@ -536,9 +579,9 @@ tr:hover td { background: #fafbff; }
             activeCohortKey = key;
             document.querySelectorAll('.cohort-row').forEach(r => r.classList.remove('active'));
             let safeId = key.replace(/[^a-zA-Z0-9]/g, '_');
-            document.getElementById(`row-${safeId}`).classList.add('active');
+            const tr = document.getElementById(`row-${safeId}`);
+            if(tr) tr.classList.add('active');
             
-            // 連動右側下拉選單
             let inst = aggregatedData.find(i => i.id === activeInstId);
             let cohort = inst.cohorts.find(c => c.cohortKey === key);
             if(cohort) {
@@ -550,65 +593,88 @@ tr:hover td { background: #fafbff; }
         window.renderRightPanel = () => {
             let inst = aggregatedData.find(i => i.id === activeInstId);
             let selectedDept = document.getElementById('right-dept-select').value;
-            let listDiv = document.getElementById('eval-history-list');
+            let listTbody = document.getElementById('eval-history-list');
             
             if(!selectedDept) {
-                listDiv.innerHTML = `<div class="empty-state">請由上方下拉選單選擇學系</div>`;
+                listTbody.innerHTML = `<tr><td colspan="6" class="empty-state">請由上方下拉選單選擇學系</td></tr>`;
                 return;
             }
 
             let evals = allEvaluations.filter(e => e.inst_name === inst.name && e.dept_name === selectedDept);
-            evals.sort((a,b) => new Date(b.eval_date) - new Date(a.eval_date)); 
+            
+            // 依照民國年日期反向排序 (新到舊)
+            evals.sort((a,b) => {
+                let dA = parseROCDate(a.eval_date)?.getTime() || 0;
+                let dB = parseROCDate(b.eval_date)?.getTime() || 0;
+                return dB - dA;
+            }); 
 
             if(evals.length === 0) {
-                listDiv.innerHTML = `<div class="empty-state" style="margin-top: 40px;"><i class="ti ti-inbox" style="font-size:32px; color:var(--border-strong); display:block; margin-bottom:8px;"></i>此系所尚未建立針對本機構的評估紀錄。</div>`;
+                listTbody.innerHTML = `<tr><td colspan="6" class="empty-state" style="padding: 40px;"><i class="ti ti-inbox" style="font-size:32px; color:var(--border-strong); display:block; margin-bottom:8px;"></i>此系所尚未建立針對本機構的評估紀錄。</td></tr>`;
                 return;
             }
 
             let html = '';
             evals.forEach(e => {
-                // 計算「於該日期內符合的人數」
                 let coveringCount = 0;
                 let isPass = e.eval_result === '通過' || e.eval_result === '有條件通過';
                 
                 if (isPass && e.eval_date) {
-                    let eDate = new Date(e.eval_date);
-                    // 找出這個系所在這機構所有的學生梯次
-                    inst.cohorts.filter(c => c.dept === selectedDept).forEach(c => {
-                        if(c.startDateObj) {
-                            let diffDays = (c.startDateObj.getTime() - eDate.getTime()) / (1000 * 3600 * 24);
-                            if(diffDays >= 0 && diffDays <= 365) {
-                                coveringCount += c.count; // 累加符合的梯次人數
+                    let eDate = parseROCDate(e.eval_date);
+                    if(eDate) {
+                        inst.cohorts.filter(c => c.dept === selectedDept).forEach(c => {
+                            if(c.startDateObj) {
+                                let diffDays = (c.startDateObj.getTime() - eDate.getTime()) / (1000 * 3600 * 24);
+                                if(diffDays >= 0 && diffDays <= 365) {
+                                    coveringCount += c.count;
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
                 }
 
                 let badgeColor = e.eval_result === '通過' ? 'badge-success' : (e.eval_result === '不通過' ? 'badge-danger' : 'badge-warning');
 
                 html += `
-                <div class="eval-card">
-                    <div class="eval-card-header">
-                        <div style="font-weight: 700; font-family: monospace; font-size: 15px; color: var(--text-primary);"><i class="ti ti-calendar-check" style="color:var(--text-muted); margin-right:4px;"></i>${e.eval_date}</div>
-                        <span class="badge ${badgeColor}" style="font-size:12px; padding:4px 10px;">${e.eval_result}</span>
-                    </div>
-                    <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin: 4px 0;">備註說明：${e.eval_remarks || '<span style="color:var(--border-strong);">無</span>'}</div>
-                    <div style="margin-top: 4px; padding-top: 12px; border-top: 1px dashed var(--border); display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size:12px; color:var(--text-muted);">系統評估效期：一年</span>
-                        <div style="font-size:13px; font-weight:700; color:${coveringCount > 0 ? 'var(--brand)' : 'var(--text-muted)'}; background: ${coveringCount > 0 ? 'var(--brand-light)' : 'var(--bg)'}; padding: 4px 10px; border-radius: 6px; border: 1px solid ${coveringCount > 0 ? 'var(--brand-border)' : 'var(--border)'};">
-                            已涵蓋合法實習生：${coveringCount} 人
+                <tr>
+                    <td style="font-family: monospace; font-weight: 600;">${e.eval_date}</td>
+                    <td>${e.evaluator || '-'}</td>
+                    <td><span class="badge ${badgeColor}">${e.eval_result}</span></td>
+                    <td style="text-align: left; color: var(--text-secondary);">${e.eval_remarks || '-'}</td>
+                    <td>
+                        <span style="font-weight: 700; color: ${coveringCount > 0 ? 'var(--brand)' : 'var(--text-muted)'}; background: ${coveringCount > 0 ? 'var(--brand-light)' : 'var(--bg)'}; padding: 4px 10px; border-radius: 6px; border: 1px solid ${coveringCount > 0 ? 'var(--brand-border)' : 'var(--border)'}; display: inline-block;">
+                            ${coveringCount} 人
+                        </span>
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 6px; justify-content: center;">
+                            <button class="btn btn-icon sm" onclick="openEditEvalModal('${e.id}')" title="編輯"><i class="ti ti-edit" style="color: var(--text-secondary);"></i></button>
+                            <button class="btn btn-icon sm" onclick="deleteEvaluation('${e.id}')" title="刪除"><i class="ti ti-trash" style="color: var(--danger);"></i></button>
                         </div>
-                    </div>
-                </div>`;
+                    </td>
+                </tr>`;
             });
-            listDiv.innerHTML = html;
+            listTbody.innerHTML = html;
         };
 
-        // ─── 新增評估彈窗 邏輯 ───
+        // ─── 刪除評估紀錄 ───
+        window.deleteEvaluation = async (evalId) => {
+            if (confirm('確定要刪除這筆評估紀錄嗎？刪除後可能會導致部分學生梯次變為異常狀態。')) {
+                try {
+                    await deleteDoc(doc(db, "institution_evaluations", evalId));
+                } catch (e) {
+                    alert("刪除失敗：" + e.message);
+                }
+            }
+        };
+
+        // ─── 新增/編輯評估彈窗 邏輯 ───
         window.openAddEvalModal = () => {
+            editingEvalId = null;
             let inst = aggregatedData.find(i => i.id === activeInstId);
             if(!inst) return;
 
+            document.getElementById('modal-eval-title').innerText = '登錄機構評估紀錄';
             document.getElementById('add-eval-inst').innerText = inst.name;
             
             const selectEl = document.getElementById('input-add-eval-dept');
@@ -617,14 +683,47 @@ tr:hover td { background: #fafbff; }
             selectEl.innerHTML = deptHtml;
             selectEl.value = ''; // 不預設任何系所
 
-            document.getElementById('input-eval-date').value = new Date().toISOString().split('T')[0];
+            // 預設今日 (轉換為民國年格式)
+            const today = new Date();
+            const yyy = today.getFullYear() - 1911;
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            
+            document.getElementById('input-eval-date').value = `${yyy}/${mm}/${dd}`;
+            document.getElementById('input-evaluator').value = '';
             document.getElementById('input-eval-result').value = '';
             document.getElementById('input-eval-remarks').value = '';
 
             document.getElementById('add-eval-modal').classList.add('open');
         };
 
-        window.closeAddEvalModal = () => { document.getElementById('add-eval-modal').classList.remove('open'); };
+        window.openEditEvalModal = (evalId) => {
+            editingEvalId = evalId;
+            let inst = aggregatedData.find(i => i.id === activeInstId);
+            let evalData = allEvaluations.find(e => e.id === evalId);
+            if(!inst || !evalData) return;
+
+            document.getElementById('modal-eval-title').innerText = '編輯機構評估紀錄';
+            document.getElementById('add-eval-inst').innerText = inst.name;
+            
+            const selectEl = document.getElementById('input-add-eval-dept');
+            let deptHtml = '<option value="">請選擇負責評估之系所</option>';
+            globalDepts.forEach(d => { deptHtml += `<option value="${d.name}">${d.shortName || d.name}</option>`; });
+            selectEl.innerHTML = deptHtml;
+            selectEl.value = evalData.dept_name || '';
+
+            document.getElementById('input-eval-date').value = evalData.eval_date || '';
+            document.getElementById('input-evaluator').value = evalData.evaluator || '';
+            document.getElementById('input-eval-result').value = evalData.eval_result || '';
+            document.getElementById('input-eval-remarks').value = evalData.eval_remarks || '';
+
+            document.getElementById('add-eval-modal').classList.add('open');
+        };
+
+        window.closeAddEvalModal = () => { 
+            document.getElementById('add-eval-modal').classList.remove('open'); 
+            editingEvalId = null;
+        };
 
         window.submitEvaluation = async () => {
             let inst = aggregatedData.find(i => i.id === activeInstId);
@@ -632,27 +731,43 @@ tr:hover td { background: #fafbff; }
 
             const deptVal = document.getElementById('input-add-eval-dept').value;
             const dateVal = document.getElementById('input-eval-date').value;
+            const evalUser = document.getElementById('input-evaluator').value.trim();
             const resVal = document.getElementById('input-eval-result').value;
             const remVal = document.getElementById('input-eval-remarks').value.trim();
 
-            if(!deptVal || !dateVal || !resVal) { alert("請填寫評估系所、日期與結果！"); return; }
+            if(!deptVal || !dateVal || !resVal || !evalUser) { 
+                alert("請填寫所有標示 * 號的必填欄位！"); 
+                return; 
+            }
+
+            const regex = /^\d{2,3}\/\d{2}\/\d{2}$/;
+            if (!regex.test(dateVal)) {
+                alert("日期格式錯誤！請輸入正確的民國年格式 (例如：114/01/01)");
+                return;
+            }
 
             const btn = document.getElementById('btn-submit-eval');
             btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 儲存中...';
 
             try {
-                await addDoc(evaluationsCol, {
+                const payload = {
                     inst_name: inst.name,
                     dept_name: deptVal,
                     eval_date: dateVal,
+                    evaluator: evalUser,
                     eval_result: resVal,
                     eval_remarks: remVal,
-                    created_at: serverTimestamp()
-                });
+                    updated_at: serverTimestamp()
+                };
+
+                if (editingEvalId) {
+                    await updateDoc(doc(db, "institution_evaluations", editingEvalId), payload);
+                } else {
+                    payload.created_at = serverTimestamp();
+                    await addDoc(evaluationsCol, payload);
+                }
                 
-                // 新增完畢後，將右側檢視學系自動切換到剛剛新增的系所，方便立即看到結果
                 document.getElementById('right-dept-select').value = deptVal;
-                
                 closeAddEvalModal();
             } catch(e) {
                 alert("儲存失敗：" + e.message);
