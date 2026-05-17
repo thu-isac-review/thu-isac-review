@@ -123,7 +123,7 @@ tr:hover td { background: #fafbff; }
 /* ─── SPLIT LAYOUT (支援手機模式) ─── */
 .split-layout { display: flex; gap: 24px; align-items: stretch; height: 100%; }
 .split-left { flex: 5; min-width: 0; display: flex; flex-direction: column; }
-.split-right { flex: 6; min-width: 0; background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+.split-right { flex: 7; min-width: 0; background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
 
 .right-header { padding: 16px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px; }
 .right-content { overflow-y: auto; flex: 1; padding: 0; }
@@ -139,7 +139,7 @@ tr:hover td { background: #fafbff; }
 .inner-table td { padding: 14px 16px; font-size: 13px; border-bottom: 1px solid var(--border); background: var(--surface); vertical-align: middle; text-align: center; color: var(--text-primary); }
 .inner-table tr.cohort-row { cursor: pointer; transition: 0.2s; }
 .inner-table tr.cohort-row:hover td { background: #fafbff; }
-.inner-table tr.cohort-row.active td { background: #f0f4ff; }
+.inner-table tr.cohort-row.active td { background: #f0f4ff; border-left: 3px solid var(--brand); }
 
 /* 右側歷史評估的條列式表格專用設定 */
 .eval-table th { background: var(--bg); box-shadow: inset 0 -1px 0 var(--border); padding: 10px 12px; }
@@ -227,17 +227,18 @@ tr:hover td { background: #fafbff; }
                         <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); background: var(--surface); display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
                             <i class="ti ti-list-details" style="color: var(--text-secondary); font-size: 18px;"></i>
                             <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">各系實習梯次清單</span>
-                            <span style="font-size: 11px; color: var(--text-muted); font-weight: 500; margin-left: 8px;">(同系所+同學年期+同開始日為一梯次)</span>
+                            <span style="font-size: 11px; color: var(--text-muted); font-weight: 500; margin-left: 8px;">(同系所+同學年+同學期+同起日為一梯次)</span>
                         </div>
                         <div class="custom-scroll" style="flex: 1; overflow-x: auto; overflow-y: auto;">
                             <table class="inner-table">
                                 <thead>
                                     <tr>
-                                        <th style="text-align: left; width: 25%;">負責學系</th>
-                                        <th style="width: 20%;">課程學年期</th>
+                                        <th style="text-align: left; width: 20%;">負責學系</th>
+                                        <th style="width: 12%;">學年度</th>
+                                        <th style="width: 12%;">學期</th>
                                         <th style="width: 20%;">實習開始日</th>
                                         <th style="width: 15%;">梯次人數</th>
-                                        <th style="width: 20%;">該梯次審查狀態</th>
+                                        <th style="width: 21%;">梯次狀態</th>
                                     </tr>
                                 </thead>
                                 <tbody id="cohort-list-tbody">
@@ -248,35 +249,30 @@ tr:hover td { background: #fafbff; }
 
                     <div class="split-right">
                         <div class="right-header">
-                            <div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <div style="font-size: 15px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
-                                    <i class="ti ti-history" style="color: var(--indigo); font-size: 18px;"></i> 歷史評估紀錄
+                                    <i class="ti ti-history" style="color: var(--indigo); font-size: 18px;"></i> 機構總評估紀錄一覽
                                 </div>
                                 <button class="btn btn-primary btn-sm" style="background: var(--indigo); border-color: var(--indigo);" onclick="openAddEvalModal()">
                                     <i class="ti ti-plus"></i> 新增評估
                                 </button>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span style="font-size: 12px; color: var(--text-secondary); font-weight: 700; white-space: nowrap;">檢視學系</span>
-                                <select id="right-dept-select" class="field-select" style="height: 34px; font-size: 13px;" onchange="renderRightPanel()">
-                                    <option value="">請選擇學系</option>
-                                </select>
-                            </div>
                         </div>
                         <div class="right-content custom-scroll">
-                            <table class="inner-table eval-table" style="min-width: 600px;">
+                            <table class="inner-table eval-table" style="min-width: 650px;">
                                 <thead>
                                     <tr>
-                                        <th style="width: 15%;">評估日期</th>
+                                        <th style="width: 16%; text-align: left;">評估學系</th>
+                                        <th style="width: 14%;">評估日期</th>
                                         <th style="width: 12%;">評估人</th>
                                         <th style="width: 12%;">結果</th>
-                                        <th style="width: 25%; text-align: left;">備註</th>
-                                        <th style="width: 20%;">涵蓋合法學生</th>
-                                        <th style="width: 16%;">操作</th>
+                                        <th style="width: 18%; text-align: left;">備註</th>
+                                        <th style="width: 16%;">涵蓋合法學生</th>
+                                        <th style="width: 12%;">操作</th>
                                     </tr>
                                 </thead>
                                 <tbody id="eval-history-list">
-                                    <tr><td colspan="6" class="empty-state">請由上方選擇學系以檢視評估紀錄</td></tr>
+                                    <tr><td colspan="7" class="empty-state">目前無評估紀錄</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -381,6 +377,7 @@ tr:hover td { background: #fafbff; }
             if (user) {
                 const deptSnap = await getDocs(collection(db, "departments"));
                 globalDepts = deptSnap.docs.map(d => d.data());
+                // 依照後台 sortOrder 排序
                 globalDepts.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
 
                 onSnapshot(coursesCol, (snap) => { allCourses = snap.docs.map(d => ({id: d.id, ...d.data()})); });
@@ -408,17 +405,22 @@ tr:hover td { background: #fafbff; }
                     let sDateObj = parseROCDate(r.duration);
                     let sDateStr = r.duration ? r.duration.split('-')[0].trim() : '未知日期';
                     
-                    let termStr = '無課程紀錄';
+                    // 學年、學期拆分
+                    let acadYear = '無紀錄';
+                    let term = '-';
                     if (r.courses && r.courses.length > 0) {
                         let c = allCourses.find(x => x.id === r.courses[0]);
-                        if (c) termStr = `${c.academic_year}-${c.term}`;
+                        if (c) {
+                            acadYear = c.academic_year || '無紀錄';
+                            term = c.term || '-';
+                        }
                     }
 
-                    let cohortKey = `${dept}_${termStr}_${sDateStr}`;
+                    let cohortKey = `${dept}_${acadYear}_${term}_${sDateStr}`;
 
                     if(!cohortsObj[cohortKey]) {
                         cohortsObj[cohortKey] = {
-                            cohortKey: cohortKey, dept: dept, term: termStr, startDateStr: sDateStr, startDateObj: sDateObj, count: 0
+                            cohortKey: cohortKey, dept: dept, acadYear: acadYear, term: term, startDateStr: sDateStr, startDateObj: sDateObj, count: 0
                         };
                     }
                     cohortsObj[cohortKey].count++;
@@ -532,7 +534,7 @@ tr:hover td { background: #fafbff; }
 
             let tbody = document.getElementById('cohort-list-tbody');
             if(inst.cohorts.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="empty-state" style="padding:40px;">此機構目前無實習梯次</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="empty-state" style="padding:40px;">此機構目前無實習梯次</td></tr>`;
             } else {
                 let sortedCohorts = [...inst.cohorts].sort((a,b) => {
                     if(a.status.code === 'attention' && b.status.code !== 'attention') return -1;
@@ -547,7 +549,8 @@ tr:hover td { background: #fafbff; }
                     html += `
                     <tr class="cohort-row ${isActive}" id="row-${safeId}" onclick="selectCohort('${c.cohortKey}')">
                         <td style="text-align:left; font-weight:700;">${getDeptShort(c.dept)}</td>
-                        <td><div style="font-size:11px; font-weight:700; background:var(--bg); color:var(--text-secondary); padding:4px 8px; border-radius:4px; display:inline-block; border:1px solid var(--border);">${c.term}</div></td>
+                        <td>${c.acadYear}</td>
+                        <td>${c.term}</td>
                         <td style="font-family:monospace; font-weight:600;">${c.startDateStr}</td>
                         <td style="font-weight:700; color:var(--brand);">${c.count} 人</td>
                         <td><span class="badge ${c.status.class}">${c.status.label}</span></td>
@@ -556,20 +559,9 @@ tr:hover td { background: #fafbff; }
                 tbody.innerHTML = html;
             }
 
-            // 更新右側下拉選單 (依後台設定排序)
-            const selectEl = document.getElementById('right-dept-select');
-            const currentSelectedDept = selectEl.value;
-            let deptHtml = '<option value="">請選擇學系</option>';
-            globalDepts.forEach(d => {
-                deptHtml += `<option value="${d.name}">${d.shortName || d.name}</option>`;
-            });
-            selectEl.innerHTML = deptHtml;
-            
-            if(isUpdate && currentSelectedDept) {
-                selectEl.value = currentSelectedDept;
-                window.renderRightPanel();
-            } else if (!isUpdate && inst.cohorts.length > 0) {
-                selectCohort(inst.cohorts[0].cohortKey);
+            // 右側始終顯示全部評估，無需再判定下拉選單
+            if (!isUpdate && inst.cohorts.length > 0) {
+                selectCohort(inst.cohorts[0].cohortKey); // 給個視覺焦點，但右側會顯示全部
             } else {
                 window.renderRightPanel();
             }
@@ -582,25 +574,16 @@ tr:hover td { background: #fafbff; }
             const tr = document.getElementById(`row-${safeId}`);
             if(tr) tr.classList.add('active');
             
-            let inst = aggregatedData.find(i => i.id === activeInstId);
-            let cohort = inst.cohorts.find(c => c.cohortKey === key);
-            if(cohort) {
-                document.getElementById('right-dept-select').value = cohort.dept;
-                window.renderRightPanel();
-            }
+            // 點擊左側只是為了高亮，右側維持顯示全機構評估
+            window.renderRightPanel();
         };
 
         window.renderRightPanel = () => {
             let inst = aggregatedData.find(i => i.id === activeInstId);
-            let selectedDept = document.getElementById('right-dept-select').value;
             let listTbody = document.getElementById('eval-history-list');
             
-            if(!selectedDept) {
-                listTbody.innerHTML = `<tr><td colspan="6" class="empty-state">請由上方下拉選單選擇學系</td></tr>`;
-                return;
-            }
-
-            let evals = allEvaluations.filter(e => e.inst_name === inst.name && e.dept_name === selectedDept);
+            // 抓出該機構下 "所有系所" 的歷史評估
+            let evals = allEvaluations.filter(e => e.inst_name === inst.name);
             
             // 依照民國年日期反向排序 (新到舊)
             evals.sort((a,b) => {
@@ -610,7 +593,7 @@ tr:hover td { background: #fafbff; }
             }); 
 
             if(evals.length === 0) {
-                listTbody.innerHTML = `<tr><td colspan="6" class="empty-state" style="padding: 40px;"><i class="ti ti-inbox" style="font-size:32px; color:var(--border-strong); display:block; margin-bottom:8px;"></i>此系所尚未建立針對本機構的評估紀錄。</td></tr>`;
+                listTbody.innerHTML = `<tr><td colspan="7" class="empty-state" style="padding: 40px;"><i class="ti ti-inbox" style="font-size:32px; color:var(--border-strong); display:block; margin-bottom:8px;"></i>此機構尚未建立任何評估紀錄。</td></tr>`;
                 return;
             }
 
@@ -622,7 +605,8 @@ tr:hover td { background: #fafbff; }
                 if (isPass && e.eval_date) {
                     let eDate = parseROCDate(e.eval_date);
                     if(eDate) {
-                        inst.cohorts.filter(c => c.dept === selectedDept).forEach(c => {
+                        // 只比對同一個系所的梯次
+                        inst.cohorts.filter(c => c.dept === e.dept_name).forEach(c => {
                             if(c.startDateObj) {
                                 let diffDays = (c.startDateObj.getTime() - eDate.getTime()) / (1000 * 3600 * 24);
                                 if(diffDays >= 0 && diffDays <= 365) {
@@ -637,12 +621,13 @@ tr:hover td { background: #fafbff; }
 
                 html += `
                 <tr>
+                    <td style="text-align: left; font-weight: 700; color: var(--indigo);">${getDeptShort(e.dept_name)}</td>
                     <td style="font-family: monospace; font-weight: 600;">${e.eval_date}</td>
                     <td>${e.evaluator || '-'}</td>
                     <td><span class="badge ${badgeColor}">${e.eval_result}</span></td>
-                    <td style="text-align: left; color: var(--text-secondary);">${e.eval_remarks || '-'}</td>
+                    <td style="text-align: left; color: var(--text-secondary); line-height: 1.4;">${e.eval_remarks || '-'}</td>
                     <td>
-                        <span style="font-weight: 700; color: ${coveringCount > 0 ? 'var(--brand)' : 'var(--text-muted)'}; background: ${coveringCount > 0 ? 'var(--brand-light)' : 'var(--bg)'}; padding: 4px 10px; border-radius: 6px; border: 1px solid ${coveringCount > 0 ? 'var(--brand-border)' : 'var(--border)'}; display: inline-block;">
+                        <span style="font-weight: 700; font-size: 11px; color: ${coveringCount > 0 ? 'var(--brand)' : 'var(--text-muted)'}; background: ${coveringCount > 0 ? 'var(--brand-light)' : 'var(--bg)'}; padding: 4px 10px; border-radius: 6px; border: 1px solid ${coveringCount > 0 ? 'var(--brand-border)' : 'var(--border)'}; display: inline-block;">
                             ${coveringCount} 人
                         </span>
                     </td>
@@ -659,7 +644,7 @@ tr:hover td { background: #fafbff; }
 
         // ─── 刪除評估紀錄 ───
         window.deleteEvaluation = async (evalId) => {
-            if (confirm('確定要刪除這筆評估紀錄嗎？刪除後可能會導致部分學生梯次變為異常狀態。')) {
+            if (confirm('確定要刪除這筆評估紀錄嗎？刪除後可能會導致該系所的部分學生梯次變為異常狀態。')) {
                 try {
                     await deleteDoc(doc(db, "institution_evaluations", evalId));
                 } catch (e) {
@@ -767,7 +752,6 @@ tr:hover td { background: #fafbff; }
                     await addDoc(evaluationsCol, payload);
                 }
                 
-                document.getElementById('right-dept-select').value = deptVal;
                 closeAddEvalModal();
             } catch(e) {
                 alert("儲存失敗：" + e.message);
