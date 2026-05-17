@@ -44,7 +44,6 @@
   --radius-xl: 16px;
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
   --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.04);
   --transition: 150ms cubic-bezier(0.4,0,0.2,1);
 }
 
@@ -70,8 +69,6 @@ html, body { height: 100%; overflow: hidden; font-family: 'Noto Sans TC', sans-s
 .btn-primary:hover { background: var(--brand-hover); }
 .btn-secondary { background: var(--surface); color: var(--text-secondary); border: 1px solid var(--border); }
 .btn-secondary:hover { background: var(--bg); border-color: var(--border-strong); color: var(--text-primary); }
-.btn-icon { width: 30px; height: 30px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius); cursor: pointer; transition: 0.2s; border: 1px solid transparent; background: transparent; }
-.btn-icon:hover { background: var(--bg); border-color: var(--border); }
 .btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
 
 .filter-row { padding: 10px 24px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
@@ -104,8 +101,6 @@ tr:hover td { background: #fafbff; }
 .badge-outline-red { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
 .badge-outline-indigo { background: var(--indigo-bg); color: var(--indigo); border: 1px solid var(--indigo-border); }
 .badge-outline-gray { background: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; }
-.more-badge { display: inline-flex; align-items: center; justify-content: center; height: 24px; padding: 0 8px; border-radius: 99px; background: var(--border); color: var(--text-secondary); font-size: 11px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-left: auto; flex-shrink: 0; border: none; outline: none; }
-.more-badge:hover { background: var(--border-strong); color: var(--text-primary); }
 
 .pagination-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; gap: 10px; }
 .pagination-info { font-size: 12px; color: var(--text-muted); }
@@ -125,29 +120,34 @@ tr:hover td { background: #fafbff; }
 
 .dialog-box { background: var(--surface); border-radius: var(--radius-xl); box-shadow: 0 20px 60px rgba(0,0,0,0.2); width: 100%; display: flex; flex-direction: column; overflow: hidden; animation: dialogIn 0.2s ease-out; max-height: 95vh; }
 @keyframes dialogIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-.dialog-header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--surface); flex-shrink: 0; }
-.dialog-header h3 { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: var(--text-primary); margin: 0; }
-.dialog-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted); transition: 0.2s; }
+
+/* 優化的 Header 包含卡片資訊 */
+.dialog-header-enhanced { padding: 20px 24px; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; display: flex; justify-content: space-between; align-items: flex-start; }
+.inst-title { font-size: 18px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.inst-meta { font-size: 13px; color: var(--text-secondary); display: flex; flex-direction: column; gap: 4px; }
+.inst-meta-row { display: flex; align-items: center; gap: 8px; }
+.dialog-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted); transition: 0.2s; padding: 4px; }
 .dialog-close:hover { color: var(--danger); }
-.dialog-body { padding: 24px; overflow-y: auto; flex: 1; }
+.dialog-body { padding: 0; overflow: hidden; flex: 1; display: flex; flex-direction: column; }
 
-/* ─── SPLIT LAYOUT (統一寬度與樣式) ─── */
-.split-layout { display: flex; gap: 24px; align-items: stretch; height: 100%; }
-.split-panel { flex: 1; min-width: 0; background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+/* ─── SPLIT LAYOUT (清爽無框版) ─── */
+.split-layout { display: flex; align-items: stretch; height: 100%; width: 100%; }
+.split-panel { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
+.split-divider { width: 1px; background: var(--border-strong); flex-shrink: 0; z-index: 5; }
 
-.panel-header { padding: 16px 20px; border-bottom: 1px solid var(--border); background: var(--surface); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+.panel-header { padding: 12px 20px; border-bottom: 1px solid var(--border); background: var(--surface); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; height: 56px; }
 
-/* ─── INNER TABLE (完全統一) ─── */
-.inner-table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 600px; }
+/* ─── INNER TABLE (統一風格) ─── */
+.inner-table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 500px; }
 .inner-table th { 
-    background: var(--surface); font-size: 11px; font-weight: 700; color: var(--text-muted); 
-    text-transform: uppercase; letter-spacing: 0.05em; padding: 12px 16px; 
-    border-bottom: 1px solid var(--border); box-shadow: inset 0 -2px 0 var(--border); 
+    background: #f1f5f9; font-size: 12px; font-weight: 700; color: var(--text-secondary); 
+    padding: 10px 16px; border-bottom: 1px solid var(--border); 
     position: sticky; top: 0; z-index: 10; text-align: center; white-space: nowrap;
 }
-.inner-table td { padding: 14px 16px; font-size: 13px; border-bottom: 1px solid var(--border); background: var(--surface); vertical-align: middle; text-align: center; color: var(--text-primary); }
-/* 移除左側特有的 Hover 反白 */
-.inner-table tr:hover td { background: #fafbff; }
+.inner-table td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--border); background: var(--surface); vertical-align: middle; text-align: center; color: var(--text-primary); }
+
+/* 右側表格的文字截斷設定 */
+.text-truncate { max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle; }
 
 /* ─── FORMS ─── */
 .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
@@ -157,13 +157,12 @@ tr:hover td { background: #fafbff; }
 .field-input:focus, .field-select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
 
 /* ─── 手機版響應式設定 ─── */
-@media (max-width: 768px) {
-    .dialog-overlay { padding: 12px; }
-    .split-layout { flex-direction: column; height: auto; gap: 16px; }
-    .split-panel { min-height: 400px; }
-    .toolbar { flex-direction: column; align-items: stretch; }
-    .search-wrap { flex: none; width: 100%; }
-    .info-card-flex { flex-direction: column; gap: 12px !important; }
+@media (max-width: 900px) {
+    .split-layout { flex-direction: column; overflow-y: auto; }
+    .split-panel { height: auto; min-height: 400px; overflow: visible; }
+    .split-divider { display: none; }
+    .dialog-header-enhanced { flex-direction: column; gap: 12px; }
+    .dialog-close { position: absolute; top: 16px; right: 16px; }
 }
 </style>
 </head>
@@ -216,36 +215,32 @@ tr:hover td { background: #fafbff; }
 
     <div id="manage-modal" class="dialog-overlay">
         <div class="dialog-box" style="max-width: 1500px; width: 98%;">
-            <div class="dialog-header">
-                <h3><i class="ti ti-building" style="color: var(--brand);"></i> 機構審查總覽</h3>
-                <button type="button" class="dialog-close" onclick="closeManageModal()"><i class="ti ti-x"></i></button>
-            </div>
             
-            <div class="dialog-body custom-scroll" style="padding: 24px; background: var(--bg); display: flex; flex-direction: column;">
-                
-                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 24px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 12px; flex-shrink: 0;">
-                    <div style="font-size: 18px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+            <div class="dialog-header-enhanced">
+                <div>
+                    <div class="inst-title">
                         <i class="ti ti-building-skyscraper" style="color: var(--brand);"></i> 
                         <span id="info-inst-name">機構名稱</span>
                     </div>
-                    <div class="info-card-flex" style="display: flex; gap: 32px; font-size: 13px; color: var(--text-secondary);">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <i class="ti ti-id" style="font-size: 16px; color: var(--text-muted);"></i>
+                    <div class="inst-meta">
+                        <div class="inst-meta-row">
                             <span id="info-tax-id">-</span>
                             <span style="color: var(--border-strong);">|</span>
                             <span id="info-industry">-</span>
                             <span style="color: var(--border-strong);">|</span>
                             <span id="info-type">-</span>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <i class="ti ti-map-pin" style="font-size: 16px; color: var(--text-muted);"></i>
+                        <div class="inst-meta-row">
                             <span id="info-country">-</span>
                             <span style="color: var(--border-strong);">|</span>
                             <span id="info-address">-</span>
                         </div>
                     </div>
                 </div>
-
+                <button type="button" class="dialog-close" onclick="closeManageModal()"><i class="ti ti-x"></i></button>
+            </div>
+            
+            <div class="dialog-body">
                 <div class="split-layout">
                     
                     <div class="split-panel">
@@ -253,20 +248,18 @@ tr:hover td { background: #fafbff; }
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <i class="ti ti-list-details" style="color: var(--text-secondary); font-size: 18px;"></i>
                                 <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">各系實習梯次清單</span>
-                                <span style="font-size: 11px; color: var(--text-muted); font-weight: 500; margin-left: 8px;" class="hidden sm:inline">(同系+同學年期+同起日為一梯次)</span>
                             </div>
                         </div>
                         <div class="custom-scroll" style="flex: 1; overflow-x: auto; overflow-y: auto;">
-                            <table class="inner-table" style="min-width: 650px;">
+                            <table class="inner-table" style="min-width: 600px;">
                                 <thead>
                                     <tr>
-                                        <th style="text-align: left; width: 18%;">負責學系</th>
-                                        <th style="width: 12%;">學年度</th>
-                                        <th style="width: 10%;">學期</th>
-                                        <th style="width: 16%;">實習開始日</th>
-                                        <th style="width: 12%;">梯次人數</th>
-                                        <th style="width: 16%;">梯次狀態</th>
-                                        <th style="width: 16%;">操作</th>
+                                        <th style="text-align: left; width: 15%;">負責學系</th>
+                                        <th style="width: 12%;">學年期</th>
+                                        <th style="width: 18%;">實習起日</th>
+                                        <th style="width: 12%;">人數</th>
+                                        <th style="width: 20%;">梯次狀態</th>
+                                        <th style="width: 23%;">操作</th>
                                     </tr>
                                 </thead>
                                 <tbody id="cohort-list-tbody">
@@ -274,6 +267,8 @@ tr:hover td { background: #fafbff; }
                             </table>
                         </div>
                     </div>
+
+                    <div class="split-divider"></div>
 
                     <div class="split-panel">
                         <div class="panel-header">
@@ -286,16 +281,16 @@ tr:hover td { background: #fafbff; }
                             </button>
                         </div>
                         <div class="custom-scroll" style="flex: 1; overflow-x: auto; overflow-y: auto;">
-                            <table class="inner-table" style="min-width: 700px;">
+                            <table class="inner-table" style="min-width: 650px;">
                                 <thead>
                                     <tr>
-                                        <th style="width: 16%; text-align: left;">評估學系</th>
+                                        <th style="width: 15%; text-align: left;">評估學系</th>
                                         <th style="width: 14%;">評估日期</th>
                                         <th style="width: 12%;">評估人</th>
                                         <th style="width: 12%;">結果</th>
-                                        <th style="width: 18%; text-align: left;">備註</th>
-                                        <th style="width: 16%;">涵蓋合法學生</th>
-                                        <th style="width: 12%;">操作</th>
+                                        <th style="width: 15%; text-align: left;">備註</th>
+                                        <th style="width: 14%;">涵蓋人數</th>
+                                        <th style="width: 18%;">操作</th>
                                     </tr>
                                 </thead>
                                 <tbody id="eval-history-list">
@@ -310,17 +305,17 @@ tr:hover td { background: #fafbff; }
         </div>
     </div>
 
-    <div id="add-eval-modal" class="dialog-overlay">
+    <div id="add-eval-modal" class="dialog-overlay" style="z-index: 210;">
         <div class="dialog-box" style="max-width: 450px;">
-            <div class="dialog-header" style="border-bottom-color: var(--indigo-border);">
-                <h3 style="color: var(--indigo);"><i class="ti ti-clipboard-plus"></i> <span id="modal-eval-title">登錄機構評估紀錄</span></h3>
+            <div class="dialog-header" style="border-bottom-color: var(--indigo-border); padding: 16px 24px;">
+                <h3 style="color: var(--indigo); font-size: 16px;"><i class="ti ti-clipboard-plus"></i> <span id="modal-eval-title">登錄機構評估紀錄</span></h3>
                 <button type="button" class="dialog-close" onclick="closeAddEvalModal()"><i class="ti ti-x"></i></button>
             </div>
             
-            <div class="dialog-body custom-scroll">
+            <div class="dialog-body custom-scroll" style="padding: 24px;">
                 <div style="margin-bottom: 20px; padding: 12px 16px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); font-size: 12px; color: var(--text-secondary); line-height: 1.5;">
-                    您正在為 <strong id="add-eval-inst" style="color: var(--text-primary);"></strong> 新增評估紀錄。<br>
-                    <span style="color: var(--danger);">* 儲存後，系統將自動比對並涵蓋該系所一年內開始實習的學生梯次。</span>
+                    機構：<strong id="add-eval-inst" style="color: var(--text-primary);"></strong><br>
+                    <span style="color: var(--danger);">* 儲存後，系統將自動計算並涵蓋一年內的實習梯次。</span>
                 </div>
 
                 <div class="field">
@@ -510,7 +505,7 @@ tr:hover td { background: #fafbff; }
 
                 let overallStatus;
                 if(cohorts.length === 0) overallStatus = { code: 'empty', label: '無關聯紀錄', class: 'badge-secondary', icon: 'ti-minus' };
-                else if(cohorts.some(c => c.status.code === 'attention')) overallStatus = { code: 'attention', label: '需注意 (部分梯次異常)', class: 'badge-warning', icon: 'ti-alert-circle' };
+                else if(cohorts.some(c => c.status.code === 'attention')) overallStatus = { code: 'attention', label: '需注意 (部分異常)', class: 'badge-warning', icon: 'ti-alert-circle' };
                 else overallStatus = { code: 'pass', label: '全部梯次皆合規', class: 'badge-success', icon: 'ti-check' };
 
                 return { ...inst, cohorts, totalStudents, overallStatus };
@@ -591,11 +586,14 @@ tr:hover td { background: #fafbff; }
             let inst = aggregatedData.find(i => i.id === activeInstId);
             if(!inst) return;
             
+            // 【修正1】實習場所容錯抓取 (依可能存在的欄位)
+            let instLocation = inst.location || inst.place || inst.type || '未註明實習場所';
+
             // 填寫機構資訊卡片
             document.getElementById('info-inst-name').innerText = inst.name || '-';
             document.getElementById('info-tax-id').innerText = inst.tax_id || '無統編資料';
             document.getElementById('info-industry').innerText = inst.industry || '未註明行業別';
-            document.getElementById('info-type').innerText = inst.type || '未註明實習場所';
+            document.getElementById('info-type').innerText = instLocation;
             document.getElementById('info-country').innerText = inst.country || '未註明國別';
             document.getElementById('info-address').innerText = inst.address || '未註明地址';
 
@@ -615,10 +613,9 @@ tr:hover td { background: #fafbff; }
                     html += `
                         <tr>
                             <td style="text-align:left; font-weight:700;">${getDeptShort(c.dept)}</td>
-                            <td>${c.acadYear}</td>
-                            <td>${c.term}</td>
+                            <td>${c.acadYear === '無紀錄' ? '-' : c.acadYear + '-' + c.term}</td>
                             <td style="font-family:monospace; font-weight:600;">${c.startDateStr}</td>
-                            <td style="font-weight:700; color:var(--brand);">${c.count} 人</td>
+                            <td style="font-weight:700; color:var(--brand);">${c.count}</td>
                             <td><span class="badge ${c.status.class}">${c.status.label}</span></td>
                             <td>
                                 <button class="btn btn-secondary btn-sm" onclick="openCohortDetailsModal('${c.cohortKey}')">
@@ -631,7 +628,7 @@ tr:hover td { background: #fafbff; }
                 tbody.innerHTML = html;
             }
 
-            // 右側始終顯示全部評估
+            // 右側顯示全部評估
             window.renderRightPanel();
         }
 
@@ -672,6 +669,10 @@ tr:hover td { background: #fafbff; }
                 }
 
                 let badgeColor = e.eval_result === '通過' ? 'badge-success' : (e.eval_result === '不通過' ? 'badge-danger' : 'badge-warning');
+                
+                // 【修正】備註太長時截斷並使用 title (Tooltip)
+                let remarkText = e.eval_remarks || '-';
+                let displayRemark = remarkText.length > 15 ? `<span class="text-truncate" title="${remarkText}">${remarkText}</span>` : remarkText;
 
                 html += `
                 <tr>
@@ -679,16 +680,16 @@ tr:hover td { background: #fafbff; }
                     <td style="font-family: monospace; font-weight: 600;">${e.eval_date}</td>
                     <td>${e.evaluator || '-'}</td>
                     <td><span class="badge ${badgeColor}">${e.eval_result}</span></td>
-                    <td style="text-align: left; color: var(--text-secondary); line-height: 1.4;">${e.eval_remarks || '-'}</td>
+                    <td style="text-align: left; color: var(--text-secondary);">${displayRemark}</td>
                     <td>
                         <span style="font-weight: 700; font-size: 11px; color: ${coveringCount > 0 ? 'var(--brand)' : 'var(--text-muted)'}; background: ${coveringCount > 0 ? 'var(--brand-light)' : 'var(--bg)'}; padding: 4px 10px; border-radius: 6px; border: 1px solid ${coveringCount > 0 ? 'var(--brand-border)' : 'var(--border)'}; display: inline-block;">
                             ${coveringCount} 人
                         </span>
                     </td>
                     <td>
-                        <div style="display: flex; gap: 6px; justify-content: center;">
-                            <button class="btn btn-icon sm" onclick="openEditEvalModal('${e.id}')" title="編輯"><i class="ti ti-edit" style="color: var(--text-secondary);"></i></button>
-                            <button class="btn btn-icon sm" onclick="deleteEvaluation('${e.id}')" title="刪除"><i class="ti ti-trash" style="color: var(--danger);"></i></button>
+                        <div style="display: flex; gap: 4px; justify-content: center;">
+                            <button class="btn btn-secondary btn-sm" onclick="openEditEvalModal('${e.id}')" style="padding: 0 8px;"><i class="ti ti-edit"></i> 編輯</button>
+                            <button class="btn btn-secondary btn-sm" onclick="deleteEvaluation('${e.id}')" style="padding: 0 8px; color: var(--danger);"><i class="ti ti-trash"></i> 刪除</button>
                         </div>
                     </td>
                 </tr>`;
@@ -834,13 +835,9 @@ tr:hover td { background: #fafbff; }
             globalDepts.forEach(d => { deptHtml += `<option value="${d.name}">${d.shortName || d.name}</option>`; });
             selectEl.innerHTML = deptHtml;
             selectEl.value = ''; 
-
-            const today = new Date();
-            const yyy = today.getFullYear() - 1911;
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const dd = String(today.getDate()).padStart(2, '0');
             
-            document.getElementById('input-eval-date').value = `${yyy}/${mm}/${dd}`;
+            // 【修正2】開啟時清空預設日期
+            document.getElementById('input-eval-date').value = '';
             document.getElementById('input-evaluator').value = '';
             document.getElementById('input-eval-result').value = '';
             document.getElementById('input-eval-remarks').value = '';
