@@ -206,11 +206,27 @@ tr:hover td { background: #fafbff; }
 
 .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
 
-/* 子表格樣式 (系所清單用) */
+/* 子表格樣式 (系所清單與學生展開用) */
 .inner-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-.inner-table th { background: var(--bg); font-size: 11px; padding: 10px; }
+.inner-table th { background: var(--bg); font-size: 11px; padding: 10px; border-bottom: 1px solid var(--border); }
 .inner-table td { padding: 10px; border-bottom: 1px solid var(--border); font-size: 13px; text-align: center; }
-.inner-table tr:last-child td { border-bottom: none; }
+.inner-table tr.dept-row:hover td { background: var(--bg); }
+.student-row { display: none; background: #fafbff; }
+.student-row.show { display: table-row; }
+.student-cell { padding-left: 30px !important; border-bottom: 1px dashed var(--border-strong) !important; font-size: 12px !important; text-align: left !important; color: var(--text-secondary); }
+
+/* 學生選擇清單 */
+.student-check-list {
+    border: 1px solid var(--border); border-radius: var(--radius); padding: 8px;
+    max-height: 160px; overflow-y: auto; background: var(--surface);
+}
+.student-check-item {
+    display: flex; align-items: center; gap: 8px; padding: 6px 8px;
+    border-radius: var(--radius-sm); cursor: pointer; transition: 0.2s;
+}
+.student-check-item:hover { background: var(--bg); }
+.student-check-item input[type="checkbox"] { accent-color: var(--brand); cursor: pointer; }
+.student-check-item span { font-size: 12px; color: var(--text-primary); }
 </style>
 </head>
 <body>
@@ -291,17 +307,19 @@ tr:hover td { background: #fafbff; }
                     </div>
                 </div>
 
-                <div class="form-section-title"><i class="ti ti-list-details"></i> 關聯系所清單與審查狀態</div>
+                <div class="form-section-title"><i class="ti ti-list-details"></i> 關聯系所清單與審查涵蓋率</div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                    <i class="ti ti-info-circle"></i> 點擊系所列可展開查看個別學生的實習起迄與審查狀態。
+                </div>
                 
                 <table class="inner-table" style="background: var(--surface);">
                     <thead>
                         <tr>
-                            <th style="text-align: left;">負責填報系所</th>
-                            <th>關聯學生數</th>
-                            <th>最近實習開始日</th>
-                            <th>該系最後評估日</th>
-                            <th>審查狀態 (回推一年)</th>
-                            <th>操作</th>
+                            <th style="text-align: left; width: 30%;">負責填報系所</th>
+                            <th style="width: 15%;">總學生數</th>
+                            <th style="width: 20%;">審查涵蓋率</th>
+                            <th style="width: 20%;">整體審查狀態</th>
+                            <th style="width: 15%;">操作</th>
                         </tr>
                     </thead>
                     <tbody id="dept-list-tbody">
@@ -312,7 +330,7 @@ tr:hover td { background: #fafbff; }
     </div>
 
     <div id="eval-form-modal" class="dialog-overlay">
-        <div class="dialog-box" style="max-width: 500px;">
+        <div class="dialog-box" style="max-width: 550px;">
             <div class="dialog-header" style="border-bottom-color: var(--indigo-border);">
                 <h3 style="color: var(--indigo);"><i class="ti ti-clipboard-check"></i> 登錄系所評估紀錄</h3>
                 <button type="button" class="dialog-close" onclick="closeEvalModal()"><i class="ti ti-x"></i></button>
@@ -323,7 +341,7 @@ tr:hover td { background: #fafbff; }
                 <div style="background: var(--indigo-light); border: 1px solid var(--indigo-border); padding: 12px; border-radius: var(--radius); margin-bottom: 16px;">
                     <p style="font-size: 12px; color: var(--indigo); font-weight: 600; line-height: 1.5; margin: 0;">
                         您正在登錄 <strong id="eval-target-dept"></strong> 對 <strong id="eval-target-inst"></strong> 的評估紀錄。<br>
-                        系統將自動為該系所在此機構的 <span id="eval-target-count" style="color: var(--danger); font-weight: 700;"></span> 筆學生實習紀錄同步更新此評估結果。
+                        系統將依據您勾選的學生，同步寫入評估日期，重新計算是否符合「實習開始日回推一年內」的規範。
                     </p>
                 </div>
                 
@@ -331,6 +349,13 @@ tr:hover td { background: #fafbff; }
                     <label class="field-label">本次評估日期 (西元年) <span style="color:var(--danger)">*</span></label>
                     <input type="date" id="input-eval-date" required class="field-input">
                 </div>
+                
+                <div class="field">
+                    <label class="field-label">選擇要套用此評估的學生 <span style="color:var(--danger)">*</span> <span style="font-weight: normal; color: var(--text-muted); text-transform: none; margin-left: 4px;">(預設勾選逾期或未評估者)</span></label>
+                    <div id="eval-student-list" class="student-check-list custom-scroll">
+                        </div>
+                </div>
+
                 <div class="field">
                     <label class="field-label">評估結果 <span style="color:var(--danger)">*</span></label>
                     <select id="input-eval-result" required class="field-select">
@@ -342,7 +367,7 @@ tr:hover td { background: #fafbff; }
                 </div>
                 <div class="field">
                     <label class="field-label">評估說明 / 備註</label>
-                    <textarea id="input-eval-remarks" class="field-input" placeholder="請簡述機構審查與評估狀況..." style="min-height: 100px; resize: none; padding: 10px; line-height: 1.5;"></textarea>
+                    <textarea id="input-eval-remarks" class="field-input" placeholder="請簡述機構審查與評估狀況..." style="min-height: 80px; resize: none; padding: 10px; line-height: 1.5;"></textarea>
                 </div>
             </form>
             
@@ -388,14 +413,14 @@ tr:hover td { background: #fafbff; }
             let parts = startPart.split('/');
             if (parts.length !== 3) return null;
             let year = parseInt(parts[0], 10) + 1911; // 轉為西元
-            let month = parts[1];
-            let day = parts[2];
-            return new Date(`${year}-${month}-${day}`);
+            let month = parseInt(parts[1], 10) - 1; // JS 的月份是 0-11
+            let day = parseInt(parts[2], 10);
+            return new Date(year, month, day);
         }
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // 載入系所對照表 (為了顯示簡稱，非必要但可提升視覺)
+                // 載入系所對照表以顯示簡稱
                 const deptSnap = await getDocs(collection(db, "departments"));
                 globalDepts = deptSnap.docs.map(d => d.data());
 
@@ -412,13 +437,12 @@ tr:hover td { background: #fafbff; }
             }
         });
 
-        // 取得系所簡稱輔助函式
         const getDeptShort = (n) => { 
             const d = globalDepts.find(x => x.name === n); 
             return d && d.shortName ? d.shortName : n; 
         };
 
-        // ─── 核心彙整邏輯 ───
+        // ─── 核心彙整邏輯 (落實逐筆獨立計算) ───
         function aggregateData() {
             if (allInstitutions.length === 0) return;
 
@@ -429,47 +453,49 @@ tr:hover td { background: #fafbff; }
                 let totalStudents = 0;
 
                 instRecords.forEach(r => {
-                    // 【核心修正2】使用 resp_dept (填報系所) 作為分群依據，確保各系分開！
                     let targetDept = r.resp_dept || '未設定系所';
 
                     if(!deptsObj[targetDept]) {
-                        deptsObj[targetDept] = { 
-                            records: [], 
-                            latest_start_obj: null, // 用於精確時間比對
-                            latest_start_str: '-',  // 用於畫面顯示 (保留原民國字串)
-                            eval_date: r.eval_date || null, 
-                            eval_result: r.eval_result || null, 
-                            eval_remarks: r.eval_remarks || null 
-                        };
+                        deptsObj[targetDept] = { records: [] };
                     }
-                    deptsObj[targetDept].records.push(r);
-                    totalStudents++;
 
-                    // 尋找該系最近的實習開始日 (轉換為西元年比較)
+                    // 1. 轉換此學生的實習開始日
                     let sDateObj = parseROCStartDate(r.duration);
-                    let currentLatestObj = deptsObj[targetDept].latest_start_obj;
-                    
-                    if (sDateObj && (!currentLatestObj || sDateObj > currentLatestObj)) {
-                        deptsObj[targetDept].latest_start_obj = sDateObj;
-                        deptsObj[targetDept].latest_start_str = r.duration.split('-')[0].trim();
-                    }
+                    let sDateStr = r.duration ? r.duration.split('-')[0].trim() : '-';
 
-                    // 同系所評估紀錄同步 (取最新)
-                    if (r.eval_date && (!deptsObj[targetDept].eval_date || new Date(r.eval_date) > new Date(deptsObj[targetDept].eval_date))) {
-                        deptsObj[targetDept].eval_date = r.eval_date;
-                        deptsObj[targetDept].eval_result = r.eval_result;
-                        deptsObj[targetDept].eval_remarks = r.eval_remarks;
-                    }
+                    // 2. 獨立計算此學生的審查狀態
+                    let statusObj = calculateRecordStatus(sDateObj, r.eval_date);
+
+                    deptsObj[targetDept].records.push({
+                        ...r,
+                        start_date_obj: sDateObj,
+                        start_date_str: sDateStr,
+                        statusObj: statusObj
+                    });
+
+                    totalStudents++;
                 });
 
-                // 計算每個系的狀態
+                // 計算每個系的整體狀態 (需所有學生皆為 pass 才算 pass)
                 let departments = Object.keys(deptsObj).map(deptName => {
                     let d = deptsObj[deptName];
-                    let st = calculateStatus(d.latest_start_obj, d.eval_date);
-                    return { dept_name: deptName, ...d, status: st };
+                    let totalInDept = d.records.length;
+                    let validCount = d.records.filter(r => r.statusObj.code === 'pass').length;
+                    
+                    let deptStatus;
+                    if (totalInDept === 0) deptStatus = { code: 'empty', label: '無紀錄', class: 'badge-secondary' };
+                    else if (validCount === totalInDept) deptStatus = { code: 'pass', label: '皆在效期內', class: 'badge-success' };
+                    else deptStatus = { code: 'attention', label: '部分逾期/未評估', class: 'badge-warning' };
+
+                    return { 
+                        dept_name: deptName, 
+                        records: d.records, 
+                        totalCount: totalInDept,
+                        validCount: validCount,
+                        status: deptStatus 
+                    };
                 });
 
-                // 計算機構整體狀態
                 let overallStatus = getOverallStatus(departments);
 
                 return { 
@@ -484,37 +510,32 @@ tr:hover td { background: #fafbff; }
             processAndRender();
         }
 
-        // 計算單一系所狀態 (回推一年邏輯)
-        function calculateStatus(startDateObj, evalDateStr) {
-            if (!startDateObj) return { code: 'none', label: '無法判定(無實習時間)', class: 'badge-secondary', icon: 'ti-help' };
-            if (!evalDateStr) return { code: 'none', label: '未評估', class: 'badge-secondary', icon: 'ti-minus' };
+        // 【核心修正2】精準計算單一紀錄是否有效 (0 ~ 365天)
+        function calculateRecordStatus(startDateObj, evalDateStr) {
+            if (!startDateObj) return { code: 'none', label: '無實習起日', class: 'badge-secondary' };
+            if (!evalDateStr) return { code: 'none', label: '未評估', class: 'badge-secondary' };
 
             const evalDateObj = new Date(evalDateStr);
             
-            // 實習開始日 減去 評估日
+            // 將時間差轉為天數
             const diffTime = startDateObj.getTime() - evalDateObj.getTime();
             const diffDays = diffTime / (1000 * 3600 * 24);
 
             if (diffDays >= 0 && diffDays <= 365) {
-                return { code: 'pass', label: '有效 (回推一年內)', class: 'badge-success', icon: 'ti-check' };
+                return { code: 'pass', label: '有效 (1年內)', class: 'badge-success' };
             } else if (diffDays < 0) {
-                return { code: 'expired', label: '日期異常(晚於實習)', class: 'badge-warning', icon: 'ti-alert-triangle' };
+                return { code: 'expired', label: '異常 (晚於實習)', class: 'badge-warning' };
             } else {
-                return { code: 'expired', label: '逾期或失效(>1年)', class: 'badge-danger', icon: 'ti-x' };
+                return { code: 'expired', label: '逾期 (>1年)', class: 'badge-danger' };
             }
         }
 
-        // 計算機構整體狀態
         function getOverallStatus(departments) {
-            if (departments.length === 0) {
-                return { code: 'empty', label: '無關聯實習紀錄', class: 'badge-secondary', icon: 'ti-inbox' };
-            }
-            let hasExpired = departments.some(d => d.status.code === 'expired');
-            let hasNone = departments.some(d => d.status.code === 'none');
-
-            if (hasExpired || hasNone) {
-                return { code: 'attention', label: '需注意 (含逾期/未評估)', class: 'badge-warning', icon: 'ti-alert-circle' };
-            }
+            if (departments.length === 0) return { code: 'empty', label: '無關聯實習紀錄', class: 'badge-secondary', icon: 'ti-inbox' };
+            
+            let hasAttention = departments.some(d => d.status.code === 'attention');
+            if (hasAttention) return { code: 'attention', label: '需注意 (含逾期/未評估)', class: 'badge-warning', icon: 'ti-alert-circle' };
+            
             return { code: 'pass', label: '全部系所皆通過', class: 'badge-success', icon: 'ti-circle-check' };
         }
 
@@ -536,12 +557,10 @@ tr:hover td { background: #fafbff; }
                 return matchSearch && matchFilter;
             });
 
-            // 依據關聯學生數降冪排序
             filteredData.sort((a, b) => b.totalStudents - a.totalStudents);
-
             renderTable();
             
-            // 如果系所彈跳視窗是開著的，更新視窗資料
+            // 若 Modal 1 呈開啟狀態，即時更新資料
             if(document.getElementById('dept-list-modal').classList.contains('open') && currentActiveInst) {
                 const updatedInst = aggregatedData.find(i => i.id === currentActiveInst.id);
                 if(updatedInst) {
@@ -606,7 +625,7 @@ tr:hover td { background: #fafbff; }
         window.changePerPage = (val) => { itemsPerPage = Number(val); currentPage = 1; processAndRender(); };
         document.getElementById('search-input').addEventListener('input', () => { currentPage = 1; processAndRender(); });
 
-        // ─── MODAL 1: 系所清單 ───
+        // ─── MODAL 1: 系所清單與學生展開 ───
         window.openDeptModal = (instId) => {
             currentActiveInst = aggregatedData.find(i => i.id === instId);
             if (!currentActiveInst) return;
@@ -622,42 +641,86 @@ tr:hover td { background: #fafbff; }
             currentActiveInst = null;
         };
 
+        window.toggleStudentRows = (deptName) => {
+            const safeId = deptName.replace(/[^a-zA-Z0-9]/g, '_');
+            const rows = document.querySelectorAll(`.student-row-${safeId}`);
+            const icon = document.getElementById(`icon-expand-${safeId}`);
+            
+            let isExpanding = false;
+            rows.forEach(r => {
+                if(r.classList.contains('show')) r.classList.remove('show');
+                else { r.classList.add('show'); isExpanding = true; }
+            });
+            
+            if(isExpanding) icon.style.transform = 'rotate(180deg)';
+            else icon.style.transform = 'rotate(0deg)';
+        };
+
         function renderDeptListTable() {
             const tbody = document.getElementById('dept-list-tbody');
             
             let depts = [...currentActiveInst.departments];
             depts.sort((a, b) => {
-                if(a.status.code === 'expired' && b.status.code !== 'expired') return -1;
-                if(a.status.code !== 'expired' && b.status.code === 'expired') return 1;
-                return b.records.length - a.records.length;
+                if(a.status.code === 'attention' && b.status.code !== 'attention') return -1;
+                if(a.status.code !== 'attention' && b.status.code === 'attention') return 1;
+                return b.totalCount - a.totalCount;
             });
 
             if (depts.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="padding: 30px; color: var(--text-muted);">無關聯的系所紀錄。</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" style="padding: 30px; color: var(--text-muted);">無關聯的系所紀錄。</td></tr>`;
                 return;
             }
 
             let html = '';
             depts.forEach(d => {
-                const dispDept = getDeptShort(d.dept_name); // 顯示簡稱，但背後操作依舊使用原值
+                const dispDept = getDeptShort(d.dept_name);
+                const safeId = d.dept_name.replace(/[^a-zA-Z0-9]/g, '_');
+                
+                // 決定涵蓋率文字顏色
+                const coverageColor = d.validCount === d.totalCount ? 'var(--success)' : 'var(--danger)';
+
+                // 系所摘要列 (點擊整列可展開)
                 html += `
-                <tr>
-                    <td style="text-align: left; font-weight: 600;">${dispDept}</td>
-                    <td>${d.records.length} 人</td>
-                    <td style="font-family: monospace; color: var(--brand);">${d.latest_start_str}</td>
-                    <td style="font-family: monospace; color: var(--text-muted);">${d.eval_date || '-'}</td>
+                <tr class="dept-row" style="cursor: pointer;" onclick="window.toggleStudentRows('${d.dept_name}')">
+                    <td style="text-align: left; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                        <i id="icon-expand-${safeId}" class="ti ti-chevron-down" style="color: var(--text-muted); transition: 0.2s;"></i>
+                        ${dispDept}
+                    </td>
+                    <td>${d.totalCount} 人</td>
+                    <td>
+                        <div style="font-weight: 700; color: ${coverageColor};">${d.validCount} / ${d.totalCount}</div>
+                    </td>
                     <td><span class="badge ${d.status.class}">${d.status.label}</span></td>
                     <td>
-                        <button onclick="window.openEvalModal('${d.dept_name}')" class="btn btn-sm btn-secondary" style="color: var(--indigo); border-color: var(--indigo-border);">
+                        <button onclick="event.stopPropagation(); window.openEvalModal('${d.dept_name}')" class="btn btn-sm btn-secondary" style="color: var(--indigo); border-color: var(--indigo-border);">
                             <i class="ti ti-pencil"></i> 登錄評估
                         </button>
                     </td>
                 </tr>`;
+
+                // 該系所底下的個別學生列 (預設隱藏)
+                d.records.sort((a, b) => (b.start_date_obj || 0) - (a.start_date_obj || 0)); // 日期新的在上面
+                d.records.forEach(r => {
+                    const stuName = (r.student_raw || '').split(' - ')[1] || r.student_raw;
+                    html += `
+                    <tr class="student-row student-row-${safeId}">
+                        <td colspan="5" class="student-cell">
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding-right: 16px;">
+                                <div style="display: flex; align-items: center; gap: 16px;">
+                                    <span style="font-weight: 600; color: var(--text-primary); width: 80px;">${stuName}</span>
+                                    <span><i class="ti ti-calendar" style="font-size: 14px; vertical-align: text-bottom;"></i> 實習起日：<span style="font-family: monospace; color: var(--brand); font-weight: 600;">${r.start_date_str}</span></span>
+                                    <span><i class="ti ti-clipboard-check" style="font-size: 14px; vertical-align: text-bottom;"></i> 本筆評估日：<span style="font-family: monospace;">${r.eval_date || '無'}</span></span>
+                                </div>
+                                <span class="badge ${r.statusObj.class}" style="transform: scale(0.9);">${r.statusObj.label}</span>
+                            </div>
+                        </td>
+                    </tr>`;
+                });
             });
             tbody.innerHTML = html;
         }
 
-        // ─── MODAL 2: 評估登錄 ───
+        // ─── MODAL 2: 評估登錄 (智慧勾選功能) ───
         window.openEvalModal = (deptName) => {
             if (!currentActiveInst) return;
             currentActiveDeptName = deptName;
@@ -667,11 +730,46 @@ tr:hover td { background: #fafbff; }
 
             document.getElementById('eval-target-inst').innerText = currentActiveInst.name;
             document.getElementById('eval-target-dept').innerText = dispDept;
-            document.getElementById('eval-target-count').innerText = deptData.records.length;
+            document.getElementById('eval-target-count').innerText = deptData.totalCount;
 
-            document.getElementById('input-eval-date').value = deptData.eval_date || '';
-            document.getElementById('input-eval-result').value = deptData.eval_result || '';
-            document.getElementById('input-eval-remarks').value = deptData.eval_remarks || '';
+            // 預設給今天的日期
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('input-eval-date').value = today;
+            document.getElementById('input-eval-result').value = '';
+            document.getElementById('input-eval-remarks').value = '';
+
+            // 渲染學生勾選清單 (智慧預選：只有「未評估」或「逾期」的預設打勾)
+            const listContainer = document.getElementById('eval-student-list');
+            let checkHtml = '';
+            
+            // 排序：先顯示異常的，再顯示有效的
+            let sortedRecords = [...deptData.records].sort((a,b) => {
+                let aFail = a.statusObj.code !== 'pass';
+                let bFail = b.statusObj.code !== 'pass';
+                if(aFail && !bFail) return -1;
+                if(!aFail && bFail) return 1;
+                return 0;
+            });
+
+            sortedRecords.forEach(r => {
+                const stuName = (r.student_raw || '').split(' - ')[1] || r.student_raw;
+                const isPass = r.statusObj.code === 'pass';
+                const checkedStr = isPass ? '' : 'checked';
+                const colorStr = isPass ? 'var(--text-muted)' : 'var(--text-primary)';
+                
+                checkHtml += `
+                <label class="student-check-item">
+                    <input type="checkbox" class="eval-stu-checkbox" value="${r.id}" ${checkedStr}>
+                    <span style="color: ${colorStr}; display: flex; gap: 8px; align-items: center; width: 100%;">
+                        <strong style="width: 60px;">${stuName}</strong> 
+                        (起日: ${r.start_date_str}) 
+                        <div style="margin-left: auto; font-size: 10px; padding: 2px 4px; border-radius: 4px; background: ${isPass ? 'var(--bg)' : 'var(--warning-bg)'}; color: ${isPass ? 'var(--text-muted)' : 'var(--warning)'}; border: 1px solid ${isPass ? 'var(--border)' : '#fcd34d'};">
+                            目前狀態: ${r.statusObj.label}
+                        </div>
+                    </span>
+                </label>`;
+            });
+            listContainer.innerHTML = checkHtml;
 
             document.getElementById('eval-form-modal').classList.add('open');
         };
@@ -693,6 +791,15 @@ tr:hover td { background: #fafbff; }
                 return;
             }
 
+            // 取得使用者勾選的學生紀錄 IDs
+            const checkboxes = document.querySelectorAll('.eval-stu-checkbox:checked');
+            const selectedRecordIds = Array.from(checkboxes).map(cb => cb.value);
+
+            if (selectedRecordIds.length === 0) {
+                alert("請至少勾選一位要套用此評估紀錄的學生！");
+                return;
+            }
+
             const btn = document.getElementById('btn-submit');
             btn.disabled = true;
             btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 批次儲存中...';
@@ -700,14 +807,8 @@ tr:hover td { background: #fafbff; }
             try {
                 const batch = writeBatch(db);
                 
-                // 【核心修正3】只針對當前操作的「系所(resp_dept) + 機構」篩選出要更新的紀錄
-                const recordsToUpdate = allRecords.filter(r => 
-                    r.inst_raw === currentActiveInst.name && 
-                    (r.resp_dept || '未設定系所') === currentActiveDeptName
-                );
-
-                recordsToUpdate.forEach(record => {
-                    const recordRef = doc(db, "internship_records", record.id);
+                selectedRecordIds.forEach(recordId => {
+                    const recordRef = doc(db, "internship_records", recordId);
                     batch.update(recordRef, {
                         eval_date: evalDate,
                         eval_result: evalResult,
