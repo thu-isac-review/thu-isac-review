@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>機構審查作業</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+
+<style>
+/* ─── 核心樣式變數 (承襲實習資料管理風格) ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --brand: #1a56db;
+  --brand-hover: #1649c0;
+  --brand-light: #eff4ff;
+  --brand-border: #c3d2f9;
+  --topbar-h: 56px;
+  --bg: #f8f9fc;
+  --surface: #ffffff;
+  --border: #e5e7ef;
+  --border-strong: #cdd0dd;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #9ca3af;
+  --success: #059669;
+  --success-bg: #ecfdf5;
+  --success-border: #a7f3d0;
+  --danger: #dc2626;
+  --danger-bg: #fef2f2;
+  --danger-border: #fecaca;
+  --warning: #d97706;
+  --warning-bg: #fffbeb;
+  --indigo: #4f46e5;
+  --indigo-bg: #e0e7ff;
+  --indigo-border: #c7d2fe;
+  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.04);
+  --transition: 150ms cubic-bezier(0.4,0,0.2,1);
+}
+
+html, body { 
+  height: 100%; overflow: hidden; 
+  font-family: 'Noto Sans TC', sans-serif; font-size: 14px; 
+  color: var(--text-primary); background: var(--bg); 
+  -webkit-font-smoothing: antialiased; 
+  display: flex; flex-direction: column;
+}
+
+/* ─── SCROLLBAR ─── */
+.custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.custom-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
+
+/* ─── 動畫 ─── */
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.ti-spin { animation: spin 1s linear infinite; display: inline-block; }
+
+/* ─── TOOLBAR ─── */
+.toolbar {
+  padding: 12px 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0; flex-wrap: wrap;
+}
+
+.search-wrap { position: relative; flex: 0 0 260px; }
+.search-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px; }
+.search-input {
+  width: 100%; height: 34px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 0 10px 0 34px;
+  font-size: 13px; font-family: inherit;
+  color: var(--text-primary); outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.search-input::placeholder { color: var(--text-muted); }
+.search-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
+
+.flex-spacer { flex: 1; }
+.toolbar-actions { display: flex; align-items: center; gap: 8px; }
+
+/* ─── BUTTONS ─── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 0 14px; height: 34px;
+  border-radius: var(--radius);
+  font-size: 13px; font-weight: 600; font-family: inherit;
+  cursor: pointer; border: none; white-space: nowrap;
+  transition: all var(--transition); text-decoration: none;
+}
+.btn-primary { background: var(--brand); color: white; border: 1px solid var(--brand); }
+.btn-primary:hover { background: var(--brand-hover); }
+.btn-secondary { background: var(--surface); color: var(--text-secondary); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--bg); border-color: var(--border-strong); color: var(--text-primary); }
+
+/* ─── FILTER ROW ─── */
+.filter-row {
+  padding: 10px 24px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+  flex-shrink: 0; flex-wrap: wrap; position: relative;
+}
+.filter-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 0 10px; height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 99px; background: var(--surface);
+  font-size: 12px; font-weight: 500; color: var(--text-secondary);
+  cursor: pointer; transition: all var(--transition);
+}
+.filter-pill:hover { border-color: var(--border-strong); color: var(--text-primary); }
+.filter-pill.active { border-color: var(--brand); background: var(--brand-light); color: var(--brand); }
+
+/* ─── TABLE ─── */
+.table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; }
+.table-scroll { flex: 1; overflow: auto; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 1000px; }
+
+th {
+  padding: 12px 16px; text-align: center; 
+  font-size: 11px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
+  position: sticky; top: 0; z-index: 10;
+  background: var(--surface);
+  box-shadow: inset 0 -2px 0 var(--border); 
+}
+
+td { padding: 12px 16px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); }
+tr:hover td { background: #fafbff; }
+
+.cell-primary { font-size: 13px; color: var(--text-primary); line-height: 1.4; }
+.cell-primary.bold { font-weight: 600; }
+.cell-secondary { font-size: 11px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
+
+/* Status Badges */
+.badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
+.badge-success { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+.badge-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
+.badge-warning { background: var(--warning-bg); color: var(--warning); border: 1px solid #fcd34d; }
+.badge-secondary { background: var(--bg); color: var(--text-secondary); border: 1px solid var(--border-strong); }
+
+/* ─── PAGINATION ─── */
+.pagination-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 24px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; gap: 10px;
+}
+.pagination-info { font-size: 12px; color: var(--text-muted); }
+.pagination-info strong { color: var(--text-primary); }
+.pagination-bar-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.per-page-select { height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 12px; padding: 0 6px; outline: none; }
+.page-btn {
+  min-width: 30px; height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface);
+  font-size: 12px; font-weight: 500; color: var(--text-secondary);
+  cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0 8px;
+}
+.page-btn:hover:not(:disabled) { background: var(--bg); border-color: var(--border-strong); }
+.page-btn.active { background: var(--brand); color: white; border-color: var(--brand); font-weight: 700; }
+.page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ─── DIALOG MODALS ─── */
+.dialog-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+  display: none; align-items: center; justify-content: center; padding: 24px;
+}
+.dialog-overlay.open { display: flex; }
+.dialog-box {
+  background: var(--surface); border-radius: var(--radius-xl);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  width: 100%; display: flex; flex-direction: column; overflow: hidden;
+  animation: dialogIn 0.25s cubic-bezier(0.16,1,0.3,1);
+}
+@keyframes dialogIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } }
+
+.dialog-header {
+  padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; background: var(--surface);
+}
+.dialog-header h3 { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: var(--text-primary); }
+.dialog-header h3 i { font-size: 20px; color: var(--brand); }
+.dialog-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted); }
+.dialog-body { padding: 24px; overflow-y: auto; max-height: calc(85vh - 130px); }
+.dialog-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg); }
+
+.form-section-title { font-size: 13px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px; margin-bottom: 16px; }
+.field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
+.field-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+.field-input, .field-select {
+  width: 100%; height: 36px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--bg); padding: 0 12px; font-size: 13px; outline: none;
+}
+.field-input:focus, .field-select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); background: var(--surface); }
+.field-input:disabled { opacity: 0.7; cursor: not-allowed; background: #f1f5f9; color: var(--text-secondary); font-weight: 600; }
+
+.empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+    <div class="toolbar">
+        <div class="search-wrap">
+            <i class="ti ti-search"></i>
+            <input type="text" id="search-input" placeholder="搜尋系所、學生或機構名稱..." class="search-input">
+        </div>
+        <div class="flex-spacer"></div>
+        <div class="toolbar-actions">
+            <button class="btn btn-secondary" onclick="window.location.reload()">
+                <i class="ti ti-refresh"></i> 重新整理
+            </button>
+        </div>
+    </div>
+
+    <div class="filter-row">
+        <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-right: 8px;">審查狀態篩選：</span>
+        <button class="filter-pill active" id="filter-all" onclick="setFilter('all')">全部</button>
+        <button class="filter-pill" id="filter-pass" onclick="setFilter('pass')">審查通過 (有效)</button>
+        <button class="filter-pill" id="filter-expired" onclick="setFilter('expired')">逾期或無效</button>
+        <button class="filter-pill" id="filter-none" onclick="setFilter('none')">未評估</button>
+    </div>
+
+    <div class="table-wrap">
+        <div class="table-scroll custom-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">系所</th>
+                        <th style="width: 12%;">學生姓名</th>
+                        <th style="width: 20%;">實習機構名稱</th>
+                        <th style="width: 12%;">實習開始日</th>
+                        <th style="width: 12%;">最後評估日</th>
+                        <th style="width: 15%;">審查狀態 (回推一年)</th>
+                        <th style="width: 14%;">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <i class="ti ti-loader-2 ti-spin" style="font-size: 24px; color:var(--brand);"></i>
+                            <div style="margin-top: 8px; font-size: 13px;">資料載入中...</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="pagination-bar">
+            <div class="pagination-info" id="pagination-info">共 0 筆</div>
+            <div class="pagination-bar-right">
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="font-size:12px; color:var(--text-muted)">每頁顯示</span>
+                    <select class="per-page-select" id="per-page-select" onchange="window.changePerPage(this.value)">
+                        <option value="15">15 筆</option>
+                        <option value="25">25 筆</option>
+                        <option value="50">50 筆</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 4px;" id="pagination-controls"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="data-modal" class="dialog-overlay">
+        <div class="dialog-box" style="max-width: 700px;">
+            <div class="dialog-header">
+                <h3 id="modal-title"><i class="ti ti-clipboard-check"></i> 登錄機構評估紀錄</h3>
+                <button type="button" class="dialog-close" onclick="closeModal()"><i class="ti ti-x"></i></button>
+            </div>
+            
+            <form id="data-form" class="dialog-body custom-scroll" style="display: flex; gap: 24px;">
+                <div style="flex: 1; display: flex; flex-direction: column;">
+                    <div class="form-section-title"><i class="ti ti-info-circle"></i> 實習基本資訊</div>
+                    
+                    <div class="field">
+                        <label class="field-label">實習機構名稱</label>
+                        <input type="text" id="view-inst" disabled class="field-input">
+                    </div>
+                    <div class="field">
+                        <label class="field-label">關聯學生</label>
+                        <input type="text" id="view-student" disabled class="field-input">
+                    </div>
+                    <div class="field">
+                        <label class="field-label">所屬系所</label>
+                        <input type="text" id="view-dept" disabled class="field-input">
+                    </div>
+                    <div class="field">
+                        <label class="field-label">實習開始日</label>
+                        <input type="text" id="view-start" disabled class="field-input" style="color: var(--brand);">
+                    </div>
+                </div>
+
+                <div style="width: 1px; background: var(--border);"></div>
+
+                <div style="flex: 1; display: flex; flex-direction: column;">
+                    <div class="form-section-title"><i class="ti ti-edit"></i> 評估結果登錄</div>
+                    
+                    <div class="field">
+                        <label class="field-label">本次機構評估日期 <span style="color:var(--danger)">*</span></label>
+                        <input type="date" id="input-eval-date" required class="field-input">
+                    </div>
+                    <div class="field">
+                        <label class="field-label">評估結果 <span style="color:var(--danger)">*</span></label>
+                        <select id="input-eval-result" required class="field-select">
+                            <option value="">請選擇評估結果</option>
+                            <option value="通過">通過</option>
+                            <option value="有條件通過">有條件通過</option>
+                            <option value="不通過">不通過</option>
+                        </select>
+                    </div>
+                    <div class="field" style="flex: 1;">
+                        <label class="field-label">評估說明 / 備註</label>
+                        <textarea id="input-eval-remarks" class="field-input" placeholder="請簡述機構審查與評估狀況..." style="height: 100%; min-height: 80px; resize: none; padding: 10px; line-height: 1.5;"></textarea>
+                    </div>
+                </div>
+            </form>
+            
+            <div class="dialog-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">取消</button>
+                <button type="button" id="btn-submit" class="btn btn-primary" onclick="submitEvaluation()">
+                    <i class="ti ti-check"></i> 確認儲存
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY", authDomain: "thu-isac-review.firebaseapp.com", projectId: "thu-isac-review", storageBucket: "thu-isac-review.firebasestorage.app", messagingSenderId: "453299876735", appId: "1:453299876735:web:1d8babca3315423161a04a" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app); 
+        const db = getFirestore(app);
+        
+        const recordsCol = collection(db, "internship_records"); 
+        
+        let allRecords = []; 
+        let filteredRecords = [];
+        let currentFilter = 'all';
+        let currentPage = 1; 
+        let itemsPerPage = 15;
+        let editingRecordId = null;
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // 讀取實習紀錄作為審查基準
+                onSnapshot(recordsCol, (snapshot) => {
+                    allRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    processAndRender();
+                }, (error) => {
+                    document.getElementById('table-body').innerHTML = `<tr><td colspan="7" class="empty-state">資料讀取失敗，權限不足。</td></tr>`;
+                });
+            } else {
+                document.getElementById('table-body').innerHTML = `<tr><td colspan="7" class="empty-state">請先登入系統以存取資料。</td></tr>`;
+            }
+        });
+
+        // 計算審查狀態邏輯
+        function calculateStatus(startDateStr, evalDateStr) {
+            if (!startDateStr) return { code: 'none', label: '無法判定 (無開始日)', class: 'badge-secondary', icon: 'ti-help' };
+            if (!evalDateStr) return { code: 'none', label: '未評估', class: 'badge-secondary', icon: 'ti-minus' };
+
+            const startDate = new Date(startDateStr);
+            const evalDate = new Date(evalDateStr);
+            
+            // 計算評估日是否在實習開始日之前的一年以內
+            const diffTime = startDate.getTime() - evalDate.getTime();
+            const diffDays = diffTime / (1000 * 3600 * 24);
+
+            if (diffDays >= 0 && diffDays <= 365) {
+                return { code: 'pass', label: '審查通過 (有效)', class: 'badge-success', icon: 'ti-check' };
+            } else if (diffDays < 0) {
+                return { code: 'expired', label: '評估日期異常 (晚於實習)', class: 'badge-warning', icon: 'ti-alert-triangle' };
+            } else {
+                return { code: 'expired', label: '逾期或無效 (>1年)', class: 'badge-danger', icon: 'ti-x' };
+            }
+        }
+
+        window.setFilter = (filterVal) => {
+            currentFilter = filterVal;
+            document.querySelectorAll('.filter-pill').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`filter-${filterVal}`).classList.add('active');
+            currentPage = 1;
+            processAndRender();
+        };
+
+        function processAndRender() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+
+            // 附加狀態並過濾
+            let processed = allRecords.map(record => {
+                const statusObj = calculateStatus(record.start_date, record.eval_date);
+                return { ...record, _statusObj: statusObj };
+            });
+
+            filteredRecords = processed.filter(d => {
+                const searchStr = `${d.dept_name || ''} ${d.student_name || ''} ${d.inst_raw || ''}`.toLowerCase();
+                const matchSearch = searchStr.includes(searchTerm);
+                const matchFilter = currentFilter === 'all' || d._statusObj.code === currentFilter;
+                return matchSearch && matchFilter;
+            });
+
+            // 依實習開始日降冪排序
+            filteredRecords.sort((a, b) => new Date(b.start_date || 0) - new Date(a.start_date || 0));
+
+            renderTable();
+        }
+
+        window.renderTable = () => {
+            const tbody = document.getElementById('table-body');
+            const total = filteredRecords.length;
+            const totalPages = Math.max(1, Math.ceil(total / itemsPerPage));
+            if (currentPage > totalPages) currentPage = totalPages;
+            
+            const start = (currentPage - 1) * itemsPerPage;
+            const paginatedItems = filteredRecords.slice(start, start + itemsPerPage);
+
+            document.getElementById('pagination-info').innerHTML = total > 0 
+                ? `共 <strong>${total}</strong> 筆，顯示第 ${start + 1}–${Math.min(start + itemsPerPage, total)} 筆`
+                : `共 <strong>0</strong> 筆`;
+
+            // 分頁按鈕渲染
+            let pHtml = `<button class="page-btn" onclick="window.changePage(${currentPage-1})" ${currentPage<=1?'disabled':''}><i class="ti ti-chevron-left"></i></button>`;
+            for (let p=1; p<=totalPages; p++) {
+                if (p===1 || p===totalPages || Math.abs(p-currentPage)<=1) {
+                    pHtml += `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="window.changePage(${p})">${p}</button>`;
+                }
+            }
+            pHtml += `<button class="page-btn" onclick="window.changePage(${currentPage+1})" ${currentPage>=totalPages?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
+            document.getElementById('pagination-controls').innerHTML = pHtml;
+
+            if (total === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="empty-state"><i class="ti ti-inbox" style="font-size:24px; margin-bottom:8px; display:block;"></i>找不到符合條件的紀錄。</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            paginatedItems.forEach(data => {
+                const st = data._statusObj;
+                html += `
+                <tr>
+                    <td class="text-center"><div class="cell-primary">${data.dept_name || '-'}</div></td>
+                    <td class="text-center"><div class="cell-primary bold">${data.student_name || '-'}</div></td>
+                    <td><div class="cell-primary">${data.inst_raw || '-'}</div></td>
+                    <td class="text-center"><div class="cell-primary" style="font-family: monospace;">${data.start_date || '-'}</div></td>
+                    <td class="text-center"><div class="cell-primary" style="font-family: monospace; color: var(--text-muted);">${data.eval_date || '-'}</div></td>
+                    <td class="text-center">
+                        <span class="badge ${st.class}"><i class="ti ${st.icon}"></i> ${st.label}</span>
+                    </td>
+                    <td class="text-center">
+                        <button onclick="window.openEvalModal('${data.id}')" class="btn btn-secondary btn-sm">
+                            <i class="ti ti-pencil"></i> 評估登錄
+                        </button>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        };
+
+        window.changePage = (page) => { currentPage = page; renderTable(); };
+        window.changePerPage = (val) => { itemsPerPage = Number(val); currentPage = 1; processAndRender(); };
+
+        // 搜尋監聽
+        document.getElementById('search-input').addEventListener('input', () => { currentPage = 1; processAndRender(); });
+
+        // ─── MODAL 邏輯 ───
+        window.openEvalModal = (id) => {
+            const record = allRecords.find(r => r.id === id);
+            if (!record) return;
+            
+            editingRecordId = id;
+            document.getElementById('view-inst').value = record.inst_raw || '';
+            document.getElementById('view-student').value = record.student_name || '';
+            document.getElementById('view-dept').value = record.dept_name || '';
+            document.getElementById('view-start').value = record.start_date || '';
+
+            document.getElementById('input-eval-date').value = record.eval_date || '';
+            document.getElementById('input-eval-result').value = record.eval_result || '';
+            document.getElementById('input-eval-remarks').value = record.eval_remarks || '';
+
+            document.getElementById('data-modal').classList.add('open');
+        };
+
+        window.closeModal = () => {
+            document.getElementById('data-modal').classList.remove('open');
+            editingRecordId = null;
+        };
+
+        window.submitEvaluation = async () => {
+            if (!editingRecordId) return;
+
+            const evalDate = document.getElementById('input-eval-date').value;
+            const evalResult = document.getElementById('input-eval-result').value;
+            const evalRemarks = document.getElementById('input-eval-remarks').value.trim();
+
+            if (!evalDate || !evalResult) {
+                alert("請填寫「評估日期」與「評估結果」！");
+                return;
+            }
+
+            const btn = document.getElementById('btn-submit');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 儲存中...';
+
+            try {
+                await updateDoc(doc(db, "internship_records", editingRecordId), {
+                    eval_date: evalDate,
+                    eval_result: evalResult,
+                    eval_remarks: evalRemarks,
+                    updated_at: serverTimestamp()
+                });
+                closeModal();
+            } catch (err) {
+                alert("儲存失敗：" + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="ti ti-check"></i> 確認儲存';
+            }
+        };
+
+    </script>
+</body>
+</html>
