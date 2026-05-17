@@ -339,7 +339,7 @@
                 
                 if (currentHash.includes('review/department')) return ['審查作業', '系所審查作業'];
                 if (currentHash.includes('review/school')) return ['審查作業', '校級審查作業'];
-                if (currentHash.includes('review/institution_review')) return ['審查作業', '機構審查作業'];
+                if (currentHash.includes('review/institution')) return ['審查作業', '機構審查作業'];
                 
                 if (currentHash.includes('intern_view/course')) return ['實習資料瀏覽', '實習課程清單'];
                 if (currentHash.includes('intern_view/students')) return ['實習資料瀏覽', '實習學生清單'];
@@ -388,7 +388,7 @@
                             <MenuBtn active={currentHash === '/list.html'} label="學生待查核名單" icon="ti ti-user-check" onClick={() => navigate('/list.html')} />
                             <MenuBtn active={currentHash === '/review/department.html'} label="系所審查作業" icon="ti ti-building-community" onClick={() => navigate('/review/department.html')} />
                             <MenuBtn active={currentHash === '/review/school.html'} label="校級審查作業" icon="ti ti-building-bank" onClick={() => navigate('/review/school.html')} />
-                            <MenuBtn active={currentHash === '/review/institution_review.html'} label="機構審查作業" icon="ti ti-building-skyscraper" onClick={() => navigate('/review/institution_review.html')} />
+                            <MenuBtn active={currentHash === '/review/institution.html'} label="機構審查作業" icon="ti ti-building-skyscraper" onClick={() => navigate('/review/institution.html')} />
                             
                             <div className="nav-group-label">實習資料瀏覽</div>
                             <MenuBtn active={currentHash === '/intern_view/course.html'} label="實習課程清單" icon="ti ti-book" onClick={() => navigate('/intern_view/course.html')} />
