@@ -3,10 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>機構審查作業 (依機構彙整)</title>
+<title>機構審查作業</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<!-- Tabler Icons -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 
 <style>
@@ -36,6 +37,7 @@
   --warning-bg: #fffbeb;
   --warning-border: #fde68a;
   --indigo: #4f46e5;
+  --indigo-light: #eef2ff;
   --indigo-bg: #e0e7ff;
   --indigo-border: #c7d2fe;
   --radius-sm: 6px;
@@ -48,56 +50,98 @@
   --transition: 150ms cubic-bezier(0.4,0,0.2,1);
 }
 
-html, body { height: 100%; overflow: hidden; font-family: 'Noto Sans TC', sans-serif; font-size: 13px; color: var(--text-primary); background: var(--bg); display: flex; flex-direction: column; }
+html, body { 
+  height: 100%; overflow: hidden; 
+  font-family: 'Noto Sans TC', sans-serif; font-size: 14px; 
+  color: var(--text-primary); background: var(--bg); 
+  -webkit-font-smoothing: antialiased; 
+  display: flex; flex-direction: column;
+}
+
+/* ─── SCROLLBAR ─── */
 .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
-.custom-scroll::-webkit-scrollbar-track { background: transparent; }
 .custom-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
 .custom-scroll::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
+/* ─── 動畫 ─── */
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .ti-spin { animation: spin 1s linear infinite; display: inline-block; }
 
-/* ─── TOOLBAR & FILTER ─── */
-.toolbar { padding: 12px 24px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+/* ─── TOOLBAR ─── */
+.toolbar {
+  padding: 12px 24px; background: var(--surface); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0; flex-wrap: wrap;
+}
 .search-wrap { position: relative; flex: 0 0 260px; }
 .search-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px; }
-.search-input { width: 100%; height: 34px; border: 1px solid var(--border); border-radius: var(--radius); padding: 0 10px 0 34px; font-size: 13px; outline: none; transition: 0.2s; }
+.search-input {
+  width: 100%; height: 34px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface); padding: 0 10px 0 34px; font-size: 13px; font-family: inherit;
+  color: var(--text-primary); outline: none; transition: border-color var(--transition), box-shadow var(--transition);
+}
+.search-input::placeholder { color: var(--text-muted); }
 .search-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
 .flex-spacer { flex: 1; }
 
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 14px; height: 34px; border-radius: var(--radius); font-size: 13px; font-weight: 600; cursor: pointer; border: none; white-space: nowrap; transition: 0.2s; outline: none; }
+/* ─── BUTTONS ─── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 0 14px; height: 34px; border-radius: var(--radius);
+  font-size: 13px; font-weight: 600; font-family: inherit;
+  cursor: pointer; border: none; white-space: nowrap;
+  transition: all var(--transition); text-decoration: none;
+}
 .btn-primary { background: var(--brand); color: white; border: 1px solid var(--brand); }
 .btn-primary:hover { background: var(--brand-hover); }
 .btn-secondary { background: var(--surface); color: var(--text-secondary); border: 1px solid var(--border); }
 .btn-secondary:hover { background: var(--bg); border-color: var(--border-strong); color: var(--text-primary); }
+.btn-indigo { background: var(--indigo); color: white; border: 1px solid var(--indigo); }
+.btn-indigo:hover { background: #4338ca; }
+.btn-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
+.btn-danger:hover { background: #fee2e2; }
 .btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
+.btn-icon { width: 34px; padding: 0; justify-content: center; }
+.btn-icon.sm { width: 28px; height: 28px; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn i { font-size: 16px; display: inline-flex; align-items: center; justify-content: center; }
 
-/* 表格專用操作按鈕 */
 .action-btn { display: inline-flex; align-items: center; justify-content: center; gap: 4px; background: transparent; border: none; cursor: pointer; font-size: 13px; font-weight: 600; padding: 4px 8px; border-radius: var(--radius-sm); transition: 0.2s; outline: none; }
 .action-btn.edit { color: var(--brand); }
 .action-btn.edit:hover { background: var(--brand-light); }
 .action-btn.delete { color: var(--danger); }
 .action-btn.delete:hover { background: var(--danger-bg); }
 
-.filter-row { padding: 10px 24px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.filter-pill { padding: 0 12px; height: 28px; border: 1px solid var(--border); border-radius: 99px; background: var(--surface); font-size: 12px; font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: 0.2s; }
+/* ─── FILTER ROW ─── */
+.filter-row { padding: 10px 24px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
+.filter-pill {
+  display: inline-flex; align-items: center; gap: 5px; padding: 0 12px; height: 28px;
+  border: 1px solid var(--border); border-radius: 99px; background: var(--surface);
+  font-size: 12px; font-weight: 500; color: var(--text-secondary);
+  cursor: pointer; transition: all var(--transition); white-space: nowrap;
+}
 .filter-pill:hover { border-color: var(--border-strong); color: var(--text-primary); }
-.filter-pill.active { border-color: var(--brand); background: var(--brand-light); color: var(--brand); }
+.filter-pill.active { border-color: var(--brand); background: var(--brand-light); color: var(--brand); font-weight: 700; }
 
 /* ─── MAIN TABLE ─── */
 .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; }
 .table-scroll { flex: 1; overflow: auto; }
-table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; min-width: 900px; }
-th { padding: 12px 16px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; position: sticky; top: 0; z-index: 10; background: var(--surface); box-shadow: inset 0 -2px 0 var(--border); }
-td { padding: 16px 18px; vertical-align: middle; border-bottom: 1px solid var(--border); background: var(--surface); }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 900px; }
+th {
+  padding: 12px 16px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
+  position: sticky; top: 0; z-index: 10; background: var(--surface); box-shadow: inset 0 -2px 0 var(--border); 
+}
+td { padding: 12px 16px; vertical-align: middle; border-bottom: 1px solid var(--border); word-break: break-word; }
 tr:hover td { background: #fafbff; }
 
 .cell-primary { font-size: 13px; color: var(--text-primary); line-height: 1.4; }
 .cell-primary.bold { font-weight: 600; }
 .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
+.empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; display: block; }
+.empty-text { font-size: 13px; font-weight: 600; }
 
 /* ─── BADGES ─── */
-.badge { display: inline-flex; align-items: center; justify-content: center; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.badge { display: inline-flex; align-items: center; justify-content: center; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; gap: 4px; }
 .badge-success { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
 .badge-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
 .badge-warning { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
@@ -112,72 +156,66 @@ tr:hover td { background: #fafbff; }
 .more-badge { display: inline-flex; align-items: center; justify-content: center; height: 24px; padding: 0 8px; border-radius: 99px; background: var(--border); color: var(--text-secondary); font-size: 11px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-left: auto; flex-shrink: 0; border: none; outline: none; }
 .more-badge:hover { background: var(--border-strong); color: var(--text-primary); }
 
+/* ─── PAGINATION ─── */
 .pagination-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; gap: 10px; }
 .pagination-info { font-size: 12px; color: var(--text-muted); }
 .pagination-info strong { color: var(--text-primary); }
-.per-page-select { height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 12px; padding: 0 6px; outline: none; }
-.page-btn { min-width: 30px; height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 12px; font-weight: 500; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0 8px; transition: 0.2s; }
+.pagination-bar-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.per-page-select { height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 12px; padding: 0 6px; outline: none; cursor: pointer; font-family: inherit; color: var(--text-secondary); }
+.pagination-controls { display: flex; align-items: center; gap: 4px; }
+.page-btn { min-width: 30px; height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 12px; font-weight: 500; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0 8px; transition: all var(--transition); }
 .page-btn:hover:not(:disabled) { background: var(--bg); border-color: var(--border-strong); }
-.page-btn.active { background: var(--brand); color: white; border-color: var(--brand); }
+.page-btn.active { background: var(--brand); color: white; border-color: var(--brand); font-weight: 700; }
 .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* ─── MODALS ─── */
+/* ─── UNIFIED DIALOG MODALS ─── */
 .dialog-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; padding: 24px; }
 .dialog-overlay.open { display: flex; }
 #manage-modal { z-index: 200; }
 #add-eval-modal { z-index: 210; }
 #cohort-details-modal { z-index: 220; } 
 
-.dialog-box { background: var(--surface); border-radius: var(--radius-xl); box-shadow: 0 20px 60px rgba(0,0,0,0.2); width: 100%; display: flex; flex-direction: column; overflow: hidden; animation: dialogIn 0.2s ease-out; max-height: 95vh; }
+.dialog-box { background: var(--surface); border-radius: var(--radius-xl); box-shadow: 0 20px 60px rgba(0,0,0,0.2); width: 100%; display: flex; flex-direction: column; overflow: hidden; animation: dialogIn 0.25s cubic-bezier(0.16,1,0.3,1); max-height: 95vh; }
 @keyframes dialogIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-.dialog-header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--surface); flex-shrink: 0; }
+
+.dialog-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--surface); flex-shrink: 0; }
 .dialog-header h3 { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: var(--text-primary); margin: 0; }
-.dialog-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted); transition: 0.2s; }
-.dialog-close:hover { color: var(--danger); }
+.dialog-header h3 i { font-size: 20px; }
+.dialog-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; padding: 4px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); transition: all var(--transition); }
+.dialog-close:hover { color: var(--danger); background: var(--danger-bg); }
 .dialog-body { padding: 24px; overflow-y: auto; flex: 1; }
+.dialog-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg); flex-shrink: 0; }
 
-/* ─── SPLIT LAYOUT ─── */
-.split-layout { display: flex; gap: 24px; align-items: stretch; height: 100%; }
-.split-left { flex: 5; min-width: 0; display: flex; flex-direction: column; }
-.split-right { flex: 7; min-width: 0; background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+/* ─── FORM ELEMENTS INSIDE DIALOG ─── */
+.field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
+.field-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.field-label .req { color: var(--danger); margin-left: 2px; }
+.field-input, .field-select { width: 100%; height: 36px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); padding: 0 12px; font-size: 13px; font-family: inherit; color: var(--text-primary); outline: none; transition: all var(--transition); }
+.field-input:focus, .field-select:focus, textarea.field-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); background: var(--surface); }
+select.field-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; }
 
-.right-header { padding: 16px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px; }
-.right-content { overflow-y: auto; flex: 1; padding: 0; }
+/* ─── SPLIT LAYOUT (專屬彈窗設計) ─── */
+.split-layout { display: flex; gap: 24px; align-items: stretch; height: 100%; min-height: 400px; }
+.split-left { flex: 5; min-width: 0; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+.split-right { flex: 7; min-width: 0; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
 
 /* ─── INNER TABLE (統一風格) ─── */
-.inner-table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 500px; }
-.inner-table th { 
-    background: var(--surface); font-size: 11px; font-weight: 700; color: var(--text-muted); 
-    text-transform: uppercase; letter-spacing: 0.05em; padding: 12px 16px; 
-    border-bottom: 1px solid var(--border); box-shadow: inset 0 -2px 0 var(--border); 
-    position: sticky; top: 0; z-index: 10; text-align: center;
-}
-.inner-table td { padding: 14px 16px; font-size: 13px; border-bottom: 1px solid var(--border); background: var(--surface); vertical-align: middle; text-align: center; color: var(--text-primary); }
-.inner-table tr.cohort-row { cursor: pointer; transition: 0.2s; }
-.inner-table tr.cohort-row:hover td { background: #fafbff; }
-.inner-table tr.cohort-row.active td { background: #f0f4ff; border-left: 3px solid var(--brand); }
-
-.eval-table th { background: var(--bg); box-shadow: inset 0 -1px 0 var(--border); padding: 10px 12px; }
-.eval-table td { padding: 10px 12px; font-size: 12px; }
+.inner-table { width: 100%; border-collapse: collapse; min-width: 500px; }
+.inner-table th { background: var(--surface); font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; padding: 12px 16px; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; text-align: center; }
+.inner-table td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--border); background: var(--surface); vertical-align: middle; text-align: center; color: var(--text-primary); }
+.eval-table th { background: var(--bg); box-shadow: inset 0 -1px 0 var(--border); }
+.eval-table td { font-size: 12px; }
 .eval-table tr:hover td { background: var(--bg); }
-
-/* ─── FORMS ─── */
-.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
-.field-label { font-size: 12px; font-weight: 700; color: var(--text-secondary); }
-.field-label .req { color: var(--danger); margin-left: 2px; }
-.field-input, .field-select { width: 100%; height: 38px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: 0 12px; font-size: 13px; outline: none; transition: 0.2s; }
-.field-input:focus, .field-select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
 
 /* ─── 手機版響應式設定 ─── */
 @media (max-width: 768px) {
-    .dialog-overlay { padding: 12px; }
-    .split-layout { flex-direction: column; height: auto; gap: 16px; }
-    .split-left { min-height: 350px; }
-    .split-right { min-width: 100%; min-height: 400px; }
-    .toolbar { flex-direction: column; align-items: stretch; }
-    .search-wrap { flex: none; width: 100%; }
-    .right-header { flex-direction: column; align-items: stretch; }
-    .right-header > div { display: flex; justify-content: space-between; width: 100%; }
+  .toolbar { padding: 12px 16px; justify-content: flex-end; }
+  .search-wrap { flex: 0 0 100%; order: 1; margin-bottom: 8px; }
+  .flex-spacer { display: none; }
+  .dialog-overlay { padding: 12px; }
+  .split-layout { flex-direction: column; height: auto; gap: 16px; }
+  .split-left { min-height: 350px; }
+  .split-right { min-width: 100%; min-height: 400px; }
 }
 </style>
 </head>
@@ -188,6 +226,7 @@ tr:hover td { background: #fafbff; }
             <i class="ti ti-search"></i>
             <input type="text" id="search-input" placeholder="搜尋機構名稱..." class="search-input">
         </div>
+        <div class="flex-spacer"></div>
     </div>
 
     <div class="filter-row">
@@ -210,24 +249,33 @@ tr:hover td { background: #fafbff; }
                     </tr>
                 </thead>
                 <tbody id="table-body">
-                    <tr><td colspan="5" class="empty-state"><i class="ti ti-loader-2 ti-spin" style="font-size: 24px; color: var(--brand);"></i><div style="margin-top: 8px;">資料載入中...</div></td></tr>
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            <i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i>
+                            <div class="empty-text">資料載入中...</div>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
         
         <div class="pagination-bar">
             <div class="pagination-info" id="pagination-info">共 0 筆</div>
-            <div style="display:flex; align-items:center; gap:10px;">
-                <select class="per-page-select" onchange="window.changePerPage(this.value)">
-                    <option value="15">15 筆</option>
-                    <option value="25">25 筆</option>
-                    <option value="50">50 筆</option>
-                </select>
-                <div style="display: flex; gap: 4px;" id="pagination-controls"></div>
+            <div class="pagination-bar-right">
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="font-size:12px; color:var(--text-muted)">每頁顯示</span>
+                    <select class="per-page-select" onchange="window.changePerPage(this.value)">
+                        <option value="15">15 筆</option>
+                        <option value="25">25 筆</option>
+                        <option value="50">50 筆</option>
+                    </select>
+                </div>
+                <div class="pagination-controls" id="pagination-controls"></div>
             </div>
         </div>
     </div>
 
+    <!-- 綜合管理視窗 -->
     <div id="manage-modal" class="dialog-overlay">
         <div class="dialog-box" style="max-width: 1500px; width: 98%;">
             <div class="dialog-header">
@@ -235,14 +283,14 @@ tr:hover td { background: #fafbff; }
                 <button type="button" class="dialog-close" onclick="closeManageModal()"><i class="ti ti-x"></i></button>
             </div>
             
-            <div class="dialog-body custom-scroll" style="padding: 24px; background: var(--bg); display: flex; flex-direction: column;">
+            <div class="dialog-body custom-scroll" style="background: var(--bg); display: flex; flex-direction: column;">
                 
                 <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 24px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 12px; flex-shrink: 0;">
                     <div style="font-size: 18px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
                         <i class="ti ti-building-skyscraper" style="color: var(--brand);"></i> 
                         <span id="info-inst-name">機構名稱</span>
                     </div>
-                    <div class="info-card-flex" style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: var(--text-secondary);">
+                    <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: var(--text-secondary);">
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <i class="ti ti-id" style="font-size: 16px; color: var(--text-muted);"></i>
                             <span id="info-tax-id">-</span>
@@ -261,15 +309,15 @@ tr:hover td { background: #fafbff; }
                 </div>
 
                 <div class="split-layout">
-                    
-                    <div class="split-left" style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; display: flex; flex-direction: column;">
-                        <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); background: var(--surface); display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                    <!-- 左側：梯次清單 -->
+                    <div class="split-left">
+                        <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
                             <i class="ti ti-list-details" style="color: var(--text-secondary); font-size: 18px;"></i>
                             <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">各系實習梯次清單</span>
-                            <span style="font-size: 11px; color: var(--text-muted); font-weight: 500; margin-left: 8px;" class="hidden sm:inline">(同系+同學年期+同起日為一梯次)</span>
+                            <span style="font-size: 11px; color: var(--text-muted); font-weight: 500; margin-left: auto;">(同系+同學年期+同起日為一梯次)</span>
                         </div>
-                        <div class="custom-scroll" style="flex: 1; overflow-x: auto; overflow-y: auto;">
-                            <table class="inner-table" style="min-width: 650px;">
+                        <div class="custom-scroll" style="flex: 1; overflow: auto;">
+                            <table class="inner-table">
                                 <thead>
                                     <tr>
                                         <th style="text-align: left; width: 18%;">負責學系</th>
@@ -281,24 +329,24 @@ tr:hover td { background: #fafbff; }
                                         <th style="width: 16%;">操作</th>
                                     </tr>
                                 </thead>
-                                <tbody id="cohort-list-tbody">
-                                    </tbody>
+                                <tbody id="cohort-list-tbody"></tbody>
                             </table>
                         </div>
                     </div>
 
-                    <div class="split-right" style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; display: flex; flex-direction: column;">
-                        <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); background: var(--surface); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+                    <!-- 右側：評估紀錄 -->
+                    <div class="split-right">
+                        <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <i class="ti ti-history" style="color: var(--indigo); font-size: 18px;"></i>
                                 <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">機構總評估紀錄一覽</span>
                             </div>
-                            <button class="btn btn-primary btn-sm" style="background: var(--indigo); border-color: var(--indigo);" onclick="openAddEvalModal()">
+                            <button class="btn btn-indigo btn-sm" onclick="openAddEvalModal()">
                                 <i class="ti ti-plus"></i> 新增評估
                             </button>
                         </div>
-                        <div class="custom-scroll" style="flex: 1; overflow-x: auto; overflow-y: auto;">
-                            <table class="inner-table eval-table" style="min-width: 700px;">
+                        <div class="custom-scroll" style="flex: 1; overflow: auto;">
+                            <table class="inner-table eval-table">
                                 <thead>
                                     <tr>
                                         <th style="width: 16%; text-align: left;">評估學系</th>
@@ -316,23 +364,23 @@ tr:hover td { background: #fafbff; }
                             </table>
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- 新增/編輯評估視窗 -->
     <div id="add-eval-modal" class="dialog-overlay">
         <div class="dialog-box" style="max-width: 450px;">
-            <div class="dialog-header" style="border-bottom-color: var(--indigo-border);">
-                <h3 style="color: var(--indigo);"><i class="ti ti-clipboard-plus"></i> <span id="modal-eval-title">登錄機構評估紀錄</span></h3>
+            <div class="dialog-header">
+                <h3 style="color: var(--indigo);"><i class="ti ti-clipboard-plus" style="color: var(--indigo);"></i> <span id="modal-eval-title">登錄機構評估紀錄</span></h3>
                 <button type="button" class="dialog-close" onclick="closeAddEvalModal()"><i class="ti ti-x"></i></button>
             </div>
             
             <div class="dialog-body custom-scroll">
-                <div style="margin-bottom: 20px; padding: 12px 16px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); font-size: 12px; color: var(--text-secondary); line-height: 1.5;">
-                    您正在為 <strong id="add-eval-inst" style="color: var(--text-primary);"></strong> 新增評估紀錄。<br>
-                    <span style="color: var(--danger);">* 儲存後，系統將自動比對並涵蓋該系所一年內開始實習的學生梯次。</span>
+                <div style="margin-bottom: 20px; padding: 12px 16px; background: var(--indigo-light); border: 1px solid var(--indigo-border); border-radius: var(--radius); font-size: 12px; color: var(--text-secondary); line-height: 1.5;">
+                    您正在為 <strong id="add-eval-inst" style="color: var(--indigo);"></strong> 新增評估紀錄。<br>
+                    <span style="color: var(--danger); font-weight: 500;">* 儲存後，系統將自動比對並涵蓋該系所一年內開始實習的學生梯次。</span>
                 </div>
 
                 <div class="field">
@@ -364,23 +412,24 @@ tr:hover td { background: #fafbff; }
                 </div>
             </div>
             
-            <div class="dialog-header" style="background: var(--bg); justify-content: flex-end; gap: 10px; border-top: 1px solid var(--border); border-bottom: none;">
+            <div class="dialog-footer">
                 <button type="button" class="btn btn-secondary" onclick="closeAddEvalModal()">取消</button>
-                <button type="button" id="btn-submit-eval" class="btn btn-primary" style="background: var(--indigo); border-color: var(--indigo);" onclick="submitEvaluation()">
+                <button type="button" id="btn-submit-eval" class="btn btn-indigo" onclick="submitEvaluation()">
                     <i class="ti ti-check"></i> 確認儲存
                 </button>
             </div>
         </div>
     </div>
 
+    <!-- 梯次明細視窗 -->
     <div id="cohort-details-modal" class="dialog-overlay" style="z-index: 250;">
-        <div class="dialog-box" style="max-width: 1400px; width: 95%; height: 90vh;">
+        <div class="dialog-box" style="max-width: 1400px; width: 95%;">
             <div class="dialog-header">
                 <h3><i class="ti ti-users" style="color: var(--brand);"></i> <span id="cohort-details-title">梯次學生明細</span></h3>
                 <button type="button" class="dialog-close" onclick="closeCohortDetailsModal()"><i class="ti ti-x"></i></button>
             </div>
-            <div class="dialog-body custom-scroll" style="padding: 0; background: var(--surface);">
-                <table class="inner-table" style="border: none; border-radius: 0; min-width: 1300px;">
+            <div class="dialog-body custom-scroll" style="padding: 0;">
+                <table class="inner-table" style="min-width: 1300px;">
                     <thead>
                         <tr>
                             <th style="width: 8%;">學號</th>
@@ -398,13 +447,13 @@ tr:hover td { background: #fafbff; }
                             <th style="width: 4%;">填報系所</th>
                         </tr>
                     </thead>
-                    <tbody id="cohort-details-tbody">
-                        </tbody>
+                    <tbody id="cohort-details-tbody"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
+    <!-- Firebase 邏輯維持原樣 (稍作整理確保與新 class 連結正常) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -457,7 +506,7 @@ tr:hover td { background: #fafbff; }
                 onSnapshot(recordsCol, (snap) => { allRecords = snap.docs.map(d => ({id: d.id, ...d.data()})); runAggregation(); });
                 onSnapshot(evaluationsCol, (snap) => { allEvaluations = snap.docs.map(d => ({id: d.id, ...d.data()})); runAggregation(); });
             } else {
-                document.getElementById('table-body').innerHTML = `<tr><td colspan="5" class="empty-state">請先登入系統。</td></tr>`;
+                document.getElementById('table-body').innerHTML = `<tr><td colspan="5" class="empty-state"><i class="ti ti-shield-half empty-icon"></i><div class="empty-text">請先登入系統以存取資料。</div></td></tr>`;
             }
         });
 
@@ -563,17 +612,17 @@ tr:hover td { background: #fafbff; }
             pHtml += `<button class="page-btn" onclick="window.changePage(${currentPage+1})" ${currentPage>=tPages?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
             document.getElementById('pagination-controls').innerHTML = pHtml;
 
-            if(total === 0) { tbody.innerHTML = `<tr><td colspan="5" class="empty-state">找不到符合的機構。</td></tr>`; return; }
+            if(total === 0) { tbody.innerHTML = `<tr><td colspan="5" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">找不到符合條件的機構資料。</div></td></tr>`; return; }
 
             let html = '';
             items.forEach(d => {
                 html += `
                 <tr>
                     <td><div class="cell-primary bold">${d.name}</div></td>
-                    <td class="text-center"><div class="cell-primary">${d.cohorts.length} 梯次</div></td>
-                    <td class="text-center"><div class="cell-primary">${d.totalStudents} 人</div></td>
-                    <td class="text-center"><span class="badge ${d.overallStatus.class}"><i class="ti ${d.overallStatus.icon}"></i> ${d.overallStatus.label}</span></td>
-                    <td class="text-center">
+                    <td style="text-align: center;"><div class="cell-primary">${d.cohorts.length} 梯次</div></td>
+                    <td style="text-align: center;"><div class="cell-primary">${d.totalStudents} 人</div></td>
+                    <td style="text-align: center;"><span class="badge ${d.overallStatus.class}"><i class="ti ${d.overallStatus.icon}"></i> ${d.overallStatus.label}</span></td>
+                    <td style="text-align: center;">
                         <button class="btn btn-secondary btn-sm" onclick="openManageModal('${d.id}')">
                             <i class="ti ti-list"></i> 管理審查
                         </button>
@@ -590,7 +639,6 @@ tr:hover td { background: #fafbff; }
         window.changePage = (p) => { currentPage = p; processAndRenderMain(); };
         window.changePerPage = (val) => { itemsPerPage = Number(val); currentPage = 1; processAndRenderMain(); };
 
-        // ─── 綜合管理視窗 邏輯 ───
         window.openManageModal = (id) => {
             activeInstId = id;
             document.getElementById('manage-modal').classList.add('open');
@@ -603,7 +651,6 @@ tr:hover td { background: #fafbff; }
             let inst = aggregatedData.find(i => i.id === activeInstId);
             if(!inst) return;
             
-            // 機構資訊卡片
             document.getElementById('info-inst-name').innerText = inst.name || '-';
             document.getElementById('info-tax-id').innerText = inst.tax_id || '無統編資料';
             document.getElementById('info-industry').innerText = inst.industry || '未註明行業別';
@@ -613,7 +660,7 @@ tr:hover td { background: #fafbff; }
 
             let tbody = document.getElementById('cohort-list-tbody');
             if(inst.cohorts.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="empty-state" style="padding:40px;">此機構目前無實習梯次</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="empty-state" style="padding:40px;"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">此機構目前無實習梯次</div></td></tr>`;
             } else {
                 let sortedCohorts = [...inst.cohorts].sort((a,b) => {
                     if(a.status.code === 'attention' && b.status.code !== 'attention') return -1;
@@ -641,8 +688,6 @@ tr:hover td { background: #fafbff; }
                 });
                 tbody.innerHTML = html;
             }
-
-            // 右側始終顯示全部評估
             window.renderRightPanel();
         }
 
@@ -659,7 +704,7 @@ tr:hover td { background: #fafbff; }
             }); 
 
             if(evals.length === 0) {
-                listTbody.innerHTML = `<tr><td colspan="7" class="empty-state" style="padding: 40px;"><i class="ti ti-inbox" style="font-size:32px; color:var(--border-strong); display:block; margin-bottom:8px;"></i>此機構尚未建立任何評估紀錄。</td></tr>`;
+                listTbody.innerHTML = `<tr><td colspan="7" class="empty-state" style="padding: 40px;"><i class="ti ti-inbox empty-icon" style="margin: 0 auto 12px auto;"></i><div class="empty-text">此機構尚未建立任何評估紀錄。</div></td></tr>`;
                 return;
             }
 
@@ -707,7 +752,6 @@ tr:hover td { background: #fafbff; }
             listTbody.innerHTML = html;
         };
 
-        // ─── 第三層彈跳視窗：查看梯次明細 ───
         window.openCohortDetailsModal = (cohortKey) => {
             let inst = aggregatedData.find(i => i.id === activeInstId);
             if(!inst) return;
@@ -718,6 +762,10 @@ tr:hover td { background: #fafbff; }
             
             let tbody = document.getElementById('cohort-details-tbody');
             let html = '';
+
+            if(cohort.records.length === 0) {
+                 tbody.innerHTML = `<tr><td colspan="13" class="empty-state"><div class="empty-icon"><i class="ti ti-users"></i></div><div class="empty-text">查無學生資料</div></td></tr>`;
+            }
 
             cohort.records.forEach(data => {
                 const stuParts = (data.student_raw || '').split(' - ');
@@ -820,7 +868,6 @@ tr:hover td { background: #fafbff; }
             }
         };
 
-        // ─── 刪除評估紀錄 ───
         window.deleteEvaluation = async (evalId) => {
             if (confirm('確定要刪除這筆評估紀錄嗎？刪除後可能會導致該系所的部分學生梯次變為異常狀態。')) {
                 try {
@@ -831,7 +878,6 @@ tr:hover td { background: #fafbff; }
             }
         };
 
-        // ─── 新增/編輯評估彈窗 邏輯 ───
         window.openAddEvalModal = () => {
             editingEvalId = null;
             let inst = aggregatedData.find(i => i.id === activeInstId);
@@ -931,7 +977,6 @@ tr:hover td { background: #fafbff; }
                 btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> 確認儲存';
             }
         };
-
     </script>
 </body>
 </html>
