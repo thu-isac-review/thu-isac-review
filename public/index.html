@@ -33,6 +33,7 @@
           --brand-border: #c3d2f9;
           
           --sidebar-w: 240px;
+          --sidebar-collapsed-w: 72px; /* 收闔時的寬度 */
           --topbar-h: 56px;
           --bg: #f8f9fc;
           --surface: #ffffff;
@@ -48,7 +49,7 @@
           --radius-lg: 12px;
           --radius-xl: 16px;
           --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-          --transition: 150ms cubic-bezier(0.4,0,0.2,1);
+          --transition: 300ms cubic-bezier(0.4,0,0.2,1);
         }
 
         html, body, #root { height: 100%; overflow: hidden; font-family: 'Noto Sans TC', sans-serif; font-size: 14px; color: var(--text-primary); background: var(--bg); -webkit-font-smoothing: antialiased; }
@@ -65,7 +66,7 @@
           flex-direction: column;
           flex-shrink: 0;
           z-index: 30;
-          transition: transform 0.3s ease;
+          transition: width var(--transition), transform var(--transition);
         }
         .sidebar-logo {
           height: var(--topbar-h);
@@ -75,6 +76,7 @@
           gap: 10px;
           border-bottom: 1px solid var(--border);
           flex-shrink: 0;
+          overflow: hidden;
         }
         .sidebar-logo .logo-icon {
           width: 30px; height: 30px;
@@ -84,13 +86,13 @@
           color: white;
           font-size: 18px;
           flex-shrink: 0;
-          transition: background var(--transition);
+          transition: background 0.2s;
         }
-        .sidebar-logo .logo-text { font-size: 13px; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
-        .sidebar-logo .logo-sub { font-size: 10px; color: var(--text-muted); font-weight: 400; }
+        .sidebar-logo .logo-text { font-size: 13px; font-weight: 700; color: var(--text-primary); line-height: 1.3; white-space: nowrap; }
+        .sidebar-logo .logo-sub { font-size: 10px; color: var(--text-muted); font-weight: 400; white-space: nowrap; }
         
-        .sidebar-nav { flex: 1; padding: 12px 8px; overflow-y: auto; }
-        .nav-group-label { font-size: 10px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.07em; text-transform: uppercase; padding: 0 8px; margin: 16px 0 4px; }
+        .sidebar-nav { flex: 1; padding: 12px 8px; overflow-y: auto; overflow-x: hidden; }
+        .nav-group-label { font-size: 10px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.07em; text-transform: uppercase; padding: 0 8px; margin: 16px 0 4px; white-space: nowrap; }
         .nav-group-label:first-child { margin-top: 4px; }
         .nav-item {
           display: flex; align-items: center; gap: 9px;
@@ -99,9 +101,10 @@
           cursor: pointer;
           color: var(--text-secondary);
           font-size: 13px; font-weight: 500;
-          transition: background var(--transition), color var(--transition);
+          transition: background 0.2s, color 0.2s;
           user-select: none;
-          margin-bottom: 1px;
+          margin-bottom: 2px;
+          white-space: nowrap;
         }
         .nav-item i { width: 18px; text-align: center; font-size: 18px; flex-shrink: 0; }
         .nav-item:hover { background: var(--bg); color: var(--text-primary); }
@@ -111,19 +114,37 @@
           padding: 12px 8px;
           border-top: 1px solid var(--border);
           flex-shrink: 0;
+          overflow: hidden;
         }
         .user-row {
           display: flex; align-items: center; gap: 9px;
           padding: 8px 10px;
           border-radius: var(--radius);
           cursor: pointer;
-          transition: background var(--transition);
+          transition: background 0.2s;
+          white-space: nowrap;
         }
         .user-row:hover { background: var(--bg); }
-        .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--brand-light); border: 1.5px solid var(--brand-border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--brand); flex-shrink: 0; transition: all var(--transition); }
+        .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--brand-light); border: 1.5px solid var(--brand-border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--brand); flex-shrink: 0; }
         .user-info { flex: 1; min-width: 0; }
         .user-name { font-size: 12px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .user-role { font-size: 10px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* ─── DESKTOP COLLAPSED STATE ─── */
+        @media (min-width: 769px) {
+            #sidebar.collapsed { width: var(--sidebar-collapsed-w); }
+            #sidebar.collapsed .sidebar-logo { justify-content: center; padding: 0; }
+            #sidebar.collapsed .logo-text, #sidebar.collapsed .logo-sub { display: none; }
+            
+            #sidebar.collapsed .nav-group-label { text-align: center; font-size: 0; padding: 10px 0; margin: 8px 0 0; }
+            #sidebar.collapsed .nav-group-label::after { content: '•••'; font-size: 12px; }
+            
+            #sidebar.collapsed .nav-item { justify-content: center; padding: 10px 0; }
+            #sidebar.collapsed .nav-item span { display: none; }
+            
+            #sidebar.collapsed .user-row { justify-content: center; padding: 10px 0; }
+            #sidebar.collapsed .user-info, #sidebar.collapsed .settings-icon { display: none; }
+        }
 
         /* ─── MAIN ─── */
         #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
@@ -141,7 +162,7 @@
         }
         .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); flex: 1; }
         .breadcrumb .crumb-active { color: var(--text-primary); font-weight: 600; }
-        .breadcrumb i { font-size: 14px; }
+        .breadcrumb i.arrow { font-size: 14px; margin: 0 2px; }
         .topbar-actions { display: flex; align-items: center; gap: 8px; }
         
         .icon-btn {
@@ -152,11 +173,13 @@
           display: flex; align-items: center; justify-content: center;
           cursor: pointer;
           color: var(--text-secondary);
-          transition: all var(--transition);
+          transition: all 0.2s;
           position: relative;
           font-size: 18px;
         }
-        .icon-btn:hover { background: var(--bg); border-color: var(--border-strong); color: var(--text-primary); }
+        .icon-btn.menu-toggle { border: none; background: transparent; width: auto; height: auto; padding: 4px; font-size: 20px; }
+        .icon-btn.menu-toggle:hover { color: var(--brand); }
+        .icon-btn:hover:not(.menu-toggle) { background: var(--bg); border-color: var(--border-strong); color: var(--text-primary); }
         .icon-btn.danger:hover { background: #fef2f2; border-color: #fecaca; color: var(--danger); }
         .v-divider { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; margin: 0 4px; }
 
@@ -189,7 +212,7 @@
             width: 100%; padding: 12px 16px; border-radius: var(--radius);
             border: 1px solid var(--border); background: var(--bg);
             outline: none; font-size: 13px; font-family: inherit; color: var(--text-primary);
-            transition: border-color var(--transition), box-shadow var(--transition);
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
         .input-field:focus {
             border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-light); background: var(--surface);
@@ -243,7 +266,8 @@
             const [userData, setUserData] = useState(null); 
             const [loading, setLoading] = useState(true);
             const [currentHash, setCurrentHash] = useState(''); 
-            const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
+            const [isSidebarOpen, setIsSidebarOpen] = useState(false); // 手機版滑動選單
+            const [isCollapsed, setIsCollapsed] = useState(false);     // 桌面版收闔狀態
             
             const getCacheBustedUrl = (url) => {
                 if (!url) return '';
@@ -372,7 +396,7 @@
                     {isSidebarOpen && <div className="mobile-overlay" onClick={() => setIsSidebarOpen(false)}></div>}
 
                     {/* Sidebar */}
-                    <nav id="sidebar" className={`custom-scroll ${isSidebarOpen ? 'open' : ''}`}>
+                    <nav id="sidebar" className={`custom-scroll ${isSidebarOpen ? 'open' : ''} ${isCollapsed ? 'collapsed' : ''}`}>
                         <div className="sidebar-logo">
                             <div className="logo-icon"><i className="ti ti-briefcase-2"></i></div>
                             <div>
@@ -382,47 +406,47 @@
                         </div>
                         
                         <div className="sidebar-nav custom-scroll">
-                            <MenuBtn active={currentHash === '/dashboard-content.html'} label="首頁" icon="ti ti-home" onClick={() => navigate('/dashboard-content.html')} />
+                            <MenuBtn active={currentHash === '/dashboard-content.html'} label="首頁" icon="ti ti-home" onClick={() => navigate('/dashboard-content.html')} collapsed={isCollapsed} />
                             
                             <div className="nav-group-label">審查作業</div>
-                            <MenuBtn active={currentHash === '/list.html'} label="學生待查核名單" icon="ti ti-user-check" onClick={() => navigate('/list.html')} />
-                            <MenuBtn active={currentHash === '/review/department.html'} label="系所審查作業" icon="ti ti-building-community" onClick={() => navigate('/review/department.html')} />
-                            <MenuBtn active={currentHash === '/review/school.html'} label="校級審查作業" icon="ti ti-building-bank" onClick={() => navigate('/review/school.html')} />
-                            <MenuBtn active={currentHash === '/review/institution.html'} label="機構審查作業" icon="ti ti-building-skyscraper" onClick={() => navigate('/review/institution.html')} />
+                            <MenuBtn active={currentHash === '/list.html'} label="學生待查核名單" icon="ti ti-user-check" onClick={() => navigate('/list.html')} collapsed={isCollapsed} />
+                            <MenuBtn active={currentHash === '/review/department.html'} label="系所審查作業" icon="ti ti-building-community" onClick={() => navigate('/review/department.html')} collapsed={isCollapsed} />
+                            <MenuBtn active={currentHash === '/review/school.html'} label="校級審查作業" icon="ti ti-building-bank" onClick={() => navigate('/review/school.html')} collapsed={isCollapsed} />
+                            <MenuBtn active={currentHash === '/review/institution.html'} label="機構審查作業" icon="ti ti-building-skyscraper" onClick={() => navigate('/review/institution.html')} collapsed={isCollapsed} />
                             
                             <div className="nav-group-label">實習資料瀏覽</div>
-                            <MenuBtn active={currentHash === '/intern_view/course.html'} label="實習課程清單" icon="ti ti-book" onClick={() => navigate('/intern_view/course.html')} />
-                            <MenuBtn active={currentHash === '/intern_view/students.html'} label="實習學生清單" icon="ti ti-address-book" onClick={() => navigate('/intern_view/students.html')} />
-                            <MenuBtn active={currentHash === '/intern_view/institution.html'} label="實習機構清單" icon="ti ti-building" onClick={() => navigate('/intern_view/institution.html')} />
-                            <MenuBtn active={currentHash === '/intern_view/record.html'} label="實習記錄清單" icon="ti ti-clipboard-list" onClick={() => navigate('/intern_view/record.html')} />
+                            <MenuBtn active={currentHash === '/intern_view/course.html'} label="實習課程清單" icon="ti ti-book" onClick={() => navigate('/intern_view/course.html')} collapsed={isCollapsed} />
+                            <MenuBtn active={currentHash === '/intern_view/students.html'} label="實習學生清單" icon="ti ti-address-book" onClick={() => navigate('/intern_view/students.html')} collapsed={isCollapsed} />
+                            <MenuBtn active={currentHash === '/intern_view/institution.html'} label="實習機構清單" icon="ti ti-building" onClick={() => navigate('/intern_view/institution.html')} collapsed={isCollapsed} />
+                            <MenuBtn active={currentHash === '/intern_view/record.html'} label="實習記錄清單" icon="ti ti-clipboard-list" onClick={() => navigate('/intern_view/record.html')} collapsed={isCollapsed} />
                             
                             <div className="nav-group-label">實習資料管理</div>
-                            <MenuBtn active={currentHash === '/intern_manage/staging_review.html'} label="批次匯入審查中心" icon="ti ti-cloud-upload" onClick={() => navigate('/intern_manage/staging_review.html')} />
-                            <MenuBtn active={currentHash === '/intern_manage/course.html'} label="實習課程管理" icon="ti ti-book" onClick={() => navigate('/intern_manage/course.html')} />
-                            <MenuBtn active={currentHash === '/intern_manage/students.html'} label="實習學生管理" icon="ti ti-user-cog" onClick={() => navigate('/intern_manage/students.html')} />
-                            <MenuBtn active={currentHash === '/intern_manage/institution.html'} label="實習機構管理" icon="ti ti-building" onClick={() => navigate('/intern_manage/institution.html')} />
-                            <MenuBtn active={currentHash === '/intern_manage/record.html'} label="實習記錄管理" icon="ti ti-clipboard-check" onClick={() => navigate('/intern_manage/record.html')} />
+                            <MenuBtn active={currentHash === '/intern_manage/staging_review.html'} label="批次匯入審查中心" icon="ti ti-cloud-upload" onClick={() => navigate('/intern_manage/staging_review.html')} collapsed={isCollapsed} />
+                            <MenuBtn active={currentHash === '/intern_manage/course.html'} label="實習課程管理" icon="ti ti-book" onClick={() => navigate('/intern_manage/course.html')} collapsed={isCollapsed} />
+                            <MenuBtn active={currentHash === '/intern_manage/students.html'} label="實習學生管理" icon="ti ti-user-cog" onClick={() => navigate('/intern_manage/students.html')} collapsed={isCollapsed} />
+                            <MenuBtn active={currentHash === '/intern_manage/institution.html'} label="實習機構管理" icon="ti ti-building" onClick={() => navigate('/intern_manage/institution.html')} collapsed={isCollapsed} />
+                            <MenuBtn active={currentHash === '/intern_manage/record.html'} label="實習記錄管理" icon="ti ti-clipboard-check" onClick={() => navigate('/intern_manage/record.html')} collapsed={isCollapsed} />
                             
                             <div className="nav-group-label">審查項目設定</div>
-                            <MenuBtn active={currentHash === '/settings/moe-indicators.html'} label="教育部審查指標設定" icon="ti ti-list-check" onClick={() => navigate('/settings/moe-indicators.html')} />
-                            <MenuBtn active={currentHash === '/settings/administrative_files.html'} label="行政文件審查設定" icon="ti ti-folder" onClick={() => navigate('/settings/administrative_files.html')} />
-                            <MenuBtn active={currentHash === '/settings/students_files.html'} label="學生文件審查設定" icon="ti ti-file-text" onClick={() => navigate('/settings/students_files.html')} />
-                            <MenuBtn active={currentHash === '/settings/institution_files.html'} label="機構文件審查設定" icon="ti ti-file-pencil" onClick={() => navigate('/settings/institution_files.html')} />
-                            <MenuBtn active={currentHash === '/settings/other_files.html'} label="其他文件審查設定" icon="ti ti-file-plus" onClick={() => navigate('/settings/other_files.html')} />
+                            <MenuBtn active={currentHash === '/settings/moe-indicators.html'} label="教育部審查指標設定" icon="ti ti-list-check" onClick={() => navigate('/settings/moe-indicators.html')} collapsed={isCollapsed} />
+                            <MenuBtn active={currentHash === '/settings/administrative_files.html'} label="行政文件審查設定" icon="ti ti-folder" onClick={() => navigate('/settings/administrative_files.html')} collapsed={isCollapsed} />
+                            <MenuBtn active={currentHash === '/settings/students_files.html'} label="學生文件審查設定" icon="ti ti-file-text" onClick={() => navigate('/settings/students_files.html')} collapsed={isCollapsed} />
+                            <MenuBtn active={currentHash === '/settings/institution_files.html'} label="機構文件審查設定" icon="ti ti-file-pencil" onClick={() => navigate('/settings/institution_files.html')} collapsed={isCollapsed} />
+                            <MenuBtn active={currentHash === '/settings/other_files.html'} label="其他文件審查設定" icon="ti ti-file-plus" onClick={() => navigate('/settings/other_files.html')} collapsed={isCollapsed} />
                             
                             <div className="nav-group-label">系統設定</div>
-                            <MenuBtn active={currentHash === '/manage/departments.html'} label="系所清單管理" icon="ti ti-school" onClick={() => navigate('/manage/departments.html')} />
-                            <MenuBtn active={currentHash === '/manage/roles.html'} label="用戶權限管理" icon="ti ti-shield-lock" onClick={() => navigate('/manage/roles.html')} />
+                            <MenuBtn active={currentHash === '/manage/departments.html'} label="系所清單管理" icon="ti ti-school" onClick={() => navigate('/manage/departments.html')} collapsed={isCollapsed} />
+                            <MenuBtn active={currentHash === '/manage/roles.html'} label="用戶權限管理" icon="ti ti-shield-lock" onClick={() => navigate('/manage/roles.html')} collapsed={isCollapsed} />
                         </div>
                         
                         <div className="sidebar-footer">
-                            <div className={`user-row ${currentHash === 'profile-settings' ? 'bg-[color:var(--bg)]' : ''}`} onClick={() => navigate('profile-settings')}>
+                            <div className={`user-row ${currentHash === 'profile-settings' ? 'bg-[color:var(--bg)]' : ''}`} onClick={() => navigate('profile-settings')} title={isCollapsed ? "個人資料與偏好設定" : ""}>
                                 <div className="user-avatar">{userData?.name ? userData.name.charAt(0) : 'U'}</div>
                                 <div className="user-info">
                                     <div className="user-name">{userData ? `${userData.jobTitle || ''} ${userData.name || '管理員'}` : '使用者'}</div>
                                     <div className="user-role">{userData ? `${userData.level1Unit || ''} | ${userData.level2Unit || ''}` : '資料讀取中...'}</div>
                                 </div>
-                                <i className="ti ti-settings" style={{fontSize:'16px', color: currentHash === 'profile-settings' ? 'var(--brand)' : 'var(--text-muted)'}}></i>
+                                <i className="ti ti-settings settings-icon" style={{fontSize:'16px', color: currentHash === 'profile-settings' ? 'var(--brand)' : 'var(--text-muted)'}}></i>
                             </div>
                         </div>
                     </nav>
@@ -431,13 +455,20 @@
                     <div id="main">
                         <header id="topbar">
                             <div className="breadcrumb">
+                                {/* Desktop Toggle Button */}
+                                <button className="hidden sm:flex icon-btn menu-toggle mr-3" onClick={() => setIsCollapsed(!isCollapsed)} title="收合/展開側邊選單">
+                                    <i className="ti ti-menu-2"></i>
+                                </button>
+                                
+                                {/* Mobile Toggle Button */}
                                 <button className="mobile-menu-btn" onClick={() => setIsSidebarOpen(true)}>
                                     <i className="ti ti-menu-2"></i>
                                 </button>
+                                
                                 <span className="hidden sm:inline">實習書審</span>
                                 {breadcrumbs.map((crumb, index) => (
                                     <React.Fragment key={index}>
-                                        <i className="ti ti-chevron-right hidden sm:inline" style={{fontSize: '14px', margin: '0 2px'}}></i>
+                                        <i className="ti ti-chevron-right arrow hidden sm:inline"></i>
                                         <span className={index === breadcrumbs.length - 1 ? "crumb-active" : "hidden sm:inline"}>
                                             {crumb}
                                         </span>
@@ -473,9 +504,9 @@
             );
         }
 
-        function MenuBtn({ active, label, icon, onClick }) {
+        function MenuBtn({ active, label, icon, onClick, collapsed }) {
             return (
-                <div onClick={onClick} className={`nav-item ${active ? 'active' : ''}`}>
+                <div onClick={onClick} className={`nav-item ${active ? 'active' : ''}`} title={collapsed ? label : ""}>
                     <i className={icon}></i>
                     <span>{label}</span>
                 </div>
