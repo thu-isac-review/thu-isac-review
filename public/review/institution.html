@@ -135,6 +135,9 @@ th[data-sort] { cursor: pointer; user-select: none; transition: color var(--tran
 th[data-sort]:hover { color: var(--text-secondary); }
 th .sort-icon { margin-left: 4px; font-size: 14px; opacity: 0.4; vertical-align: middle; }
 th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand); }
+/* 內部表格的排序圖示樣式 */
+th[data-cohort-sort]:hover { color: var(--text-secondary); }
+th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand); }
 
 td { padding: 12px 16px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); text-align: center; }
 tr:hover td { background: #fafbff; }
@@ -145,7 +148,7 @@ tr.selected td { background: #f0f4ff; }
 .cell-secondary { font-size: 11px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
 .row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; }
 
-/* 移除 min-width: 800px，讓它自動貼合父容器 */
+/* 關鍵修正：讓內部表格依內容自動縮放並置中，解除主表格的 min-width 繼承 */
 .inner-table { 
     width: max-content; 
     min-width: 0; 
@@ -357,11 +360,11 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                             <table class="inner-table">
                                 <thead>
                                     <tr>
-                                        <th style="width: 16%;">評估學系</th>
-                                        <th style="width: 20%;">評估日期</th>
-                                        <th style="width: 18%;">結果</th>
-                                        <th style="width: 24%;">涵蓋合法學生</th>
-                                        <th style="width: 22%;">操作</th>
+                                        <th style="width: 100px;">評估學系</th>
+                                        <th style="width: 100px;">評估日期</th>
+                                        <th style="width: 100px;">結果</th>
+                                        <th style="width: 120px;">涵蓋合法學生</th>
+                                        <th style="width: 130px;">操作</th>
                                     </tr>
                                 </thead>
                                 <tbody id="eval-history-list">
@@ -504,6 +507,10 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         let currentFilter = 'all', currentPage = 1, itemsPerPage = 15;
         let activeInstId = null;
         let editingEvalId = null;
+        
+        // --- 內部表格排序相關變數 ---
+        let cohortSortCol = '';
+        let cohortSortDir = '';
 
         function parseROCDate(dateStr) {
             if (!dateStr) return null;
@@ -676,9 +683,25 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
         window.closeManageModal = () => { document.getElementById('manage-modal').classList.remove('open'); };
 
+        // --- 排序觸發函數 ---
+        window.sortCohorts = (col) => {
+            if (cohortSortCol === col) {
+                cohortSortDir = cohortSortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                cohortSortCol = col;
+                cohortSortDir = 'asc';
+            }
+            renderManageModalContent(true); 
+        };
+
         function renderManageModalContent(isUpdate) {
             let inst = aggregatedData.find(i => i.id === activeInstId);
             if(!inst) return;
+            
+            if (!isUpdate) {
+                cohortSortCol = '';
+                cohortSortDir = '';
+            }
             
             document.getElementById('info-inst-name').innerText = inst.name || '-';
             document.getElementById('info-tax-id').innerText = inst.tax_id || '無統編資料';
@@ -687,15 +710,44 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             document.getElementById('info-country').innerText = inst.country || '未註明國別';
             document.getElementById('info-address').innerText = inst.address || '未註明地址';
 
+            // 更新排序圖示的 UI 顯示
+            document.querySelectorAll('th[data-cohort-sort]').forEach(th => {
+                th.classList.remove('sort-asc', 'sort-desc');
+                th.querySelector('.sort-icon').className = 'ti ti-arrows-sort sort-icon';
+                if (th.dataset.cohortSort === cohortSortCol) {
+                    th.classList.add(cohortSortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+                    th.querySelector('.sort-icon').className = `ti ti-sort-${cohortSortDir === 'asc' ? 'ascending' : 'descending'} sort-icon`;
+                }
+            });
+
             let tbody = document.getElementById('cohort-list-tbody');
             if(inst.cohorts.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="7" class="empty-state" style="padding:40px;"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">此機構目前無實習梯次</div></td></tr>`;
             } else {
-                let sortedCohorts = [...inst.cohorts].sort((a,b) => {
-                    if(a.status.code === 'attention' && b.status.code !== 'attention') return -1;
-                    if(a.status.code !== 'attention' && b.status.code === 'attention') return 1;
-                    return (b.startDateObj || 0) - (a.startDateObj || 0);
-                });
+                let sortedCohorts = [...inst.cohorts];
+                
+                // 判斷是否啟動手動排序
+                if (cohortSortCol) {
+                    sortedCohorts.sort((a, b) => {
+                        let valA, valB;
+                        if (cohortSortCol === 'dept') { valA = getDeptShort(a.dept); valB = getDeptShort(b.dept); }
+                        else if (cohortSortCol === 'acadYear') { valA = a.acadYear; valB = b.acadYear; }
+                        else if (cohortSortCol === 'term') { valA = a.term; valB = b.term; }
+                        else if (cohortSortCol === 'startDate') { valA = a.startDateObj?.getTime() || 0; valB = b.startDateObj?.getTime() || 0; }
+                        else if (cohortSortCol === 'count') { valA = a.count; valB = b.count; }
+                        else if (cohortSortCol === 'status') { valA = a.status.label; valB = b.status.label; }
+
+                        if (valA < valB) return cohortSortDir === 'asc' ? -1 : 1;
+                        if (valA > valB) return cohortSortDir === 'asc' ? 1 : -1;
+                        return 0;
+                    });
+                } else {
+                    sortedCohorts.sort((a,b) => {
+                        if(a.status.code === 'attention' && b.status.code !== 'attention') return -1;
+                        if(a.status.code !== 'attention' && b.status.code === 'attention') return 1;
+                        return (b.startDateObj || 0) - (a.startDateObj || 0);
+                    });
+                }
 
                 let html = '';
                 sortedCohorts.forEach(c => {
