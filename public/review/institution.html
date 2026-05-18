@@ -313,7 +313,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
                 <div class="split-layout">
                     <div class="split-left">
-                        <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                        <!-- 修正：固定高度並使用 flex 置中對齊 -->
+                        <div style="height: 60px; padding: 0 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
                             <i class="ti ti-list-details" style="color: var(--text-secondary); font-size: 18px;"></i>
                             <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">各系實習梯次清單</span>
                             <span style="font-size: 11px; color: var(--text-muted); font-weight: 500; margin-left: auto;">(同系+同學年期+同起日為一梯次)</span>
@@ -321,14 +322,15 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                         <div class="custom-scroll" style="flex: 1; overflow: auto;">
                             <table class="inner-table">
                                 <thead>
+                                    <!-- 修正：欄寬重新分配，將負責學系改窄至 12% -->
                                     <tr>
-                                        <th style="text-align: left; width: 18%;">負責學系</th>
+                                        <th style="text-align: left; width: 12%;">負責學系</th>
                                         <th style="width: 12%;">學年度</th>
                                         <th style="width: 10%;">學期</th>
-                                        <th style="width: 16%;">實習開始日</th>
+                                        <th style="width: 18%;">實習開始日</th>
                                         <th style="width: 12%;">梯次人數</th>
-                                        <th style="width: 16%;">梯次狀態</th>
-                                        <th style="width: 16%;">操作</th>
+                                        <th style="width: 18%;">梯次狀態</th>
+                                        <th style="width: 18%;">操作</th>
                                     </tr>
                                 </thead>
                                 <tbody id="cohort-list-tbody"></tbody>
@@ -337,24 +339,27 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                     </div>
 
                     <div class="split-right">
-                        <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+                        <!-- 修正：固定高度並使用 flex 置中對齊 -->
+                        <div style="height: 60px; padding: 0 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <i class="ti ti-history" style="color: var(--indigo); font-size: 18px;"></i>
                                 <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">機構總評估紀錄一覽</span>
                             </div>
-                            <button class="btn btn-indigo btn-sm" onclick="openAddEvalModal()">
+                            <!-- 修正：使用 btn-primary 並調整為更俐落的大小 -->
+                            <button class="btn btn-primary" style="height: 32px; padding: 0 16px;" onclick="openAddEvalModal()">
                                 <i class="ti ti-plus"></i> 新增評估
                             </button>
                         </div>
                         <div class="custom-scroll" style="flex: 1; overflow: auto;">
                             <table class="inner-table">
                                 <thead>
+                                    <!-- 修正：欄寬重新分配，將評估學系改窄至 14% -->
                                     <tr>
-                                        <th style="width: 25%; text-align: left;">評估學系</th>
+                                        <th style="width: 14%; text-align: left;">評估學系</th>
                                         <th style="width: 20%;">評估日期</th>
-                                        <th style="width: 15%;">結果</th>
-                                        <th style="width: 20%;">涵蓋合法學生</th>
-                                        <th style="width: 20%;">操作</th>
+                                        <th style="width: 18%;">結果</th>
+                                        <th style="width: 24%;">涵蓋合法學生</th>
+                                        <th style="width: 24%;">操作</th>
                                     </tr>
                                 </thead>
                                 <tbody id="eval-history-list">
