@@ -1,839 +1,1014 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>實習課程書面審查作業系統 - 東海大學實習中心</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
-    
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script type="importmap">
-      {
-        "imports": {
-          "react": "https://esm.sh/react@18.2.0",
-          "react-dom": "https://esm.sh/react-dom@18.2.0",
-          "react-dom/client": "https://esm.sh/react-dom@18.2.0/client"
-        }
-      }
-    </script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>機構審查作業</title>
 
-    <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 
-        :root {
-          /* 預設配色 (經典藍) */
-          --brand: #1a56db;
-          --brand-hover: #1649c0;
-          --brand-light: #eff4ff;
-          --brand-border: #c3d2f9;
-          
-          --sidebar-w: 240px;
-          --sidebar-collapsed-w: 72px; /* 收闔時的寬度 */
-          --topbar-h: 56px;
-          --bg: #f8f9fc;
-          --surface: #ffffff;
-          --border: #e5e7ef;
-          --border-strong: #cdd0dd;
-          --text-primary: #111827;
-          --text-secondary: #4b5563;
-          --text-muted: #9ca3af;
-          --success: #059669;
-          --danger: #dc2626;
-          --radius-sm: 6px;
-          --radius: 8px;
-          --radius-lg: 12px;
-          --radius-xl: 16px;
-          --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-          --transition: 300ms cubic-bezier(0.4,0,0.2,1);
-        }
+<style>
+/* ─── 核心樣式變數 ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        html, body, #root { height: 100%; overflow: hidden; font-family: 'Noto Sans TC', sans-serif; font-size: 14px; color: var(--text-primary); background: var(--bg); -webkit-font-smoothing: antialiased; }
+:root {
+  --brand: #1a56db;
+  --brand-hover: #1649c0;
+  --brand-light: #eff4ff;
+  --brand-border: #c3d2f9;
+  --topbar-h: 56px;
+  --bg: #f8f9fc;
+  --surface: #ffffff;
+  --border: #e5e7ef;
+  --border-strong: #cdd0dd;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #9ca3af;
+  --success: #059669;
+  --success-bg: #ecfdf5;
+  --success-border: #a7f3d0;
+  --danger: #dc2626;
+  --danger-bg: #fef2f2;
+  --danger-border: #fecaca;
+  --warning: #d97706;
+  --warning-bg: #fffbeb;
+  --warning-border: #fde68a;
+  --indigo: #4f46e5;
+  --indigo-light: #eef2ff;
+  --indigo-bg: #e0e7ff;
+  --indigo-border: #c7d2fe;
+  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.04);
+  --transition: 150ms cubic-bezier(0.4,0,0.2,1);
+}
 
-        /* ─── LAYOUT ─── */
-        #app { display: flex; height: 100%; overflow: hidden; width: 100%; }
+html, body { 
+  height: 100%; overflow: hidden; 
+  font-family: 'Noto Sans TC', sans-serif; font-size: 14px; 
+  color: var(--text-primary); background: var(--bg); 
+  -webkit-font-smoothing: antialiased; 
+  display: flex; flex-direction: column;
+}
 
-        /* ─── SIDEBAR ─── */
-        #sidebar {
-          width: var(--sidebar-w);
-          background: var(--surface);
-          border-right: 1px solid var(--border);
-          display: flex;
-          flex-direction: column;
-          flex-shrink: 0;
-          z-index: 30;
-          transition: width var(--transition), transform var(--transition);
-        }
-        .sidebar-logo {
-          height: var(--topbar-h);
-          padding: 0 16px;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          border-bottom: 1px solid var(--border);
-          flex-shrink: 0;
-          overflow: hidden;
-        }
-        .sidebar-logo .logo-icon {
-          width: 30px; height: 30px;
-          background: var(--brand);
-          border-radius: var(--radius-sm);
-          display: flex; align-items: center; justify-content: center;
-          color: white;
-          font-size: 18px;
-          flex-shrink: 0;
-          transition: background 0.2s;
-        }
-        .sidebar-logo .logo-text { font-size: 13px; font-weight: 700; color: var(--text-primary); line-height: 1.3; white-space: nowrap; }
-        .sidebar-logo .logo-sub { font-size: 10px; color: var(--text-muted); font-weight: 400; white-space: nowrap; }
-        
-        .sidebar-nav { flex: 1; padding: 12px 8px; overflow-y: auto; overflow-x: hidden; }
-        .nav-group-label { font-size: 10px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.07em; text-transform: uppercase; padding: 0 8px; margin: 16px 0 4px; white-space: nowrap; }
-        .nav-group-label:first-child { margin-top: 4px; }
-        .nav-item {
-          display: flex; align-items: center; gap: 9px;
-          padding: 8px 10px;
-          border-radius: var(--radius);
-          cursor: pointer;
-          color: var(--text-secondary);
-          font-size: 13px; font-weight: 500;
-          transition: background 0.2s, color 0.2s;
-          user-select: none;
-          margin-bottom: 2px;
-          white-space: nowrap;
-        }
-        .nav-item i { width: 18px; text-align: center; font-size: 18px; flex-shrink: 0; }
-        .nav-item:hover { background: var(--bg); color: var(--text-primary); }
-        .nav-item.active { background: var(--brand-light); color: var(--brand); font-weight: 700; }
-        
-        .sidebar-footer {
-          padding: 12px 8px;
-          border-top: 1px solid var(--border);
-          flex-shrink: 0;
-          overflow: hidden;
-        }
-        .user-row {
-          display: flex; align-items: center; gap: 9px;
-          padding: 8px 10px;
-          border-radius: var(--radius);
-          cursor: pointer;
-          transition: background 0.2s;
-          white-space: nowrap;
-        }
-        .user-row:hover { background: var(--bg); }
-        .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--brand-light); border: 1.5px solid var(--brand-border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--brand); flex-shrink: 0; }
-        .user-info { flex: 1; min-width: 0; }
-        .user-name { font-size: 12px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .user-role { font-size: 10px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* ─── SCROLLBAR ─── */
+.custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.custom-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
+.custom-scroll::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-        /* ─── DESKTOP COLLAPSED STATE ─── */
-        @media (min-width: 769px) {
-            #sidebar.collapsed { width: var(--sidebar-collapsed-w); }
-            #sidebar.collapsed .sidebar-logo { justify-content: center; padding: 0; }
-            #sidebar.collapsed .logo-text, #sidebar.collapsed .logo-sub { display: none; }
-            
-            #sidebar.collapsed .nav-group-label { text-align: center; font-size: 0; padding: 10px 0; margin: 8px 0 0; }
-            #sidebar.collapsed .nav-group-label::after { content: '•••'; font-size: 12px; }
-            
-            #sidebar.collapsed .nav-item { justify-content: center; padding: 10px 0; }
-            #sidebar.collapsed .nav-item span { display: none; }
-            
-            #sidebar.collapsed .user-row { justify-content: center; padding: 10px 0; }
-            #sidebar.collapsed .user-info, #sidebar.collapsed .settings-icon { display: none; }
-        }
+/* ─── 動畫 ─── */
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.ti-spin { animation: spin 1s linear infinite; display: inline-block; }
 
-        /* ─── MAIN ─── */
-        #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+/* ─── TOOLBAR ─── */
+.toolbar {
+  padding: 12px 24px; background: var(--surface); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0; flex-wrap: wrap;
+}
+.search-wrap { position: relative; flex: 0 0 260px; }
+.search-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px; }
+.search-input {
+  width: 100%; height: 34px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface); padding: 0 10px 0 34px; font-size: 13px; font-family: inherit;
+  color: var(--text-primary); outline: none; transition: border-color var(--transition), box-shadow var(--transition);
+}
+.search-input::placeholder { color: var(--text-muted); }
+.search-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
+.flex-spacer { flex: 1; }
 
-        /* ─── TOPBAR ─── */
-        #topbar {
-          height: var(--topbar-h);
-          background: var(--surface);
-          border-bottom: 1px solid var(--border);
-          display: flex; align-items: center;
-          padding: 0 24px;
-          gap: 12px;
-          flex-shrink: 0;
-          z-index: 20;
-        }
-        .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); flex: 1; }
-        .breadcrumb .crumb-active { color: var(--text-primary); font-weight: 600; }
-        .breadcrumb i.arrow { font-size: 14px; margin: 0 2px; }
-        .topbar-actions { display: flex; align-items: center; gap: 8px; }
-        
-        .icon-btn {
-          width: 32px; height: 32px;
-          border-radius: var(--radius);
-          border: 1px solid var(--border);
-          background: var(--surface);
-          display: flex; align-items: center; justify-content: center;
-          cursor: pointer;
-          color: var(--text-secondary);
-          transition: all 0.2s;
-          position: relative;
-          font-size: 18px;
-        }
-        .icon-btn.menu-toggle { border: none; background: transparent; width: auto; height: auto; padding: 4px; font-size: 20px; }
-        .icon-btn.menu-toggle:hover { color: var(--brand); }
-        .icon-btn:hover:not(.menu-toggle) { background: var(--bg); border-color: var(--border-strong); color: var(--text-primary); }
-        .icon-btn.danger:hover { background: #fef2f2; border-color: #fecaca; color: var(--danger); }
-        .v-divider { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; margin: 0 4px; }
+/* ─── BUTTONS ─── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 0 14px; height: 34px; border-radius: var(--radius);
+  font-size: 13px; font-weight: 600; font-family: inherit;
+  cursor: pointer; border: none; white-space: nowrap;
+  transition: all var(--transition); text-decoration: none;
+}
+.btn-primary { background: var(--brand); color: white; border: 1px solid var(--brand); }
+.btn-primary:hover { background: var(--brand-hover); }
+.btn-secondary { background: var(--surface); color: var(--text-secondary); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--bg); border-color: var(--border-strong); color: var(--text-primary); }
+.btn-indigo { background: var(--indigo); color: white; border: 1px solid var(--indigo); }
+.btn-indigo:hover { background: #4338ca; }
+.btn-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
+.btn-danger:hover { background: #fee2e2; }
+.btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
 
-        /* ─── CONTENT AREA ─── */
-        #content { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--bg); }
-        iframe { border: none; width: 100%; height: 100%; background: transparent; }
+/* 圖示按鈕 */
+.btn-icon { width: 34px; padding: 0; justify-content: center; }
+.btn-icon.sm { width: 28px; height: 28px; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn i { font-size: 16px; display: inline-flex; align-items: center; justify-content: center; }
 
-        /* Scrollbar */
-        .custom-scroll::-webkit-scrollbar { width: 6px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
+/* ─── FILTER ROW ─── */
+.filter-row { padding: 10px 24px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
+.filter-pill {
+  display: inline-flex; align-items: center; gap: 5px; padding: 0 12px; height: 28px;
+  border: 1px solid var(--border); border-radius: 99px; background: var(--surface);
+  font-size: 12px; font-weight: 500; color: var(--text-secondary);
+  cursor: pointer; transition: all var(--transition); white-space: nowrap;
+}
+.filter-pill:hover { border-color: var(--border-strong); color: var(--text-primary); }
+.filter-pill.active { border-color: var(--brand); background: var(--brand-light); color: var(--brand); font-weight: 700; }
 
-        /* Mobile specific styles */
-        @media (max-width: 768px) {
-            #sidebar { position: fixed; height: 100%; transform: translateX(-100%); }
-            #sidebar.open { transform: translateX(0); }
-            #topbar { padding: 0 16px; }
-            .mobile-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 25; }
-        }
-        .mobile-menu-btn { display: none; background: none; border: none; font-size: 20px; color: var(--text-secondary); cursor: pointer; }
-        @media (max-width: 768px) { .mobile-menu-btn { display: block; margin-right: 8px; } }
+/* ─── MAIN TABLE & INNER TABLE 通用 DataTable 風格 ─── */
+table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 900px; }
+th {
+  padding: 12px 16px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
+  position: sticky; top: 0; z-index: 10; background: var(--surface); box-shadow: inset 0 -2px 0 var(--border); 
+}
+td { padding: 12px 16px; vertical-align: middle; border-bottom: 1px solid var(--border); word-break: break-word; }
+tr:hover td { background: #fafbff; }
 
-        /* Loader & Animations */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade { animation: fadeIn 0.4s ease-out forwards; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        .icon-spin { animation: spin 1.2s linear infinite; display: inline-block; }
-        
-        /* 表單元素通用 */
-        .input-field {
-            width: 100%; padding: 12px 16px; border-radius: var(--radius);
-            border: 1px solid var(--border); background: var(--bg);
-            outline: none; font-size: 13px; font-family: inherit; color: var(--text-primary);
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        .input-field:focus {
-            border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-light); background: var(--surface);
-        }
-    </style>
+.cell-primary { font-size: 13px; color: var(--text-primary); line-height: 1.4; }
+.cell-primary.bold { font-weight: 600; }
+.empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
+.empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; display: block; }
+.empty-text { font-size: 13px; font-weight: 600; }
+
+/* ─── BADGES ─── */
+.badge { display: inline-flex; align-items: center; justify-content: center; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; gap: 4px; }
+.badge-success { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+.badge-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
+.badge-warning { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+.badge-secondary { background: var(--bg); color: var(--text-secondary); border: 1px solid var(--border-strong); }
+
+.badge-outline-blue { background: var(--brand-light); color: var(--brand); border: 1px solid var(--brand-border); }
+.badge-outline-green { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+.badge-outline-amber { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+.badge-outline-red { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
+.badge-outline-indigo { background: var(--indigo-bg); color: var(--indigo); border: 1px solid var(--indigo-border); }
+.badge-outline-gray { background: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; }
+.more-badge { display: inline-flex; align-items: center; justify-content: center; height: 24px; padding: 0 8px; border-radius: 99px; background: var(--border); color: var(--text-secondary); font-size: 11px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-left: auto; flex-shrink: 0; border: none; outline: none; }
+.more-badge:hover { background: var(--border-strong); color: var(--text-primary); }
+
+/* ─── PAGINATION ─── */
+.pagination-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; gap: 10px; }
+.pagination-info { font-size: 12px; color: var(--text-muted); }
+.pagination-info strong { color: var(--text-primary); }
+.pagination-bar-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.per-page-select { height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 12px; padding: 0 6px; outline: none; cursor: pointer; font-family: inherit; color: var(--text-secondary); }
+.pagination-controls { display: flex; align-items: center; gap: 4px; }
+.page-btn { min-width: 30px; height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 12px; font-weight: 500; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0 8px; transition: all var(--transition); }
+.page-btn:hover:not(:disabled) { background: var(--bg); border-color: var(--border-strong); }
+.page-btn.active { background: var(--brand); color: white; border-color: var(--brand); font-weight: 700; }
+.page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ─── UNIFIED DIALOG MODALS ─── */
+.dialog-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; padding: 24px; }
+.dialog-overlay.open { display: flex; }
+#manage-modal { z-index: 200; }
+#add-eval-modal { z-index: 210; }
+#view-eval-modal { z-index: 220; }
+#cohort-details-modal { z-index: 230; } 
+
+.dialog-box { background: var(--surface); border-radius: var(--radius-xl); box-shadow: 0 20px 60px rgba(0,0,0,0.2); width: 100%; display: flex; flex-direction: column; overflow: hidden; animation: dialogIn 0.25s cubic-bezier(0.16,1,0.3,1); max-height: 95vh; }
+@keyframes dialogIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+.dialog-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--surface); flex-shrink: 0; }
+.dialog-header h3 { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: var(--text-primary); margin: 0; }
+.dialog-header h3 i { font-size: 20px; }
+.dialog-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; padding: 4px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); transition: all var(--transition); }
+.dialog-close:hover { color: var(--danger); background: var(--danger-bg); }
+.dialog-body { padding: 24px; overflow-y: auto; flex: 1; }
+.dialog-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg); flex-shrink: 0; }
+
+/* ─── FORM ELEMENTS INSIDE DIALOG ─── */
+.field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
+.field-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.field-label .req { color: var(--danger); margin-left: 2px; }
+.field-input, .field-select { width: 100%; height: 36px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); padding: 0 12px; font-size: 13px; font-family: inherit; color: var(--text-primary); outline: none; transition: all var(--transition); }
+.field-input:focus, .field-select:focus, textarea.field-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); background: var(--surface); }
+select.field-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; }
+
+/* ─── SPLIT LAYOUT (1:1 比例) ─── */
+.split-layout { display: flex; gap: 24px; align-items: stretch; height: 100%; min-height: 400px; }
+.split-left { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+.split-right { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+
+/* ─── INNER TABLE (強制不換行、對齊主列表樣式) ─── */
+.inner-table { width: 100%; border-collapse: collapse; min-width: 100%; }
+.inner-table th { white-space: nowrap; background: var(--surface); font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; padding: 12px 16px; position: sticky; top: 0; z-index: 10; text-align: center; box-shadow: inset 0 -2px 0 var(--border); }
+.inner-table td { white-space: nowrap; padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.inner-table tr:hover td { background: #fafbff; }
+.row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; }
+
+/* ─── 手機版響應式設定 ─── */
+@media (max-width: 768px) {
+  .toolbar { padding: 12px 16px; justify-content: flex-end; }
+  .search-wrap { flex: 0 0 100%; order: 1; margin-bottom: 8px; }
+  .flex-spacer { display: none; }
+  .dialog-overlay { padding: 12px; }
+  .split-layout { flex-direction: column; height: auto; gap: 16px; }
+  .split-left { min-height: 350px; }
+  .split-right { min-width: 100%; min-height: 400px; }
+}
+</style>
 </head>
 <body>
-    <div id="root"></div>
 
-    <script type="text/babel" data-type="module">
-        import React, { useState, useEffect } from 'react';
-        import ReactDOM from 'react-dom/client';
+    <div class="toolbar">
+        <div class="search-wrap">
+            <i class="ti ti-search"></i>
+            <input type="text" id="search-input" placeholder="搜尋機構名稱..." class="search-input">
+        </div>
+        <div class="flex-spacer"></div>
+    </div>
+
+    <div class="filter-row">
+        <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-right: 8px;">機構審查狀態：</span>
+        <button class="filter-pill active" onclick="setFilter('all')">全部</button>
+        <button class="filter-pill" onclick="setFilter('pass')">審查皆通過有效</button>
+        <button class="filter-pill" onclick="setFilter('attention')">有梯次逾期/未評估</button>
+    </div>
+
+    <div class="table-wrap">
+        <div class="table-scroll custom-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 30%;">實習機構名稱</th>
+                        <th style="width: 15%;">歷史總實習梯次</th>
+                        <th style="width: 15%;">關聯學生總數</th>
+                        <th style="width: 20%;">機構整體狀態 (依梯次判定)</th>
+                        <th style="width: 20%;">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            <i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i>
+                            <div class="empty-text">資料載入中...</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, updatePassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        <div class="pagination-bar">
+            <div class="pagination-info" id="pagination-info">共 0 筆</div>
+            <div class="pagination-bar-right">
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="font-size:12px; color:var(--text-muted)">每頁顯示</span>
+                    <select class="per-page-select" onchange="window.changePerPage(this.value)">
+                        <option value="15">15 筆</option>
+                        <option value="25">25 筆</option>
+                        <option value="50">50 筆</option>
+                    </select>
+                </div>
+                <div class="pagination-controls" id="pagination-controls"></div>
+            </div>
+        </div>
+    </div>
 
-        // 全域主題設定
-        const THEMES = {
-            blue: { name: '經典藍', brand: '#1a56db', hover: '#1649c0', light: '#eff4ff', border: '#c3d2f9' },
-            emerald: { name: '翡翠綠', brand: '#059669', hover: '#047857', light: '#ecfdf5', border: '#a7f3d0' },
-            violet: { name: '羅蘭紫', brand: '#7c3aed', hover: '#6d28d9', light: '#f5f3ff', border: '#ddd6fe' },
-            rose: { name: '玫瑰紅', brand: '#e11d48', hover: '#be123c', light: '#fff1f2', border: '#fecdd3' },
-            slate: { name: '沉穩灰', brand: '#475569', hover: '#334155', light: '#f8fafc', border: '#cbd5e1' }
-        };
-
-        const applyTheme = (themeKey) => {
-            const t = THEMES[themeKey] || THEMES.blue;
-            const root = document.documentElement;
-            root.style.setProperty('--brand', t.brand);
-            root.style.setProperty('--brand-hover', t.hover);
-            root.style.setProperty('--brand-light', t.light);
-            root.style.setProperty('--brand-border', t.border);
-        };
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY",
-            authDomain: "thu-isac-review.firebaseapp.com",
-            projectId: "thu-isac-review",
-            storageBucket: "thu-isac-review.firebasestorage.app",
-            messagingSenderId: "453299876735",
-            appId: "1:453299876735:web:1d8babca3315423161a04a"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        function App() {
-            const [user, setUser] = useState(null);
-            const [userData, setUserData] = useState(null); 
-            const [loading, setLoading] = useState(true);
-            const [currentHash, setCurrentHash] = useState(''); 
-            const [isSidebarOpen, setIsSidebarOpen] = useState(false); // 手機版滑動選單
-            const [isCollapsed, setIsCollapsed] = useState(false);     // 桌面版收闔狀態
+    <div id="manage-modal" class="dialog-overlay">
+        <div class="dialog-box" style="max-width: 1500px; width: 98%;">
+            <div class="dialog-header">
+                <h3><i class="ti ti-building" style="color: var(--brand);"></i> 機構審查總覽</h3>
+                <button type="button" class="dialog-close" onclick="closeManageModal()"><i class="ti ti-x"></i></button>
+            </div>
             
-            const getCacheBustedUrl = (url) => {
-                if (!url) return '';
-                const [path, queryStr] = url.split('?');
-                let finalUrl = `${path}?v=${new Date().getTime()}`;
-                if (queryStr) finalUrl += `&${queryStr}`;
-                return finalUrl;
-            };
-
-            useEffect(() => {
-                const unsubscribe = onAuthStateChanged(auth, async (u) => {
-                    if (u) {
-                        setUser(u);
-                        try {
-                            const userDoc = await getDoc(doc(db, "users", u.uid));
-                            if(userDoc.exists()) {
-                                const data = userDoc.data();
-                                setUserData(data);
-                                if (data.theme) applyTheme(data.theme);
-                            } else if (u.email === 'thu.isac.review@gmail.com') {
-                                // 預設管理員 (無 Firestore 文件)
-                                setUserData({
-                                    level1Unit: '系統管理中心',
-                                    level2Unit: '核心維運組',
-                                    jobTitle: '管理員',
-                                    name: '預設管理者',
-                                    isFirstLogin: false,
-                                    theme: 'blue',
-                                    isDefaultAdmin: true
-                                });
-                                applyTheme('blue');
-                            }
-                        } catch (err) {
-                            console.error("載入資料失敗", err);
-                        }
-                        setLoading(false);
-                    } else {
-                        setUser(null);
-                        setUserData(null);
-                        applyTheme('blue'); // 登出恢復預設
-                        setLoading(false);
-                    }
-                });
-                return () => unsubscribe();
-            }, []);
-
-            useEffect(() => {
-                const handleHashChange = () => {
-                    let hash = window.location.hash.replace('#', '');
-                    if (!hash) {
-                        hash = '/dashboard-content.html';
-                        window.history.replaceState(null, null, '#' + hash);
-                    }
-                    setCurrentHash(hash);
-                };
+            <div class="dialog-body custom-scroll" style="background: var(--bg); display: flex; flex-direction: column;">
                 
-                window.addEventListener('hashchange', handleHashChange);
-                handleHashChange(); 
-                
-                return () => window.removeEventListener('hashchange', handleHashChange);
-            }, []);
-
-            const navigate = (path) => {
-                window.location.hash = path;
-                setIsSidebarOpen(false); 
-            };
-
-            const handleLogout = () => {
-                if (window.confirm("確定要登出系統嗎？")) {
-                    signOut(auth);
-                }
-            };
-
-            if (loading) return (
-                <div className="min-h-screen w-full flex items-center justify-center bg-[#f8f9fc]">
-                    <div className="flex flex-col items-center gap-4">
-                        <i className="ti ti-loader icon-spin text-4xl" style={{color: 'var(--brand)'}}></i>
-                        <p style={{color: 'var(--text-muted)', fontSize: '13px', fontWeight: 'bold'}}>系統載入中...</p>
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 24px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 12px; flex-shrink: 0;">
+                    <div style="font-size: 18px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                        <i class="ti ti-building-skyscraper" style="color: var(--brand);"></i> 
+                        <span id="info-inst-name">機構名稱</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: var(--text-secondary);">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="ti ti-id" style="font-size: 16px; color: var(--text-muted);"></i>
+                            <span id="info-tax-id">-</span>
+                            <span style="color: var(--border-strong);">|</span>
+                            <span id="info-industry">-</span>
+                            <span style="color: var(--border-strong);">|</span>
+                            <span id="info-type">-</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="ti ti-map-pin" style="font-size: 16px; color: var(--text-muted);"></i>
+                            <span id="info-country">-</span>
+                            <span style="color: var(--border-strong);">|</span>
+                            <span id="info-address">-</span>
+                        </div>
                     </div>
                 </div>
-            );
 
-            if (!user) return <LoginView />;
+                <div class="split-layout">
+                    <div class="split-left">
+                        <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                            <i class="ti ti-list-details" style="color: var(--text-secondary); font-size: 18px;"></i>
+                            <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">各系實習梯次清單</span>
+                            <span style="font-size: 11px; color: var(--text-muted); font-weight: 500; margin-left: auto;">(同系+同學年期+同起日為一梯次)</span>
+                        </div>
+                        <div class="custom-scroll" style="flex: 1; overflow: auto;">
+                            <table class="inner-table">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align: left; width: 18%;">負責學系</th>
+                                        <th style="width: 12%;">學年度</th>
+                                        <th style="width: 10%;">學期</th>
+                                        <th style="width: 16%;">實習開始日</th>
+                                        <th style="width: 12%;">梯次人數</th>
+                                        <th style="width: 16%;">梯次狀態</th>
+                                        <th style="width: 16%;">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cohort-list-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
 
-            if (userData?.isFirstLogin) {
-                return <FirstTimeSetupView user={user} onComplete={() => setUserData({...userData, isFirstLogin: false})} />;
+                    <div class="split-right">
+                        <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <i class="ti ti-history" style="color: var(--indigo); font-size: 18px;"></i>
+                                <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">機構總評估紀錄一覽</span>
+                            </div>
+                            <button class="btn btn-indigo btn-sm" onclick="openAddEvalModal()">
+                                <i class="ti ti-plus"></i> 新增評估
+                            </button>
+                        </div>
+                        <div class="custom-scroll" style="flex: 1; overflow: auto;">
+                            <table class="inner-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 25%; text-align: left;">評估學系</th>
+                                        <th style="width: 20%;">評估日期</th>
+                                        <th style="width: 15%;">結果</th>
+                                        <th style="width: 20%;">涵蓋合法學生</th>
+                                        <th style="width: 20%;">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="eval-history-list">
+                                    <tr><td colspan="5" class="empty-state">目前無評估紀錄</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-eval-modal" class="dialog-overlay">
+        <div class="dialog-box" style="max-width: 500px;">
+            <div class="dialog-header">
+                <h3><i class="ti ti-file-info" style="color: var(--brand);"></i> 評估紀錄明細</h3>
+                <button type="button" class="dialog-close" onclick="closeViewEvalModal()"><i class="ti ti-x"></i></button>
+            </div>
+            <div class="dialog-body custom-scroll">
+                <div style="display:flex; flex-direction:column; gap:18px;">
+                    <div><strong style="color:var(--text-muted);font-size:12px;">評估機構</strong><div id="view-eval-inst" style="margin-top:6px;font-weight:600;font-size:14px;"></div></div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div><strong style="color:var(--text-muted);font-size:12px;">評估學系</strong><div id="view-eval-dept" style="margin-top:6px;font-weight:600;color:var(--indigo);"></div></div>
+                        <div><strong style="color:var(--text-muted);font-size:12px;">評估日期</strong><div id="view-eval-date" style="margin-top:6px;font-family:monospace;font-weight:600;"></div></div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div><strong style="color:var(--text-muted);font-size:12px;">評估人</strong><div id="view-eval-evaluator" style="margin-top:6px;"></div></div>
+                        <div><strong style="color:var(--text-muted);font-size:12px;">評估結果</strong><div id="view-eval-result" style="margin-top:6px;"></div></div>
+                    </div>
+                    <div><strong style="color:var(--text-muted);font-size:12px;">備註說明</strong><div id="view-eval-remarks" style="margin-top:6px; line-height:1.6; white-space: pre-wrap; background: var(--bg); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border);"></div></div>
+                </div>
+            </div>
+            <div class="dialog-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeViewEvalModal()">關閉</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="add-eval-modal" class="dialog-overlay">
+        <div class="dialog-box" style="max-width: 450px;">
+            <div class="dialog-header">
+                <h3 style="color: var(--indigo);"><i class="ti ti-clipboard-plus" style="color: var(--indigo);"></i> <span id="modal-eval-title">登錄機構評估紀錄</span></h3>
+                <button type="button" class="dialog-close" onclick="closeAddEvalModal()"><i class="ti ti-x"></i></button>
+            </div>
+            
+            <div class="dialog-body custom-scroll">
+                <div style="margin-bottom: 20px; padding: 12px 16px; background: var(--indigo-light); border: 1px solid var(--indigo-border); border-radius: var(--radius); font-size: 12px; color: var(--text-secondary); line-height: 1.5;">
+                    您正在為 <strong id="add-eval-inst" style="color: var(--indigo);"></strong> 新增評估紀錄。<br>
+                    <span style="color: var(--danger); font-weight: 500;">* 儲存後，系統將自動比對並涵蓋該系所一年內開始實習的學生梯次。</span>
+                </div>
+
+                <div class="field">
+                    <label class="field-label">評估系所 <span class="req">*</span></label>
+                    <select id="input-add-eval-dept" class="field-select" required>
+                        <option value="">請選擇負責評估之系所</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label class="field-label">本次評估日期 (民國年) <span class="req">*</span></label>
+                    <input type="text" id="input-eval-date" required class="field-input" placeholder="例如：114/01/01 或直接輸入 1140101" onblur="window.formatROCDate(this)">
+                </div>
+                <div class="field">
+                    <label class="field-label">評估人 <span class="req">*</span></label>
+                    <input type="text" id="input-evaluator" required class="field-input" placeholder="請輸入評估人姓名/職稱">
+                </div>
+                <div class="field">
+                    <label class="field-label">評估結果 <span class="req">*</span></label>
+                    <select id="input-eval-result" required class="field-select">
+                        <option value="">請選擇</option>
+                        <option value="通過">通過</option>
+                        <option value="有條件通過">有條件通過</option>
+                        <option value="不通過">不通過</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label class="field-label">評估說明 / 備註</label>
+                    <textarea id="input-eval-remarks" class="field-input custom-scroll" placeholder="可選填..." style="min-height: 80px; resize: none; padding: 10px;"></textarea>
+                </div>
+            </div>
+            
+            <div class="dialog-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeAddEvalModal()">取消</button>
+                <button type="button" id="btn-submit-eval" class="btn btn-indigo" onclick="submitEvaluation()">
+                    <i class="ti ti-check"></i> 確認儲存
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="cohort-details-modal" class="dialog-overlay" style="z-index: 250;">
+        <div class="dialog-box" style="max-width: 1400px; width: 95%;">
+            <div class="dialog-header">
+                <h3><i class="ti ti-users" style="color: var(--brand);"></i> <span id="cohort-details-title">梯次學生明細</span></h3>
+                <button type="button" class="dialog-close" onclick="closeCohortDetailsModal()"><i class="ti ti-x"></i></button>
+            </div>
+            <div class="dialog-body custom-scroll" style="padding: 0;">
+                <table class="inner-table" style="min-width: 1300px;">
+                    <thead>
+                        <tr>
+                            <th style="width: 8%;">學號</th>
+                            <th style="width: 7%;">姓名</th>
+                            <th style="width: 7%;">學系</th>
+                            <th style="width: 5%;">年級</th>
+                            <th style="width: 18%;">修習課程</th>
+                            <th style="width: 5%;">總學分</th>
+                            <th style="width: 12%;">實習起訖時間</th>
+                            <th style="width: 5%;">總時數</th>
+                            <th style="width: 8%;">實習時間</th>
+                            <th style="width: 8%;">證明文件</th>
+                            <th style="width: 8%;">投保情形</th>
+                            <th style="width: 5%;">勞雇關係</th>
+                            <th style="width: 4%;">填報系所</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cohort-details-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY", authDomain: "thu-isac-review.firebaseapp.com", projectId: "thu-isac-review", storageBucket: "thu-isac-review.firebasestorage.app", messagingSenderId: "453299876735", appId: "1:453299876735:web:1d8babca3315423161a04a" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app); 
+        const db = getFirestore(app);
+        
+        const institutionsCol = collection(db, "internship_institutions");
+        const recordsCol = collection(db, "internship_records"); 
+        const evaluationsCol = collection(db, "institution_evaluations"); 
+        const coursesCol = collection(db, "internship_courses");
+        const studentsCol = collection(db, "internship_students"); 
+        
+        let allInstitutions = [], allRecords = [], allEvaluations = [], allCourses = [], allStudents = [];
+        let aggregatedData = [], filteredData = [], globalDepts = [];
+        let currentFilter = 'all', currentPage = 1, itemsPerPage = 15;
+        let activeInstId = null;
+        let editingEvalId = null;
+
+        function parseROCDate(dateStr) {
+            if (!dateStr) return null;
+            let parts = dateStr.split('-')[0].trim().split('/');
+            if (parts.length !== 3) return null;
+            return new Date(parseInt(parts[0], 10) + 1911, parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        }
+
+        window.formatROCDate = (input) => {
+            let val = input.value.replace(/[^\d]/g, '');
+            if (val.length === 7) {
+                input.value = `${val.substring(0,3)}/${val.substring(3,5)}/${val.substring(5,7)}`;
+            } else if (val.length === 6) {
+                input.value = `${val.substring(0,2)}/${val.substring(2,4)}/${val.substring(4,6)}`;
+            }
+        };
+
+        const formatCourseInfo = (c) => c ? `${c.academic_year}-${c.term}_${c.course_code}：${c.course_name}` : '';
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const deptSnap = await getDocs(collection(db, "departments"));
+                globalDepts = deptSnap.docs.map(d => d.data());
+                globalDepts.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
+
+                onSnapshot(studentsCol, (snap) => { allStudents = snap.docs.map(d => ({id: d.id, ...d.data()})); });
+                onSnapshot(coursesCol, (snap) => { allCourses = snap.docs.map(d => ({id: d.id, ...d.data()})); });
+                onSnapshot(institutionsCol, (snap) => { allInstitutions = snap.docs.map(d => ({id: d.id, ...d.data()})); runAggregation(); });
+                onSnapshot(recordsCol, (snap) => { allRecords = snap.docs.map(d => ({id: d.id, ...d.data()})); runAggregation(); });
+                onSnapshot(evaluationsCol, (snap) => { allEvaluations = snap.docs.map(d => ({id: d.id, ...d.data()})); runAggregation(); });
+            } else {
+                document.getElementById('table-body').innerHTML = `<tr><td colspan="5" class="empty-state"><i class="ti ti-shield-half empty-icon"></i><div class="empty-text">請先登入系統以存取資料。</div></td></tr>`;
+            }
+        });
+
+        const getDeptShort = (n) => { const d = globalDepts.find(x => x.name === n); return d && d.shortName ? d.shortName : n; };
+
+        function runAggregation() {
+            if (allInstitutions.length === 0 || allRecords.length === 0) return;
+
+            aggregatedData = allInstitutions.map(inst => {
+                let instRecords = allRecords.filter(r => r.inst_raw === inst.name);
+                let cohortsObj = {};
+                let totalStudents = 0;
+
+                instRecords.forEach(r => {
+                    let dept = r.resp_dept || '未綁定系所';
+                    let sDateObj = parseROCDate(r.duration);
+                    let sDateStr = r.duration ? r.duration.split('-')[0].trim() : '未知日期';
+                    
+                    let acadYear = '無紀錄';
+                    let term = '-';
+                    if (r.courses && r.courses.length > 0) {
+                        let c = allCourses.find(x => x.id === r.courses[0]);
+                        if (c) {
+                            acadYear = c.academic_year || '無紀錄';
+                            term = c.term || '-';
+                        }
+                    }
+
+                    let cohortKey = `${dept}_${acadYear}_${term}_${sDateStr}`;
+
+                    if(!cohortsObj[cohortKey]) {
+                        cohortsObj[cohortKey] = {
+                            cohortKey: cohortKey, dept: dept, acadYear: acadYear, term: term, startDateStr: sDateStr, startDateObj: sDateObj, count: 0,
+                            records: [] 
+                        };
+                    }
+                    cohortsObj[cohortKey].count++;
+                    cohortsObj[cohortKey].records.push(r);
+                    totalStudents++;
+                });
+
+                let cohorts = Object.values(cohortsObj).map(cohort => {
+                    let evalsForDept = allEvaluations.filter(e => e.inst_name === inst.name && e.dept_name === cohort.dept);
+                    let hasValidEval = false;
+                    
+                    if(cohort.startDateObj) {
+                        for(let e of evalsForDept) {
+                            if(!e.eval_date || (e.eval_result !== '通過' && e.eval_result !== '有條件通過')) continue;
+                            let eDate = parseROCDate(e.eval_date);
+                            if (!eDate) continue;
+
+                            let diffDays = (cohort.startDateObj.getTime() - eDate.getTime()) / (1000 * 3600 * 24);
+                            if(diffDays >= 0 && diffDays <= 365) { hasValidEval = true; break; }
+                        }
+                    }
+
+                    cohort.status = hasValidEval 
+                        ? { code: 'pass', label: '合規 (已有評估)', class: 'badge-success' }
+                        : { code: 'attention', label: '未涵蓋或逾期', class: 'badge-danger' };
+                    return cohort;
+                });
+
+                let overallStatus;
+                if(cohorts.length === 0) overallStatus = { code: 'empty', label: '無關聯紀錄', class: 'badge-secondary', icon: 'ti-minus' };
+                else if(cohorts.some(c => c.status.code === 'attention')) overallStatus = { code: 'attention', label: '需注意 (部分梯次異常)', class: 'badge-warning', icon: 'ti-alert-circle' };
+                else overallStatus = { code: 'pass', label: '全部梯次皆合規', class: 'badge-success', icon: 'ti-check' };
+
+                return { ...inst, cohorts, totalStudents, overallStatus };
+            });
+
+            processAndRenderMain();
+        }
+
+        window.setFilter = (f) => { currentFilter = f; document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active')); event.target.classList.add('active'); currentPage = 1; processAndRenderMain(); };
+        document.getElementById('search-input').addEventListener('input', () => { currentPage = 1; processAndRenderMain(); });
+
+        function processAndRenderMain() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
+            filteredData = aggregatedData.filter(d => {
+                let matchSearch = d.name.toLowerCase().includes(searchTerm) || (d.tax_id && d.tax_id.toLowerCase().includes(searchTerm));
+                let matchFilter = currentFilter === 'all' || d.overallStatus.code === currentFilter;
+                return matchSearch && matchFilter;
+            });
+
+            filteredData.sort((a,b) => b.totalStudents - a.totalStudents);
+            
+            const tbody = document.getElementById('table-body');
+            const total = filteredData.length;
+            const tPages = Math.max(1, Math.ceil(total / itemsPerPage));
+            if (currentPage > tPages) currentPage = tPages;
+            
+            const start = (currentPage - 1) * itemsPerPage;
+            const items = filteredData.slice(start, start + itemsPerPage);
+
+            document.getElementById('pagination-info').innerHTML = total > 0 ? `共 <strong>${total}</strong> 筆，顯示第 ${start + 1}–${Math.min(start + itemsPerPage, total)} 筆` : `共 <strong>0</strong> 筆`;
+            
+            let pHtml = `<button class="page-btn" onclick="window.changePage(${currentPage-1})" ${currentPage<=1?'disabled':''}><i class="ti ti-chevron-left"></i></button>`;
+            for(let p=1; p<=tPages; p++) {
+                if (p===1 || p===tPages || Math.abs(p-currentPage)<=1) {
+                    pHtml += `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="window.changePage(${p})">${p}</button>`;
+                }
+            }
+            pHtml += `<button class="page-btn" onclick="window.changePage(${currentPage+1})" ${currentPage>=tPages?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
+            document.getElementById('pagination-controls').innerHTML = pHtml;
+
+            if(total === 0) { tbody.innerHTML = `<tr><td colspan="5" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">找不到符合條件的機構資料。</div></td></tr>`; return; }
+
+            let html = '';
+            items.forEach(d => {
+                html += `
+                <tr>
+                    <td><div class="cell-primary bold">${d.name}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary">${d.cohorts.length} 梯次</div></td>
+                    <td style="text-align: center;"><div class="cell-primary">${d.totalStudents} 人</div></td>
+                    <td style="text-align: center;"><span class="badge ${d.overallStatus.class}"><i class="ti ${d.overallStatus.icon}"></i> ${d.overallStatus.label}</span></td>
+                    <td style="text-align: center;">
+                        <button class="btn btn-secondary btn-sm" onclick="openManageModal('${d.id}')">
+                            <i class="ti ti-list"></i> 管理審查
+                        </button>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+
+            if(document.getElementById('manage-modal').classList.contains('open') && activeInstId) {
+                renderManageModalContent(true);
+            }
+        }
+
+        window.changePage = (p) => { currentPage = p; processAndRenderMain(); };
+        window.changePerPage = (val) => { itemsPerPage = Number(val); currentPage = 1; processAndRenderMain(); };
+
+        window.openManageModal = (id) => {
+            activeInstId = id;
+            document.getElementById('manage-modal').classList.add('open');
+            renderManageModalContent(false);
+        };
+
+        window.closeManageModal = () => { document.getElementById('manage-modal').classList.remove('open'); };
+
+        function renderManageModalContent(isUpdate) {
+            let inst = aggregatedData.find(i => i.id === activeInstId);
+            if(!inst) return;
+            
+            document.getElementById('info-inst-name').innerText = inst.name || '-';
+            document.getElementById('info-tax-id').innerText = inst.tax_id || '無統編資料';
+            document.getElementById('info-industry').innerText = inst.industry || '未註明行業別';
+            document.getElementById('info-type').innerText = inst.venue_type || '未註明實習場所';
+            document.getElementById('info-country').innerText = inst.country || '未註明國別';
+            document.getElementById('info-address').innerText = inst.address || '未註明地址';
+
+            let tbody = document.getElementById('cohort-list-tbody');
+            if(inst.cohorts.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="empty-state" style="padding:40px;"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">此機構目前無實習梯次</div></td></tr>`;
+            } else {
+                let sortedCohorts = [...inst.cohorts].sort((a,b) => {
+                    if(a.status.code === 'attention' && b.status.code !== 'attention') return -1;
+                    if(a.status.code !== 'attention' && b.status.code === 'attention') return 1;
+                    return (b.startDateObj || 0) - (a.startDateObj || 0);
+                });
+
+                let html = '';
+                sortedCohorts.forEach(c => {
+                    html += `
+                        <tr>
+                            <td style="text-align:left;"><div class="cell-primary bold">${getDeptShort(c.dept)}</div></td>
+                            <td style="text-align:center;"><div class="cell-primary">${c.acadYear}</div></td>
+                            <td style="text-align:center;"><div class="cell-primary">${c.term}</div></td>
+                            <td style="text-align:center; font-family:monospace;"><div class="cell-primary bold">${c.startDateStr}</div></td>
+                            <td style="text-align:center;"><div class="cell-primary bold" style="color:var(--brand);">${c.count} 人</div></td>
+                            <td style="text-align:center;"><span class="badge ${c.status.class}">${c.status.label}</span></td>
+                            <td style="text-align:center;">
+                                <button class="btn btn-secondary btn-sm" onclick="openCohortDetailsModal('${c.cohortKey}')">
+                                    <i class="ti ti-search"></i> 查看明細
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+            }
+            window.renderRightPanel();
+        }
+
+        window.renderRightPanel = () => {
+            let inst = aggregatedData.find(i => i.id === activeInstId);
+            let listTbody = document.getElementById('eval-history-list');
+            
+            let evals = allEvaluations.filter(e => e.inst_name === inst.name);
+            
+            evals.sort((a,b) => {
+                let dA = parseROCDate(a.eval_date)?.getTime() || 0;
+                let dB = parseROCDate(b.eval_date)?.getTime() || 0;
+                return dB - dA;
+            }); 
+
+            if(evals.length === 0) {
+                listTbody.innerHTML = `<tr><td colspan="5" class="empty-state" style="padding: 40px;"><i class="ti ti-inbox empty-icon" style="margin: 0 auto 12px auto;"></i><div class="empty-text">此機構尚未建立任何評估紀錄。</div></td></tr>`;
+                return;
             }
 
-            const getBreadcrumbs = () => {
-                if (currentHash === 'profile-settings') return ['系統設定', '個人資料與偏好設定'];
-                if (currentHash.includes('dashboard')) return ['首頁'];
-                if (currentHash.includes('list')) return ['審查作業', '學生待查核名單'];
+            let html = '';
+            evals.forEach(e => {
+                let coveringCount = 0;
+                let isPass = e.eval_result === '通過' || e.eval_result === '有條件通過';
                 
-                if (currentHash.includes('review/department')) return ['審查作業', '系所審查作業'];
-                if (currentHash.includes('review/school')) return ['審查作業', '校級審查作業'];
-                if (currentHash.includes('review/institution')) return ['審查作業', '機構審查作業'];
-                
-                if (currentHash.includes('intern_view/course')) return ['實習資料瀏覽', '實習課程清單'];
-                if (currentHash.includes('intern_view/students')) return ['實習資料瀏覽', '實習學生清單'];
-                if (currentHash.includes('intern_view/institution')) return ['實習資料瀏覽', '實習機構清單'];
-                if (currentHash.includes('intern_view/record')) return ['實習資料瀏覽', '實習記錄清單'];
-                
-                if (currentHash.includes('intern_manage/staging_review')) return ['實習資料管理', '批次匯入審查中心'];
-                if (currentHash.includes('intern_manage/course')) return ['實習資料管理', '實習課程管理'];
-                if (currentHash.includes('intern_manage/students')) return ['實習資料管理', '實習學生管理'];
-                if (currentHash.includes('intern_manage/institution')) return ['實習資料管理', '實習機構管理'];
-                if (currentHash.includes('intern_manage/record')) return ['實習資料管理', '實習記錄管理'];
-
-                if (currentHash.includes('moe-indicators')) return ['審查項目設定', '教育部審查指標設定'];
-                if (currentHash.includes('administrative_files')) return ['審查項目設定', '行政文件審查設定'];
-                if (currentHash.includes('students_files')) return ['審查項目設定', '學生文件審查設定'];
-                if (currentHash.includes('institution_files')) return ['審查項目設定', '機構文件審查設定'];
-                if (currentHash.includes('other_files')) return ['審查項目設定', '其他文件審查設定'];
-                
-                if (currentHash.includes('departments')) return ['系統設定', '系所清單管理'];
-                if (currentHash.includes('roles')) return ['系統設定', '用戶權限管理'];
-                
-                return ['實習課程書面審查作業系統'];
-            };
-
-            const breadcrumbs = getBreadcrumbs();
-
-            return (
-                <div id="app">
-                    {/* Mobile Overlay */}
-                    {isSidebarOpen && <div className="mobile-overlay" onClick={() => setIsSidebarOpen(false)}></div>}
-
-                    {/* Sidebar */}
-                    <nav id="sidebar" className={`custom-scroll ${isSidebarOpen ? 'open' : ''} ${isCollapsed ? 'collapsed' : ''}`}>
-                        <div className="sidebar-logo">
-                            <div className="logo-icon"><i className="ti ti-briefcase-2"></i></div>
-                            <div>
-                                <div className="logo-text">東海大學實習中心</div>
-                                <div className="logo-sub">實習課程書面審查作業系統</div>
-                            </div>
-                        </div>
-                        
-                        <div className="sidebar-nav custom-scroll">
-                            <MenuBtn active={currentHash === '/dashboard-content.html'} label="首頁" icon="ti ti-home" onClick={() => navigate('/dashboard-content.html')} collapsed={isCollapsed} />
-                            
-                            <div className="nav-group-label">審查作業</div>
-                            <MenuBtn active={currentHash === '/list.html'} label="學生待查核名單" icon="ti ti-user-check" onClick={() => navigate('/list.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/review/department.html'} label="系所審查作業" icon="ti ti-building-community" onClick={() => navigate('/review/department.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/review/school.html'} label="校級審查作業" icon="ti ti-building-bank" onClick={() => navigate('/review/school.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/review/institution.html'} label="機構審查作業" icon="ti ti-building-skyscraper" onClick={() => navigate('/review/institution.html')} collapsed={isCollapsed} />
-                            
-                            <div className="nav-group-label">實習資料瀏覽</div>
-                            <MenuBtn active={currentHash === '/intern_view/course.html'} label="實習課程清單" icon="ti ti-book" onClick={() => navigate('/intern_view/course.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/intern_view/students.html'} label="實習學生清單" icon="ti ti-address-book" onClick={() => navigate('/intern_view/students.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/intern_view/institution.html'} label="實習機構清單" icon="ti ti-building" onClick={() => navigate('/intern_view/institution.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/intern_view/record.html'} label="實習記錄清單" icon="ti ti-clipboard-list" onClick={() => navigate('/intern_view/record.html')} collapsed={isCollapsed} />
-                            
-                            <div className="nav-group-label">實習資料管理</div>
-                            <MenuBtn active={currentHash === '/intern_manage/staging_review.html'} label="批次匯入審查中心" icon="ti ti-cloud-upload" onClick={() => navigate('/intern_manage/staging_review.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/intern_manage/course.html'} label="實習課程管理" icon="ti ti-book" onClick={() => navigate('/intern_manage/course.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/intern_manage/students.html'} label="實習學生管理" icon="ti ti-user-cog" onClick={() => navigate('/intern_manage/students.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/intern_manage/institution.html'} label="實習機構管理" icon="ti ti-building" onClick={() => navigate('/intern_manage/institution.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/intern_manage/record.html'} label="實習記錄管理" icon="ti ti-clipboard-check" onClick={() => navigate('/intern_manage/record.html')} collapsed={isCollapsed} />
-                            
-                            <div className="nav-group-label">審查項目設定</div>
-                            <MenuBtn active={currentHash === '/settings/moe-indicators.html'} label="教育部審查指標設定" icon="ti ti-list-check" onClick={() => navigate('/settings/moe-indicators.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/settings/administrative_files.html'} label="行政文件審查設定" icon="ti ti-folder" onClick={() => navigate('/settings/administrative_files.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/settings/students_files.html'} label="學生文件審查設定" icon="ti ti-file-text" onClick={() => navigate('/settings/students_files.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/settings/institution_files.html'} label="機構文件審查設定" icon="ti ti-file-pencil" onClick={() => navigate('/settings/institution_files.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/settings/other_files.html'} label="其他文件審查設定" icon="ti ti-file-plus" onClick={() => navigate('/settings/other_files.html')} collapsed={isCollapsed} />
-                            
-                            <div className="nav-group-label">系統設定</div>
-                            <MenuBtn active={currentHash === '/manage/departments.html'} label="系所清單管理" icon="ti ti-school" onClick={() => navigate('/manage/departments.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/manage/roles.html'} label="用戶權限管理" icon="ti ti-shield-lock" onClick={() => navigate('/manage/roles.html')} collapsed={isCollapsed} />
-                        </div>
-                        
-                        <div className="sidebar-footer">
-                            <div className={`user-row ${currentHash === 'profile-settings' ? 'bg-[color:var(--bg)]' : ''}`} onClick={() => navigate('profile-settings')} title={isCollapsed ? "個人資料與偏好設定" : ""}>
-                                <div className="user-avatar">{userData?.name ? userData.name.charAt(0) : 'U'}</div>
-                                <div className="user-info">
-                                    <div className="user-name">{userData ? `${userData.jobTitle || ''} ${userData.name || '管理員'}` : '使用者'}</div>
-                                    <div className="user-role">{userData ? `${userData.level1Unit || ''} | ${userData.level2Unit || ''}` : '資料讀取中...'}</div>
-                                </div>
-                                <i className="ti ti-settings settings-icon" style={{fontSize:'16px', color: currentHash === 'profile-settings' ? 'var(--brand)' : 'var(--text-muted)'}}></i>
-                            </div>
-                        </div>
-                    </nav>
-
-                    {/* Main Content Area */}
-                    <div id="main">
-                        <header id="topbar">
-                            <div className="breadcrumb">
-                                {/* Desktop Toggle Button */}
-                                <button className="hidden sm:flex icon-btn menu-toggle mr-3" onClick={() => setIsCollapsed(!isCollapsed)} title="收合/展開側邊選單">
-                                    <i className="ti ti-menu-2"></i>
-                                </button>
-                                
-                                {/* Mobile Toggle Button */}
-                                <button className="mobile-menu-btn" onClick={() => setIsSidebarOpen(true)}>
-                                    <i className="ti ti-menu-2"></i>
-                                </button>
-                                
-                                <span className="hidden sm:inline">實習書審</span>
-                                {breadcrumbs.map((crumb, index) => (
-                                    <React.Fragment key={index}>
-                                        <i className="ti ti-chevron-right arrow hidden sm:inline"></i>
-                                        <span className={index === breadcrumbs.length - 1 ? "crumb-active" : "hidden sm:inline"}>
-                                            {crumb}
-                                        </span>
-                                    </React.Fragment>
-                                ))}
-                            </div>
-                            
-                            <div className="topbar-actions">
-                                <div className="icon-btn" title="系統通知">
-                                    <i className="ti ti-bell"></i>
-                                </div>
-                                <div className="v-divider"></div>
-                                <div className="icon-btn danger" title="登出系統" onClick={handleLogout}>
-                                    <i className="ti ti-logout"></i>
-                                </div>
-                            </div>
-                        </header>
-
-                        <div id="content" className="custom-scroll" style={{ WebkitOverflowScrolling: 'touch' }}>
-                            {currentHash === 'profile-settings' ? (
-                                <ProfileSettingsView user={user} userData={userData} setUserData={setUserData} auth={auth} db={db} />
-                            ) : currentHash ? (
-                                <iframe 
-                                    src={getCacheBustedUrl(currentHash)} 
-                                    key={currentHash}
-                                    className="animate-fade"
-                                    title="Content View"
-                                />
-                            ) : null}
-                        </div>
-                    </div>
-                </div>
-            );
-        }
-
-        function MenuBtn({ active, label, icon, onClick, collapsed }) {
-            return (
-                <div onClick={onClick} className={`nav-item ${active ? 'active' : ''}`} title={collapsed ? label : ""}>
-                    <i className={icon}></i>
-                    <span>{label}</span>
-                </div>
-            );
-        }
-
-        /* ─── 新增：個人資料與偏好設定視圖 ─── */
-        function ProfileSettingsView({ user, userData, setUserData, auth, db }) {
-            const [isUpdatingPwd, setIsUpdatingPwd] = useState(false);
-            const [pwd, setPwd] = useState('');
-            const [confirmPwd, setConfirmPwd] = useState('');
-            const [showPwd, setShowPwd] = useState(false);
-            const [showConfirmPwd, setShowConfirmPwd] = useState(false);
-
-            const handleUpdatePwd = async (e) => {
-                e.preventDefault();
-                const pwdRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,20}$/;
-                if (!pwdRegex.test(pwd)) {
-                    alert("密碼不符合安全規則！\n請輸入 8~20 個字元，並包含至少一個「大寫字母」、一個「小寫字母」及「數字」。");
-                    return;
-                }
-                if (pwd !== confirmPwd) {
-                    alert("兩次輸入的密碼不相符，請重新確認！");
-                    return;
-                }
-                
-                setIsUpdatingPwd(true);
-                try {
-                    await updatePassword(user, pwd);
-                    alert("✅ 密碼變更成功！下次請使用新密碼登入。");
-                    setPwd('');
-                    setConfirmPwd('');
-                } catch (err) {
-                    if (err.code === 'auth/requires-recent-login') {
-                        alert("基於安全考量，變更密碼需要您最近有登入紀錄。請重新登入後再進行修改。");
-                        signOut(auth);
-                    } else {
-                        alert("密碼變更失敗：" + err.message);
-                    }
-                } finally {
-                    setIsUpdatingPwd(false);
-                }
-            };
-
-            const handleThemeChange = async (themeKey) => {
-                // 1. 即時套用至畫面
-                applyTheme(themeKey);
-                // 2. 更新 React 狀態
-                setUserData(prev => ({ ...prev, theme: themeKey }));
-                // 3. 同步至 Firebase (如果是預設展示帳號則不寫入)
-                if (!userData?.isDefaultAdmin) {
-                    try {
-                        await updateDoc(doc(db, "users", user.uid), { theme: themeKey });
-                    } catch (err) {
-                        console.error("無法儲存主題偏好：", err);
+                if (isPass && e.eval_date) {
+                    let eDate = parseROCDate(e.eval_date);
+                    if(eDate) {
+                        inst.cohorts.filter(c => c.dept === e.dept_name).forEach(c => {
+                            if(c.startDateObj) {
+                                let diffDays = (c.startDateObj.getTime() - eDate.getTime()) / (1000 * 3600 * 24);
+                                if(diffDays >= 0 && diffDays <= 365) {
+                                    coveringCount += c.count;
+                                }
+                            }
+                        });
                     }
                 }
-            };
 
-            return (
-                <div className="w-full max-w-4xl mx-auto p-4 md:p-8 animate-fade">
+                let badgeColor = e.eval_result === '通過' ? 'badge-success' : (e.eval_result === '不通過' ? 'badge-danger' : 'badge-warning');
+
+                html += `
+                <tr>
+                    <td style="text-align: left;"><div class="cell-primary bold" style={{color: 'var(--indigo)'}}>${getDeptShort(e.dept_name)}</div></td>
+                    <td style="text-align: center; font-family: monospace;"><div class="cell-primary bold">${e.eval_date}</div></td>
+                    <td style="text-align: center;"><span class="badge ${badgeColor}">${e.eval_result}</span></td>
+                    <td style="text-align: center;">
+                        <span style="font-weight: 700; font-size: 11px; color: ${coveringCount > 0 ? 'var(--brand)' : 'var(--text-muted)'}; background: ${coveringCount > 0 ? 'var(--brand-light)' : 'var(--bg)'}; padding: 4px 10px; border-radius: 6px; border: 1px solid ${coveringCount > 0 ? 'var(--brand-border)' : 'var(--border)'}; display: inline-block;">
+                            ${coveringCount} 人
+                        </span>
+                    </td>
+                    <td style="text-align: center;">
+                        <div class="row-actions">
+                            <button class="btn btn-secondary btn-icon sm" onclick="openViewEvalModal('${e.id}')" title="查看明細"><i class="ti ti-eye"></i></button>
+                            <button class="btn btn-secondary btn-icon sm" onclick="openEditEvalModal('${e.id}')" title="編輯"><i class="ti ti-edit"></i></button>
+                            <button class="btn btn-icon sm" style="color:var(--danger); border-color:var(--danger-border);" onclick="deleteEvaluation('${e.id}')" title="刪除"><i class="ti ti-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>`;
+            });
+            listTbody.innerHTML = html;
+        };
+
+        window.openViewEvalModal = (evalId) => {
+            let inst = aggregatedData.find(i => i.id === activeInstId);
+            let evalData = allEvaluations.find(e => e.id === evalId);
+            if(!inst || !evalData) return;
+
+            document.getElementById('view-eval-inst').innerText = inst.name || '-';
+            document.getElementById('view-eval-dept').innerText = evalData.dept_name || '-';
+            document.getElementById('view-eval-date').innerText = evalData.eval_date || '-';
+            document.getElementById('view-eval-evaluator').innerText = evalData.evaluator || '-';
+            
+            let badgeColor = evalData.eval_result === '通過' ? 'badge-success' : (evalData.eval_result === '不通過' ? 'badge-danger' : 'badge-warning');
+            document.getElementById('view-eval-result').innerHTML = `<span class="badge ${badgeColor}">${evalData.eval_result || '-'}</span>`;
+            
+            document.getElementById('view-eval-remarks').innerText = evalData.eval_remarks || '無';
+
+            document.getElementById('view-eval-modal').classList.add('open');
+        };
+
+        window.closeViewEvalModal = () => {
+            document.getElementById('view-eval-modal').classList.remove('open');
+        };
+
+        window.openCohortDetailsModal = (cohortKey) => {
+            let inst = aggregatedData.find(i => i.id === activeInstId);
+            if(!inst) return;
+            let cohort = inst.cohorts.find(c => c.cohortKey === cohortKey);
+            if(!cohort) return;
+
+            document.getElementById('cohort-details-title').innerText = `${inst.name} - ${getDeptShort(cohort.dept)} (${cohort.acadYear}-${cohort.term}) 學生明細`;
+            
+            let tbody = document.getElementById('cohort-details-tbody');
+            let html = '';
+
+            if(cohort.records.length === 0) {
+                 tbody.innerHTML = `<tr><td colspan="13" class="empty-state"><div class="empty-icon"><i class="ti ti-users"></i></div><div class="empty-text">查無學生資料</div></td></tr>`;
+            }
+
+            cohort.records.forEach(data => {
+                const stuParts = (data.student_raw || '').split(' - ');
+                const stuId = stuParts[0] || '';
+                const stuName = stuParts[1] || '';
+                
+                const stu = allStudents.find(s => s.student_id === stuId);
+                const stuDept = stu ? getDeptShort(stu.department) : '未綁定學系';
+
+                const courseCount = Array.isArray(data.courses) ? data.courses.length : 0;
+                let totalCredits = 0;
+                let courseObjs = [];
+                if (courseCount > 0) {
+                    data.courses.forEach(cid => {
+                        const c = allCourses.find(x => x.id === cid);
+                        if (c) {
+                            totalCredits += Number(c.credits || 0);
+                            courseObjs.push(c);
+                        }
+                    });
+                }
+
+                let coursesHtml = '-';
+                if (courseObjs.length > 0) {
+                    const badgeStyle = 'max-width: 100%; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle;';
+                    const firstCourseTag = `<span class="badge badge-outline-blue" style="${badgeStyle}" title="${formatCourseInfo(courseObjs[0])}">${formatCourseInfo(courseObjs[0])}</span>`;
                     
-                    {/* 基本資料 (唯讀區塊) */}
-                    <div className="mb-6" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '24px', boxShadow: 'var(--shadow-sm)' }}>
-                        <h3 style={{ fontSize: '15px', fontWeight: '700', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
-                            <i className="ti ti-user-circle text-lg" style={{color: 'var(--brand)'}}></i> 帳號基本資料
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div>
-                                <label className="block text-xs font-semibold mb-1" style={{color: 'var(--text-muted)'}}>姓名</label>
-                                <div className="p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: '13px', color: 'var(--text-primary)' }}>
-                                    {userData?.name || '管理員'}
-                                </div>
+                    if (courseObjs.length > 1) {
+                        const otherCoursesHtml = courseObjs.slice(1).map(c => `
+                            <div style="margin-top: 4px;">
+                                <span class="badge badge-outline-blue" style="${badgeStyle}" title="${formatCourseInfo(c)}">${formatCourseInfo(c)}</span>
                             </div>
-                            <div>
-                                <label className="block text-xs font-semibold mb-1" style={{color: 'var(--text-muted)'}}>登入帳號 (Email)</label>
-                                <div className="p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: '13px', color: 'var(--text-primary)' }}>
-                                    {user.email}
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-xs font-semibold mb-1" style={{color: 'var(--text-muted)'}}>所屬一級單位</label>
-                                <div className="p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: '13px', color: 'var(--text-primary)' }}>
-                                    {userData?.level1Unit || '未設定'}
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-xs font-semibold mb-1" style={{color: 'var(--text-muted)'}}>所屬二級單位與職稱</label>
-                                <div className="p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: '13px', color: 'var(--text-primary)' }}>
-                                    {userData?.level2Unit || '未設定'} - {userData?.jobTitle || '無職稱'}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                        `).join('');
 
-                    {/* 系統配色 */}
-                    <div className="mb-6" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '24px', boxShadow: 'var(--shadow-sm)' }}>
-                        <h3 style={{ fontSize: '15px', fontWeight: '700', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
-                            <i className="ti ti-palette text-lg" style={{color: 'var(--brand)'}}></i> 自訂系統配色
-                        </h3>
-                        <p style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '20px'}}>選擇您喜歡的品牌主題色，設定將自動跨裝置同步儲存。</p>
-                        
-                        <div className="flex flex-wrap gap-5">
-                            {Object.entries(THEMES).map(([key, t]) => {
-                                const isActive = (userData?.theme || 'blue') === key;
-                                return (
-                                    <button 
-                                        key={key}
-                                        onClick={() => handleThemeChange(key)}
-                                        className="flex flex-col items-center gap-2 transition-transform hover:-translate-y-1 active:scale-95"
-                                    >
-                                        <div style={{
-                                            width: '44px', height: '44px', borderRadius: '50%', background: t.brand, 
-                                            border: isActive ? '3px solid var(--text-primary)' : '3px solid transparent',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white',
-                                            boxShadow: isActive ? '0 4px 12px rgba(0,0,0,0.1)' : 'var(--shadow-sm)',
-                                            transition: 'all 0.2s'
-                                        }}>
-                                            {isActive && <i className="ti ti-check text-xl"></i>}
-                                        </div>
-                                        <span style={{fontSize: '12px', fontWeight: isActive ? '700' : '500', color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)'}}>
-                                            {t.name}
-                                        </span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
-
-                    {/* 變更密碼 */}
-                    <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '24px', boxShadow: 'var(--shadow-sm)' }}>
-                        <h3 style={{ fontSize: '15px', fontWeight: '700', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
-                            <i className="ti ti-key text-lg" style={{color: 'var(--brand)'}}></i> 變更登入密碼
-                        </h3>
-                        <p style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '20px'}}>請定期更新您的密碼以確保帳號安全。</p>
-                        
-                        <form onSubmit={handleUpdatePwd} className="max-w-md space-y-4">
-                            <div>
-                                <label className="block text-xs font-semibold mb-1" style={{color: 'var(--text-secondary)'}}>輸入新密碼</label>
-                                <div className="relative">
-                                    <input 
-                                        type={showPwd ? "text" : "password"} 
-                                        value={pwd} onChange={e => setPwd(e.target.value)}
-                                        className="input-field pr-10" placeholder="8~20 碼，含大小寫字母及數字" required 
-                                    />
-                                    <button type="button" onClick={() => setShowPwd(!showPwd)} className="absolute right-3 top-1/2 -translate-y-1/2" style={{color: 'var(--text-muted)', fontSize: '18px'}}>
-                                        <i className={showPwd ? 'ti ti-eye-off' : 'ti ti-eye'}></i>
+                        coursesHtml = `
+                            <div style="display:flex; flex-direction:column; width:100%;">
+                                <div style="display:flex; align-items:center; justify-content:space-between; gap:6px; width:100%;">
+                                    <div style="flex: 1; min-width: 0; text-align: left; display: flex;">${firstCourseTag}</div>
+                                    <button type="button" class="more-badge" onclick="window.toggleCourseExpand('${data.id}')">
+                                        +${courseObjs.length - 1} <i class="ti ti-chevron-down" id="icon-course-${data.id}" style="margin-left:4px; font-size:12px; transition:0.2s;"></i>
                                     </button>
                                 </div>
-                            </div>
-                            <div>
-                                <label className="block text-xs font-semibold mb-1" style={{color: 'var(--text-secondary)'}}>再次確認新密碼</label>
-                                <div className="relative">
-                                    <input 
-                                        type={showConfirmPwd ? "text" : "password"} 
-                                        value={confirmPwd} onChange={e => setConfirmPwd(e.target.value)}
-                                        className="input-field pr-10" placeholder="請再次輸入相同密碼" required 
-                                    />
-                                    <button type="button" onClick={() => setShowConfirmPwd(!showConfirmPwd)} className="absolute right-3 top-1/2 -translate-y-1/2" style={{color: 'var(--text-muted)', fontSize: '18px'}}>
-                                        <i className={showConfirmPwd ? 'ti ti-eye-off' : 'ti ti-eye'}></i>
-                                    </button>
+                                <div id="expand-course-${data.id}" style="display:none; margin-top:4px; text-align: left;">
+                                    ${otherCoursesHtml}
                                 </div>
                             </div>
-                            <button 
-                                disabled={isUpdatingPwd || !pwd || !confirmPwd} 
-                                style={{
-                                    width: '100%', background: 'var(--brand)', color: 'white', padding: '10px 16px', 
-                                    borderRadius: 'var(--radius)', fontWeight: '600', border: 'none', 
-                                    cursor: (isUpdatingPwd || !pwd || !confirmPwd) ? 'not-allowed' : 'pointer', 
-                                    opacity: (isUpdatingPwd || !pwd || !confirmPwd) ? 0.6 : 1, 
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                                    transition: 'background var(--transition)', marginTop: '24px'
-                                }}
-                            >
-                                {isUpdatingPwd ? <><i className="ti ti-loader icon-spin"></i> 更新中...</> : "確認變更密碼"}
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            );
-        }
-
-        /* ─── 首次登入視圖 (略有精簡重構) ─── */
-        function FirstTimeSetupView({ user, onComplete }) {
-            const [isUpdating, setIsUpdating] = useState(false);
-            const [showPwd, setShowPwd] = useState(false);
-            const [showConfirmPwd, setShowConfirmPwd] = useState(false);
-
-            const handleUpdate = async (e) => {
-                e.preventDefault();
-                const pwd = e.target.password.value;
-                const confirmPwd = e.target.confirmPassword.value;
-                const pwdRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,20}$/;
-                if (!pwdRegex.test(pwd)) {
-                    alert("密碼不符合安全規則！\n請輸入 8~20 個字元，並包含至少一個「大寫字母」、一個「小寫字母」及「數字」。");
-                    return;
+                        `;
+                    } else {
+                        coursesHtml = `<div style="text-align: left;">${firstCourseTag}</div>`;
+                    }
                 }
-                if (pwd !== confirmPwd) {
-                    alert("兩次輸入的密碼不相符，請重新確認！");
-                    return;
-                }
-                setIsUpdating(true);
+
+                let proofBadge = 'badge-outline-gray';
+                if (data.proof_type === '合約') proofBadge = 'badge-outline-green';
+                else if (data.proof_type === '公函') proofBadge = 'badge-outline-blue';
+                else if (data.proof_type === '其他證明文件') proofBadge = 'badge-outline-amber';
+
+                let insBadge = 'badge-outline-gray';
+                if (data.insurance === '兩者皆有') insBadge = 'badge-outline-green';
+                else if (data.insurance === '僅校外實習保險') insBadge = 'badge-outline-indigo';
+                else if (data.insurance === '僅勞保') insBadge = 'badge-outline-blue';
+                else if (data.insurance === '兩者皆無') insBadge = 'badge-outline-red';
+
+                html += `
+                <tr>
+                    <td style="text-align: center;"><div class="cell-primary bold">${stuId}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary bold">${stuName}</div></td>
+                    <td style="text-align: center;">${stuDept}</td>
+                    <td style="text-align: center;">${data.grade || '-'}</td>
+                    <td style="text-align: left;">${coursesHtml}</td>
+                    <td style="text-align: center;">${totalCredits}</td>
+                    <td style="text-align: center;"><div class="cell-primary bold">${data.duration || '-'}</div></td>
+                    <td style="text-align: center;">${data.hours !== undefined && data.hours !== '' ? data.hours : '-'}</td>
+                    <td style="text-align: center;">${data.period_type || '-'}</td>
+                    <td style="text-align: center;"><div class="badge ${proofBadge}">${data.proof_type || '-'}</div></td>
+                    <td style="text-align: center;"><div class="badge ${insBadge}">${data.insurance || '-'}</div></td>
+                    <td style="text-align: center;">${data.employment || '-'}</td>
+                    <td style="text-align: center;">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</td>
+                </tr>`;
+            });
+            
+            tbody.innerHTML = html;
+            document.getElementById('cohort-details-modal').classList.add('open');
+        };
+
+        window.closeCohortDetailsModal = () => {
+            document.getElementById('cohort-details-modal').classList.remove('open');
+        };
+
+        window.toggleCourseExpand = (id) => {
+            const el = document.getElementById(`expand-course-${id}`);
+            const icon = document.getElementById(`icon-course-${id}`);
+            if(!el || !icon) return;
+            if (el.style.display === 'none') {
+                el.style.display = 'block';
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                el.style.display = 'none';
+                icon.style.transform = 'rotate(0deg)';
+            }
+        };
+
+        window.deleteEvaluation = async (evalId) => {
+            if (confirm('確定要刪除這筆評估紀錄嗎？刪除後可能會導致該系所的部分學生梯次變為異常狀態。')) {
                 try {
-                    await updatePassword(user, pwd);
-                    await updateDoc(doc(db, "users", user.uid), { isFirstLogin: false });
-                    alert("✅ 專屬密碼設定成功！即將為您導向系統。");
-                    onComplete();
-                } catch (err) {
-                    if (err.code === 'auth/requires-recent-login') {
-                        alert("基於安全考量，請重新登入後再進行密碼設定。");
-                        signOut(auth);
-                    } else { alert("密碼設定失敗：" + err.message); }
-                } finally { setIsUpdating(false); }
-            };
-
-            return (
-                <div className="min-h-screen w-full flex items-center justify-center p-4" style={{backgroundColor: 'var(--bg)'}}>
-                    <form onSubmit={handleUpdate} className="w-full max-w-md animate-fade" style={{background: 'var(--surface)', padding: '40px', borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow)', border: '1px solid var(--border)'}}>
-                        <div className="flex flex-col items-center mb-8 text-center">
-                            <div style={{width: '48px', height: '48px', borderRadius: 'var(--radius-lg)', background: 'var(--success-bg)', color: 'var(--success)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', fontSize: '24px'}}>
-                                <i className="ti ti-user-key"></i>
-                            </div>
-                            <h1 style={{fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)'}}>初次啟用帳號</h1>
-                            <p style={{fontSize: '13px', color: 'var(--text-secondary)', marginTop: '8px', lineHeight: '1.6'}}>
-                                歡迎加入實習書審平台！<br/>基於安全規範，請設定您的專屬登入密碼。
-                            </p>
-                        </div>
-                        <div className="space-y-4">
-                            <div>
-                                <div className="relative">
-                                    <input name="password" type={showPwd ? "text" : "password"} placeholder="設定新密碼" className="input-field pr-10" required />
-                                    <button type="button" onClick={() => setShowPwd(!showPwd)} className="absolute right-3 top-1/2 -translate-y-1/2" style={{color: 'var(--text-muted)', fontSize: '18px'}}>
-                                        <i className={showPwd ? 'ti ti-eye-off' : 'ti ti-eye'}></i>
-                                    </button>
-                                </div>
-                                <p style={{fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px'}}><i className="ti ti-info-circle" style={{color: 'var(--brand)', fontSize: '14px'}}></i> 需為 8~20 碼，並包含大小寫字母與數字。</p>
-                            </div>
-                            <div className="relative">
-                                <input name="confirmPassword" type={showConfirmPwd ? "text" : "password"} placeholder="再次確認新密碼" className="input-field pr-10" required />
-                                <button type="button" onClick={() => setShowConfirmPwd(!showConfirmPwd)} className="absolute right-3 top-1/2 -translate-y-1/2" style={{color: 'var(--text-muted)', fontSize: '18px'}}>
-                                    <i className={showConfirmPwd ? 'ti ti-eye-off' : 'ti ti-eye'}></i>
-                                </button>
-                            </div>
-                        </div>
-                        <button disabled={isUpdating} style={{width: '100%', background: 'var(--brand)', color: 'white', padding: '12px', borderRadius: 'var(--radius)', fontWeight: '600', marginTop: '24px', border: 'none', cursor: isUpdating ? 'not-allowed' : 'pointer', opacity: isUpdating ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'}}>
-                            {isUpdating ? <><i className="ti ti-loader icon-spin text-lg"></i> 設定中...</> : "確認設定並進入系統"}
-                        </button>
-                    </form>
-                </div>
-            );
-        }
-
-        /* ─── 登入視圖 ─── */
-        function LoginView() {
-            const [isLoggingIn, setIsLoggingIn] = useState(false);
-            const [email, setEmail] = useState('');
-            const [password, setPassword] = useState('');
-            const [showPassword, setShowPassword] = useState(false);
-
-            const handleLogin = async (e) => {
-                e.preventDefault();
-                setIsLoggingIn(true);
-                let emailInput = email.trim();
-
-                if (emailInput && !emailInput.includes('@')) {
-                    const fullEmail = emailInput + '@thu.edu.tw';
-                    setEmail(fullEmail); 
-                    emailInput = fullEmail;
+                    await deleteDoc(doc(db, "institution_evaluations", evalId));
+                } catch (e) {
+                    alert("刪除失敗：" + e.message);
                 }
+            }
+        };
 
-                try {
-                    await signInWithEmailAndPassword(auth, emailInput, password);
-                } catch (err) {
-                    alert("登入失敗：請確認帳號或密碼是否正確。\n(若為初次啟用，請使用管理員配發之初始密碼)");
-                } finally { setIsLoggingIn(false); }
-            };
+        window.openAddEvalModal = () => {
+            editingEvalId = null;
+            let inst = aggregatedData.find(i => i.id === activeInstId);
+            if(!inst) return;
 
-            return (
-                <div className="min-h-screen w-full flex items-center justify-center p-4" style={{backgroundColor: 'var(--bg)'}}>
-                    <form onSubmit={handleLogin} className="w-full max-w-md animate-fade" style={{background: 'var(--surface)', padding: '40px', borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow)', border: '1px solid var(--border)'}}>
-                        <div className="flex flex-col items-center mb-8 text-center">
-                            <div style={{width: '56px', height: '56px', borderRadius: 'var(--radius-lg)', background: 'var(--brand)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', fontSize: '28px', boxShadow: 'var(--shadow-sm)'}}>
-                                <i className="ti ti-user-key"></i>
-                            </div>
-                            <h1 style={{fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)'}}>東海大學實習中心</h1>
-                            <p style={{fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px'}}>實習課程書面審查作業系統</p>
-                        </div>
-                        <div className="space-y-4">
-                            <input 
-                                name="email" 
-                                type="text" 
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="請輸入帳號或電子郵件 (@thu.edu.tw)" 
-                                className="input-field"
-                                required 
-                            />
-                            <div className="relative">
-                                <input 
-                                    name="password" 
-                                    type={showPassword ? "text" : "password"} 
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="請輸入密碼" 
-                                    className="input-field pr-10"
-                                    required 
-                                />
-                                <button 
-                                    type="button" 
-                                    onClick={() => setShowPassword(!showPassword)} 
-                                    className="absolute right-3 top-1/2 -translate-y-1/2"
-                                    style={{color: 'var(--text-muted)', fontSize: '18px'}}
-                                >
-                                    <i className={showPassword ? 'ti ti-eye-off' : 'ti ti-eye'}></i>
-                                </button>
-                            </div>
-                        </div>
-                        <button disabled={isLoggingIn} style={{width: '100%', background: 'var(--brand)', color: 'white', padding: '14px', borderRadius: 'var(--radius)', fontWeight: '600', marginTop: '24px', border: 'none', cursor: isLoggingIn ? 'not-allowed' : 'pointer', opacity: isLoggingIn ? 0.7 : 1, transition: 'background var(--transition)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'}}>
-                            {isLoggingIn ? <><i className="ti ti-loader icon-spin text-lg"></i> 連線中...</> : "進入系統"}
-                        </button>
-                    </form>
-                </div>
-            );
-        }
+            document.getElementById('modal-eval-title').innerText = '登錄機構評估紀錄';
+            document.getElementById('add-eval-inst').innerText = inst.name;
+            
+            const selectEl = document.getElementById('input-add-eval-dept');
+            let deptHtml = '<option value="">請選擇負責評估之系所</option>';
+            globalDepts.forEach(d => { deptHtml += `<option value="${d.name}">${d.shortName || d.name}</option>`; });
+            selectEl.innerHTML = deptHtml;
+            selectEl.value = ''; 
+            
+            document.getElementById('input-eval-date').value = '';
+            document.getElementById('input-evaluator').value = '';
+            document.getElementById('input-eval-result').value = '';
+            document.getElementById('input-eval-remarks').value = '';
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+            document.getElementById('add-eval-modal').classList.add('open');
+        };
+
+        window.openEditEvalModal = (evalId) => {
+            editingEvalId = evalId;
+            let inst = aggregatedData.find(i => i.id === activeInstId);
+            let evalData = allEvaluations.find(e => e.id === evalId);
+            if(!inst || !evalData) return;
+
+            document.getElementById('modal-eval-title').innerText = '編輯機構評估紀錄';
+            document.getElementById('add-eval-inst').innerText = inst.name;
+            
+            const selectEl = document.getElementById('input-add-eval-dept');
+            let deptHtml = '<option value="">請選擇負責評估之系所</option>';
+            globalDepts.forEach(d => { deptHtml += `<option value="${d.name}">${d.shortName || d.name}</option>`; });
+            selectEl.innerHTML = deptHtml;
+            selectEl.value = evalData.dept_name || '';
+
+            document.getElementById('input-eval-date').value = evalData.eval_date || '';
+            document.getElementById('input-evaluator').value = evalData.evaluator || '';
+            document.getElementById('input-eval-result').value = evalData.eval_result || '';
+            document.getElementById('input-eval-remarks').value = evalData.eval_remarks || '';
+
+            document.getElementById('add-eval-modal').classList.add('open');
+        };
+
+        window.closeAddEvalModal = () => { 
+            document.getElementById('add-eval-modal').classList.remove('open'); 
+            editingEvalId = null;
+        };
+
+        window.submitEvaluation = async () => {
+            let inst = aggregatedData.find(i => i.id === activeInstId);
+            if(!inst) return;
+
+            const deptVal = document.getElementById('input-add-eval-dept').value;
+            const dateVal = document.getElementById('input-eval-date').value;
+            const evalUser = document.getElementById('input-evaluator').value.trim();
+            const resVal = document.getElementById('input-eval-result').value;
+            const remVal = document.getElementById('input-eval-remarks').value.trim();
+
+            if(!deptVal || !dateVal || !resVal || !evalUser) { 
+                alert("請填寫所有標示 * 號的必填欄位！"); 
+                return; 
+            }
+
+            const regex = /^\d{2,3}\/\d{2}\/\d{2}$/;
+            if (!regex.test(dateVal)) {
+                alert("日期格式錯誤！請輸入正確的民國年格式 (例如：114/01/01)");
+                return;
+            }
+
+            const btn = document.getElementById('btn-submit-eval');
+            btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 儲存中...';
+
+            try {
+                const payload = {
+                    inst_name: inst.name,
+                    dept_name: deptVal,
+                    eval_date: dateVal,
+                    evaluator: evalUser,
+                    eval_result: resVal,
+                    eval_remarks: remVal,
+                    updated_at: serverTimestamp()
+                };
+
+                if (editingEvalId) {
+                    await updateDoc(doc(db, "institution_evaluations", editingEvalId), payload);
+                } else {
+                    payload.created_at = serverTimestamp();
+                    await addDoc(evaluationsCol, payload);
+                }
+                
+                closeAddEvalModal();
+            } catch(e) {
+                alert("儲存失敗：" + e.message);
+            } finally {
+                btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> 確認儲存';
+            }
+        };
     </script>
 </body>
 </html>
