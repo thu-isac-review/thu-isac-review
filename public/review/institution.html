@@ -117,20 +117,38 @@ html, body {
 .filter-pill:hover { border-color: var(--border-strong); color: var(--text-primary); }
 .filter-pill.active { border-color: var(--brand); background: var(--brand-light); color: var(--brand); font-weight: 700; }
 
-/* ─── MAIN TABLE & INNER TABLE 通用 DataTable 風格 ─── */
-table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 900px; }
+/* ─── TABLE ─── */
+.table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; }
+.table-scroll { flex: 1; overflow: auto; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 1000px; }
+
 th {
-  padding: 12px 16px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted);
+  padding: 12px 16px; text-align: center; 
+  font-size: 11px; font-weight: 700; color: var(--text-muted);
   text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
-  position: sticky; top: 0; z-index: 10; background: var(--surface); box-shadow: inset 0 -2px 0 var(--border); 
+  position: sticky; top: 0; z-index: 10;
+  background: var(--surface);
+  box-shadow: inset 0 -2px 0 var(--border); 
 }
-td { padding: 12px 16px; vertical-align: middle; border-bottom: 1px solid var(--border); word-break: break-word; }
+
+th[data-sort] { cursor: pointer; user-select: none; transition: color var(--transition); }
+th[data-sort]:hover { color: var(--text-secondary); }
+th .sort-icon { margin-left: 4px; font-size: 14px; opacity: 0.4; vertical-align: middle; }
+th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand); }
+
+td { padding: 12px 16px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); }
 tr:hover td { background: #fafbff; }
+tr.selected td { background: #f0f4ff; }
 
 .cell-primary { font-size: 13px; color: var(--text-primary); line-height: 1.4; }
 .cell-primary.bold { font-weight: 600; }
+.cell-secondary { font-size: 11px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
+.row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; }
+
+.inner-table { min-width: 800px; }
+
 .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
-.empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; display: block; }
+.empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
 .empty-text { font-size: 13px; font-weight: 600; }
 
 /* ─── BADGES ─── */
@@ -192,13 +210,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 .split-layout { display: flex; gap: 24px; align-items: stretch; height: 100%; min-height: 400px; }
 .split-left { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
 .split-right { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
-
-/* ─── INNER TABLE (強制不換行、對齊主列表樣式) ─── */
-.inner-table { width: 100%; border-collapse: collapse; min-width: 100%; }
-.inner-table th { white-space: nowrap; background: var(--surface); font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; padding: 12px 16px; position: sticky; top: 0; z-index: 10; text-align: center; box-shadow: inset 0 -2px 0 var(--border); }
-.inner-table td { white-space: nowrap; padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-.inner-table tr:hover td { background: #fafbff; }
-.row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; }
 
 /* ─── 手機版響應式設定 ─── */
 @media (max-width: 768px) {
