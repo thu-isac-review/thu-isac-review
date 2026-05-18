@@ -146,7 +146,13 @@ tr.selected td { background: #f0f4ff; }
 .row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; }
 
 /* 移除 min-width: 800px，讓它自動貼合父容器 */
-.inner-table { width: 100%; min-width: 0; margin: 0 auto; border-collapse: collapse; }
+.inner-table { 
+    width: max-content; 
+    min-width: 0; 
+    margin: 0 auto; 
+    border-collapse: collapse; 
+    table-layout: fixed; 
+}
 
 .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
 .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
@@ -323,13 +329,13 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                             <table class="inner-table">
                                 <thead>
                                     <tr>
-                                        <th style="width: 12%;">負責學系</th>
-                                        <th style="width: 10%;">學年度</th>
-                                        <th style="width: 8%;">學期</th>
-                                        <th style="width: 16%;">實習開始日</th>
-                                        <th style="width: 12%;">梯次人數</th>
-                                        <th style="width: 22%;">梯次狀態</th>
-                                        <th style="width: 20%;">操作</th>
+                                        <th style="width: 100px; cursor: pointer;" data-cohort-sort="dept" onclick="sortCohorts('dept')">負責學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                                        <th style="width: 70px; cursor: pointer;" data-cohort-sort="acadYear" onclick="sortCohorts('acadYear')">學年度 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                                        <th style="width: 60px; cursor: pointer;" data-cohort-sort="term" onclick="sortCohorts('term')">學期 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                                        <th style="width: 100px; cursor: pointer;" data-cohort-sort="startDate" onclick="sortCohorts('startDate')">實習開始日 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                                        <th style="width: 80px; cursor: pointer;" data-cohort-sort="count" onclick="sortCohorts('count')">梯次人數 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                                        <th style="width: 120px; cursor: pointer;" data-cohort-sort="status" onclick="sortCohorts('status')">梯次狀態 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                                        <th style="width: 130px;">操作</th>
                                     </tr>
                                 </thead>
                                 <tbody id="cohort-list-tbody"></tbody>
