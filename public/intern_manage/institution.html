@@ -7,7 +7,6 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
-<!-- Tabler Icons -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 
 <style>
@@ -264,7 +263,7 @@ tr.selected td { background: #f0f4ff; }
 .form-section-title { font-size: 13px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px; margin-bottom: 16px; }
 .form-section-title i { color: var(--text-muted); font-size: 16px; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-.field { display: flex; flex-direction: column; gap: 4px; }
+.field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px;}
 .field-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
 .field-label .req { color: var(--danger); margin-left: 2px; }
 .field-input, .field-select {
@@ -323,7 +322,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 </head>
 <body>
 
-    <!-- ─── TOOLBAR ─── -->
     <div class="toolbar">
         <div class="search-wrap">
             <i class="ti ti-search"></i>
@@ -347,9 +345,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         <input type="file" id="import-file" accept=".csv" style="display:none;" onchange="handleImport(event)">
     </div>
 
-    <!-- ─── FILTER ROW & BATCH BAR ─── -->
     <div class="filter-row">
-        <!-- 國別篩選 -->
         <div class="filter-pill-wrap" id="pill-wrap-country">
             <button class="filter-pill" id="pill-country" onclick="toggleDropdown('country')">
                 全部國別 <i class="ti ti-chevron-down"></i>
@@ -365,7 +361,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             </div>
         </div>
 
-        <!-- 縣市別篩選 -->
         <div class="filter-pill-wrap" id="pill-wrap-city">
             <button class="filter-pill" id="pill-city" onclick="toggleDropdown('city')">
                 全部縣市 <i class="ti ti-chevron-down"></i>
@@ -381,7 +376,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             </div>
         </div>
 
-        <!-- 行業別篩選 -->
         <div class="filter-pill-wrap" id="pill-wrap-industry">
             <button class="filter-pill" id="pill-industry" onclick="toggleDropdown('industry')">
                 全部行業別 <i class="ti ti-chevron-down"></i>
@@ -397,7 +391,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             </div>
         </div>
 
-        <!-- 實習場所篩選 -->
         <div class="filter-pill-wrap" id="pill-wrap-venue">
             <button class="filter-pill" id="pill-venue" onclick="toggleDropdown('venue')">
                 全部場所 <i class="ti ti-chevron-down"></i>
@@ -413,7 +406,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             </div>
         </div>
 
-        <!-- 批次操作列 (選取後覆蓋顯示) -->
         <div id="batch-bar">
             <div class="batch-info">
                 <i class="ti ti-checks" style="font-size:18px;"></i> 已選 <span id="selected-count">0</span> 筆機構
@@ -423,12 +415,12 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             
             <div class="flex-spacer"></div>
             
+            <button class="btn btn-sm btn-primary" onclick="window.openBatchEditModal()"><i class="ti ti-edit"></i> 批次修改屬性</button>
             <button class="btn btn-sm btn-indigo-solid" onclick="window.openMergeModal()"><i class="ti ti-link"></i> 合併勾選</button>
             <button class="btn btn-sm btn-danger" onclick="batchDelete()"><i class="ti ti-trash"></i> 批次刪除</button>
         </div>
     </div>
 
-    <!-- ─── TABLE AREA ─── -->
     <div class="table-wrap">
         <div class="table-scroll custom-scroll">
             <table>
@@ -460,7 +452,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             </table>
         </div>
         
-        <!-- 分頁列 -->
         <div class="pagination-bar">
             <div class="pagination-info" id="pagination-info">共 0 筆</div>
             <div class="pagination-bar-right">
@@ -477,7 +468,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         </div>
     </div>
 
-    <!-- ─── UNIFIED DIALOG MODAL: 新增/編輯機構 ─── -->
     <div id="data-modal" class="dialog-overlay">
         <div class="dialog-box" style="max-width: 800px;">
             <div class="dialog-header">
@@ -486,15 +476,13 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             </div>
             
             <form id="data-form" class="dialog-body custom-scroll" style="display: flex; gap: 24px;">
-                <!-- 左側：機構基本資料 -->
                 <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
                     <div class="form-section-title" style="margin-bottom: 0;"><i class="ti ti-building-skyscraper"></i> 機構基本資料</div>
                     
                     <div class="field">
                         <label class="field-label">實習場所國別 <span class="req">*</span></label>
                         <select id="input-country" required onchange="handleCountryChange()" class="field-select">
-                            <!-- JS 動態產生 -->
-                        </select>
+                            </select>
                     </div>
                     <div class="field">
                         <label class="field-label">實習機構名稱 <span class="req">*</span></label>
@@ -508,8 +496,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                         <label class="field-label">縣市別 <span id="req-city" class="req">*</span></label>
                         <select id="input-city" required class="field-select">
                             <option value="">請選擇</option>
-                            <!-- JS 動態產生 -->
-                        </select>
+                            </select>
                     </div>
                     <div class="field">
                         <label class="field-label">完整實習地址 <span class="req">*</span></label>
@@ -517,10 +504,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                     </div>
                 </div>
 
-                <!-- 中間分隔線 -->
                 <div class="v-divider-modal" style="width: 1px; background: var(--border); margin: 0;"></div>
 
-                <!-- 右側：分類與備註 -->
                 <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
                     <div class="form-section-title" style="margin-bottom: 0;"><i class="ti ti-tags"></i> 分類與備註</div>
                     
@@ -528,15 +513,13 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                         <label class="field-label">行業別</label>
                         <select id="input-industry" class="field-select">
                             <option value="">請選擇</option>
-                            <!-- JS 動態產生 -->
-                        </select>
+                            </select>
                     </div>
                     <div class="field">
                         <label class="field-label">實習場所</label>
                         <select id="input-venue-type" class="field-select">
                             <option value="">請選擇</option>
-                            <!-- JS 動態產生 -->
-                        </select>
+                            </select>
                     </div>
                     <div class="field" style="flex: 1;">
                         <label class="field-label">機構備註</label>
@@ -554,7 +537,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         </div>
     </div>
 
-    <!-- ─── MERGE DIALOG MODAL: 合併機構 ─── -->
     <div id="merge-modal" class="dialog-overlay">
         <div class="dialog-box" style="max-width: 650px;">
             <div class="dialog-header">
@@ -569,8 +551,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                     </p>
                 </div>
                 <div id="merge-options-container" style="display: flex; flex-direction: column;">
-                    <!-- JS 動態生成待合併選項 -->
-                </div>
+                    </div>
             </div>
             <div class="dialog-footer">
                 <button type="button" class="btn btn-secondary" onclick="window.closeMergeModal()">取消</button>
@@ -581,7 +562,39 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         </div>
     </div>
 
-    <!-- Firebase 邏輯 -->
+    <div id="batch-edit-modal" class="dialog-overlay">
+        <div class="dialog-box" style="max-width: 450px;">
+            <div class="dialog-header">
+                <h3 style="color: var(--brand)"><i class="ti ti-edit" style="color: var(--brand)"></i> 批次修改機構屬性</h3>
+                <button type="button" class="dialog-close" onclick="window.closeBatchEditModal()"><i class="ti ti-x"></i></button>
+            </div>
+            <div class="dialog-body custom-scroll" style="background: var(--bg);">
+                <div style="background: var(--brand-light); border: 1px solid var(--brand-border); padding: 12px; border-radius: var(--radius); margin-bottom: 16px;">
+                    <p style="font-size: 13px; color: var(--brand); font-weight: 600; line-height: 1.5;">
+                        將針對已選取的 <span id="batch-edit-count" style="font-size: 16px; font-weight: 700; margin: 0 4px;">0</span> 筆機構進行統一修改。<br>
+                        若保持「-- 不修改 --」，則該欄位維持原資料不變。
+                    </p>
+                </div>
+                <div class="field">
+                    <label class="field-label">批次套用：行業別</label>
+                    <select id="batch-input-industry" class="field-select">
+                        </select>
+                </div>
+                <div class="field">
+                    <label class="field-label">批次套用：實習場所</label>
+                    <select id="batch-input-venue" class="field-select">
+                        </select>
+                </div>
+            </div>
+            <div class="dialog-footer">
+                <button type="button" class="btn btn-secondary" onclick="window.closeBatchEditModal()">取消</button>
+                <button type="button" id="btn-batch-edit-submit" class="btn btn-primary" onclick="window.executeBatchEdit()">
+                    <i class="ti ti-check"></i> 確認批次更新
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -677,6 +690,15 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 </label>`;
             });
             document.getElementById('venue-options-container').innerHTML = filterVenueHtml;
+            
+            // 批次編輯選項
+            let batchIndHtml = '<option value="NO_CHANGE">-- 不修改 --</option><option value="">[清空此欄位]</option>';
+            LIST_INDUSTRIES.forEach(item => batchIndHtml += `<option value="${item}">${item}</option>`);
+            document.getElementById('batch-input-industry').innerHTML = batchIndHtml;
+
+            let batchVenueHtml = '<option value="NO_CHANGE">-- 不修改 --</option><option value="">[清空此欄位]</option>';
+            LIST_VENUES.forEach(item => batchVenueHtml += `<option value="${item}">${item}</option>`);
+            document.getElementById('batch-input-venue').innerHTML = batchVenueHtml;
         }
 
         onAuthStateChanged(auth, async (user) => {
@@ -875,6 +897,59 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 for (let id of selectedIds) { await deleteDoc(doc(db, "internship_institutions", id)); }
                 clearSelection();
             } catch (e) { alert("批次刪除發生錯誤: " + e.message); }
+        };
+
+        // ─── BATCH EDIT LOGIC ───
+        window.openBatchEditModal = () => {
+            if (selectedIds.length === 0) return;
+            document.getElementById('batch-edit-count').innerText = selectedIds.length;
+            document.getElementById('batch-input-industry').value = 'NO_CHANGE';
+            document.getElementById('batch-input-venue').value = 'NO_CHANGE';
+            document.getElementById('batch-edit-modal').classList.add('open');
+        };
+
+        window.closeBatchEditModal = () => {
+            document.getElementById('batch-edit-modal').classList.remove('open');
+        };
+
+        window.executeBatchEdit = async () => {
+            const indVal = document.getElementById('batch-input-industry').value;
+            const venVal = document.getElementById('batch-input-venue').value;
+
+            if (indVal === 'NO_CHANGE' && venVal === 'NO_CHANGE') {
+                alert("請至少選擇一項要修改的屬性！");
+                return;
+            }
+
+            if (!confirm(`確定要批次修改選取的 ${selectedIds.length} 筆機構嗎？`)) return;
+
+            const btn = document.getElementById('btn-batch-edit-submit');
+            const oriHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 處理中...';
+            btn.disabled = true;
+
+            try {
+                const batch = writeBatch(db);
+                selectedIds.forEach(id => {
+                    const ref = doc(db, "internship_institutions", id);
+                    const updates = { updated_at: serverTimestamp() };
+                    if (indVal !== 'NO_CHANGE') updates.industry = indVal;
+                    if (venVal !== 'NO_CHANGE') updates.venue_type = venVal;
+                    batch.update(ref, updates);
+                });
+                await batch.commit();
+                
+                selectedIds = [];
+                updateBatchActionBar();
+                window.closeBatchEditModal();
+                alert("✅ 批次修改成功！");
+            } catch (e) {
+                alert("批次修改發生錯誤：" + e.message);
+                console.error(e);
+            } finally {
+                btn.innerHTML = oriHtml;
+                btn.disabled = false;
+            }
         };
 
         // ─── MODAL LOGIC ───
