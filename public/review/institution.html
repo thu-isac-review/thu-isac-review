@@ -106,16 +106,52 @@ html, body {
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn i { font-size: 16px; display: inline-flex; align-items: center; justify-content: center; }
 
-/* ─── FILTER ROW ─── */
+/* ─── FILTER ROW & PILLS (DROPDOWN STRUCTURE) ─── */
 .filter-row { padding: 10px 24px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
+.filter-pill-wrap { position: relative; }
 .filter-pill {
-  display: inline-flex; align-items: center; gap: 5px; padding: 0 12px; height: 28px;
-  border: 1px solid var(--border); border-radius: 99px; background: var(--surface);
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 0 10px; height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 99px; background: var(--surface);
   font-size: 12px; font-weight: 500; color: var(--text-secondary);
-  cursor: pointer; transition: all var(--transition); white-space: nowrap;
+  cursor: pointer; transition: all var(--transition);
+  white-space: nowrap;
 }
 .filter-pill:hover { border-color: var(--border-strong); color: var(--text-primary); }
-.filter-pill.active { border-color: var(--brand); background: var(--brand-light); color: var(--brand); font-weight: 700; }
+.filter-pill.active { border-color: var(--brand); background: var(--brand-light); color: var(--brand); }
+.filter-pill .pill-count { background: var(--brand); color: white; border-radius: 99px; font-size: 10px; font-weight: 700; padding: 0 5px; min-width: 16px; text-align: center; display: inline-block; }
+.filter-pill i { font-size: 14px; transition: transform 0.2s; }
+.filter-pill-wrap.open .filter-pill i { transform: rotate(180deg); }
+
+.filter-dropdown {
+  position: absolute; top: calc(100% + 6px); left: 0;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-md);
+  min-width: 220px; z-index: 100;
+  display: none; flex-direction: column; overflow: hidden;
+}
+.filter-dropdown.show { display: flex; }
+
+.filter-dropdown-search { padding: 8px; border-bottom: 1px solid var(--border); }
+.filter-dropdown-search input { 
+  width: 100%; height: 30px; border: 1px solid var(--border); border-radius: var(--radius-sm); 
+  padding: 0 10px; font-size: 12px; outline: none; background: var(--bg); transition: 0.2s; 
+}
+.filter-dropdown-search input:focus { border-color: var(--brand); background: var(--surface); box-shadow: 0 0 0 2px rgba(26,86,219,0.1); }
+
+.filter-dropdown-list { max-height: 200px; overflow-y: auto; padding: 4px; }
+.filter-option {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 8px; border-radius: var(--radius-sm);
+  cursor: pointer; font-size: 12px; color: var(--text-secondary);
+  transition: background var(--transition);
+}
+.filter-option:hover { background: var(--bg); color: var(--text-primary); }
+.filter-option input[type=checkbox] { accent-color: var(--brand); flex-shrink: 0; }
+.filter-dropdown-footer { padding: 6px 8px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; }
+.filter-dropdown-footer button { font-size: 11px; font-weight: 600; color: var(--danger); background: none; border: none; cursor: pointer; padding: 2px 4px; border-radius: var(--radius-sm); }
+.filter-dropdown-footer button:hover { background: var(--danger-bg); }
 
 /* ─── TABLE ─── */
 .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; }
@@ -131,12 +167,9 @@ th {
   box-shadow: inset 0 -2px 0 var(--border); 
 }
 
-th[data-sort] { cursor: pointer; user-select: none; transition: color var(--transition); }
-th[data-sort]:hover { color: var(--text-secondary); }
+th[data-sort], th[data-cohort-sort], th[data-eval-sort] { cursor: pointer; user-select: none; transition: color var(--transition); }
+th[data-sort]:hover, th[data-cohort-sort]:hover, th[data-eval-sort]:hover { color: var(--text-secondary); }
 th .sort-icon { margin-left: 4px; font-size: 14px; opacity: 0.4; vertical-align: middle; }
-th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand); }
-/* 內部表格的排序圖示樣式 */
-th[data-cohort-sort]:hover { color: var(--text-secondary); }
 th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand); }
 
 td { padding: 12px 16px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); text-align: center; }
@@ -148,7 +181,7 @@ tr.selected td { background: #f0f4ff; }
 .cell-secondary { font-size: 11px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
 .row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; }
 
-/* 關鍵修正：讓內部表格依內容自動縮放並置中，解除主表格的 min-width 繼承 */
+/* 讓內部表格依內容自動縮放並置中，解除主表格的 min-width 繼承 */
 .inner-table { 
     width: max-content; 
     min-width: 0; 
@@ -244,10 +277,20 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
     </div>
 
     <div class="filter-row">
-        <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-right: 8px;">機構審查狀態：</span>
-        <button class="filter-pill active" onclick="setFilter('all')">全部</button>
-        <button class="filter-pill" onclick="setFilter('pass')">審查皆通過有效</button>
-        <button class="filter-pill" onclick="setFilter('attention')">有梯次逾期/未評估</button>
+        <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-right: 8px;">快速篩選：</span>
+        
+        <div class="filter-pill-wrap" id="pill-wrap-main-status">
+            <button class="filter-pill" id="pill-main-status" onclick="toggleDropdown('main-status')">
+                審查狀態 <i class="ti ti-chevron-down"></i>
+            </button>
+            <div class="filter-dropdown" id="drop-main-status">
+                <div class="filter-dropdown-list" id="main-status-options-container">
+                    </div>
+                <div class="filter-dropdown-footer">
+                    <button onclick="clearFilter('main-status')">清除此篩選</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="table-wrap">
@@ -323,11 +366,30 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
                 <div class="split-layout">
                     <div class="split-left">
-                        <div style="height: 60px; padding: 0 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-                            <i class="ti ti-list-details" style="color: var(--text-secondary); font-size: 18px;"></i>
-                            <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">各系實習梯次清單</span>
-                            <span style="font-size: 11px; color: var(--text-muted); font-weight: 500; margin-left: auto;">(同系+同學年期+同起日為一梯次)</span>
+                        <div style="height: 60px; padding: 0 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <i class="ti ti-list-details" style="color: var(--text-secondary); font-size: 18px;"></i>
+                                <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">各系實習紀錄</span>
+                            </div>
                         </div>
+                        <div class="filter-row" style="padding: 6px 20px; border-bottom: 1px solid var(--border); background: var(--surface);">
+                            <div class="filter-pill-wrap" id="pill-wrap-cohort-dept">
+                                <button class="filter-pill" id="pill-cohort-dept" onclick="toggleDropdown('cohort-dept')">負責學系 <i class="ti ti-chevron-down"></i></button>
+                                <div class="filter-dropdown" id="drop-cohort-dept">
+                                    <div class="filter-dropdown-search"><input type="text" placeholder="搜尋學系..." onkeyup="filterDropdownItems(this, 'cohort-dept-options-container')"></div>
+                                    <div class="filter-dropdown-list" id="cohort-dept-options-container"></div>
+                                    <div class="filter-dropdown-footer"><button onclick="clearFilter('cohort-dept')">清除</button></div>
+                                </div>
+                            </div>
+                            <div class="filter-pill-wrap" id="pill-wrap-cohort-status">
+                                <button class="filter-pill" id="pill-cohort-status" onclick="toggleDropdown('cohort-status')">梯次狀態 <i class="ti ti-chevron-down"></i></button>
+                                <div class="filter-dropdown" id="drop-cohort-status">
+                                    <div class="filter-dropdown-list" id="cohort-status-options-container"></div>
+                                    <div class="filter-dropdown-footer"><button onclick="clearFilter('cohort-status')">清除</button></div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="custom-scroll" style="flex: 1; overflow: auto;">
                             <table class="inner-table">
                                 <thead>
@@ -350,20 +412,38 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                         <div style="height: 60px; padding: 0 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <i class="ti ti-history" style="color: var(--indigo); font-size: 18px;"></i>
-                                <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">機構總評估紀錄一覽</span>
+                                <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">機構評估紀錄</span>
                             </div>
                             <button class="btn btn-primary" style="height: 32px; padding: 0 16px;" onclick="openAddEvalModal()">
                                 <i class="ti ti-plus"></i> 新增評估
                             </button>
                         </div>
+                        <div class="filter-row" style="padding: 6px 20px; border-bottom: 1px solid var(--border); background: var(--surface);">
+                            <div class="filter-pill-wrap" id="pill-wrap-eval-dept">
+                                <button class="filter-pill" id="pill-eval-dept" onclick="toggleDropdown('eval-dept')">評估學系 <i class="ti ti-chevron-down"></i></button>
+                                <div class="filter-dropdown" id="drop-eval-dept">
+                                    <div class="filter-dropdown-search"><input type="text" placeholder="搜尋學系..." onkeyup="filterDropdownItems(this, 'eval-dept-options-container')"></div>
+                                    <div class="filter-dropdown-list" id="eval-dept-options-container"></div>
+                                    <div class="filter-dropdown-footer"><button onclick="clearFilter('eval-dept')">清除</button></div>
+                                </div>
+                            </div>
+                            <div class="filter-pill-wrap" id="pill-wrap-eval-result">
+                                <button class="filter-pill" id="pill-eval-result" onclick="toggleDropdown('eval-result')">結果 <i class="ti ti-chevron-down"></i></button>
+                                <div class="filter-dropdown" id="drop-eval-result">
+                                    <div class="filter-dropdown-list" id="eval-result-options-container"></div>
+                                    <div class="filter-dropdown-footer"><button onclick="clearFilter('eval-result')">清除</button></div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="custom-scroll" style="flex: 1; overflow: auto;">
                             <table class="inner-table">
                                 <thead>
                                     <tr>
-                                        <th style="width: 100px;">評估學系</th>
-                                        <th style="width: 100px;">評估日期</th>
-                                        <th style="width: 100px;">結果</th>
-                                        <th style="width: 120px;">涵蓋合法學生</th>
+                                        <th style="width: 100px; cursor: pointer;" data-eval-sort="dept" onclick="sortEvals('dept')">評估學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                                        <th style="width: 100px; cursor: pointer;" data-eval-sort="date" onclick="sortEvals('date')">評估日期 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                                        <th style="width: 100px; cursor: pointer;" data-eval-sort="result" onclick="sortEvals('result')">結果 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                                        <th style="width: 60px; cursor: pointer;" data-eval-sort="cover" onclick="sortEvals('cover')">涵蓋學生 <i class="ti ti-arrows-sort sort-icon"></i></th>
                                         <th style="width: 130px;">操作</th>
                                     </tr>
                                 </thead>
@@ -389,7 +469,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                     <div><strong style="color:var(--text-muted);font-size:12px;">評估機構</strong><div id="view-eval-inst" style="margin-top:6px;font-weight:600;font-size:14px;"></div></div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                         <div><strong style="color:var(--text-muted);font-size:12px;">評估學系</strong><div id="view-eval-dept" style="margin-top:6px;font-weight:600;color:var(--indigo);"></div></div>
-                        <div><strong style="color:var(--text-muted);font-size:12px;">評估日期</strong><div id="view-eval-date" style="margin-top:6px;font-family:monospace;font-weight:600;"></div></div>
+                        <div><strong style="color:var(--text-muted);font-size:12px;">評估日期</strong><div id="view-eval-date" style="margin-top:6px;font-weight:600;"></div></div>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                         <div><strong style="color:var(--text-muted);font-size:12px;">評估人</strong><div id="view-eval-evaluator" style="margin-top:6px;"></div></div>
@@ -462,7 +542,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 <button type="button" class="dialog-close" onclick="closeCohortDetailsModal()"><i class="ti ti-x"></i></button>
             </div>
             <div class="dialog-body custom-scroll" style="padding: 0;">
-                <table class="inner-table" style="min-width: 1300px;">
+                <table class="inner-table" style="min-width: 1300px; width: 100%;">
                     <thead>
                         <tr>
                             <th style="width: 8%;">學號</th>
@@ -504,14 +584,127 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         
         let allInstitutions = [], allRecords = [], allEvaluations = [], allCourses = [], allStudents = [];
         let aggregatedData = [], filteredData = [], globalDepts = [];
-        let currentFilter = 'all', currentPage = 1, itemsPerPage = 15;
+        let currentPage = 1, itemsPerPage = 15;
         let activeInstId = null;
         let editingEvalId = null;
         
-        // --- 內部表格排序相關變數 ---
-        let cohortSortCol = '';
-        let cohortSortDir = '';
+        // --- 排序與篩選全域變數 ---
+        let filterSets = {
+            'main-status': new Set(),
+            'cohort-dept': new Set(),
+            'cohort-status': new Set(),
+            'eval-dept': new Set(),
+            'eval-result': new Set()
+        };
 
+        // 預設排序邏輯：Cohort 為日期(新到舊), Eval 為日期(新到舊)
+        let cohortSortCol = 'startDate';
+        let cohortSortDir = 'desc';
+        let evalSortCol = 'date';
+        let evalSortDir = 'desc';
+
+        // --- 篩選 Dropdown 邏輯 ---
+        window.toggleDropdown = (type) => {
+            const drop = document.getElementById(`drop-${type}`);
+            const wrap = document.getElementById(`pill-wrap-${type}`);
+            const isOpen = drop.classList.contains('show');
+            document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
+            document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
+            if (!isOpen) { drop.classList.add('show'); wrap.classList.add('open'); }
+        };
+
+        window.filterDropdownItems = (input, containerId) => {
+            const term = input.value.toLowerCase();
+            const labels = document.getElementById(containerId).querySelectorAll('.filter-option');
+            labels.forEach(lbl => {
+                const text = lbl.textContent.toLowerCase();
+                lbl.style.display = text.includes(term) ? 'flex' : 'none';
+            });
+        };
+
+        window.toggleFilterCheck = (type, val) => {
+            const chkList = document.querySelectorAll(`.filter-chk-${type}[value="${val}"]`);
+            const isChecked = event.target.checked;
+            chkList.forEach(chk => chk.checked = isChecked);
+            
+            let set = filterSets[type];
+            if (set.has(val)) set.delete(val); else set.add(val);
+            
+            updatePillActive(type);
+            
+            // 觸發重新渲染
+            if(type === 'main-status') { currentPage = 1; processAndRenderMain(); }
+            else if(type.startsWith('cohort')) { renderManageModalContent(true); }
+            else if(type.startsWith('eval')) { window.renderRightPanel(true); }
+        };
+
+        window.clearFilter = (type) => {
+            filterSets[type].clear();
+            document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = false);
+            updatePillActive(type);
+            
+            if(type === 'main-status') { currentPage = 1; processAndRenderMain(); }
+            else if(type.startsWith('cohort')) { renderManageModalContent(true); }
+            else if(type.startsWith('eval')) { window.renderRightPanel(true); }
+        };
+
+        function updatePillActive(type) {
+            let typeName = {
+                'main-status': '審查狀態', 'cohort-dept': '負責學系', 'cohort-status': '梯次狀態',
+                'eval-dept': '評估學系', 'eval-result': '結果'
+            }[type];
+
+            const pill = document.getElementById(`pill-${type}`);
+            const set = filterSets[type];
+            if (set.size > 0) {
+                pill.classList.add('active');
+                pill.innerHTML = `${typeName} <span class="pill-count">${set.size}</span> <i class="ti ti-chevron-down"></i>`;
+            } else {
+                pill.classList.remove('active');
+                pill.innerHTML = `${typeName} <i class="ti ti-chevron-down"></i>`;
+            }
+        }
+
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.filter-pill-wrap')) {
+                document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
+                document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
+            }
+        });
+
+        function initFilters() {
+            // Main Status
+            let sHtml = '';
+            [{v: 'pass', l: '合規 (全部梯次皆合規)'}, {v: 'attention', l: '需注意 (部分梯次異常)'}, {v: 'empty', l: '無關聯紀錄'}].forEach(s => {
+                sHtml += `<label class="filter-option"><input type="checkbox" class="filter-chk-main-status" value="${s.v}" onchange="toggleFilterCheck('main-status', '${s.v}')"> <span>${s.l}</span></label>`;
+            });
+            document.getElementById('main-status-options-container').innerHTML = sHtml;
+
+            // Cohort Status
+            let csHtml = '';
+            [{v: 'pass', l: '合規 (已有評估)'}, {v: 'attention', l: '未涵蓋或逾期'}].forEach(s => {
+                csHtml += `<label class="filter-option"><input type="checkbox" class="filter-chk-cohort-status" value="${s.v}" onchange="toggleFilterCheck('cohort-status', '${s.v}')"> <span>${s.l}</span></label>`;
+            });
+            document.getElementById('cohort-status-options-container').innerHTML = csHtml;
+
+            // Eval Result
+            let erHtml = '';
+            ['通過', '有條件通過', '不通過'].forEach(s => {
+                erHtml += `<label class="filter-option"><input type="checkbox" class="filter-chk-eval-result" value="${s}" onchange="toggleFilterCheck('eval-result', '${s}')"> <span>${s}</span></label>`;
+            });
+            document.getElementById('eval-result-options-container').innerHTML = erHtml;
+
+            // Depts
+            let dHtml = '';
+            globalDepts.forEach(d => dHtml += `<label class="filter-option"><input type="checkbox" class="filter-chk-cohort-dept" value="${d.name}" onchange="toggleFilterCheck('cohort-dept', '${d.name}')"> <span>${d.shortName || d.name}</span></label>`);
+            document.getElementById('cohort-dept-options-container').innerHTML = dHtml;
+            
+            let dHtml2 = '';
+            globalDepts.forEach(d => dHtml2 += `<label class="filter-option"><input type="checkbox" class="filter-chk-eval-dept" value="${d.name}" onchange="toggleFilterCheck('eval-dept', '${d.name}')"> <span>${d.shortName || d.name}</span></label>`);
+            document.getElementById('eval-dept-options-container').innerHTML = dHtml2;
+        }
+
+        // --- Utility ---
         function parseROCDate(dateStr) {
             if (!dateStr) return null;
             let parts = dateStr.split('-')[0].trim().split('/');
@@ -530,11 +723,14 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
         const formatCourseInfo = (c) => c ? `${c.academic_year}-${c.term}_${c.course_code}：${c.course_name}` : '';
 
+        // --- Data Fetching ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const deptSnap = await getDocs(collection(db, "departments"));
                 globalDepts = deptSnap.docs.map(d => d.data());
                 globalDepts.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
+                
+                initFilters();
 
                 onSnapshot(studentsCol, (snap) => { allStudents = snap.docs.map(d => ({id: d.id, ...d.data()})); });
                 onSnapshot(coursesCol, (snap) => { allCourses = snap.docs.map(d => ({id: d.id, ...d.data()})); });
@@ -548,6 +744,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
         const getDeptShort = (n) => { const d = globalDepts.find(x => x.name === n); return d && d.shortName ? d.shortName : n; };
 
+        // --- Core Aggregation ---
         function runAggregation() {
             if (allInstitutions.length === 0 || allRecords.length === 0) return;
 
@@ -616,14 +813,13 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             processAndRenderMain();
         }
 
-        window.setFilter = (f) => { currentFilter = f; document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active')); event.target.classList.add('active'); currentPage = 1; processAndRenderMain(); };
         document.getElementById('search-input').addEventListener('input', () => { currentPage = 1; processAndRenderMain(); });
 
         function processAndRenderMain() {
             const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
             filteredData = aggregatedData.filter(d => {
                 let matchSearch = d.name.toLowerCase().includes(searchTerm) || (d.tax_id && d.tax_id.toLowerCase().includes(searchTerm));
-                let matchFilter = currentFilter === 'all' || d.overallStatus.code === currentFilter;
+                let matchFilter = filterSets['main-status'].size === 0 || filterSets['main-status'].has(d.overallStatus.code);
                 return matchSearch && matchFilter;
             });
 
@@ -683,24 +879,27 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
         window.closeManageModal = () => { document.getElementById('manage-modal').classList.remove('open'); };
 
-        // --- 排序觸發函數 ---
+        // --- Sorting Functions ---
         window.sortCohorts = (col) => {
-            if (cohortSortCol === col) {
-                cohortSortDir = cohortSortDir === 'asc' ? 'desc' : 'asc';
-            } else {
-                cohortSortCol = col;
-                cohortSortDir = 'asc';
-            }
+            if (cohortSortCol === col) { cohortSortDir = cohortSortDir === 'asc' ? 'desc' : 'asc'; } 
+            else { cohortSortCol = col; cohortSortDir = 'asc'; }
             renderManageModalContent(true); 
         };
+        
+        window.sortEvals = (col) => {
+            if (evalSortCol === col) { evalSortDir = evalSortDir === 'asc' ? 'desc' : 'asc'; } 
+            else { evalSortCol = col; evalSortDir = 'asc'; }
+            window.renderRightPanel(true); 
+        };
 
+        // --- Render Left Panel (Cohorts) ---
         function renderManageModalContent(isUpdate) {
             let inst = aggregatedData.find(i => i.id === activeInstId);
             if(!inst) return;
             
             if (!isUpdate) {
-                cohortSortCol = '';
-                cohortSortDir = '';
+                cohortSortCol = 'startDate';
+                cohortSortDir = 'desc';
             }
             
             document.getElementById('info-inst-name').innerText = inst.name || '-';
@@ -710,7 +909,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             document.getElementById('info-country').innerText = inst.country || '未註明國別';
             document.getElementById('info-address').innerText = inst.address || '未註明地址';
 
-            // 更新排序圖示的 UI 顯示
+            // 更新排序圖示 UI
             document.querySelectorAll('th[data-cohort-sort]').forEach(th => {
                 th.classList.remove('sort-asc', 'sort-desc');
                 th.querySelector('.sort-icon').className = 'ti ti-arrows-sort sort-icon';
@@ -724,112 +923,149 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             if(inst.cohorts.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="7" class="empty-state" style="padding:40px;"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">此機構目前無實習梯次</div></td></tr>`;
             } else {
-                let sortedCohorts = [...inst.cohorts];
-                
-                // 判斷是否啟動手動排序
-                if (cohortSortCol) {
-                    sortedCohorts.sort((a, b) => {
-                        let valA, valB;
-                        if (cohortSortCol === 'dept') { valA = getDeptShort(a.dept); valB = getDeptShort(b.dept); }
-                        else if (cohortSortCol === 'acadYear') { valA = a.acadYear; valB = b.acadYear; }
-                        else if (cohortSortCol === 'term') { valA = a.term; valB = b.term; }
-                        else if (cohortSortCol === 'startDate') { valA = a.startDateObj?.getTime() || 0; valB = b.startDateObj?.getTime() || 0; }
-                        else if (cohortSortCol === 'count') { valA = a.count; valB = b.count; }
-                        else if (cohortSortCol === 'status') { valA = a.status.label; valB = b.status.label; }
-
-                        if (valA < valB) return cohortSortDir === 'asc' ? -1 : 1;
-                        if (valA > valB) return cohortSortDir === 'asc' ? 1 : -1;
-                        return 0;
-                    });
-                } else {
-                    sortedCohorts.sort((a,b) => {
-                        if(a.status.code === 'attention' && b.status.code !== 'attention') return -1;
-                        if(a.status.code !== 'attention' && b.status.code === 'attention') return 1;
-                        return (b.startDateObj || 0) - (a.startDateObj || 0);
-                    });
-                }
-
-                let html = '';
-                sortedCohorts.forEach(c => {
-                    html += `
-                        <tr>
-                            <td style="text-align:center;"><div class="cell-primary bold">${getDeptShort(c.dept)}</div></td>
-                            <td style="text-align:center;"><div class="cell-primary">${c.acadYear}</div></td>
-                            <td style="text-align:center;"><div class="cell-primary">${c.term}</div></td>
-                            <td style="text-align:center; font-family:monospace;"><div class="cell-primary bold">${c.startDateStr}</div></td>
-                            <td style="text-align:center;"><div class="cell-primary bold" style="color:var(--brand);">${c.count} 人</div></td>
-                            <td style="text-align:center;"><span class="badge ${c.status.class}">${c.status.label}</span></td>
-                            <td style="text-align:center;">
-                                <button class="btn btn-secondary btn-sm" onclick="openCohortDetailsModal('${c.cohortKey}')">
-                                    <i class="ti ti-search"></i> 查看明細
-                                </button>
-                            </td>
-                        </tr>
-                    `;
+                // Apply Filters
+                let filteredCohorts = inst.cohorts.filter(c => {
+                    let matchDept = filterSets['cohort-dept'].size === 0 || filterSets['cohort-dept'].has(c.dept);
+                    let matchStatus = filterSets['cohort-status'].size === 0 || filterSets['cohort-status'].has(c.status.code);
+                    return matchDept && matchStatus;
                 });
-                tbody.innerHTML = html;
+
+                // Apply Sorting
+                filteredCohorts.sort((a, b) => {
+                    let valA, valB;
+                    if (cohortSortCol === 'dept') { valA = getDeptShort(a.dept); valB = getDeptShort(b.dept); }
+                    else if (cohortSortCol === 'acadYear') { valA = a.acadYear; valB = b.acadYear; }
+                    else if (cohortSortCol === 'term') { valA = a.term; valB = b.term; }
+                    else if (cohortSortCol === 'startDate') { valA = a.startDateObj?.getTime() || 0; valB = b.startDateObj?.getTime() || 0; }
+                    else if (cohortSortCol === 'count') { valA = a.count; valB = b.count; }
+                    else if (cohortSortCol === 'status') { valA = a.status.label; valB = b.status.label; }
+
+                    if (valA < valB) return cohortSortDir === 'asc' ? -1 : 1;
+                    if (valA > valB) return cohortSortDir === 'asc' ? 1 : -1;
+                    return 0;
+                });
+
+                if(filteredCohorts.length === 0) {
+                     tbody.innerHTML = `<tr><td colspan="7" class="empty-state" style="padding:40px;"><div class="empty-text">無符合篩選的實習紀錄</div></td></tr>`;
+                } else {
+                    let html = '';
+                    filteredCohorts.forEach(c => {
+                        html += `
+                            <tr>
+                                <td style="text-align:center;"><div class="cell-primary bold">${getDeptShort(c.dept)}</div></td>
+                                <td style="text-align:center;"><div class="cell-primary">${c.acadYear}</div></td>
+                                <td style="text-align:center;"><div class="cell-primary">${c.term}</div></td>
+                                <td style="text-align:center;"><div class="cell-primary bold">${c.startDateStr}</div></td>
+                                <td style="text-align:center;"><div class="cell-primary bold" style="color:var(--brand);">${c.count} 人</div></td>
+                                <td style="text-align:center;"><span class="badge ${c.status.class}">${c.status.label}</span></td>
+                                <td style="text-align:center;">
+                                    <button class="btn btn-secondary btn-sm" onclick="openCohortDetailsModal('${c.cohortKey}')">
+                                        <i class="ti ti-eye"></i> 查看明細
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    tbody.innerHTML = html;
+                }
             }
-            window.renderRightPanel();
+            window.renderRightPanel(isUpdate);
         }
 
-        window.renderRightPanel = () => {
+        // --- Render Right Panel (Evaluations) ---
+        // Helper calculation for eval coverage before sorting
+        function getCoveringCountForEval(inst, evalData) {
+            let count = 0;
+            if ((evalData.eval_result === '通過' || evalData.eval_result === '有條件通過') && evalData.eval_date) {
+                let eDate = parseROCDate(evalData.eval_date);
+                if(eDate) {
+                    inst.cohorts.filter(c => c.dept === evalData.dept_name).forEach(c => {
+                        if(c.startDateObj) {
+                            let diffDays = (c.startDateObj.getTime() - eDate.getTime()) / (1000 * 3600 * 24);
+                            if(diffDays >= 0 && diffDays <= 365) { count += c.count; }
+                        }
+                    });
+                }
+            }
+            return count;
+        }
+
+        window.renderRightPanel = (isUpdate) => {
             let inst = aggregatedData.find(i => i.id === activeInstId);
+            if(!inst) return;
+            
+            if (!isUpdate) {
+                evalSortCol = 'date';
+                evalSortDir = 'desc';
+            }
+
+            // 更新排序圖示 UI
+            document.querySelectorAll('th[data-eval-sort]').forEach(th => {
+                th.classList.remove('sort-asc', 'sort-desc');
+                th.querySelector('.sort-icon').className = 'ti ti-arrows-sort sort-icon';
+                if (th.dataset.evalSort === evalSortCol) {
+                    th.classList.add(evalSortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+                    th.querySelector('.sort-icon').className = `ti ti-sort-${evalSortDir === 'asc' ? 'ascending' : 'descending'} sort-icon`;
+                }
+            });
+
             let listTbody = document.getElementById('eval-history-list');
-            
             let evals = allEvaluations.filter(e => e.inst_name === inst.name);
-            
-            evals.sort((a,b) => {
-                let dA = parseROCDate(a.eval_date)?.getTime() || 0;
-                let dB = parseROCDate(b.eval_date)?.getTime() || 0;
-                return dB - dA;
-            }); 
 
             if(evals.length === 0) {
                 listTbody.innerHTML = `<tr><td colspan="5" class="empty-state" style="padding: 40px;"><i class="ti ti-inbox empty-icon" style="margin: 0 auto 12px auto;"></i><div class="empty-text">此機構尚未建立任何評估紀錄。</div></td></tr>`;
                 return;
             }
 
-            let html = '';
+            // Calculate coverage count for all evals first so we can sort by it
             evals.forEach(e => {
-                let coveringCount = 0;
-                let isPass = e.eval_result === '通過' || e.eval_result === '有條件通過';
-                
-                if (isPass && e.eval_date) {
-                    let eDate = parseROCDate(e.eval_date);
-                    if(eDate) {
-                        inst.cohorts.filter(c => c.dept === e.dept_name).forEach(c => {
-                            if(c.startDateObj) {
-                                let diffDays = (c.startDateObj.getTime() - eDate.getTime()) / (1000 * 3600 * 24);
-                                if(diffDays >= 0 && diffDays <= 365) {
-                                    coveringCount += c.count;
-                                }
-                            }
-                        });
-                    }
-                }
-
-                let badgeColor = e.eval_result === '通過' ? 'badge-success' : (e.eval_result === '不通過' ? 'badge-danger' : 'badge-warning');
-
-                html += `
-                <tr>
-                    <td style="text-align: center;"><div class="cell-primary bold" style="color: var(--indigo);">${getDeptShort(e.dept_name)}</div></td>
-                    <td style="text-align: center; font-family: monospace;"><div class="cell-primary bold">${e.eval_date}</div></td>
-                    <td style="text-align: center;"><span class="badge ${badgeColor}">${e.eval_result}</span></td>
-                    <td style="text-align: center;">
-                        <span style="font-weight: 700; font-size: 11px; color: ${coveringCount > 0 ? 'var(--brand)' : 'var(--text-muted)'}; background: ${coveringCount > 0 ? 'var(--brand-light)' : 'var(--bg)'}; padding: 4px 10px; border-radius: 6px; border: 1px solid ${coveringCount > 0 ? 'var(--brand-border)' : 'var(--border)'}; display: inline-block;">
-                            ${coveringCount} 人
-                        </span>
-                    </td>
-                    <td style="text-align: center;">
-                        <div class="row-actions">
-                            <button class="btn btn-secondary btn-icon sm" onclick="openViewEvalModal('${e.id}')" title="查看明細"><i class="ti ti-eye"></i></button>
-                            <button class="btn btn-secondary btn-icon sm" onclick="openEditEvalModal('${e.id}')" title="編輯"><i class="ti ti-edit"></i></button>
-                            <button class="btn btn-icon sm" style="color:var(--danger); border-color:var(--danger-border);" onclick="deleteEvaluation('${e.id}')" title="刪除"><i class="ti ti-trash"></i></button>
-                        </div>
-                    </td>
-                </tr>`;
+                e._coveringCount = getCoveringCountForEval(inst, e);
             });
-            listTbody.innerHTML = html;
+
+            // Apply Filters
+            let filteredEvals = evals.filter(e => {
+                let matchDept = filterSets['eval-dept'].size === 0 || filterSets['eval-dept'].has(e.dept_name);
+                let matchResult = filterSets['eval-result'].size === 0 || filterSets['eval-result'].has(e.eval_result);
+                return matchDept && matchResult;
+            });
+
+            // Apply Sorting
+            filteredEvals.sort((a,b) => {
+                let valA, valB;
+                if(evalSortCol === 'dept') { valA = getDeptShort(a.dept_name); valB = getDeptShort(b.dept_name); }
+                else if(evalSortCol === 'date') { valA = parseROCDate(a.eval_date)?.getTime() || 0; valB = parseROCDate(b.eval_date)?.getTime() || 0; }
+                else if(evalSortCol === 'result') { valA = a.eval_result; valB = b.eval_result; }
+                else if(evalSortCol === 'cover') { valA = a._coveringCount; valB = b._coveringCount; }
+
+                if (valA < valB) return evalSortDir === 'asc' ? -1 : 1;
+                if (valA > valB) return evalSortDir === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            if(filteredEvals.length === 0) {
+                listTbody.innerHTML = `<tr><td colspan="5" class="empty-state" style="padding: 40px;"><div class="empty-text">無符合篩選的評估紀錄</div></td></tr>`;
+            } else {
+                let html = '';
+                filteredEvals.forEach(e => {
+                    let badgeColor = e.eval_result === '通過' ? 'badge-success' : (e.eval_result === '不通過' ? 'badge-danger' : 'badge-warning');
+
+                    html += `
+                    <tr>
+                        <td style="text-align: center;"><div class="cell-primary bold" style="color: var(--indigo);">${getDeptShort(e.dept_name)}</div></td>
+                        <td style="text-align: center;"><div class="cell-primary bold">${e.eval_date}</div></td>
+                        <td style="text-align: center;"><span class="badge ${badgeColor}">${e.eval_result}</span></td>
+                        <td style="text-align: center;"><div class="cell-primary bold" style="color:var(--brand);">${e._coveringCount} 人</div></td>
+                        <td style="text-align: center;">
+                            <div class="row-actions">
+                                <button class="btn btn-secondary btn-icon sm" onclick="openViewEvalModal('${e.id}')" title="查看明細"><i class="ti ti-eye"></i></button>
+                                <button class="btn btn-secondary btn-icon sm" onclick="openEditEvalModal('${e.id}')" title="編輯"><i class="ti ti-edit"></i></button>
+                                <button class="btn btn-icon sm" style="color:var(--danger); border-color:var(--danger-border);" onclick="deleteEvaluation('${e.id}')" title="刪除"><i class="ti ti-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>`;
+                });
+                listTbody.innerHTML = html;
+            }
         };
 
         window.openViewEvalModal = (evalId) => {
