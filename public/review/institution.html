@@ -145,7 +145,8 @@ tr.selected td { background: #f0f4ff; }
 .cell-secondary { font-size: 11px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
 .row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; }
 
-.inner-table { min-width: 800px; }
+/* 移除 min-width: 800px，讓它自動貼合父容器 */
+.inner-table { width: 100%; border-collapse: collapse; }
 
 .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
 .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
@@ -321,15 +322,14 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                         <div class="custom-scroll" style="flex: 1; overflow: auto;">
                             <table class="inner-table">
                                 <thead>
-                                    <!-- 重新調整比例並強制全數置中對齊 -->
                                     <tr>
-                                        <th style="width: 14%;">負責學系</th>
+                                        <th style="width: 12%;">負責學系</th>
                                         <th style="width: 10%;">學年度</th>
                                         <th style="width: 8%;">學期</th>
-                                        <th style="width: 18%;">實習開始日</th>
+                                        <th style="width: 16%;">實習開始日</th>
                                         <th style="width: 12%;">梯次人數</th>
-                                        <th style="width: 20%;">梯次狀態</th>
-                                        <th style="width: 18%;">操作</th>
+                                        <th style="width: 22%;">梯次狀態</th>
+                                        <th style="width: 20%;">操作</th>
                                     </tr>
                                 </thead>
                                 <tbody id="cohort-list-tbody"></tbody>
@@ -350,12 +350,11 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                         <div class="custom-scroll" style="flex: 1; overflow: auto;">
                             <table class="inner-table">
                                 <thead>
-                                    <!-- 重新調整比例並強制全數置中對齊 -->
                                     <tr>
                                         <th style="width: 16%;">評估學系</th>
-                                        <th style="width: 22%;">評估日期</th>
+                                        <th style="width: 20%;">評估日期</th>
                                         <th style="width: 18%;">結果</th>
-                                        <th style="width: 22%;">涵蓋合法學生</th>
+                                        <th style="width: 24%;">涵蓋合法學生</th>
                                         <th style="width: 22%;">操作</th>
                                     </tr>
                                 </thead>
