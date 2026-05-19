@@ -728,7 +728,7 @@
                         const inst_tax = cols[25];
                         const inst_city = cols[26]; 
                         const inst_addr = cols[27]; 
-                        const stu_nat = cols[28] || '本國籍';
+                        const stu_nat = cols[28] || '-';  // ★ 在這裡改為預設帶入 '-'
                         const resp_dept = window.resolveDept(cols[29]);
                         const notes = cols[30] || '';
 
