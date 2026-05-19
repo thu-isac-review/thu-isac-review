@@ -146,6 +146,7 @@ tr.selected td { background: #f0f4ff; }
 .row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; }
 
 .inner-table { min-width: 800px; }
+.inner-table-sm { min-width: 500px; width: 100%; table-layout: fixed; }
 
 .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
 .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
@@ -347,13 +348,13 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                             </button>
                         </div>
                         <div class="custom-scroll" style="flex: 1; overflow: auto;">
-                            <table class="inner-table">
+                            <table class="inner-table-sm">
                                 <thead>
                                     <tr>
                                         <th style="width: 25%; text-align: left;">評估學系</th>
-                                        <th style="width: 20%;">評估日期</th>
+                                        <th style="width: 25%;">評估日期</th>
                                         <th style="width: 15%;">結果</th>
-                                        <th style="width: 20%;">涵蓋合法學生</th>
+                                        <th style="width: 15%;">涵蓋學生</th>
                                         <th style="width: 20%;">操作</th>
                                     </tr>
                                 </thead>
