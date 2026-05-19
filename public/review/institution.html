@@ -106,16 +106,52 @@ html, body {
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn i { font-size: 16px; display: inline-flex; align-items: center; justify-content: center; }
 
-/* ─── FILTER ROW ─── */
+/* ─── FILTER ROW & PILLS (DROPDOWN STRUCTURE) ─── */
 .filter-row { padding: 10px 24px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
+.filter-pill-wrap { position: relative; }
 .filter-pill {
-  display: inline-flex; align-items: center; gap: 5px; padding: 0 12px; height: 28px;
-  border: 1px solid var(--border); border-radius: 99px; background: var(--surface);
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 0 10px; height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 99px; background: var(--surface);
   font-size: 12px; font-weight: 500; color: var(--text-secondary);
-  cursor: pointer; transition: all var(--transition); white-space: nowrap;
+  cursor: pointer; transition: all var(--transition);
+  white-space: nowrap;
 }
 .filter-pill:hover { border-color: var(--border-strong); color: var(--text-primary); }
-.filter-pill.active { border-color: var(--brand); background: var(--brand-light); color: var(--brand); font-weight: 700; }
+.filter-pill.active { border-color: var(--brand); background: var(--brand-light); color: var(--brand); }
+.filter-pill .pill-count { background: var(--brand); color: white; border-radius: 99px; font-size: 10px; font-weight: 700; padding: 0 5px; min-width: 16px; text-align: center; display: inline-block; }
+.filter-pill i { font-size: 14px; transition: transform 0.2s; }
+.filter-pill-wrap.open .filter-pill i { transform: rotate(180deg); }
+
+.filter-dropdown {
+  position: absolute; top: calc(100% + 6px); left: 0;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-md);
+  min-width: 220px; z-index: 100;
+  display: none; flex-direction: column; overflow: hidden;
+}
+.filter-dropdown.show { display: flex; }
+
+.filter-dropdown-search { padding: 8px; border-bottom: 1px solid var(--border); }
+.filter-dropdown-search input { 
+  width: 100%; height: 30px; border: 1px solid var(--border); border-radius: var(--radius-sm); 
+  padding: 0 10px; font-size: 12px; outline: none; background: var(--bg); transition: 0.2s; 
+}
+.filter-dropdown-search input:focus { border-color: var(--brand); background: var(--surface); box-shadow: 0 0 0 2px rgba(26,86,219,0.1); }
+
+.filter-dropdown-list { max-height: 200px; overflow-y: auto; padding: 4px; }
+.filter-option {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 8px; border-radius: var(--radius-sm);
+  cursor: pointer; font-size: 12px; color: var(--text-secondary);
+  transition: background var(--transition);
+}
+.filter-option:hover { background: var(--bg); color: var(--text-primary); }
+.filter-option input[type=checkbox] { accent-color: var(--brand); flex-shrink: 0; }
+.filter-dropdown-footer { padding: 6px 8px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; }
+.filter-dropdown-footer button { font-size: 11px; font-weight: 600; color: var(--danger); background: none; border: none; cursor: pointer; padding: 2px 4px; border-radius: var(--radius-sm); }
+.filter-dropdown-footer button:hover { background: var(--danger-bg); }
 
 /* ─── TABLE ─── */
 .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; }
@@ -126,29 +162,39 @@ th {
   padding: 12px 16px; text-align: center; 
   font-size: 11px; font-weight: 700; color: var(--text-muted);
   text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
-  position: sticky; top: 0; z-index: 10;
+  position: sticky; top: -1px; /* 修正 Sticky 表頭與上方元素的縫隙 */
+  z-index: 10;
   background: var(--surface);
-  box-shadow: inset 0 -2px 0 var(--border); 
+  border-bottom: 2px solid var(--border);
 }
 
-th[data-sort] { cursor: pointer; user-select: none; transition: color var(--transition); }
-th[data-sort]:hover { color: var(--text-secondary); }
+th[data-main-sort], th[data-cohort-sort], th[data-eval-sort] { cursor: pointer; user-select: none; transition: color var(--transition); }
+th[data-main-sort]:hover, th[data-cohort-sort]:hover, th[data-eval-sort]:hover { color: var(--text-secondary); }
 th .sort-icon { margin-left: 4px; font-size: 14px; opacity: 0.4; vertical-align: middle; }
 th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand); }
 
-td { padding: 12px 16px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); }
+td { padding: 12px 16px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); text-align: center; }
 tr:hover td { background: #fafbff; }
 tr.selected td { background: #f0f4ff; }
+
+/* 移除最後一行的底部邊框 */
+table tbody tr:last-child td { border-bottom: none; }
 
 .cell-primary { font-size: 13px; color: var(--text-primary); line-height: 1.4; }
 .cell-primary.bold { font-weight: 600; }
 .cell-secondary { font-size: 11px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
 .row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; }
 
-.inner-table { min-width: 800px; }
-.inner-table-sm { min-width: 500px; width: 100%; table-layout: fixed; }
+/* 讓內部表格佔滿容器並允許水平捲動 */
+.inner-table { 
+    width: 100%; 
+    min-width: 600px; 
+    margin: 0; 
+    border-collapse: collapse; 
+    table-layout: fixed; 
+}
 
-.empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
+.empty-state { text-align: center; padding: 40px; color: var(--text-muted); border-bottom: none !important; }
 .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
 .empty-text { font-size: 13px; font-weight: 600; }
 
@@ -190,6 +236,9 @@ tr.selected td { background: #f0f4ff; }
 
 .dialog-box { background: var(--surface); border-radius: var(--radius-xl); box-shadow: 0 20px 60px rgba(0,0,0,0.2); width: 100%; display: flex; flex-direction: column; overflow: hidden; animation: dialogIn 0.25s cubic-bezier(0.16,1,0.3,1); max-height: 95vh; }
 @keyframes dialogIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+/* 強制這兩個 Modal 的高度一致為 92vh */
+#manage-modal .dialog-box, #cohort-details-modal .dialog-box { height: 92vh; }
 
 .dialog-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--surface); flex-shrink: 0; }
 .dialog-header h3 { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: var(--text-primary); margin: 0; }
@@ -235,10 +284,51 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
     </div>
 
     <div class="filter-row">
-        <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-right: 8px;">機構審查狀態：</span>
-        <button class="filter-pill active" onclick="setFilter('all')">全部</button>
-        <button class="filter-pill" onclick="setFilter('pass')">審查皆通過有效</button>
-        <button class="filter-pill" onclick="setFilter('attention')">有梯次逾期/未評估</button>
+        <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-right: 8px;">快速篩選：</span>
+        
+        <div class="filter-pill-wrap" id="pill-wrap-main-industry">
+            <button class="filter-pill" id="pill-main-industry" onclick="toggleDropdown('main-industry')">行業別 <i class="ti ti-chevron-down"></i></button>
+            <div class="filter-dropdown" id="drop-main-industry">
+                <div class="filter-dropdown-search"><input type="text" placeholder="搜尋..." onkeyup="filterDropdownItems(this, 'main-industry-options-container')"></div>
+                <div class="filter-dropdown-list" id="main-industry-options-container"></div>
+                <div class="filter-dropdown-footer"><button onclick="clearFilter('main-industry')">清除</button></div>
+            </div>
+        </div>
+
+        <div class="filter-pill-wrap" id="pill-wrap-main-venue">
+            <button class="filter-pill" id="pill-main-venue" onclick="toggleDropdown('main-venue')">實習場所 <i class="ti ti-chevron-down"></i></button>
+            <div class="filter-dropdown" id="drop-main-venue">
+                <div class="filter-dropdown-search"><input type="text" placeholder="搜尋..." onkeyup="filterDropdownItems(this, 'main-venue-options-container')"></div>
+                <div class="filter-dropdown-list" id="main-venue-options-container"></div>
+                <div class="filter-dropdown-footer"><button onclick="clearFilter('main-venue')">清除</button></div>
+            </div>
+        </div>
+
+        <div class="filter-pill-wrap" id="pill-wrap-main-country">
+            <button class="filter-pill" id="pill-main-country" onclick="toggleDropdown('main-country')">國別 <i class="ti ti-chevron-down"></i></button>
+            <div class="filter-dropdown" id="drop-main-country">
+                <div class="filter-dropdown-search"><input type="text" placeholder="搜尋..." onkeyup="filterDropdownItems(this, 'main-country-options-container')"></div>
+                <div class="filter-dropdown-list" id="main-country-options-container"></div>
+                <div class="filter-dropdown-footer"><button onclick="clearFilter('main-country')">清除</button></div>
+            </div>
+        </div>
+
+        <div class="filter-pill-wrap" id="pill-wrap-main-city">
+            <button class="filter-pill" id="pill-main-city" onclick="toggleDropdown('main-city')">縣市別 <i class="ti ti-chevron-down"></i></button>
+            <div class="filter-dropdown" id="drop-main-city">
+                <div class="filter-dropdown-search"><input type="text" placeholder="搜尋..." onkeyup="filterDropdownItems(this, 'main-city-options-container')"></div>
+                <div class="filter-dropdown-list" id="main-city-options-container"></div>
+                <div class="filter-dropdown-footer"><button onclick="clearFilter('main-city')">清除</button></div>
+            </div>
+        </div>
+
+        <div class="filter-pill-wrap" id="pill-wrap-main-status">
+            <button class="filter-pill" id="pill-main-status" onclick="toggleDropdown('main-status')">評估現況 <i class="ti ti-chevron-down"></i></button>
+            <div class="filter-dropdown" id="drop-main-status">
+                <div class="filter-dropdown-list" id="main-status-options-container"></div>
+                <div class="filter-dropdown-footer"><button onclick="clearFilter('main-status')">清除</button></div>
+            </div>
+        </div>
     </div>
 
     <div class="table-wrap">
@@ -246,16 +336,19 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 30%;">實習機構名稱</th>
-                        <th style="width: 15%;">歷史總實習梯次</th>
-                        <th style="width: 15%;">關聯學生總數</th>
-                        <th style="width: 20%;">機構整體狀態 (依梯次判定)</th>
-                        <th style="width: 20%;">操作</th>
+                        <th style="width: 32%; cursor: pointer;" data-main-sort="name" onclick="sortMain('name')">實習機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th style="width: 12%; cursor: pointer;" data-main-sort="tax_id" onclick="sortMain('tax_id')">統一編號 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th style="width: 12%; cursor: pointer;" data-main-sort="industry" onclick="sortMain('industry')">行業別 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th style="width: 12%; cursor: pointer;" data-main-sort="venue_type" onclick="sortMain('venue_type')">實習場所 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th style="width: 6%; cursor: pointer;" data-main-sort="country" onclick="sortMain('country')">國別 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th style="width: 6%; cursor: pointer;" data-main-sort="city" onclick="sortMain('city')">縣市別 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th style="width: 10%; cursor: pointer;" data-main-sort="status" onclick="sortMain('status')">評估現況 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th style="width: 10%;">操作</th>
                     </tr>
                 </thead>
                 <tbody id="table-body">
                     <tr>
-                        <td colspan="5" class="empty-state">
+                        <td colspan="8" class="empty-state">
                             <i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i>
                             <div class="empty-text">資料載入中...</div>
                         </td>
@@ -305,8 +398,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                         </div>
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <i class="ti ti-map-pin" style="font-size: 16px; color: var(--text-muted);"></i>
-                            <span id="info-country">-</span>
-                            <span style="color: var(--border-strong);">|</span>
                             <span id="info-address">-</span>
                         </div>
                     </div>
@@ -314,21 +405,56 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
                 <div class="split-layout">
                     <div class="split-left">
-                        <div style="padding: 0 20px; height: 60px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-                            <i class="ti ti-list-details" style="color: var(--text-secondary); font-size: 18px;"></i>
-                            <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">各系實習梯次清單</span>
-                            <span style="font-size: 11px; color: var(--text-muted); font-weight: 500; margin-left: auto;">(同系+同學年期+同起日為一梯次)</span>
+                        <div style="height: 60px; padding: 0 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <i class="ti ti-list-details" style="color: var(--text-secondary); font-size: 18px;"></i>
+                                <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">各系實習紀錄</span>
+                            </div>
                         </div>
+                        <div class="filter-row" style="padding: 6px 20px; border-bottom: 1px solid var(--border); background: var(--surface);">
+                            <div class="filter-pill-wrap" id="pill-wrap-cohort-dept">
+                                <button class="filter-pill" id="pill-cohort-dept" onclick="toggleDropdown('cohort-dept')">負責學系 <i class="ti ti-chevron-down"></i></button>
+                                <div class="filter-dropdown" id="drop-cohort-dept">
+                                    <div class="filter-dropdown-search"><input type="text" placeholder="搜尋..." onkeyup="filterDropdownItems(this, 'cohort-dept-options-container')"></div>
+                                    <div class="filter-dropdown-list" id="cohort-dept-options-container"></div>
+                                    <div class="filter-dropdown-footer"><button onclick="clearFilter('cohort-dept')">清除</button></div>
+                                </div>
+                            </div>
+                            <div class="filter-pill-wrap" id="pill-wrap-cohort-acadYear">
+                                <button class="filter-pill" id="pill-cohort-acadYear" onclick="toggleDropdown('cohort-acadYear')">學年度 <i class="ti ti-chevron-down"></i></button>
+                                <div class="filter-dropdown" id="drop-cohort-acadYear">
+                                    <div class="filter-dropdown-search"><input type="text" placeholder="搜尋..." onkeyup="filterDropdownItems(this, 'cohort-acadYear-options-container')"></div>
+                                    <div class="filter-dropdown-list" id="cohort-acadYear-options-container"></div>
+                                    <div class="filter-dropdown-footer"><button onclick="clearFilter('cohort-acadYear')">清除</button></div>
+                                </div>
+                            </div>
+                            <div class="filter-pill-wrap" id="pill-wrap-cohort-term">
+                                <button class="filter-pill" id="pill-cohort-term" onclick="toggleDropdown('cohort-term')">學期 <i class="ti ti-chevron-down"></i></button>
+                                <div class="filter-dropdown" id="drop-cohort-term">
+                                    <div class="filter-dropdown-list" id="cohort-term-options-container"></div>
+                                    <div class="filter-dropdown-footer"><button onclick="clearFilter('cohort-term')">清除</button></div>
+                                </div>
+                            </div>
+                            <div class="filter-pill-wrap" id="pill-wrap-cohort-status">
+                                <button class="filter-pill" id="pill-cohort-status" onclick="toggleDropdown('cohort-status')">梯次狀態 <i class="ti ti-chevron-down"></i></button>
+                                <div class="filter-dropdown" id="drop-cohort-status">
+                                    <div class="filter-dropdown-list" id="cohort-status-options-container"></div>
+                                    <div class="filter-dropdown-footer"><button onclick="clearFilter('cohort-status')">清除</button></div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="custom-scroll" style="flex: 1; overflow: auto;">
-                            <table class="inner-table">
+                            <!-- 修正：將欄位寬度改為百分比 -->
+                            <table class="inner-table" style="min-width: 600px;">
                                 <thead>
                                     <tr>
-                                        <th style="text-align: left; width: 18%;">負責學系</th>
-                                        <th style="width: 12%;">學年度</th>
-                                        <th style="width: 10%;">學期</th>
-                                        <th style="width: 16%;">實習開始日</th>
-                                        <th style="width: 12%;">梯次人數</th>
-                                        <th style="width: 16%;">梯次狀態</th>
+                                        <th style="width: 16%; cursor: pointer;" data-cohort-sort="dept" onclick="sortCohorts('dept')">負責學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                                        <th style="width: 12%; cursor: pointer;" data-cohort-sort="acadYear" onclick="sortCohorts('acadYear')">學年度 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                                        <th style="width: 10%; cursor: pointer;" data-cohort-sort="term" onclick="sortCohorts('term')">學期 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                                        <th style="width: 16%; cursor: pointer;" data-cohort-sort="startDate" onclick="sortCohorts('startDate')">實習開始日 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                                        <th style="width: 14%; cursor: pointer;" data-cohort-sort="count" onclick="sortCohorts('count')">梯次人數 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                                        <th style="width: 16%; cursor: pointer;" data-cohort-sort="status" onclick="sortCohorts('status')">梯次狀態 <i class="ti ti-arrows-sort sort-icon"></i></th>
                                         <th style="width: 16%;">操作</th>
                                     </tr>
                                 </thead>
@@ -338,23 +464,42 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                     </div>
 
                     <div class="split-right">
-                        <div style="padding: 0 20px; height: 60px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+                        <div style="height: 60px; padding: 0 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <i class="ti ti-history" style="color: var(--indigo); font-size: 18px;"></i>
-                                <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">機構總評估紀錄一覽</span>
+                                <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">機構評估紀錄</span>
                             </div>
-                            <button class="btn btn-indigo btn-sm" onclick="openAddEvalModal()">
+                            <button class="btn btn-primary" style="height: 32px; padding: 0 16px;" onclick="openAddEvalModal()">
                                 <i class="ti ti-plus"></i> 新增評估
                             </button>
                         </div>
+                        <div class="filter-row" style="padding: 6px 20px; border-bottom: 1px solid var(--border); background: var(--surface);">
+                            <div class="filter-pill-wrap" id="pill-wrap-eval-dept">
+                                <button class="filter-pill" id="pill-eval-dept" onclick="toggleDropdown('eval-dept')">評估學系 <i class="ti ti-chevron-down"></i></button>
+                                <div class="filter-dropdown" id="drop-eval-dept">
+                                    <div class="filter-dropdown-search"><input type="text" placeholder="搜尋..." onkeyup="filterDropdownItems(this, 'eval-dept-options-container')"></div>
+                                    <div class="filter-dropdown-list" id="eval-dept-options-container"></div>
+                                    <div class="filter-dropdown-footer"><button onclick="clearFilter('eval-dept')">清除</button></div>
+                                </div>
+                            </div>
+                            <div class="filter-pill-wrap" id="pill-wrap-eval-result">
+                                <button class="filter-pill" id="pill-eval-result" onclick="toggleDropdown('eval-result')">結果 <i class="ti ti-chevron-down"></i></button>
+                                <div class="filter-dropdown" id="drop-eval-result">
+                                    <div class="filter-dropdown-list" id="eval-result-options-container"></div>
+                                    <div class="filter-dropdown-footer"><button onclick="clearFilter('eval-result')">清除</button></div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="custom-scroll" style="flex: 1; overflow: auto;">
-                            <table class="inner-table-sm">
+                            <!-- 修正：將欄位寬度改為百分比 -->
+                            <table class="inner-table" style="min-width: 500px;">
                                 <thead>
                                     <tr>
-                                        <th style="width: 25%; text-align: left;">評估學系</th>
-                                        <th style="width: 25%;">評估日期</th>
-                                        <th style="width: 15%;">結果</th>
-                                        <th style="width: 15%;">涵蓋合法學生</th>
+                                        <th style="width: 25%; cursor: pointer;" data-eval-sort="dept" onclick="sortEvals('dept')">評估學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                                        <th style="width: 20%; cursor: pointer;" data-eval-sort="date" onclick="sortEvals('date')">評估日期 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                                        <th style="width: 20%; cursor: pointer;" data-eval-sort="result" onclick="sortEvals('result')">結果 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                                        <th style="width: 15%; cursor: pointer;" data-eval-sort="cover" onclick="sortEvals('cover')">涵蓋學生 <i class="ti ti-arrows-sort sort-icon"></i></th>
                                         <th style="width: 20%;">操作</th>
                                     </tr>
                                 </thead>
@@ -380,7 +525,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                     <div><strong style="color:var(--text-muted);font-size:12px;">評估機構</strong><div id="view-eval-inst" style="margin-top:6px;font-weight:600;font-size:14px;"></div></div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                         <div><strong style="color:var(--text-muted);font-size:12px;">評估學系</strong><div id="view-eval-dept" style="margin-top:6px;font-weight:600;color:var(--indigo);"></div></div>
-                        <div><strong style="color:var(--text-muted);font-size:12px;">評估日期</strong><div id="view-eval-date" style="margin-top:6px;font-family:monospace;font-weight:600;"></div></div>
+                        <div><strong style="color:var(--text-muted);font-size:12px;">評估日期</strong><div id="view-eval-date" style="margin-top:6px;font-weight:600;"></div></div>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                         <div><strong style="color:var(--text-muted);font-size:12px;">評估人</strong><div id="view-eval-evaluator" style="margin-top:6px;"></div></div>
@@ -405,7 +550,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             <div class="dialog-body custom-scroll">
                 <div style="margin-bottom: 20px; padding: 12px 16px; background: var(--indigo-light); border: 1px solid var(--indigo-border); border-radius: var(--radius); font-size: 12px; color: var(--text-secondary); line-height: 1.5;">
                     您正在為 <strong id="add-eval-inst" style="color: var(--indigo);"></strong> 新增評估紀錄。<br>
-                    <span style="color: var(--danger); font-weight: 500;">* 儲存後，系統將自動比對並涵蓋該系所一年內開始實習的學生梯次。</span>
+                    <span style="color: var(--danger); font-weight: 500;">* 儲存後，系統將自動比對並涵蓋該系所一年內開始實習的學生梯次。若以「實習中心」進行評估，則將直接涵蓋該機構全校各系所之梯次。</span>
                 </div>
 
                 <div class="field">
@@ -447,13 +592,13 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
     </div>
 
     <div id="cohort-details-modal" class="dialog-overlay" style="z-index: 250;">
-        <div class="dialog-box" style="max-width: 1400px; width: 95%;">
+        <div class="dialog-box" style="max-width: 1500px; width: 98%;">
             <div class="dialog-header">
                 <h3><i class="ti ti-users" style="color: var(--brand);"></i> <span id="cohort-details-title">梯次學生明細</span></h3>
                 <button type="button" class="dialog-close" onclick="closeCohortDetailsModal()"><i class="ti ti-x"></i></button>
             </div>
             <div class="dialog-body custom-scroll" style="padding: 0;">
-                <table class="inner-table" style="min-width: 1300px;">
+                <table class="inner-table" style="min-width: 1300px; width: 100%;">
                     <thead>
                         <tr>
                             <th style="width: 8%;">學號</th>
@@ -495,15 +640,142 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         
         let allInstitutions = [], allRecords = [], allEvaluations = [], allCourses = [], allStudents = [];
         let aggregatedData = [], filteredData = [], globalDepts = [];
-        let currentFilter = 'all', currentPage = 1, itemsPerPage = 15;
+        let currentPage = 1, itemsPerPage = 15;
         let activeInstId = null;
         let editingEvalId = null;
+        
+        // --- 主頁面下拉篩選的靜態選單常數 ---
+        const LIST_COUNTRIES = ["中華民國","大陸地區","日本","美國","越南","泰國","澳大利亞","香港","澳門","馬來西亞","菲律賓","印尼","印度","孟加拉","緬甸","柬埔寨","黎巴嫩","蒙古","巴西","巴拉圭","秘魯"];
+        const LIST_CITIES = ["臺北市","新北市","基隆市","桃園市","新竹縣","新竹市","苗栗縣","臺中市","彰化縣","南投縣","雲林縣","嘉義縣","嘉義市","臺南市","高雄市","屏東縣","宜蘭縣","花蓮縣","臺東縣","澎湖縣","金門縣","連江縣"];
+        const LIST_INDUSTRIES = ["農、林、漁、牧業","礦業及土石採取業","製造業","電力及燃氣供應業","用水供應及污染整治業","營建工程業","批發及零售業","運輸及倉儲業","住宿及餐飲業","出版及影音等內容傳播業","電信及資訊服務業","金融及保險業","不動產業","專業、科學及技術服務業","支援服務業","公共行政及國防；強制性社會安全","教育業","醫療保健及社會工作服務業","藝術、運動及休閒服務業","其他服務業"];
+        const LIST_VENUES = ["企業機構","其他機構","政府機構","就讀學校附屬機構"];
 
-        // 修復 2-1：強化日期解析器，避免 - 或 ~ 的分隔符號造成解析失敗
+        // --- 排序與篩選全域變數 ---
+        let filterSets = {
+            'main-status': new Set(), 'main-country': new Set(), 'main-city': new Set(), 'main-industry': new Set(), 'main-venue': new Set(),
+            'cohort-dept': new Set(), 'cohort-acadYear': new Set(), 'cohort-term': new Set(), 'cohort-status': new Set(),
+            'eval-dept': new Set(), 'eval-result': new Set()
+        };
+
+        let mainSortCol = '';
+        let mainSortDir = '';
+        let cohortSortCol = 'startDate'; // 預設：實習開始日
+        let cohortSortDir = 'desc';      // 預設：新到舊
+        let evalSortCol = 'date';        // 預設：評估日期
+        let evalSortDir = 'desc';        // 預設：新到舊
+
+        // --- 篩選 Dropdown 邏輯 ---
+        window.toggleDropdown = (type) => {
+            const drop = document.getElementById(`drop-${type}`);
+            const wrap = document.getElementById(`pill-wrap-${type}`);
+            const isOpen = drop.classList.contains('show');
+            document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
+            document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
+            if (!isOpen) { drop.classList.add('show'); wrap.classList.add('open'); }
+        };
+
+        window.filterDropdownItems = (input, containerId) => {
+            const term = input.value.toLowerCase();
+            const labels = document.getElementById(containerId).querySelectorAll('.filter-option');
+            labels.forEach(lbl => {
+                const text = lbl.textContent.toLowerCase();
+                lbl.style.display = text.includes(term) ? 'flex' : 'none';
+            });
+        };
+
+        window.toggleFilterCheck = (type, val) => {
+            const chkList = document.querySelectorAll(`.filter-chk-${type}[value="${val}"]`);
+            const isChecked = event.target.checked;
+            chkList.forEach(chk => chk.checked = isChecked);
+            
+            let set = filterSets[type];
+            if (set.has(val)) set.delete(val); else set.add(val);
+            
+            updatePillActive(type);
+            
+            if(type.startsWith('main')) { currentPage = 1; processAndRenderMain(); }
+            else if(type.startsWith('cohort')) { renderManageModalContent(true); }
+            else if(type.startsWith('eval')) { window.renderRightPanel(true); }
+        };
+
+        window.clearFilter = (type) => {
+            filterSets[type].clear();
+            document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = false);
+            updatePillActive(type);
+            
+            if(type.startsWith('main')) { currentPage = 1; processAndRenderMain(); }
+            else if(type.startsWith('cohort')) { renderManageModalContent(true); }
+            else if(type.startsWith('eval')) { window.renderRightPanel(true); }
+        };
+
+        function updatePillActive(type) {
+            let typeName = {
+                'main-status': '評估現況', 'main-country': '國別', 'main-city': '縣市別', 'main-industry': '行業別', 'main-venue': '實習場所',
+                'cohort-dept': '負責學系', 'cohort-acadYear': '學年度', 'cohort-term': '學期', 'cohort-status': '梯次狀態',
+                'eval-dept': '評估學系', 'eval-result': '結果'
+            }[type];
+
+            const pill = document.getElementById(`pill-${type}`);
+            const set = filterSets[type];
+            if (set.size > 0) {
+                pill.classList.add('active');
+                pill.innerHTML = `${typeName} <span class="pill-count">${set.size}</span> <i class="ti ti-chevron-down"></i>`;
+            } else {
+                pill.classList.remove('active');
+                pill.innerHTML = `${typeName} <i class="ti ti-chevron-down"></i>`;
+            }
+        }
+
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.filter-pill-wrap')) {
+                document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
+                document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
+            }
+        });
+
+        function initFilters() {
+            // Main Status
+            let sHtml = '';
+            [{v: 'pass', l: '合規 (全部梯次皆合規)'}, {v: 'attention', l: '需注意 (部分梯次異常)'}, {v: 'empty', l: '無關聯紀錄'}].forEach(s => {
+                sHtml += `<label class="filter-option"><input type="checkbox" class="filter-chk-main-status" value="${s.v}" onchange="toggleFilterCheck('main-status', '${s.v}')"> <span>${s.l}</span></label>`;
+            });
+            document.getElementById('main-status-options-container').innerHTML = sHtml;
+
+            // Main Country, City, Industry, Venue
+            let buildOpts = (list, type) => list.map(item => `<label class="filter-option"><input type="checkbox" class="filter-chk-${type}" value="${item}" onchange="toggleFilterCheck('${type}', '${item}')"> <span>${item}</span></label>`).join('');
+            document.getElementById('main-country-options-container').innerHTML = buildOpts(LIST_COUNTRIES, 'main-country');
+            document.getElementById('main-city-options-container').innerHTML = buildOpts(LIST_CITIES, 'main-city');
+            document.getElementById('main-industry-options-container').innerHTML = buildOpts(LIST_INDUSTRIES, 'main-industry');
+            document.getElementById('main-venue-options-container').innerHTML = buildOpts(LIST_VENUES, 'main-venue');
+
+            // Cohort Status
+            let csHtml = '';
+            [{v: 'pass', l: '合規 (已有評估)'}, {v: 'attention', l: '未涵蓋或逾期'}].forEach(s => {
+                csHtml += `<label class="filter-option"><input type="checkbox" class="filter-chk-cohort-status" value="${s.v}" onchange="toggleFilterCheck('cohort-status', '${s.v}')"> <span>${s.l}</span></label>`;
+            });
+            document.getElementById('cohort-status-options-container').innerHTML = csHtml;
+
+            // Eval Result
+            let erHtml = '';
+            ['通過', '有條件通過', '不通過'].forEach(s => {
+                erHtml += `<label class="filter-option"><input type="checkbox" class="filter-chk-eval-result" value="${s}" onchange="toggleFilterCheck('eval-result', '${s}')"> <span>${s}</span></label>`;
+            });
+            document.getElementById('eval-result-options-container').innerHTML = erHtml;
+
+            // Depts
+            let dHtml = '';
+            globalDepts.forEach(d => dHtml += `<label class="filter-option"><input type="checkbox" class="filter-chk-cohort-dept" value="${d.name}" onchange="toggleFilterCheck('cohort-dept', '${d.name}')"> <span>${d.shortName || d.name}</span></label>`);
+            document.getElementById('cohort-dept-options-container').innerHTML = dHtml;
+            
+            let dHtml2 = '';
+            globalDepts.forEach(d => dHtml2 += `<label class="filter-option"><input type="checkbox" class="filter-chk-eval-dept" value="${d.name}" onchange="toggleFilterCheck('eval-dept', '${d.name}')"> <span>${d.shortName || d.name}</span></label>`);
+            document.getElementById('eval-dept-options-container').innerHTML = dHtml2;
+        }
+
+        // --- Utility ---
         function parseROCDate(dateStr) {
             if (!dateStr) return null;
-            let firstPart = dateStr.split(/[-~～]/)[0].trim();
-            let parts = firstPart.split('/');
+            let parts = dateStr.split('-')[0].trim().split('/');
             if (parts.length !== 3) return null;
             return new Date(parseInt(parts[0], 10) + 1911, parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
         }
@@ -519,24 +791,54 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
         const formatCourseInfo = (c) => c ? `${c.academic_year}-${c.term}_${c.course_code}：${c.course_name}` : '';
 
+        // 核心修正：將系所簡稱轉換為全名進行驗證，避免「外國語文學系」對不上「外文系」
+        const getBaseDeptName = (n) => {
+            const d = globalDepts.find(x => x.name === n || x.shortName === n);
+            return d ? d.name : n;
+        };
+
+        window.checkDeptMatch = (d1, d2) => {
+            if (!d1 || !d2) return false;
+            if (d1 === d2) return true;
+            return getBaseDeptName(d1) === getBaseDeptName(d2);
+        };
+
+        // --- Data Fetching ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const deptSnap = await getDocs(collection(db, "departments"));
                 globalDepts = deptSnap.docs.map(d => d.data());
+                
+                // 核心修正：動態注入「實習中心」供評估與篩選全校套用
+                if (!globalDepts.find(d => d.name === '實習中心')) {
+                    globalDepts.unshift({ name: '實習中心', shortName: '實習中心', sortOrder: -999 });
+                }
+
                 globalDepts.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
+                
+                initFilters();
 
                 onSnapshot(studentsCol, (snap) => { allStudents = snap.docs.map(d => ({id: d.id, ...d.data()})); });
-                onSnapshot(coursesCol, (snap) => { allCourses = snap.docs.map(d => ({id: d.id, ...d.data()})); });
+                onSnapshot(coursesCol, (snap) => { 
+                    allCourses = snap.docs.map(d => ({id: d.id, ...d.data()})); 
+                    
+                    // 動態建立學年度、學期選單
+                    let years = [...new Set(allCourses.map(c => c.academic_year))].filter(Boolean).sort().reverse();
+                    let terms = [...new Set(allCourses.map(c => c.term))].filter(Boolean).sort();
+                    document.getElementById('cohort-acadYear-options-container').innerHTML = years.map(y => `<label class="filter-option"><input type="checkbox" class="filter-chk-cohort-acadYear" value="${y}" onchange="toggleFilterCheck('cohort-acadYear', '${y}')"> <span>${y}</span></label>`).join('');
+                    document.getElementById('cohort-term-options-container').innerHTML = terms.map(t => `<label class="filter-option"><input type="checkbox" class="filter-chk-cohort-term" value="${t}" onchange="toggleFilterCheck('cohort-term', '${t}')"> <span>${t}</span></label>`).join('');
+                });
                 onSnapshot(institutionsCol, (snap) => { allInstitutions = snap.docs.map(d => ({id: d.id, ...d.data()})); runAggregation(); });
                 onSnapshot(recordsCol, (snap) => { allRecords = snap.docs.map(d => ({id: d.id, ...d.data()})); runAggregation(); });
                 onSnapshot(evaluationsCol, (snap) => { allEvaluations = snap.docs.map(d => ({id: d.id, ...d.data()})); runAggregation(); });
             } else {
-                document.getElementById('table-body').innerHTML = `<tr><td colspan="5" class="empty-state"><i class="ti ti-shield-half empty-icon"></i><div class="empty-text">請先登入系統以存取資料。</div></td></tr>`;
+                document.getElementById('table-body').innerHTML = `<tr><td colspan="8" class="empty-state"><i class="ti ti-shield-half empty-icon"></i><div class="empty-text">請先登入系統以存取資料。</div></td></tr>`;
             }
         });
 
         const getDeptShort = (n) => { const d = globalDepts.find(x => x.name === n); return d && d.shortName ? d.shortName : n; };
 
+        // --- Core Aggregation ---
         function runAggregation() {
             if (allInstitutions.length === 0 || allRecords.length === 0) return;
 
@@ -548,8 +850,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 instRecords.forEach(r => {
                     let dept = r.resp_dept || '未綁定系所';
                     let sDateObj = parseROCDate(r.duration);
-                    // 同步強化字串切割邏輯
-                    let sDateStr = r.duration ? r.duration.split(/[-~～]/)[0].trim() : '未知日期';
+                    let sDateStr = r.duration ? r.duration.split('-')[0].trim() : '未知日期';
                     
                     let acadYear = '無紀錄';
                     let term = '-';
@@ -575,8 +876,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 });
 
                 let cohorts = Object.values(cohortsObj).map(cohort => {
-                    // 修復 2-2：採用 getDeptShort 轉換成簡稱後再對比，避免「外國語文學系」對不到「外文系」的問題
-                    let evalsForDept = allEvaluations.filter(e => e.inst_name === inst.name && getDeptShort(e.dept_name) === getDeptShort(cohort.dept));
+                    // 核心修正：如果評價是由「實習中心」進行，或是該評價與該系所 (相容全名簡稱) 匹配
+                    let evalsForDept = allEvaluations.filter(e => e.inst_name === inst.name && (e.dept_name === '實習中心' || window.checkDeptMatch(e.dept_name, cohort.dept)));
                     let hasValidEval = false;
                     
                     if(cohort.startDateObj) {
@@ -598,7 +899,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
                 let overallStatus;
                 if(cohorts.length === 0) overallStatus = { code: 'empty', label: '無關聯紀錄', class: 'badge-secondary', icon: 'ti-minus' };
-                else if(cohorts.some(c => c.status.code === 'attention')) overallStatus = { code: 'attention', label: '需注意 (部分梯次異常)', class: 'badge-warning', icon: 'ti-alert-circle' };
+                else if(cohorts.some(c => c.status.code === 'attention')) overallStatus = { code: 'attention', label: '需注意 (部分異常)', class: 'badge-warning', icon: 'ti-alert-circle' };
                 else overallStatus = { code: 'pass', label: '全部梯次皆合規', class: 'badge-success', icon: 'ti-check' };
 
                 return { ...inst, cohorts, totalStudents, overallStatus };
@@ -607,19 +908,49 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             processAndRenderMain();
         }
 
-        window.setFilter = (f) => { currentFilter = f; document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active')); event.target.classList.add('active'); currentPage = 1; processAndRenderMain(); };
         document.getElementById('search-input').addEventListener('input', () => { currentPage = 1; processAndRenderMain(); });
 
         function processAndRenderMain() {
             const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
             filteredData = aggregatedData.filter(d => {
                 let matchSearch = d.name.toLowerCase().includes(searchTerm) || (d.tax_id && d.tax_id.toLowerCase().includes(searchTerm));
-                let matchFilter = currentFilter === 'all' || d.overallStatus.code === currentFilter;
-                return matchSearch && matchFilter;
+                let matchStatus = filterSets['main-status'].size === 0 || filterSets['main-status'].has(d.overallStatus.code);
+                let matchCountry = filterSets['main-country'].size === 0 || filterSets['main-country'].has(d.country);
+                let matchCity = filterSets['main-city'].size === 0 || filterSets['main-city'].has(d.city);
+                let matchIndustry = filterSets['main-industry'].size === 0 || filterSets['main-industry'].has(d.industry);
+                let matchVenue = filterSets['main-venue'].size === 0 || filterSets['main-venue'].has(d.venue_type);
+
+                return matchSearch && matchStatus && matchCountry && matchCity && matchIndustry && matchVenue;
             });
 
-            filteredData.sort((a,b) => b.totalStudents - a.totalStudents);
-            
+            // 套用主頁面手動排序 (完全無預設排序)
+            if (mainSortCol) {
+                filteredData.sort((a,b) => {
+                    let valA, valB;
+                    if (mainSortCol === 'name') { valA = a.name || ''; valB = b.name || ''; }
+                    else if (mainSortCol === 'tax_id') { valA = a.tax_id || ''; valB = b.tax_id || ''; }
+                    else if (mainSortCol === 'industry') { valA = a.industry || ''; valB = b.industry || ''; }
+                    else if (mainSortCol === 'venue_type') { valA = a.venue_type || ''; valB = b.venue_type || ''; }
+                    else if (mainSortCol === 'country') { valA = a.country || ''; valB = b.country || ''; }
+                    else if (mainSortCol === 'city') { valA = a.city || ''; valB = b.city || ''; }
+                    else if (mainSortCol === 'status') { valA = a.overallStatus.label || ''; valB = b.overallStatus.label || ''; }
+                    
+                    if (valA < valB) return mainSortDir === 'asc' ? -1 : 1;
+                    if (valA > valB) return mainSortDir === 'asc' ? 1 : -1;
+                    return 0;
+                });
+            }
+
+            // 更新主頁面排序圖示 UI
+            document.querySelectorAll('th[data-main-sort]').forEach(th => {
+                th.classList.remove('sort-asc', 'sort-desc');
+                th.querySelector('.sort-icon').className = 'ti ti-arrows-sort sort-icon';
+                if (th.dataset.mainSort === mainSortCol) {
+                    th.classList.add(mainSortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+                    th.querySelector('.sort-icon').className = `ti ti-sort-${mainSortDir === 'asc' ? 'ascending' : 'descending'} sort-icon`;
+                }
+            });
+
             const tbody = document.getElementById('table-body');
             const total = filteredData.length;
             const tPages = Math.max(1, Math.ceil(total / itemsPerPage));
@@ -639,15 +970,21 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             pHtml += `<button class="page-btn" onclick="window.changePage(${currentPage+1})" ${currentPage>=tPages?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
             document.getElementById('pagination-controls').innerHTML = pHtml;
 
-            if(total === 0) { tbody.innerHTML = `<tr><td colspan="5" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">找不到符合條件的機構資料。</div></td></tr>`; return; }
+            if(total === 0) { tbody.innerHTML = `<tr><td colspan="8" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">找不到符合條件的機構資料。</div></td></tr>`; return; }
 
             let html = '';
             items.forEach(d => {
+                const dispTaxId = (d.country === '中華民國' && d.tax_id) ? d.tax_id : '<span style="color: var(--text-muted)">-</span>';
+                const dispCity = (d.country === '中華民國' && d.city) ? d.city : '<span style="color: var(--text-muted)">-</span>';
+
                 html += `
                 <tr>
-                    <td><div class="cell-primary bold">${d.name}</div></td>
-                    <td style="text-align: center;"><div class="cell-primary">${d.cohorts.length} 梯次</div></td>
-                    <td style="text-align: center;"><div class="cell-primary">${d.totalStudents} 人</div></td>
+                    <td style="text-align: left;"><div class="cell-primary bold">${d.name}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary" style="color: var(--text-muted); text-transform: uppercase;">${dispTaxId}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary">${d.industry || '<span style="color: var(--text-muted)">-</span>'}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary">${d.venue_type || '<span style="color: var(--text-muted)">-</span>'}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary">${d.country || '-'}</div></td>
+                    <td style="text-align: center;"><div class="cell-primary">${dispCity}</div></td>
                     <td style="text-align: center;"><span class="badge ${d.overallStatus.class}"><i class="ti ${d.overallStatus.icon}"></i> ${d.overallStatus.label}</span></td>
                     <td style="text-align: center;">
                         <button class="btn btn-secondary btn-sm" onclick="openManageModal('${d.id}')">
@@ -674,109 +1011,199 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
         window.closeManageModal = () => { document.getElementById('manage-modal').classList.remove('open'); };
 
+        // --- Sorting Functions ---
+        window.sortMain = (col) => {
+            if (mainSortCol === col) { mainSortDir = mainSortDir === 'asc' ? 'desc' : 'asc'; } 
+            else { mainSortCol = col; mainSortDir = 'asc'; }
+            currentPage = 1;
+            processAndRenderMain(); 
+        };
+
+        window.sortCohorts = (col) => {
+            if (cohortSortCol === col) { cohortSortDir = cohortSortDir === 'asc' ? 'desc' : 'asc'; } 
+            else { cohortSortCol = col; cohortSortDir = 'asc'; }
+            renderManageModalContent(true); 
+        };
+        
+        window.sortEvals = (col) => {
+            if (evalSortCol === col) { evalSortDir = evalSortDir === 'asc' ? 'desc' : 'asc'; } 
+            else { evalSortCol = col; evalSortDir = 'asc'; }
+            window.renderRightPanel(true); 
+        };
+
+        // --- Render Left Panel (Cohorts) ---
         function renderManageModalContent(isUpdate) {
             let inst = aggregatedData.find(i => i.id === activeInstId);
             if(!inst) return;
+            
+            if (!isUpdate) {
+                cohortSortCol = 'startDate';
+                cohortSortDir = 'desc';
+            }
             
             document.getElementById('info-inst-name').innerText = inst.name || '-';
             document.getElementById('info-tax-id').innerText = inst.tax_id || '無統編資料';
             document.getElementById('info-industry').innerText = inst.industry || '未註明行業別';
             document.getElementById('info-type').innerText = inst.venue_type || '未註明實習場所';
-            document.getElementById('info-country').innerText = inst.country || '未註明國別';
             document.getElementById('info-address').innerText = inst.address || '未註明地址';
+
+            // 更新排序圖示 UI
+            document.querySelectorAll('th[data-cohort-sort]').forEach(th => {
+                th.classList.remove('sort-asc', 'sort-desc');
+                th.querySelector('.sort-icon').className = 'ti ti-arrows-sort sort-icon';
+                if (th.dataset.cohortSort === cohortSortCol) {
+                    th.classList.add(cohortSortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+                    th.querySelector('.sort-icon').className = `ti ti-sort-${cohortSortDir === 'asc' ? 'ascending' : 'descending'} sort-icon`;
+                }
+            });
 
             let tbody = document.getElementById('cohort-list-tbody');
             if(inst.cohorts.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="empty-state" style="padding:40px;"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">此機構目前無實習梯次</div></td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="empty-state" style="padding:40px;"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">此機構目前無實習紀錄</div></td></tr>`;
             } else {
-                let sortedCohorts = [...inst.cohorts].sort((a,b) => {
-                    if(a.status.code === 'attention' && b.status.code !== 'attention') return -1;
-                    if(a.status.code !== 'attention' && b.status.code === 'attention') return 1;
-                    return (b.startDateObj || 0) - (a.startDateObj || 0);
+                // Apply Filters
+                let filteredCohorts = inst.cohorts.filter(c => {
+                    let matchDept = filterSets['cohort-dept'].size === 0 || filterSets['cohort-dept'].has(c.dept);
+                    let matchStatus = filterSets['cohort-status'].size === 0 || filterSets['cohort-status'].has(c.status.code);
+                    let matchAcadYear = filterSets['cohort-acadYear'].size === 0 || filterSets['cohort-acadYear'].has(c.acadYear);
+                    let matchTerm = filterSets['cohort-term'].size === 0 || filterSets['cohort-term'].has(c.term);
+                    return matchDept && matchStatus && matchAcadYear && matchTerm;
                 });
 
-                let html = '';
-                sortedCohorts.forEach(c => {
-                    html += `
-                        <tr>
-                            <td style="text-align:left;"><div class="cell-primary bold">${getDeptShort(c.dept)}</div></td>
-                            <td style="text-align:center;"><div class="cell-primary">${c.acadYear}</div></td>
-                            <td style="text-align:center;"><div class="cell-primary">${c.term}</div></td>
-                            <td style="text-align:center; font-family:monospace;"><div class="cell-primary bold">${c.startDateStr}</div></td>
-                            <td style="text-align:center;"><div class="cell-primary bold" style="color:var(--brand);">${c.count} 人</div></td>
-                            <td style="text-align:center;"><span class="badge ${c.status.class}">${c.status.label}</span></td>
-                            <td style="text-align:center;">
-                                <button class="btn btn-secondary btn-sm" onclick="openCohortDetailsModal('${c.cohortKey}')">
-                                    <i class="ti ti-search"></i> 查看明細
-                                </button>
-                            </td>
-                        </tr>
-                    `;
+                // Apply Sorting
+                filteredCohorts.sort((a, b) => {
+                    let valA, valB;
+                    if (cohortSortCol === 'dept') { valA = getDeptShort(a.dept); valB = getDeptShort(b.dept); }
+                    else if (cohortSortCol === 'acadYear') { valA = a.acadYear; valB = b.acadYear; }
+                    else if (cohortSortCol === 'term') { valA = a.term; valB = b.term; }
+                    else if (cohortSortCol === 'startDate') { valA = a.startDateObj?.getTime() || 0; valB = b.startDateObj?.getTime() || 0; }
+                    else if (cohortSortCol === 'count') { valA = a.count; valB = b.count; }
+                    else if (cohortSortCol === 'status') { valA = a.status.label; valB = b.status.label; }
+
+                    if (valA < valB) return cohortSortDir === 'asc' ? -1 : 1;
+                    if (valA > valB) return cohortSortDir === 'asc' ? 1 : -1;
+                    return 0;
                 });
-                tbody.innerHTML = html;
+
+                if(filteredCohorts.length === 0) {
+                     tbody.innerHTML = `<tr><td colspan="7" class="empty-state" style="padding:40px;"><div class="empty-text">無符合篩選的實習紀錄</div></td></tr>`;
+                } else {
+                    let html = '';
+                    filteredCohorts.forEach(c => {
+                        html += `
+                            <tr>
+                                <td style="text-align:center;"><div class="cell-primary bold">${getDeptShort(c.dept)}</div></td>
+                                <td style="text-align:center;"><div class="cell-primary">${c.acadYear}</div></td>
+                                <td style="text-align:center;"><div class="cell-primary">${c.term}</div></td>
+                                <td style="text-align:center;"><div class="cell-primary bold">${c.startDateStr}</div></td>
+                                <td style="text-align:center;"><div class="cell-primary bold" style="color:var(--brand);">${c.count} 人</div></td>
+                                <td style="text-align:center;"><span class="badge ${c.status.class}">${c.status.label}</span></td>
+                                <td style="text-align:center;">
+                                    <button class="btn btn-secondary btn-sm" onclick="openCohortDetailsModal('${c.cohortKey}')">
+                                        <i class="ti ti-eye"></i> 查看明細
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    tbody.innerHTML = html;
+                }
             }
-            window.renderRightPanel();
+            window.renderRightPanel(isUpdate);
         }
 
-        window.renderRightPanel = () => {
+        // --- Render Right Panel (Evaluations) ---
+        function getCoveringCountForEval(inst, evalData) {
+            let count = 0;
+            if ((evalData.eval_result === '通過' || evalData.eval_result === '有條件通過') && evalData.eval_date) {
+                let eDate = parseROCDate(evalData.eval_date);
+                if(eDate) {
+                    // 核心修正：加入 checkDeptMatch，且若評估系所為「實習中心」則涵蓋全部
+                    inst.cohorts.filter(c => evalData.dept_name === '實習中心' || window.checkDeptMatch(c.dept, evalData.dept_name)).forEach(c => {
+                        if(c.startDateObj) {
+                            let diffDays = (c.startDateObj.getTime() - eDate.getTime()) / (1000 * 3600 * 24);
+                            if(diffDays >= 0 && diffDays <= 365) { count += c.count; }
+                        }
+                    });
+                }
+            }
+            return count;
+        }
+
+        window.renderRightPanel = (isUpdate) => {
             let inst = aggregatedData.find(i => i.id === activeInstId);
+            if(!inst) return;
+            
+            if (!isUpdate) {
+                evalSortCol = 'date';
+                evalSortDir = 'desc';
+            }
+
+            // 更新排序圖示 UI
+            document.querySelectorAll('th[data-eval-sort]').forEach(th => {
+                th.classList.remove('sort-asc', 'sort-desc');
+                th.querySelector('.sort-icon').className = 'ti ti-arrows-sort sort-icon';
+                if (th.dataset.evalSort === evalSortCol) {
+                    th.classList.add(evalSortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+                    th.querySelector('.sort-icon').className = `ti ti-sort-${evalSortDir === 'asc' ? 'ascending' : 'descending'} sort-icon`;
+                }
+            });
+
             let listTbody = document.getElementById('eval-history-list');
-            
             let evals = allEvaluations.filter(e => e.inst_name === inst.name);
-            
-            evals.sort((a,b) => {
-                let dA = parseROCDate(a.eval_date)?.getTime() || 0;
-                let dB = parseROCDate(b.eval_date)?.getTime() || 0;
-                return dB - dA;
-            }); 
 
             if(evals.length === 0) {
                 listTbody.innerHTML = `<tr><td colspan="5" class="empty-state" style="padding: 40px;"><i class="ti ti-inbox empty-icon" style="margin: 0 auto 12px auto;"></i><div class="empty-text">此機構尚未建立任何評估紀錄。</div></td></tr>`;
                 return;
             }
 
-            let html = '';
-            evals.forEach(e => {
-                let coveringCount = 0;
-                let isPass = e.eval_result === '通過' || e.eval_result === '有條件通過';
-                
-                if (isPass && e.eval_date) {
-                    let eDate = parseROCDate(e.eval_date);
-                    if(eDate) {
-                        // 修復 2-3：採用 getDeptShort 轉換成簡稱後再對比，讓右側計算涵蓋人數不再漏算
-                        inst.cohorts.filter(c => getDeptShort(c.dept) === getDeptShort(e.dept_name)).forEach(c => {
-                            if(c.startDateObj) {
-                                let diffDays = (c.startDateObj.getTime() - eDate.getTime()) / (1000 * 3600 * 24);
-                                if(diffDays >= 0 && diffDays <= 365) {
-                                    coveringCount += c.count;
-                                }
-                            }
-                        });
-                    }
-                }
+            // 先計算涵蓋人數以供排序使用
+            evals.forEach(e => { e._coveringCount = getCoveringCountForEval(inst, e); });
 
-                let badgeColor = e.eval_result === '通過' ? 'badge-success' : (e.eval_result === '不通過' ? 'badge-danger' : 'badge-warning');
-
-                html += `
-                <tr>
-                    <td style="text-align: left;"><div class="cell-primary bold" style={{color: 'var(--indigo)'}}>${getDeptShort(e.dept_name)}</div></td>
-                    <td style="text-align: center; font-family: monospace;"><div class="cell-primary bold">${e.eval_date}</div></td>
-                    <td style="text-align: center;"><span class="badge ${badgeColor}">${e.eval_result}</span></td>
-                    <td style="text-align: center;">
-                        <span style="font-weight: 700; font-size: 11px; color: ${coveringCount > 0 ? 'var(--brand)' : 'var(--text-muted)'}; background: ${coveringCount > 0 ? 'var(--brand-light)' : 'var(--bg)'}; padding: 4px 10px; border-radius: 6px; border: 1px solid ${coveringCount > 0 ? 'var(--brand-border)' : 'var(--border)'}; display: inline-block;">
-                            ${coveringCount} 人
-                        </span>
-                    </td>
-                    <td style="text-align: center;">
-                        <div class="row-actions">
-                            <button class="btn btn-secondary btn-icon sm" onclick="openViewEvalModal('${e.id}')" title="查看明細"><i class="ti ti-eye"></i></button>
-                            <button class="btn btn-secondary btn-icon sm" onclick="openEditEvalModal('${e.id}')" title="編輯"><i class="ti ti-edit"></i></button>
-                            <button class="btn btn-icon sm" style="color:var(--danger); border-color:var(--danger-border);" onclick="deleteEvaluation('${e.id}')" title="刪除"><i class="ti ti-trash"></i></button>
-                        </div>
-                    </td>
-                </tr>`;
+            // Apply Filters
+            let filteredEvals = evals.filter(e => {
+                let matchDept = filterSets['eval-dept'].size === 0 || filterSets['eval-dept'].has(e.dept_name);
+                let matchResult = filterSets['eval-result'].size === 0 || filterSets['eval-result'].has(e.eval_result);
+                return matchDept && matchResult;
             });
-            listTbody.innerHTML = html;
+
+            // Apply Sorting
+            filteredEvals.sort((a,b) => {
+                let valA, valB;
+                if(evalSortCol === 'dept') { valA = getDeptShort(a.dept_name); valB = getDeptShort(b.dept_name); }
+                else if(evalSortCol === 'date') { valA = parseROCDate(a.eval_date)?.getTime() || 0; valB = parseROCDate(b.eval_date)?.getTime() || 0; }
+                else if(evalSortCol === 'result') { valA = a.eval_result; valB = b.eval_result; }
+                else if(evalSortCol === 'cover') { valA = a._coveringCount; valB = b._coveringCount; }
+
+                if (valA < valB) return evalSortDir === 'asc' ? -1 : 1;
+                if (valA > valB) return evalSortDir === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            if(filteredEvals.length === 0) {
+                listTbody.innerHTML = `<tr><td colspan="5" class="empty-state" style="padding: 40px;"><div class="empty-text">無符合篩選的評估紀錄</div></td></tr>`;
+            } else {
+                let html = '';
+                filteredEvals.forEach(e => {
+                    let badgeColor = e.eval_result === '通過' ? 'badge-success' : (e.eval_result === '不通過' ? 'badge-danger' : 'badge-warning');
+
+                    html += `
+                    <tr>
+                        <td style="text-align: center;"><div class="cell-primary bold">${getDeptShort(e.dept_name)}</div></td>
+                        <td style="text-align: center;"><div class="cell-primary bold">${e.eval_date}</div></td>
+                        <td style="text-align: center;"><span class="badge ${badgeColor}">${e.eval_result}</span></td>
+                        <td style="text-align: center;"><div class="cell-primary bold" style="color:var(--brand);">${e._coveringCount} 人</div></td>
+                        <td style="text-align: center;">
+                            <div class="row-actions">
+                                <button class="btn btn-secondary btn-icon sm" onclick="openViewEvalModal('${e.id}')" title="查看明細"><i class="ti ti-eye"></i></button>
+                                <button class="btn btn-secondary btn-icon sm" onclick="openEditEvalModal('${e.id}')" title="編輯"><i class="ti ti-edit"></i></button>
+                                <button class="btn btn-icon sm" style="color:var(--danger); border-color:var(--danger-border);" onclick="deleteEvaluation('${e.id}')" title="刪除"><i class="ti ti-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>`;
+                });
+                listTbody.innerHTML = html;
+            }
         };
 
         window.openViewEvalModal = (evalId) => {
