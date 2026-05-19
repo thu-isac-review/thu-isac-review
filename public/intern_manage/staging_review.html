@@ -175,7 +175,7 @@
         /* ─── TABLE STYLE ─── */
         .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; position: relative; }
         .table-scroll { flex: 1; overflow-x: auto; overflow-y: auto; }
-        table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; min-width: 2500px; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; min-width: 2800px; }
 
         th {
             padding: 12px 12px; text-align: center; /* 標題全置中 */
@@ -302,7 +302,7 @@
             <div class="table-scroll custom-scroll">
                 <table>
                     <colgroup>
-                        <col style="width: 3%;">   <col style="width: 6%;">   <col style="width: 6%;">   <col style="width: 6%;">   <col style="width: 5%;">   <col style="width: 12%;">  <col style="width: 6%;">   <col style="width: 12%;">  <col style="width: 7%;">   <col style="width: 6%;">   <col style="width: 12%;">  <col style="width: 10%;">  <col style="width: 5%;">   <col style="width: 7%;">   <col style="width: 7%;">   <col style="width: 7%;">   <col style="width: 6%;">   <col style="width: 6%;">   <col style="width: 8%;">   <col style="width: 5%;">   </colgroup>
+                        <col style="width: 3%;">   <col style="width: 6%;">   <col style="width: 6%;">   <col style="width: 6%;">   <col style="width: 5%;">   <col style="width: 12%;">  <col style="width: 6%;">   <col style="width: 7%;">   <col style="width: 8%;">   <col style="width: 12%;">  <col style="width: 7%;">   <col style="width: 6%;">   <col style="width: 12%;">  <col style="width: 10%;">  <col style="width: 5%;">   <col style="width: 7%;">   <col style="width: 7%;">   <col style="width: 7%;">   <col style="width: 6%;">   <col style="width: 6%;">   <col style="width: 8%;">   <col style="width: 5%;">   </colgroup>
 
                     <thead>
                         <tr>
@@ -315,24 +315,26 @@
                             <th data-sort="grade" data-col="4">年級 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-col="5">修習課程</th>
                             <th data-sort="inst_country" data-col="6">國別 <span style="color:var(--danger)">*</span> <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="inst_name" data-col="7">機構名稱 <span style="color:var(--danger)">*</span> <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="inst_tax" data-col="8">統一編號 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="inst_city" data-col="9">縣市別 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="inst_addr" data-col="10">實習場所地址 <span style="color:var(--danger)">*</span> <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="duration" data-col="11">實習起訖時間 <span style="color:var(--danger)">*</span> <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="hours" data-col="12">總時數 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="period_type" data-col="13">實習時間 <span style="color:var(--danger)">*</span> <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="proof_type" data-col="14">證明文件類型 <span style="color:var(--danger)">*</span> <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="insurance" data-col="15">投保情形 <span style="color:var(--danger)">*</span> <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="employment" data-col="16">勞雇關係 <span style="color:var(--danger)">*</span> <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="resp_dept" data-col="17">負責系所 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-col="18">備註</th>
+                            <th data-sort="inst_venue" data-col="7">實習場所 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="inst_industry" data-col="8">行業別 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="inst_name" data-col="9">機構名稱 <span style="color:var(--danger)">*</span> <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="inst_tax" data-col="10">統一編號 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="inst_city" data-col="11">縣市別 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="inst_addr" data-col="12">實習場所地址 <span style="color:var(--danger)">*</span> <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="duration" data-col="13">實習起訖時間 <span style="color:var(--danger)">*</span> <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="hours" data-col="14">總時數 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="period_type" data-col="15">實習時間 <span style="color:var(--danger)">*</span> <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="proof_type" data-col="16">證明文件類型 <span style="color:var(--danger)">*</span> <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="insurance" data-col="17">投保情形 <span style="color:var(--danger)">*</span> <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="employment" data-col="18">勞雇關係 <span style="color:var(--danger)">*</span> <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="resp_dept" data-col="19">負責系所 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-col="20">備註</th>
                             <th class="col-actions">操作</th>
                         </tr>
                     </thead>
                     <tbody id="staging-table-body">
                         <tr>
-                            <td colspan="20" class="empty-state">
+                            <td colspan="22" class="empty-state">
                                 <div class="empty-icon">
                                     <i class="ti ti-loader-2 ti-spin" style="color: var(--brand);"></i>
                                 </div>
@@ -391,18 +393,21 @@
         const insOptions = ['僅校外實習保險', '僅勞保', '兩者皆有', '兩者皆無'];
         const empOptions = ['是', '否'];
         const countryOptions = ["中華民國","大陸地區","日本","美國","越南","泰國","澳大利亞","香港","澳門","馬來西亞","菲律賓","印尼","印度"];
+        const venueOptions = ["企業機構","其他機構","政府機構","就讀學校附屬機構"];
+        const industryOptions = ["農、林、漁、牧業","礦業及土石採取業","製造業","電力及燃氣供應業","用水供應及污染整治業","營建工程業","批發及零售業","運輸及倉儲業","住宿及餐飲業","出版及影音等內容傳播業","電信及資訊服務業","金融及保險業","不動產業","專業、科學及技術服務業","支援服務業","公共行政及國防；強制性社會安全","教育業","醫療保健及社會工作服務業","藝術、運動及休閒服務業","其他服務業"];
 
         // ─── COLUMNS SETTING STATE ───
         window.tableColumns = [
             { index: 1, label: '學號', visible: true }, { index: 2, label: '姓名', visible: true },
             { index: 3, label: '學系', visible: true }, { index: 4, label: '年級', visible: true }, 
             { index: 5, label: '修習課程', visible: true }, { index: 6, label: '國別', visible: true }, 
-            { index: 7, label: '機構名稱', visible: true }, { index: 8, label: '統一編號', visible: true }, 
-            { index: 9, label: '縣市別', visible: true }, { index: 10, label: '實習場所地址', visible: true }, 
-            { index: 11, label: '實習起訖時間', visible: true }, { index: 12, label: '總時數', visible: true }, 
-            { index: 13, label: '實習時間', visible: true }, { index: 14, label: '證明文件類型', visible: true }, 
-            { index: 15, label: '投保情形', visible: true }, { index: 16, label: '勞雇關係', visible: true }, 
-            { index: 17, label: '負責系所', visible: true }, { index: 18, label: '備註', visible: true }
+            { index: 7, label: '實習場所', visible: true }, { index: 8, label: '行業別', visible: true }, 
+            { index: 9, label: '機構名稱', visible: true }, { index: 10, label: '統一編號', visible: true }, 
+            { index: 11, label: '縣市別', visible: true }, { index: 12, label: '實習場所地址', visible: true }, 
+            { index: 13, label: '實習起訖時間', visible: true }, { index: 14, label: '總時數', visible: true }, 
+            { index: 15, label: '實習時間', visible: true }, { index: 16, label: '證明文件類型', visible: true }, 
+            { index: 17, label: '投保情形', visible: true }, { index: 18, label: '勞雇關係', visible: true }, 
+            { index: 19, label: '負責系所', visible: true }, { index: 20, label: '備註', visible: true }
         ];
 
         window.toggleColumn = (index, isVisible) => {
@@ -428,12 +433,15 @@
         // ─── FILTER STATE ───
         const filterSelections = {
             dept: new Set(), grade: new Set(), inst_name: new Set(), course: new Set(), resp_dept: new Set(),
-            period_type: new Set(), proof_type: new Set(), insurance: new Set(), employment: new Set()
+            period_type: new Set(), proof_type: new Set(), insurance: new Set(), employment: new Set(),
+            inst_venue: new Set(), inst_industry: new Set()
         };
         const filterDefinitions = [
             { key: 'dept', label: '學系', searchable: true },
             { key: 'grade', label: '年級', searchable: false },
             { key: 'inst_name', label: '機構名稱', searchable: true },
+            { key: 'inst_venue', label: '實習場所', searchable: false },
+            { key: 'inst_industry', label: '行業別', searchable: true },
             { key: 'course', label: '修習課程', searchable: true },
             { key: 'period_type', label: '實習時間', searchable: false },
             { key: 'proof_type', label: '證明文件類型', searchable: false },
@@ -451,12 +459,11 @@
             if (!input) return '';
             const val = input.trim();
             const match = globalDepts.find(d => d.name === val || d.shortName === val);
-            return match ? match.name : val; // 優先回傳全稱作為儲存值
+            return match ? match.name : val; 
         };
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // 讀取學院與系所主檔，支援簡稱判定與 UI Datalist
                 getDoc(doc(db, "settings", "colleges")).then(snap => { 
                     if (snap.exists()) orderedColleges = snap.data().list.map(c => typeof c === 'string' ? { name: c, shortName: c } : c); 
                 });
@@ -465,7 +472,6 @@
                     globalDepts = snap.docs.map(d => d.data());
                     globalDepts.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
                     
-                    // 注入 Datalist 提供使用者輸入時的選單提示 (支援簡稱、全稱)
                     let datalist = document.getElementById('dept-list');
                     if (!datalist) {
                         datalist = document.createElement('datalist');
@@ -474,7 +480,7 @@
                     }
                     datalist.innerHTML = globalDepts.map(d => `<option value="${d.name}">${d.shortName}</option>`).join('');
                     
-                    window.renderStagingTable(false); // 更新系所名稱顯示
+                    window.renderStagingTable(false);
                 });
 
                 const [sSnap, cSnap, iSnap] = await Promise.all([
@@ -530,6 +536,8 @@
                 dept: uniqueDepts.map(v=>({value:v, label: getDeptShort(v)})),
                 grade: ['1', '2', '3', '4', '5'].map(v=>({value:v, label: `${v} 年級${v==='5'?'以上':''}`})),
                 inst_name: [...new Set(stagingData.map(r=>r.inst_name))].filter(Boolean).sort().map(v=>({value:v, label:v})),
+                inst_venue: venueOptions.map(v=>({value:v, label:v})),
+                inst_industry: industryOptions.map(v=>({value:v, label:v})),
                 course: uniqueUsedCourses.sort().map(v=>({value:v, label:v})),
                 resp_dept: [...new Set(stagingData.map(r=>r.resp_dept))].filter(Boolean).sort().map(v=>({value:v, label: getDeptShort(v)})),
                 period_type: periodOptions.map(v=>({value:v, label:v})),
@@ -669,8 +677,8 @@
         };
 
         window.downloadTemplate = () => {
-            const header = "學年度,學期,開課學制,開課學院,開課學系,選課代號,課程名稱,實習課程屬性,實習學分數,學生學院,學生學系,學號,姓名,當學年年級,性別,實習時間,實習起訖時間,國別,證明文件類型,總時數,投保情形,勞雇關係,機構名稱,統一編號,縣市別,實習場所地址,國籍,負責系所,備註\n";
-            const example = "114,1,日間學士班,工學院,工工系,1234,企業實習,必修,3,工學院,工工系,S1101234,王小明,3,男,暑假實習,114/07/01-114/08/31,中華民國,合約,160,兩者皆有,是,台灣積體電路製造股份有限公司,12345678,臺中市,臺灣大道四段1727號,本國籍,工工系,這是測試備註\n";
+            const header = "學年度,學期,開課學制,開課學院,開課學系,選課代號,課程名稱,實習課程屬性,實習學分數,學生學院,學生學系,學號,姓名,當學年年級,性別,實習時間,實習起訖時間,國別,實習場所,證明文件類型,總時數,投保情形,勞雇關係,行業別,機構名稱,統一編號,縣市別,實習場所地址,國籍,負責系所,備註\n";
+            const example = "114,1,日間學士班,工學院,工工系,1234,企業實習,必修,3,工學院,工工系,S1101234,王小明,3,男,暑假實習,114/07/01-114/08/31,中華民國,企業機構,合約,160,兩者皆有,是,製造業,台灣積體電路製造股份有限公司,12345678,臺中市,臺灣大道四段1727號,本國籍,工工系,這是測試備註\n";
             const blob = new Blob(['\uFEFF' + header + example], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = "批次匯入審查_標準範本.csv"; link.click();
         };
@@ -699,7 +707,7 @@
                             else currentVal += char;
                         }
                         cols.push(currentVal.trim());
-                        while(cols.length < 29) cols.push(''); // Ensure we have enough columns for notes
+                        while(cols.length < 31) cols.push(''); // Ensure we have enough columns for the new schema
 
                         const c_year = cols[0]; const c_term = cols[1]; const c_edu = cols[2]; const c_col = cols[3]; 
                         const c_dept = cols[4]; const c_code = cols[5]; const c_name = cols[6]; const c_type = cols[7]; 
@@ -708,14 +716,21 @@
                         const stu_dept = window.resolveDept(cols[10]); 
                         const stu_id = (cols[11] || '').toUpperCase(); 
                         const stu_name = cols[12]; const grade = cols[13]; const stu_gender = cols[14] || '男';
-                        const period_type = cols[15]; const duration = cols[16]; const inst_country = cols[17] || '中華民國';
-                        const proof_type = cols[18]; 
-                        const hours = cols[19].trim() === '' ? '' : Number(cols[19]);
-                        const insurance = cols[20]; 
-                        const employment = cols[21]; const inst_name = cols[22]; const inst_tax = cols[23];
-                        const inst_city = cols[24]; const inst_addr = cols[25]; const stu_nat = cols[26] || '本國籍';
-                        const resp_dept = window.resolveDept(cols[27]);
-                        const notes = cols[28] || '';
+                        const period_type = cols[15]; const duration = cols[16]; 
+                        const inst_country = cols[17] || '中華民國';
+                        const inst_venue = cols[18];
+                        const proof_type = cols[19]; 
+                        const hours = cols[20].trim() === '' ? '' : Number(cols[20]);
+                        const insurance = cols[21]; 
+                        const employment = cols[22]; 
+                        const inst_industry = cols[23];
+                        const inst_name = cols[24]; 
+                        const inst_tax = cols[25];
+                        const inst_city = cols[26]; 
+                        const inst_addr = cols[27]; 
+                        const stu_nat = cols[28] || '本國籍';
+                        const resp_dept = window.resolveDept(cols[29]);
+                        const notes = cols[30] || '';
 
                         if (!stu_id || !inst_name || !duration) continue;
 
@@ -748,7 +763,7 @@
                             if (!existingRecord.coursesInfo.some(c => c.code === courseIdObj.code)) existingRecord.coursesInfo.push(courseIdObj);
                         } else {
                             aggregatedRecordsMap.set(safeKey, {
-                                stuId: stu_id, stuName: stu_name, grade: grade, inst_country, inst_name, inst_tax, inst_city, inst_addr,
+                                stuId: stu_id, stuName: stu_name, grade: grade, inst_country, inst_venue, inst_industry, inst_name, inst_tax, inst_city, inst_addr,
                                 duration, hours, period_type, proof_type, insurance, employment, resp_dept, notes,
                                 coursesInfo: [courseIdObj], created_at: serverTimestamp()
                             });
@@ -860,6 +875,8 @@
                 }
                 if (ok && filterSelections.grade.size > 0) ok = filterSelections.grade.has(d.grade);
                 if (ok && filterSelections.inst_name.size > 0) ok = filterSelections.inst_name.has(d.inst_name);
+                if (ok && filterSelections.inst_venue.size > 0) ok = filterSelections.inst_venue.has(d.inst_venue);
+                if (ok && filterSelections.inst_industry.size > 0) ok = filterSelections.inst_industry.has(d.inst_industry);
                 if (ok && filterSelections.course.size > 0) {
                     ok = d.coursesInfo && d.coursesInfo.some(c => filterSelections.course.has(c.code));
                 }
@@ -872,7 +889,7 @@
                 return ok;
             });
 
-            // Sorting Logic (包含學系關聯排序)
+            // Sorting Logic 
             filteredData.sort((a, b) => {
                 let valA = ''; let valB = '';
 
@@ -930,7 +947,7 @@
 
             if (pageItems.length === 0) {
                 tbody.innerHTML = `<tr>
-                    <td colspan="20" class="empty-state">
+                    <td colspan="22" class="empty-state">
                         <div class="empty-icon"><i class="ti ti-inbox"></i></div>
                         <div class="empty-text">目前暫存區淨空或查無結果。</div>
                     </td>
@@ -967,26 +984,28 @@
                     </td>
                     
                     <td data-col="6">${makeSelect(row.inst_country, countryOptions, 'inst_country', id)}</td>
-                    <td data-col="7" style="text-align: left;"><input type="text" id="inst_name_${id}" class="field-input" style="font-weight: 700;" value="${row.inst_name}" onblur="window.autoSave('${id}', 'inst_name', this.value)"></td>
-                    <td data-col="8"><input type="text" id="inst_tax_${id}" class="field-input" style="text-transform: uppercase;" value="${row.inst_tax}" ${taxDisabled} placeholder="${isOverseas?'海外免填':'統一編號'}" onblur="window.autoSave('${id}', 'inst_tax', this.value)"></td>
-                    <td data-col="9">
+                    <td data-col="7">${makeSelect(row.inst_venue, venueOptions, 'inst_venue', id)}</td>
+                    <td data-col="8">${makeSelect(row.inst_industry, industryOptions, 'inst_industry', id)}</td>
+                    <td data-col="9" style="text-align: left;"><input type="text" id="inst_name_${id}" class="field-input" style="font-weight: 700;" value="${row.inst_name}" onblur="window.autoSave('${id}', 'inst_name', this.value)"></td>
+                    <td data-col="10"><input type="text" id="inst_tax_${id}" class="field-input" style="text-transform: uppercase;" value="${row.inst_tax}" ${taxDisabled} placeholder="${isOverseas?'海外免填':'統一編號'}" onblur="window.autoSave('${id}', 'inst_tax', this.value)"></td>
+                    <td data-col="11">
                         <select id="inst_city_${id}" class="field-select" ${cityDisabled} onchange="window.autoSave('${id}', 'inst_city', this.value)">
                             <option value="">${isOverseas?'免填':'請選擇'}</option>
                             ${CITIES.map(o => `<option value="${o}" ${row.inst_city === o ? 'selected' : ''}>${o}</option>`).join('')}
                         </select>
                     </td>
-                    <td data-col="10" style="text-align: left;"><input type="text" id="inst_addr_${id}" class="field-input" value="${row.inst_addr}" onblur="window.autoSave('${id}', 'inst_addr', this.value)"></td>
+                    <td data-col="12" style="text-align: left;"><input type="text" id="inst_addr_${id}" class="field-input" value="${row.inst_addr}" onblur="window.autoSave('${id}', 'inst_addr', this.value)"></td>
 
-                    <td data-col="11"><input type="text" id="duration_${id}" class="field-input" value="${row.duration}" onblur="window.autoSave('${id}', 'duration', this.value)" placeholder="YYY/MM/DD-YYY/MM/DD"></td>
-                    <td data-col="12"><input type="number" id="hours_${id}" class="field-input" style="text-align: center; font-weight: 700; color: var(--success); background: var(--success-bg); border-color: var(--success-border);" value="${row.hours}" onblur="window.autoSave('${id}', 'hours', this.value === '' ? '' : Number(this.value))"></td>
+                    <td data-col="13"><input type="text" id="duration_${id}" class="field-input" value="${row.duration}" onblur="window.autoSave('${id}', 'duration', this.value)" placeholder="YYY/MM/DD-YYY/MM/DD"></td>
+                    <td data-col="14"><input type="number" id="hours_${id}" class="field-input" style="text-align: center; font-weight: 700; color: var(--success); background: var(--success-bg); border-color: var(--success-border);" value="${row.hours}" onblur="window.autoSave('${id}', 'hours', this.value === '' ? '' : Number(this.value))"></td>
                     
-                    <td data-col="13">${makeSelect(row.period_type, periodOptions, 'period_type', id)}</td>
-                    <td data-col="14">${makeSelect(row.proof_type, proofOptions, 'proof_type', id)}</td>
-                    <td data-col="15">${makeSelect(row.insurance, insOptions, 'insurance', id)}</td>
-                    <td data-col="16">${makeSelect(row.employment, empOptions, 'employment', id)}</td>
+                    <td data-col="15">${makeSelect(row.period_type, periodOptions, 'period_type', id)}</td>
+                    <td data-col="16">${makeSelect(row.proof_type, proofOptions, 'proof_type', id)}</td>
+                    <td data-col="17">${makeSelect(row.insurance, insOptions, 'insurance', id)}</td>
+                    <td data-col="18">${makeSelect(row.employment, empOptions, 'employment', id)}</td>
                     
-                    <td data-col="17"><input type="text" id="resp_dept_${id}" class="field-input" list="dept-list" value="${getDeptShort(row.resp_dept)}" onblur="window.autoSave('${id}', 'resp_dept', window.resolveDept(this.value))"></td>
-                    <td data-col="18"><input type="text" id="notes_${id}" class="field-input" value="${row.notes || ''}" onblur="window.autoSave('${id}', 'notes', this.value)" placeholder="備註..."></td>
+                    <td data-col="19"><input type="text" id="resp_dept_${id}" class="field-input" list="dept-list" value="${getDeptShort(row.resp_dept)}" onblur="window.autoSave('${id}', 'resp_dept', window.resolveDept(this.value))"></td>
+                    <td data-col="20"><input type="text" id="notes_${id}" class="field-input" value="${row.notes || ''}" onblur="window.autoSave('${id}', 'notes', this.value)" placeholder="備註..."></td>
 
                     <td class="col-actions">
                         <div class="row-actions">
@@ -1011,6 +1030,8 @@
             const grade = rowData.grade;
             
             const inst_country = document.getElementById(`inst_country_${id}`).value;
+            const inst_venue = document.getElementById(`inst_venue_${id}`).value;
+            const inst_industry = document.getElementById(`inst_industry_${id}`).value;
             const inst_name = document.getElementById(`inst_name_${id}`).value.trim();
             const inst_tax = document.getElementById(`inst_tax_${id}`).value.trim();
             const inst_city = document.getElementById(`inst_city_${id}`).value;
@@ -1035,7 +1056,9 @@
                 const isMatchInst = existingInstitutions.find(i => i.country === inst_country && i.name === inst_name && i.tax_id === inst_tax && i.city === inst_city && i.address === inst_addr);
                 if (!isMatchInst) {
                     const instRef = await addDoc(collection(db, "internship_institutions"), {
-                        country: inst_country, name: inst_name, tax_id: inst_tax, city: inst_city, address: inst_addr, created_at: serverTimestamp()
+                        country: inst_country, name: inst_name, tax_id: inst_tax, city: inst_city, address: inst_addr,
+                        venue_type: inst_venue, industry: inst_industry,
+                        created_at: serverTimestamp()
                     });
                     existingInstitutions.push({ id: instRef.id, country: inst_country, name: inst_name, tax_id: inst_tax, city: inst_city, address: inst_addr });
                 }
