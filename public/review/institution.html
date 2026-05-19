@@ -314,7 +314,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
                 <div class="split-layout">
                     <div class="split-left">
-                        <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                        <div style="padding: 0 20px; height: 60px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
                             <i class="ti ti-list-details" style="color: var(--text-secondary); font-size: 18px;"></i>
                             <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">各系實習梯次清單</span>
                             <span style="font-size: 11px; color: var(--text-muted); font-weight: 500; margin-left: auto;">(同系+同學年期+同起日為一梯次)</span>
@@ -338,7 +338,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                     </div>
 
                     <div class="split-right">
-                        <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+                        <div style="padding: 0 20px; height: 60px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <i class="ti ti-history" style="color: var(--indigo); font-size: 18px;"></i>
                                 <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">機構總評估紀錄一覽</span>
@@ -499,9 +499,11 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         let activeInstId = null;
         let editingEvalId = null;
 
+        // 修復 2-1：強化日期解析器，避免 - 或 ~ 的分隔符號造成解析失敗
         function parseROCDate(dateStr) {
             if (!dateStr) return null;
-            let parts = dateStr.split('-')[0].trim().split('/');
+            let firstPart = dateStr.split(/[-~～]/)[0].trim();
+            let parts = firstPart.split('/');
             if (parts.length !== 3) return null;
             return new Date(parseInt(parts[0], 10) + 1911, parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
         }
@@ -546,7 +548,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 instRecords.forEach(r => {
                     let dept = r.resp_dept || '未綁定系所';
                     let sDateObj = parseROCDate(r.duration);
-                    let sDateStr = r.duration ? r.duration.split('-')[0].trim() : '未知日期';
+                    // 同步強化字串切割邏輯
+                    let sDateStr = r.duration ? r.duration.split(/[-~～]/)[0].trim() : '未知日期';
                     
                     let acadYear = '無紀錄';
                     let term = '-';
@@ -572,7 +575,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 });
 
                 let cohorts = Object.values(cohortsObj).map(cohort => {
-                    let evalsForDept = allEvaluations.filter(e => e.inst_name === inst.name && e.dept_name === cohort.dept);
+                    // 修復 2-2：採用 getDeptShort 轉換成簡稱後再對比，避免「外國語文學系」對不到「外文系」的問題
+                    let evalsForDept = allEvaluations.filter(e => e.inst_name === inst.name && getDeptShort(e.dept_name) === getDeptShort(cohort.dept));
                     let hasValidEval = false;
                     
                     if(cohort.startDateObj) {
@@ -739,7 +743,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 if (isPass && e.eval_date) {
                     let eDate = parseROCDate(e.eval_date);
                     if(eDate) {
-                        inst.cohorts.filter(c => c.dept === e.dept_name).forEach(c => {
+                        // 修復 2-3：採用 getDeptShort 轉換成簡稱後再對比，讓右側計算涵蓋人數不再漏算
+                        inst.cohorts.filter(c => getDeptShort(c.dept) === getDeptShort(e.dept_name)).forEach(c => {
                             if(c.startDateObj) {
                                 let diffDays = (c.startDateObj.getTime() - eDate.getTime()) / (1000 * 3600 * 24);
                                 if(diffDays >= 0 && diffDays <= 365) {
