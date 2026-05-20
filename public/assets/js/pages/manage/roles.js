@@ -556,7 +556,7 @@ function renderRoleUI() {
             <div class="role-actions">
                 <button type="button" class="btn btn-secondary btn-icon edit btn-edit-role" data-idx="${index}" title="編輯"><i class="ti ti-edit"></i></button>
                 <button type="button" class="btn btn-success-solid btn-icon save btn-save-role" data-idx="${index}" title="儲存" style="display:none;"><i class="ti ti-check"></i></button>
-                <button type="button" class="btn btn-icon btn-delete-role" data-idx="${index}" style="color:var(--danger); border-color:var(--danger-border);" title="刪除"><i class="ti ti-trash"></i></button>
+                <button type="button" class="btn btn-danger btn-icon btn-delete-role" data-idx="${index}" title="刪除"><i class="ti ti-trash"></i></button>
             </div>
         </div>
     `).join('');
@@ -665,7 +665,7 @@ function renderTable() {
             <td style="text-align: center;">
                 <div class="row-actions">
                     <button data-id="${data.id}" class="btn btn-secondary btn-icon sm btn-edit-user" title="編輯"><i class="ti ti-edit"></i></button>
-                    <button data-id="${data.id}" data-name="${data.name}" class="btn btn-icon sm btn-delete-user" style="color:var(--danger); border-color:var(--danger-border); ${isDefault ? 'visibility:hidden' : ''}" title="刪除"><i class="ti ti-trash"></i></button>
+                    <button data-id="${data.id}" data-name="${data.name}" class="btn btn-danger btn-icon sm btn-delete-user" style="${isDefault ? 'visibility:hidden' : ''}" title="刪除"><i class="ti ti-trash"></i></button>
                 </div>
             </td>
         </tr>`;
