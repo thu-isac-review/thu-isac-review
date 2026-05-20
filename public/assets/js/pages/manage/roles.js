@@ -59,7 +59,7 @@ function injectUI(container) {
             .search-wrap { position: relative; flex: 0 0 260px; }
             .search-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px; }
             .search-input { width: 100%; height: 34px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: 0 10px 0 34px; font-size: 13px; font-family: inherit; color: var(--text-primary); outline: none; transition: border-color var(--transition), box-shadow var(--transition); }
-            .search-input::placeholder { color: #9ca3af !important; opacity: 1 !important; }
+            .search-input::placeholder { color: var(--text-muted); }
             .search-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
             .flex-spacer { flex: 1; }
             .v-divider { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; margin: 0 4px; }
