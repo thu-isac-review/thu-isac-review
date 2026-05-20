@@ -1454,6 +1454,38 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> 確認儲存';
             }
         };
+      
+        document.addEventListener('keydown', (event) => {
+            // 處理 Ctrl + S (或 Mac 的 Cmd + S)
+            if ((event.ctrlKey || event.metaKey) && (event.key === 's' || event.key === 'S')) {
+                const addEvalModal = document.getElementById('add-eval-modal');
+                // 只有在「登錄/編輯評估紀錄」視窗開啟時才觸發儲存
+                if (addEvalModal && addEvalModal.classList.contains('open')) {
+                    event.preventDefault(); // 阻止瀏覽器預設的儲存網頁行為
+                    window.submitEvaluation();
+                }
+            }
+
+            // 處理 ESC 關閉彈跳視窗
+            if (event.key === 'Escape') {
+                // 依照 z-index 層級由高到低判斷，一次只關閉最上層的視窗
+                const cohortModal = document.getElementById('cohort-details-modal');
+                const viewEvalModal = document.getElementById('view-eval-modal');
+                const addEvalModal = document.getElementById('add-eval-modal');
+                const manageModal = document.getElementById('manage-modal');
+
+                if (cohortModal && cohortModal.classList.contains('open')) {
+                    window.closeCohortDetailsModal();
+                } else if (viewEvalModal && viewEvalModal.classList.contains('open')) {
+                    window.closeViewEvalModal();
+                } else if (addEvalModal && addEvalModal.classList.contains('open')) {
+                    window.closeAddEvalModal();
+                } else if (manageModal && manageModal.classList.contains('open')) {
+                    window.closeManageModal();
+                }
+            }
+        });
+      
     </script>
 </body>
 </html>
