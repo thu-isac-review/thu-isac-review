@@ -308,12 +308,12 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // 頁面初次載入安全守衛 (防君子也防小人)
+        // 頁面初次載入安全守衛
         const checkAuthLocally = () => {
             const role = localStorage.getItem('user_role');
             if (!role) {
-                // 無角色狀態，高機率未登入，強制導向登入
-                window.location.replace('/login.html');
+                // 無角色狀態，高機率未登入，強制導向登入 (使用相對路徑以防佈署問題)
+                window.location.replace('login.html');
                 return false;
             }
             // 預先同步快取的主題色彩
@@ -363,12 +363,13 @@
                     } catch (err) {
                         console.error("安全權限鏈解析失敗", err);
                     } finally {
-                        if(sysLoading) sysLoading.classList.add('hidden');
+                        // 修正：強制使用 style.display = 'none' 關閉，避免 Tailwind flex 覆蓋
+                        if(sysLoading) sysLoading.style.display = 'none';
                     }
                 } else {
                     // Firebase 判定未登入，清除快取並逐出後台
                     localStorage.clear();
-                    window.location.replace('/login.html');
+                    window.location.replace('login.html');
                 }
             });
         }
@@ -384,7 +385,6 @@
                 }
                 const rolesArray = allowedRoles.split(',');
                 if (rolesArray.includes(userRole)) {
-                    // 符合權限的群組標籤改用區塊顯示
                     item.style.display = item.classList.contains('nav-group-label') ? 'block' : 'flex';
                 } else {
                     item.style.display = 'none';
@@ -400,15 +400,14 @@
             const handleHashRouting = () => {
                 let hash = window.location.hash.replace('#', '');
                 
-                // 預設路由守衛
+                // 修正：直接更改 window.location.hash 來觸發跳轉，避免 early return 卡住畫面
                 if (!hash) {
-                    hash = '/dashboard-content.html';
-                    window.history.replaceState(null, null, '#' + hash);
+                    window.location.hash = '/dashboard-content.html';
                     return;
                 }
 
                 // 點擊高亮狀態同步切換
-                document.querySelectorAll('#sidebar .nav-item').forEach(btn => {
+                document.querySelectorAll('#sidebar .nav-item, #profileBtn').forEach(btn => {
                     const btnPath = btn.getAttribute('data-path');
                     if (hash === btnPath || (hash === 'profile-settings' && btn.getAttribute('data-page') === 'profile')) {
                         btn.classList.add('active');
@@ -418,7 +417,7 @@
                     }
                 });
 
-                // 特殊原生 View 處理（例如個人資料偏好設定頁，不用 iframe，改由底層原生渲染）
+                // 特殊原生 View 處理
                 if (hash === 'profile-settings') {
                     contentFrame.classList.add('hidden');
                     profileContainer.classList.remove('hidden');
@@ -426,20 +425,18 @@
                     return;
                 }
 
-                // 常規工作子頁面：安全注入真實路徑，【不加任何時間戳記、不破壞快取】
+                // 常規工作子頁面
                 profileContainer.classList.add('hidden');
                 contentFrame.classList.remove('hidden');
                 
-                // 防抖優化：只有當 iframe 現有路徑不符時，才重新定向加載，避免重複讀取
+                // 防抖優化
                 const currentIframeSrc = contentFrame.contentWindow.location.pathname + contentFrame.contentWindow.location.search;
                 if (!currentIframeSrc.includes(hash)) {
                     contentFrame.src = hash;
                 }
             };
 
-            // 監聽網頁 Hash 變動事件
             window.addEventListener('hashchange', handleHashRouting);
-            // 首次啟動初次觸發
             handleHashRouting();
 
             // 綁定選單點擊路由事件
@@ -448,7 +445,7 @@
                     const path = item.getAttribute('data-path');
                     if(path) {
                         window.location.hash = path;
-                        toggleMobileSidebar(false); // 手機點擊後收闔
+                        toggleMobileSidebar(false);
                     }
                 });
             });
@@ -456,12 +453,14 @@
 
         // ─── 核心功能三：麵包屑 (Breadcrumbs) 動態更新 ───
         function updateBreadcrumbs(activeElement) {
-            const labelName = activeElement.querySelector('span').textContent;
+            // 修正：檢查 span 是否存在以防拋錯
+            const spanEl = activeElement.querySelector('span');
+            const labelName = spanEl ? spanEl.textContent : (activeElement.id === 'profileBtn' ? '個人資料設定' : '系統選項');
+            
             const breadParent = document.getElementById('breadcrumbParent');
             const breadChild = document.getElementById('breadcrumbChild');
             const subArrow = document.querySelector('.id-sub-arrow');
 
-            // 尋找其前方的分類標籤
             let previousLabel = "";
             let sibling = activeElement.previousElementSibling;
             while (sibling) {
@@ -490,7 +489,7 @@
             if (confirm("確認要登出東海實習書審作業系統？")) {
                 signOut(auth).then(() => {
                     localStorage.clear();
-                    window.location.replace('/login.html');
+                    window.location.replace('login.html');
                 });
             }
         });
@@ -502,7 +501,6 @@
             const uName = localStorage.getItem('user_name') || '管理員';
             const uRole = localStorage.getItem('user_role') || 'user';
 
-            // 動態渲染出完全符合原版規格的配置畫面，但邏輯完全 SPA 化
             container.innerHTML = `
                 <div class="w-full max-w-4xl mx-auto p-4 md:p-8 animate-fade">
                     <div class="mb-6 bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
@@ -531,7 +529,6 @@
                 </div>
             `;
 
-            // 注入主題選擇按鈕
             const pickerContainer = document.getElementById('themePickerContainer');
             const themeNames = { blue: '經典藍', emerald: '翡翠綠', violet: '羅蘭紫', rose: '玫瑰紅', slate: '沉穩灰' };
             
@@ -548,7 +545,7 @@
                 btn.onclick = () => {
                     localStorage.setItem('user_theme', key);
                     applySystemTheme(key);
-                    loadNativeProfileView(); // 重新局部刷新
+                    loadNativeProfileView(); 
                 };
                 pickerContainer.appendChild(btn);
             });
