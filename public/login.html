@@ -1,57 +1,130 @@
 <!DOCTYPE html>
-<html lang="zh-TW" class="h-full">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>登入 - ISAC 審查中心</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>登入 - 東海大學實習課程書面審查作業系統</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: { 50: '#f0f5fa', 500: '#2c75b3', 600: '#1a5c96' }
-                    }
-                }
-            }
-        }
-    </script>
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
     <style>
-        html, body { height: 100%; margin: 0; background-color: #f8fafc; font-family: "SF Pro TC", sans-serif; }
+        :root {
+            --brand: #1a56db;
+            --brand-hover: #1649c0;
+            --brand-light: #eff4ff;
+            --bg: #f8f9fc;
+            --surface: #ffffff;
+            --border: #e5e7ef;
+            --text-primary: #111827;
+            --text-secondary: #4b5563;
+            --text-muted: #9ca3af;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --transition: 0.2s ease;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 表單元素共用樣式 */
+        .input-field {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            outline: none;
+            font-size: 14px;
+            color: var(--text-primary);
+            transition: border-color var(--transition), box-shadow var(--transition);
+        }
+
+        .input-field:focus {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 3px var(--brand-light);
+            background: var(--surface);
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: var(--brand);
+            color: white;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-top: 24px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background var(--transition), opacity var(--transition);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--brand-hover);
+        }
+
+        .btn-primary:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* 動畫 */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .icon-spin { animation: spin 1.2s linear infinite; display: inline-block; }
     </style>
 </head>
-<body class="flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 border border-slate-100">
-        <div class="flex flex-col items-center mb-8">
-            <div class="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center mb-4 shadow-md">
-                <i class="ph-bold ph-shield-check text-white text-2xl"></i>
+<body class="min-h-screen w-full flex items-center justify-center p-4">
+
+    <form id="loginForm" class="w-full max-w-md animate-fade" style="background: var(--surface); padding: 40px; border-radius: var(--radius-xl); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border);">
+        
+        <div class="flex flex-col items-center mb-8 text-center">
+            <div style="width: 56px; height: 56px; border-radius: var(--radius-lg); background: var(--brand); color: white; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; font-size: 28px; box-shadow: var(--shadow-sm);">
+                <i class="ti ti-user-key"></i>
             </div>
-            <h1 class="text-2xl font-black text-slate-800">ISAC 審查中心</h1>
-            <p class="text-slate-500 text-sm mt-1">請登入您的管理員或審查員帳號</p>
+            <h1 style="font-size: 18px; font-weight: 700; color: var(--text-primary);">東海大學實習中心</h1>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">實習課程書面審查作業系統</p>
         </div>
 
-        <form id="login-form" class="flex flex-col gap-4">
-            <div>
-                <label class="block text-xs font-bold text-slate-500 mb-1">電子郵件 (Email)</label>
-                <input type="email" id="email" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all">
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-slate-500 mb-1">密碼 (Password)</label>
-                <input type="password" id="password" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all">
-            </div>
-            <button type="submit" id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg mt-2 transition-colors flex items-center justify-center gap-2 shadow-sm">
-                登入系統 <i class="ph-bold ph-arrow-right"></i>
-            </button>
-        </form>
-    </div>
+        <div id="errorMsg" class="hidden mb-4 p-3 rounded-lg text-sm font-medium" style="background-color: #fef2f2; color: #dc2626; border: 1px solid #fecaca;"></div>
 
-    <!-- Firebase 登入邏輯 -->
+        <div class="space-y-4">
+            <div>
+                <input type="text" id="email" placeholder="請輸入帳號或電子郵件 (@thu.edu.tw)" class="input-field" required autocomplete="username">
+            </div>
+            
+            <div class="relative">
+                <input type="password" id="password" placeholder="請輸入密碼" class="input-field pr-10" required autocomplete="current-password">
+                <button type="button" id="togglePassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none" style="font-size: 18px;">
+                    <i class="ti ti-eye"></i>
+                </button>
+            </div>
+        </div>
+
+        <button type="submit" id="submitBtn" class="btn-primary">
+            進入系統
+        </button>
+    </form>
+
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // 您專案的 Firebase Config
+        // Firebase 初始化配置
         const firebaseConfig = {
             apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY",
             authDomain: "thu-isac-review.firebaseapp.com",
@@ -63,34 +136,100 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getFirestore(app);
 
-        // 門神機制：如果已經登入過了，直接幫他跳轉到後台，不用再登入一次
+        // DOM 元素
+        const loginForm = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const submitBtn = document.getElementById('submitBtn');
+        const togglePasswordBtn = document.getElementById('togglePassword');
+        const errorMsg = document.getElementById('errorMsg');
+
+        // 狀態攔截：如果已經登入，直接跳轉到 index.html
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                window.location.href = '/manage/departments'; 
+                window.location.replace('/index.html');
             }
         });
 
-        // 處理登入按鈕點擊事件
-        document.getElementById('login-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const btn = document.getElementById('login-btn');
-            
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> 登入中...';
-            btn.disabled = true;
+        // 密碼顯示/隱藏切換
+        togglePasswordBtn.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            togglePasswordBtn.innerHTML = type === 'password' ? '<i class="ti ti-eye"></i>' : '<i class="ti ti-eye-off"></i>';
+        });
 
-            // 向 Firebase 發送登入請求
-            signInWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    // 登入成功，會觸發上面的 onAuthStateChanged 跳轉
-                })
-                .catch((error) => {
-                    alert("登入失敗，請檢查帳號密碼！\n" + error.message);
-                    btn.innerHTML = '登入系統 <i class="ph-bold ph-arrow-right"></i>';
-                    btn.disabled = false;
-                });
+        // 顯示錯誤訊息的輔助函數
+        const showError = (message) => {
+            errorMsg.textContent = message;
+            errorMsg.classList.remove('hidden');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '進入系統';
+        };
+
+        // 表單提交處理
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // UI 狀態切換
+            errorMsg.classList.add('hidden');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="ti ti-loader-2 icon-spin text-lg"></i> 連線中...';
+
+            let emailVal = emailInput.value.trim();
+            const passwordVal = passwordInput.value;
+
+            // 自動補齊東海網域
+            if (emailVal && !emailVal.includes('@')) {
+                emailVal += '@thu.edu.tw';
+                emailInput.value = emailVal; // 更新畫面讓使用者知道
+            }
+
+            try {
+                // 1. 執行 Firebase 登入
+                const userCredential = await signInWithEmailAndPassword(auth, emailVal, passwordVal);
+                const user = userCredential.user;
+
+                // 2. 獲取使用者的資料與權限角色
+                let userData = null;
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                
+                if (userDoc.exists()) {
+                    userData = userDoc.data();
+                } else if (user.email === 'thu.isac.review@gmail.com') {
+                    // 預設最高權限管理員處理
+                    userData = {
+                        role: 'admin', // 賦予管理員角色
+                        level1Unit: '系統管理中心',
+                        level2Unit: '核心維運組',
+                        jobTitle: '管理員',
+                        name: '預設管理者',
+                        isFirstLogin: false,
+                        theme: 'blue'
+                    };
+                }
+
+                // 3. 將關鍵資料存入 localStorage 供 SPA 讀取 (RBAC 核心)
+                if (userData) {
+                    localStorage.setItem('user_name', userData.name || '使用者');
+                    localStorage.setItem('user_role', userData.role || 'user'); // 預設為 user
+                    localStorage.setItem('user_theme', userData.theme || 'blue');
+                    
+                    if (userData.isFirstLogin) {
+                        localStorage.setItem('must_change_password', '1');
+                    } else {
+                        localStorage.removeItem('must_change_password');
+                    }
+                }
+
+                // 4. 跳轉至系統主框架
+                window.location.replace('/index.html');
+
+            } catch (error) {
+                console.error("Login Error:", error);
+                showError("登入失敗：請確認帳號或密碼是否正確。");
+            }
         });
     </script>
 </body>
