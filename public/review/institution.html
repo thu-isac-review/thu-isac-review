@@ -1456,17 +1456,28 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
         };
       
         document.addEventListener('keydown', (event) => {
-            // 處理 Ctrl + S (或 Mac 的 Cmd + S)
+            // 1. 處理 Ctrl + S (或 Mac 的 Cmd + S) - 儲存評估
             if ((event.ctrlKey || event.metaKey) && (event.key === 's' || event.key === 'S')) {
                 const addEvalModal = document.getElementById('add-eval-modal');
-                // 只有在「登錄/編輯評估紀錄」視窗開啟時才觸發儲存
                 if (addEvalModal && addEvalModal.classList.contains('open')) {
                     event.preventDefault(); // 阻止瀏覽器預設的儲存網頁行為
                     window.submitEvaluation();
                 }
             }
 
-            // 處理 ESC 關閉彈跳視窗
+            // 2. 處理 Ctrl + F (或 Mac 的 Cmd + F) - 聚焦搜尋框
+            if ((event.ctrlKey || event.metaKey) && (event.key === 'f' || event.key === 'F')) {
+                const searchInput = document.getElementById('search-input');
+                // 檢查目前是否「沒有」任何彈跳視窗開啟
+                const isAnyModalOpen = document.querySelector('.dialog-overlay.open') !== null;
+                
+                if (searchInput && !isAnyModalOpen) {
+                    event.preventDefault(); // 阻止瀏覽器預設的網頁搜尋
+                    searchInput.focus();    // 聚焦到自訂的搜尋框
+                }
+            }
+
+            // 3. 處理 ESC 關閉彈跳視窗
             if (event.key === 'Escape') {
                 // 依照 z-index 層級由高到低判斷，一次只關閉最上層的視窗
                 const cohortModal = document.getElementById('cohort-details-modal');
