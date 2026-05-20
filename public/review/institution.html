@@ -877,7 +877,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
                 let cohorts = Object.values(cohortsObj).map(cohort => {
                     // 核心修正：如果評價是由「實習中心」進行，或是該評價與該系所 (相容全名簡稱) 匹配
-                    let evalsForDept = allEvaluations.filter(e => e.inst_name === inst.name && (e.dept_name === '實習中心' || window.checkDeptMatch(e.dept_name, cohort.dept)));
+                    let evalsForDept = allEvaluations.filter(e => (e.inst_id === inst.id || (!e.inst_id && e.inst_name === inst.name)) && (e.dept_name === '實習中心' || window.checkDeptMatch(e.dept_name, cohort.dept)));
                     let hasValidEval = false;
                     
                     if(cohort.startDateObj) {
@@ -1150,7 +1150,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             });
 
             let listTbody = document.getElementById('eval-history-list');
-            let evals = allEvaluations.filter(e => e.inst_name === inst.name);
+            let evals = allEvaluations.filter(e => e.inst_id === inst.id || (!e.inst_id && e.inst_name === inst.name));
 
             if(evals.length === 0) {
                 listTbody.innerHTML = `<tr><td colspan="5" class="empty-state" style="padding: 40px;"><i class="ti ti-inbox empty-icon" style="margin: 0 auto 12px auto;"></i><div class="empty-text">此機構尚未建立任何評估紀錄。</div></td></tr>`;
@@ -1430,6 +1430,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
             try {
                 const payload = {
+                    inst_id: inst.id,
                     inst_name: inst.name,
                     dept_name: deptVal,
                     eval_date: dateVal,
