@@ -1455,25 +1455,31 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             }
         };
       
-        document.addEventListener('keydown', (event) => {
+        window.addEventListener('keydown', (event) => {
             // 1. 處理 Ctrl + S (或 Mac 的 Cmd + S) - 儲存評估
-            if ((event.ctrlKey || event.metaKey) && (event.key === 's' || event.key === 'S')) {
+            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
                 const addEvalModal = document.getElementById('add-eval-modal');
                 if (addEvalModal && addEvalModal.classList.contains('open')) {
-                    event.preventDefault(); // 阻止瀏覽器預設的儲存網頁行為
+                    event.preventDefault(); // 阻止瀏覽器原生的另存網頁
                     window.submitEvaluation();
                 }
             }
 
             // 2. 處理 Ctrl + F (或 Mac 的 Cmd + F) - 聚焦搜尋框
-            if ((event.ctrlKey || event.metaKey) && (event.key === 'f' || event.key === 'F')) {
+            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'f') {
+                event.preventDefault(); // 絕對優先：阻止瀏覽器原生的網頁搜尋彈出
+
                 const searchInput = document.getElementById('search-input');
-                // 檢查目前是否「沒有」任何彈跳視窗開啟
                 const isAnyModalOpen = document.querySelector('.dialog-overlay.open') !== null;
                 
-                if (searchInput && !isAnyModalOpen) {
-                    event.preventDefault(); // 阻止瀏覽器預設的網頁搜尋
-                    searchInput.focus();    // 聚焦到自訂的搜尋框
+                if (searchInput) {
+                    // 如果目前有打開彈跳視窗，按 Ctrl+F 時可以自動把它們全關了（若你不需要這功能可把下行刪掉）
+                    if (isAnyModalOpen) {
+                        document.querySelectorAll('.dialog-overlay.open').forEach(modal => modal.classList.remove('open'));
+                    }
+                    
+                    searchInput.focus();  // 將游標移入搜尋框
+                    searchInput.select(); // 自動全選裡面的文字，方便直接輸入新關鍵字
                 }
             }
 
@@ -1493,6 +1499,16 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                     window.closeAddEvalModal();
                 } else if (manageModal && manageModal.classList.contains('open')) {
                     window.closeManageModal();
+                } else {
+                    // 如果沒有視窗打開，按 ESC 可以用來清空並離開搜尋框
+                    const searchInput = document.getElementById('search-input');
+                    if (document.activeElement === searchInput) {
+                        searchInput.value = '';
+                        searchInput.blur();
+                        // 觸發搜尋框清空的畫面更新
+                        currentPage = 1; 
+                        processAndRenderMain();
+                    }
                 }
             }
         });
