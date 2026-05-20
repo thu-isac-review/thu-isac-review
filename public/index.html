@@ -3,243 +3,290 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>實習課程書面審查作業系統 - 東海大學實習中心</title>
+    <title>東海大學實習中心 - 實習課程書面審查作業系統</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script type="importmap">
-      {
-        "imports": {
-          "react": "https://esm.sh/react@18.2.0",
-          "react-dom": "https://esm.sh/react-dom@18.2.0",
-          "react-dom/client": "https://esm.sh/react-dom@18.2.0/client"
-        }
-      }
-    </script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-          /* 預設配色 (經典藍) */
-          --brand: #1a56db;
-          --brand-hover: #1649c0;
-          --brand-light: #eff4ff;
-          --brand-border: #c3d2f9;
-          
-          --sidebar-w: 240px;
-          --sidebar-collapsed-w: 72px; /* 收闔時的寬度 */
-          --topbar-h: 56px;
-          --bg: #f8f9fc;
-          --surface: #ffffff;
-          --border: #e5e7ef;
-          --border-strong: #cdd0dd;
-          --text-primary: #111827;
-          --text-secondary: #4b5563;
-          --text-muted: #9ca3af;
-          --success: #059669;
-          --danger: #dc2626;
-          --radius-sm: 6px;
-          --radius: 8px;
-          --radius-lg: 12px;
-          --radius-xl: 16px;
-          --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-          --transition: 300ms cubic-bezier(0.4,0,0.2,1);
+            /* 預設配色 (經典藍) */
+            --brand: #1a56db;
+            --brand-hover: #1649c0;
+            --brand-light: #eff4ff;
+            --brand-border: #c3d2f9;
+            
+            --sidebar-w: 250px;
+            --sidebar-collapsed-w: 72px;
+            --topbar-h: 56px;
+            --bg: #f8f9fc;
+            --surface: #ffffff;
+            --border: #e5e7ef;
+            --border-strong: #cdd0dd;
+            --text-primary: #111827;
+            --text-secondary: #4b5563;
+            --text-muted: #9ca3af;
+            --success: #059669;
+            --danger: #dc2626;
+            --radius-sm: 6px;
+            --radius: 8px;
+            --radius-lg: 12px;
+            --transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        html, body, #root { height: 100%; overflow: hidden; font-family: 'Noto Sans TC', sans-serif; font-size: 14px; color: var(--text-primary); background: var(--bg); -webkit-font-smoothing: antialiased; }
+        html, body, #app { 
+            height: 100%; 
+            overflow: hidden; 
+            font-family: 'Noto Sans TC', sans-serif; 
+            color: var(--text-primary); 
+            background: var(--bg); 
+            -webkit-font-smoothing: antialiased; 
+        }
 
-        /* ─── LAYOUT ─── */
-        #app { display: flex; height: 100%; overflow: hidden; width: 100%; }
+        /* ─── 安全防禦：未驗證前完全隱藏介面（防閃現） ─── */
+        body { visibility: hidden; }
 
-        /* ─── SIDEBAR ─── */
+        /* ─── SIDEBAR 樣式 ─── */
         #sidebar {
-          width: var(--sidebar-w);
-          background: var(--surface);
-          border-right: 1px solid var(--border);
-          display: flex;
-          flex-direction: column;
-          flex-shrink: 0;
-          z-index: 30;
-          transition: width var(--transition), transform var(--transition);
+            width: var(--sidebar-w);
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            z-index: 30;
+            transition: width var(--transition), transform var(--transition);
         }
-        .sidebar-logo {
-          height: var(--topbar-h);
-          padding: 0 16px;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          border-bottom: 1px solid var(--border);
-          flex-shrink: 0;
-          overflow: hidden;
-        }
-        .sidebar-logo .logo-icon {
-          width: 30px; height: 30px;
-          background: var(--brand);
-          border-radius: var(--radius-sm);
-          display: flex; align-items: center; justify-content: center;
-          color: white;
-          font-size: 18px;
-          flex-shrink: 0;
-          transition: background 0.2s;
-        }
-        .sidebar-logo .logo-text { font-size: 13px; font-weight: 700; color: var(--text-primary); line-height: 1.3; white-space: nowrap; }
-        .sidebar-logo .logo-sub { font-size: 10px; color: var(--text-muted); font-weight: 400; white-space: nowrap; }
         
-        .sidebar-nav { flex: 1; padding: 12px 8px; overflow-y: auto; overflow-x: hidden; }
-        .nav-group-label { font-size: 10px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.07em; text-transform: uppercase; padding: 0 8px; margin: 16px 0 4px; white-space: nowrap; }
-        .nav-group-label:first-child { margin-top: 4px; }
-        .nav-item {
-          display: flex; align-items: center; gap: 9px;
-          padding: 8px 10px;
-          border-radius: var(--radius);
-          cursor: pointer;
-          color: var(--text-secondary);
-          font-size: 13px; font-weight: 500;
-          transition: background 0.2s, color 0.2s;
-          user-select: none;
-          margin-bottom: 2px;
-          white-space: nowrap;
+        /* 桌面端收闔狀態 */
+        #sidebar.collapsed { width: var(--sidebar-collapsed-w); }
+        #sidebar.collapsed .logo-text, 
+        #sidebar.collapsed .logo-sub,
+        #sidebar.collapsed .nav-item span,
+        #sidebar.collapsed .user-info,
+        #sidebar.collapsed .settings-icon { display: none; }
+        
+        #sidebar.collapsed .nav-group-label { text-align: center; font-size: 0; padding: 10px 0; margin: 8px 0 0; }
+        #sidebar.collapsed .nav-group-label::after { content: '•••'; font-size: 12px; }
+        #sidebar.collapsed .nav-item { justify-content: center; padding: 10px 0; }
+
+        .sidebar-logo {
+            height: var(--topbar-h);
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            overflow: hidden;
         }
-        .nav-item i { width: 18px; text-align: center; font-size: 18px; flex-shrink: 0; }
+
+        .nav-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 12px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 13px; font-weight: 500;
+            transition: background 0.2s, color 0.2s;
+            user-select: none;
+            margin-bottom: 2px;
+            white-space: nowrap;
+        }
+        .nav-item i { font-size: 18px; flex-shrink: 0; text-align: center; width: 20px; }
         .nav-item:hover { background: var(--bg); color: var(--text-primary); }
         .nav-item.active { background: var(--brand-light); color: var(--brand); font-weight: 700; }
-        
-        .sidebar-footer {
-          padding: 12px 8px;
-          border-top: 1px solid var(--border);
-          flex-shrink: 0;
-          overflow: hidden;
-        }
-        .user-row {
-          display: flex; align-items: center; gap: 9px;
-          padding: 8px 10px;
-          border-radius: var(--radius);
-          cursor: pointer;
-          transition: background 0.2s;
-          white-space: nowrap;
-        }
-        .user-row:hover { background: var(--bg); }
-        .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--brand-light); border: 1.5px solid var(--brand-border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--brand); flex-shrink: 0; }
-        .user-info { flex: 1; min-width: 0; }
-        .user-name { font-size: 12px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .user-role { font-size: 10px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* ─── DESKTOP COLLAPSED STATE ─── */
-        @media (min-width: 769px) {
-            #sidebar.collapsed { width: var(--sidebar-collapsed-w); }
-            #sidebar.collapsed .sidebar-logo { justify-content: center; padding: 0; }
-            #sidebar.collapsed .logo-text, #sidebar.collapsed .logo-sub { display: none; }
-            
-            #sidebar.collapsed .nav-group-label { text-align: center; font-size: 0; padding: 10px 0; margin: 8px 0 0; }
-            #sidebar.collapsed .nav-group-label::after { content: '•••'; font-size: 12px; }
-            
-            #sidebar.collapsed .nav-item { justify-content: center; padding: 10px 0; }
-            #sidebar.collapsed .nav-item span { display: none; }
-            
-            #sidebar.collapsed .user-row { justify-content: center; padding: 10px 0; }
-            #sidebar.collapsed .user-info, #sidebar.collapsed .settings-icon { display: none; }
+        /* ─── 內容工作區 ─── */
+        #content-frame {
+            border: none;
+            width: 100%;
+            height: 100%;
+            background: transparent;
         }
 
-        /* ─── MAIN ─── */
-        #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
-
-        /* ─── TOPBAR ─── */
-        #topbar {
-          height: var(--topbar-h);
-          background: var(--surface);
-          border-bottom: 1px solid var(--border);
-          display: flex; align-items: center;
-          padding: 0 24px;
-          gap: 12px;
-          flex-shrink: 0;
-          z-index: 20;
-        }
-        .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); flex: 1; }
-        .breadcrumb .crumb-active { color: var(--text-primary); font-weight: 600; }
-        .breadcrumb i.arrow { font-size: 14px; margin: 0 2px; }
-        .topbar-actions { display: flex; align-items: center; gap: 8px; }
-        
-        .icon-btn {
-          width: 32px; height: 32px;
-          border-radius: var(--radius);
-          border: 1px solid var(--border);
-          background: var(--surface);
-          display: flex; align-items: center; justify-content: center;
-          cursor: pointer;
-          color: var(--text-secondary);
-          transition: all 0.2s;
-          position: relative;
-          font-size: 18px;
-        }
-        .icon-btn.menu-toggle { border: none; background: transparent; width: auto; height: auto; padding: 4px; font-size: 20px; }
-        .icon-btn.menu-toggle:hover { color: var(--brand); }
-        .icon-btn:hover:not(.menu-toggle) { background: var(--bg); border-color: var(--border-strong); color: var(--text-primary); }
-        .icon-btn.danger:hover { background: #fef2f2; border-color: #fecaca; color: var(--danger); }
-        .v-divider { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; margin: 0 4px; }
-
-        /* ─── CONTENT AREA ─── */
-        #content { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--bg); }
-        iframe { border: none; width: 100%; height: 100%; background: transparent; }
-
-        /* Scrollbar */
-        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        /* 自訂捲軸 */
+        .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
 
-        /* Mobile specific styles */
+        /* 手機端響應式 RWD */
         @media (max-width: 768px) {
             #sidebar { position: fixed; height: 100%; transform: translateX(-100%); }
             #sidebar.open { transform: translateX(0); }
-            #topbar { padding: 0 16px; }
             .mobile-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 25; }
         }
-        .mobile-menu-btn { display: none; background: none; border: none; font-size: 20px; color: var(--text-secondary); cursor: pointer; }
-        @media (max-width: 768px) { .mobile-menu-btn { display: block; margin-right: 8px; } }
 
-        /* Loader & Animations */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade { animation: fadeIn 0.4s ease-out forwards; }
+        /* 動畫效果 */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade { animation: fadeIn 0.25s ease-out forwards; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         .icon-spin { animation: spin 1.2s linear infinite; display: inline-block; }
-        
-        /* 表單元素通用 */
-        .input-field {
-            width: 100%; padding: 12px 16px; border-radius: var(--radius);
-            border: 1px solid var(--border); background: var(--bg);
-            outline: none; font-size: 13px; font-family: inherit; color: var(--text-primary);
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        .input-field:focus {
-            border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-light); background: var(--surface);
-        }
     </style>
 </head>
 <body>
-    <div id="root"></div>
 
-    <script type="text/babel" data-type="module">
-        import React, { useState, useEffect } from 'react';
-        import ReactDOM from 'react-dom/client';
+    <div id="sysLoading" class="fixed inset-0 flex flex-col items-center justify-center bg-[#f8f9fc] z-[9999]">
+        <i class="ti ti-loader icon-spin text-4xl" style="color: var(--brand)"></i>
+        <p class="mt-3 text-sm font-bold text-gray-400">環境配置中，請稍候...</p>
+    </div>
+
+    <div id="mobileOverlay" class="mobile-overlay hidden" onclick="toggleMobileSidebar(false)"></div>
+
+    <div id="app" class="flex w-full h-full overflow-hidden">
         
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, updatePassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        <nav id="sidebar" class="custom-scroll overflow-y-auto overflow-x-hidden flex-shrink-0">
+            <div class="sidebar-logo">
+                <div class="flex-shrink-0 w-8 h-8 rounded-md flex items-center justify-center text-white font-bold" style="background: var(--brand)">
+                    <i class="ti ti-briefcase-2 text-lg"></i>
+                </div>
+                <div class="logo-info">
+                    <div class="logo-text font-bold text-sm text-gray-900 leading-tight">東海大學實習中心</div>
+                    <div class="logo-sub text-[10px] text-gray-400">書面審查作業系統</div>
+                </div>
+            </div>
+            
+            <div class="flex-1 px-2 py-3 overflow-y-auto custom-scroll" id="sidebarMenu">
+                <div class="nav-item" data-page="dashboard" data-path="/dashboard-content.html" data-roles="all">
+                    <i class="ti ti-home"></i><span>首頁</span>
+                </div>
+                
+                <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-4 mb-1" data-roles="admin,teacher">審查作業</div>
+                <div class="nav-item" data-page="list" data-path="/list.html" data-roles="admin,teacher">
+                    <i class="ti ti-user-check"></i><span>學生待查核名單</span>
+                </div>
+                <div class="nav-item" data-page="review-dept" data-path="/review/department.html" data-roles="admin,teacher">
+                    <i class="ti ti-building-community"></i><span>系所審查作業</span>
+                </div>
+                <div class="nav-item" data-page="review-school" data-path="/review/school.html" data-roles="admin">
+                    <i class="ti ti-building-bank"></i><span>校級審查作業</span>
+                </div>
+                <div class="nav-item" data-page="review-inst" data-path="/review/institution.html" data-roles="admin,teacher">
+                    <i class="ti ti-building-skyscraper"></i><span>機構審查作業</span>
+                </div>
+                
+                <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-4 mb-1" data-roles="admin,teacher">實習資料瀏覽</div>
+                <div class="nav-item" data-page="view-course" data-path="/intern_view/course.html" data-roles="admin,teacher">
+                    <i class="ti ti-book"></i><span>實習課程清單</span>
+                </div>
+                <div class="nav-item" data-page="view-students" data-path="/intern_view/students.html" data-roles="admin,teacher">
+                    <i class="ti ti-address-book"></i><span>實習學生清單</span>
+                </div>
+                <div class="nav-item" data-page="view-inst" data-path="/intern_view/institution.html" data-roles="admin,teacher">
+                    <i class="ti ti-building"></i><span>實習機構清單</span>
+                </div>
+                <div class="nav-item" data-page="view-record" data-path="/intern_view/record.html" data-roles="admin,teacher">
+                    <i class="ti ti-clipboard-list"></i><span>實習記錄清單</span>
+                </div>
+                
+                <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-4 mb-1" data-roles="admin">實習資料管理</div>
+                <div class="nav-item" data-page="manage-staging" data-path="/intern_manage/staging_review.html" data-roles="admin">
+                    <i class="ti ti-cloud-upload"></i><span>批次匯入審查中心</span>
+                </div>
+                <div class="nav-item" data-page="manage-course" data-path="/intern_manage/course.html" data-roles="admin">
+                    <i class="ti ti-book"></i><span>實習課程管理</span>
+                </div>
+                <div class="nav-item" data-page="manage-students" data-path="/intern_manage/students.html" data-roles="admin">
+                    <i class="ti ti-user-cog"></i><span>實習學生管理</span>
+                </div>
+                <div class="nav-item" data-page="manage-inst" data-path="/intern_manage/institution.html" data-roles="admin">
+                    <i class="ti ti-building"></i><span>實習機構管理</span>
+                </div>
+                <div class="nav-item" data-page="manage-record" data-path="/intern_manage/record.html" data-roles="admin">
+                    <i class="ti ti-clipboard-check"></i><span>實習記錄管理</span>
+                </div>
+                
+                <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-4 mb-1" data-roles="admin">審查項目設定</div>
+                <div class="nav-item" data-page="set-moe" data-path="/settings/moe-indicators.html" data-roles="admin">
+                    <i class="ti ti-list-check"></i><span>教育部審查指標設定</span>
+                </div>
+                <div class="nav-item" data-page="set-admin" data-path="/settings/administrative_files.html" data-roles="admin">
+                    <i class="ti ti-folder"></i><span>行政文件審查設定</span>
+                </div>
+                <div class="nav-item" data-page="set-stu" data-path="/settings/students_files.html" data-roles="admin">
+                    <i class="ti ti-file-text"></i><span>學生文件審查設定</span>
+                </div>
+                <div class="nav-item" data-page="set-inst" data-path="/settings/institution_files.html" data-roles="admin">
+                    <i class="ti ti-file-pencil"></i><span>機構文件審查設定</span>
+                </div>
+                
+                <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-4 mb-1" data-roles="admin">系統設定</div>
+                <div class="nav-item" data-page="sys-dept" data-path="/manage/departments.html" data-roles="admin">
+                    <i class="ti ti-school"></i><span>系所清單管理</span>
+                </div>
+                <div class="nav-item" data-page="sys-roles" data-path="/manage/roles.html" data-roles="admin">
+                    <i class="ti ti-shield-lock"></i><span>用戶權限管理</span>
+                </div>
+            </div>
+            
+            <div class="p-2 border-t border-gray-200 bg-white flex-shrink-0">
+                <div class="nav-item !mb-0" id="profileBtn" data-page="profile" data-path="profile-settings" data-roles="all">
+                    <div class="w-7 h-7 rounded-full text-xs font-bold flex items-center justify-center" style="background: var(--brand-light); color: var(--brand); border: 1.5px solid var(--brand-border)" id="userAvatar">U</div>
+                    <div class="user-info flex-1 min-w-0">
+                        <div class="text-xs font-bold text-gray-900 truncate" id="userTitleName">載入中...</div>
+                        <div class="text-[10px] text-gray-400 truncate" id="userUnit">讀取權限中...</div>
+                    </div>
+                    <i class="ti ti-settings settings-icon text-gray-400 text-sm"></i>
+                </div>
+            </div>
+        </nav>
 
-        // 全域主題設定
+        <div id="main" class="flex-1 flex flex-col overflow-hidden min-w-0">
+            
+            <header id="topbar" class="h-14 bg-white border-bottom border-gray-200 flex items-center px-4 md:px-6 gap-3 flex-shrink-0 z-20 border-b">
+                <button class="hidden md:flex p-1.5 rounded-md border border-gray-200 text-gray-500 hover:text-blue-600 hover:bg-gray-50 transition" onclick="toggleDesktopSidebar()" title="收合選單">
+                    <i class="ti ti-menu-2 text-lg"></i>
+                </button>
+                
+                <button class="flex md:hidden text-gray-500 hover:text-blue-600 focus:outline-none" onclick="toggleMobileSidebar(true)">
+                    <i class="ti ti-menu-2 text-xl"></i>
+                </button>
+                
+                <div class="flex items-center gap-1.5 text-xs font-medium text-gray-400 flex-1 truncate">
+                    <span class="hidden sm:inline">實習書審</span>
+                    <i class="ti ti-chevron-right hidden sm:inline"></i>
+                    <span id="breadcrumbParent">首頁</span>
+                    <i class="ti ti-chevron-right id-sub-arrow hidden"></i>
+                    <span id="breadcrumbChild" class="text-gray-900 font-semibold"></span>
+                </div>
+                
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-md border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 cursor-pointer transition relative" title="系統通知">
+                        <i class="ti ti-bell text-lg"></i>
+                    </div>
+                    <div class="w-px h-5 bg-gray-200 mx-1"></div>
+                    <div class="w-8 h-8 rounded-md border border-red-100 bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-100 cursor-pointer transition" id="logoutBtn" title="登出系統">
+                        <i class="ti ti-logout text-lg"></i>
+                    </div>
+                </div>
+            </header>
+
+            <div id="content" class="flex-1 overflow-hidden bg-[#f8f9fc]">
+                <iframe id="content-frame" class="w-full h-full hidden animate-fade" title="系統工作區"></iframe>
+                <div id="profile-view-container" class="w-full h-full overflow-y-auto hidden"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // 全域主題配置字典檔
         const THEMES = {
-            blue: { name: '經典藍', brand: '#1a56db', hover: '#1649c0', light: '#eff4ff', border: '#c3d2f9' },
-            emerald: { name: '翡翠綠', brand: '#059669', hover: '#047857', light: '#ecfdf5', border: '#a7f3d0' },
-            violet: { name: '羅蘭紫', brand: '#7c3aed', hover: '#6d28d9', light: '#f5f3ff', border: '#ddd6fe' },
-            rose: { name: '玫瑰紅', brand: '#e11d48', hover: '#be123c', light: '#fff1f2', border: '#fecdd3' },
-            slate: { name: '沉穩灰', brand: '#475569', hover: '#334155', light: '#f8fafc', border: '#cbd5e1' }
+            blue: { brand: '#1a56db', hover: '#1649c0', light: '#eff4ff', border: '#c3d2f9' },
+            emerald: { brand: '#059669', hover: '#047857', light: '#ecfdf5', border: '#a7f3d0' },
+            violet: { brand: '#7c3aed', hover: '#6d28d9', light: '#f5f3ff', border: '#ddd6fe' },
+            rose: { brand: '#e11d48', hover: '#be123c', light: '#fff1f2', border: '#fecdd3' },
+            slate: { brand: '#475569', hover: '#334155', light: '#f8fafc', border: '#cbd5e1' }
         };
 
-        const applyTheme = (themeKey) => {
+        const applySystemTheme = (themeKey) => {
             const t = THEMES[themeKey] || THEMES.blue;
             const root = document.documentElement;
             root.style.setProperty('--brand', t.brand);
@@ -261,579 +308,270 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        function App() {
-            const [user, setUser] = useState(null);
-            const [userData, setUserData] = useState(null); 
-            const [loading, setLoading] = useState(true);
-            const [currentHash, setCurrentHash] = useState(''); 
-            const [isSidebarOpen, setIsSidebarOpen] = useState(false); // 手機版滑動選單
-            const [isCollapsed, setIsCollapsed] = useState(false);     // 桌面版收闔狀態
-            
-            const getCacheBustedUrl = (url) => {
-                if (!url) return '';
-                const [path, queryStr] = url.split('?');
-                let finalUrl = `${path}?v=${new Date().getTime()}`;
-                if (queryStr) finalUrl += `&${queryStr}`;
-                return finalUrl;
-            };
+        // 頁面初次載入安全守衛 (防君子也防小人)
+        const checkAuthLocally = () => {
+            const role = localStorage.getItem('user_role');
+            if (!role) {
+                // 無角色狀態，高機率未登入，強制導向登入
+                window.location.replace('/login.html');
+                return false;
+            }
+            // 預先同步快取的主題色彩
+            const cacheTheme = localStorage.getItem('user_theme') || 'blue';
+            applySystemTheme(cacheTheme);
+            document.body.style.visibility = 'visible';
+            return true;
+        };
 
-            useEffect(() => {
-                const unsubscribe = onAuthStateChanged(auth, async (u) => {
-                    if (u) {
-                        setUser(u);
-                        try {
-                            const userDoc = await getDoc(doc(db, "users", u.uid));
-                            if(userDoc.exists()) {
-                                const data = userDoc.data();
-                                setUserData(data);
-                                if (data.theme) applyTheme(data.theme);
-                            } else if (u.email === 'thu.isac.review@gmail.com') {
-                                // 預設管理員 (無 Firestore 文件)
-                                setUserData({
-                                    level1Unit: '系統管理中心',
-                                    level2Unit: '核心維運組',
-                                    jobTitle: '管理員',
-                                    name: '預設管理者',
-                                    isFirstLogin: false,
-                                    theme: 'blue',
-                                    isDefaultAdmin: true
-                                });
-                                applyTheme('blue');
+        if (checkAuthLocally()) {
+            // 監聽 Firebase 真實登入狀態
+            onAuthStateChanged(auth, async (user) => {
+                const sysLoading = document.getElementById('sysLoading');
+                if (user) {
+                    try {
+                        let role = localStorage.getItem('user_role');
+                        let name = localStorage.getItem('user_name') || '管理員';
+                        let uData = null;
+
+                        // 雙重安全機制：若快取丟失則回火網補抓
+                        if (!role) {
+                            const userDoc = await getDoc(doc(db, "users", user.uid));
+                            if (userDoc.exists()) {
+                                uData = userDoc.data();
+                                role = uData.role || 'user';
+                                name = uData.name || '未命名';
+                                localStorage.setItem('user_role', role);
+                                localStorage.setItem('user_name', name);
+                                localStorage.setItem('user_theme', uData.theme || 'blue');
+                            } else if (user.email === 'thu.isac.review@gmail.com') {
+                                role = 'admin';
+                                name = '最高權限管理者';
                             }
-                        } catch (err) {
-                            console.error("載入資料失敗", err);
                         }
-                        setLoading(false);
+
+                        // 更新主控框架上用戶的 UI 資訊
+                        document.getElementById('userAvatar').textContent = name.charAt(0);
+                        document.getElementById('userTitleName').textContent = name;
+                        document.getElementById('userUnit').textContent = role.toUpperCase();
+
+                        // 執行 RBAC 側欄按鈕過濾渲染
+                        filterSidebarMenuByRole(role);
+                        
+                        // 初始化 SPA 路由引擎
+                        initSpaRouter();
+
+                    } catch (err) {
+                        console.error("安全權限鏈解析失敗", err);
+                    } finally {
+                        if(sysLoading) sysLoading.classList.add('hidden');
+                    }
+                } else {
+                    // Firebase 判定未登入，清除快取並逐出後台
+                    localStorage.clear();
+                    window.location.replace('/login.html');
+                }
+            });
+        }
+
+        // ─── 核心功能一：基於角色權限（RBAC）動態渲染側欄 ───
+        function filterSidebarMenuByRole(userRole) {
+            const menuItems = document.querySelectorAll('#sidebarMenu .nav-item, #sidebarMenu .nav-group-label');
+            menuItems.forEach(item => {
+                const allowedRoles = item.getAttribute('data-roles');
+                if (allowedRoles === 'all') {
+                    item.style.display = 'flex';
+                    return;
+                }
+                const rolesArray = allowedRoles.split(',');
+                if (rolesArray.includes(userRole)) {
+                    // 符合權限的群組標籤改用區塊顯示
+                    item.style.display = item.classList.contains('nav-group-label') ? 'block' : 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // ─── 核心功能二：單頁應用程式（SPA）輕量路由引擎 ───
+        function initSpaRouter() {
+            const contentFrame = document.getElementById('content-frame');
+            const profileContainer = document.getElementById('profile-view-container');
+
+            const handleHashRouting = () => {
+                let hash = window.location.hash.replace('#', '');
+                
+                // 預設路由守衛
+                if (!hash) {
+                    hash = '/dashboard-content.html';
+                    window.history.replaceState(null, null, '#' + hash);
+                    return;
+                }
+
+                // 點擊高亮狀態同步切換
+                document.querySelectorAll('#sidebar .nav-item').forEach(btn => {
+                    const btnPath = btn.getAttribute('data-path');
+                    if (hash === btnPath || (hash === 'profile-settings' && btn.getAttribute('data-page') === 'profile')) {
+                        btn.classList.add('active');
+                        updateBreadcrumbs(btn);
                     } else {
-                        setUser(null);
-                        setUserData(null);
-                        applyTheme('blue'); // 登出恢復預設
-                        setLoading(false);
+                        btn.classList.remove('active');
                     }
                 });
-                return () => unsubscribe();
-            }, []);
 
-            useEffect(() => {
-                const handleHashChange = () => {
-                    let hash = window.location.hash.replace('#', '');
-                    if (!hash) {
-                        hash = '/dashboard-content.html';
-                        window.history.replaceState(null, null, '#' + hash);
-                    }
-                    setCurrentHash(hash);
-                };
+                // 特殊原生 View 處理（例如個人資料偏好設定頁，不用 iframe，改由底層原生渲染）
+                if (hash === 'profile-settings') {
+                    contentFrame.classList.add('hidden');
+                    profileContainer.classList.remove('hidden');
+                    loadNativeProfileView();
+                    return;
+                }
+
+                // 常規工作子頁面：安全注入真實路徑，【不加任何時間戳記、不破壞快取】
+                profileContainer.classList.add('hidden');
+                contentFrame.classList.remove('hidden');
                 
-                window.addEventListener('hashchange', handleHashChange);
-                handleHashChange(); 
-                
-                return () => window.removeEventListener('hashchange', handleHashChange);
-            }, []);
-
-            const navigate = (path) => {
-                window.location.hash = path;
-                setIsSidebarOpen(false); 
-            };
-
-            const handleLogout = () => {
-                if (window.confirm("確定要登出系統嗎？")) {
-                    signOut(auth);
+                // 防抖優化：只有當 iframe 現有路徑不符時，才重新定向加載，避免重複讀取
+                const currentIframeSrc = contentFrame.contentWindow.location.pathname + contentFrame.contentWindow.location.search;
+                if (!currentIframeSrc.includes(hash)) {
+                    contentFrame.src = hash;
                 }
             };
 
-            if (loading) return (
-                <div className="min-h-screen w-full flex items-center justify-center bg-[#f8f9fc]">
-                    <div className="flex flex-col items-center gap-4">
-                        <i className="ti ti-loader icon-spin text-4xl" style={{color: 'var(--brand)'}}></i>
-                        <p style={{color: 'var(--text-muted)', fontSize: '13px', fontWeight: 'bold'}}>系統載入中...</p>
-                    </div>
-                </div>
-            );
+            // 監聽網頁 Hash 變動事件
+            window.addEventListener('hashchange', handleHashRouting);
+            // 首次啟動初次觸發
+            handleHashRouting();
 
-            if (!user) return <LoginView />;
+            // 綁定選單點擊路由事件
+            document.querySelectorAll('#sidebarMenu .nav-item, #profileBtn').forEach(item => {
+                item.addEventListener('click', () => {
+                    const path = item.getAttribute('data-path');
+                    if(path) {
+                        window.location.hash = path;
+                        toggleMobileSidebar(false); // 手機點擊後收闔
+                    }
+                });
+            });
+        }
 
-            if (userData?.isFirstLogin) {
-                return <FirstTimeSetupView user={user} onComplete={() => setUserData({...userData, isFirstLogin: false})} />;
+        // ─── 核心功能三：麵包屑 (Breadcrumbs) 動態更新 ───
+        function updateBreadcrumbs(activeElement) {
+            const labelName = activeElement.querySelector('span').textContent;
+            const breadParent = document.getElementById('breadcrumbParent');
+            const breadChild = document.getElementById('breadcrumbChild');
+            const subArrow = document.querySelector('.id-sub-arrow');
+
+            // 尋找其前方的分類標籤
+            let previousLabel = "";
+            let sibling = activeElement.previousElementSibling;
+            while (sibling) {
+                if (sibling.classList.contains('nav-group-label') && sibling.style.display !== 'none') {
+                    previousLabel = sibling.textContent;
+                    break;
+                }
+                sibling = sibling.previousElementSibling;
             }
 
-            const getBreadcrumbs = () => {
-                if (currentHash === 'profile-settings') return ['系統設定', '個人資料與偏好設定'];
-                if (currentHash.includes('dashboard')) return ['首頁'];
-                if (currentHash.includes('list')) return ['審查作業', '學生待查核名單'];
-                
-                if (currentHash.includes('review/department')) return ['審查作業', '系所審查作業'];
-                if (currentHash.includes('review/school')) return ['審查作業', '校級審查作業'];
-                if (currentHash.includes('review/institution')) return ['審查作業', '機構審查作業'];
-                
-                if (currentHash.includes('intern_view/course')) return ['實習資料瀏覽', '實習課程清單'];
-                if (currentHash.includes('intern_view/students')) return ['實習資料瀏覽', '實習學生清單'];
-                if (currentHash.includes('intern_view/institution')) return ['實習資料瀏覽', '實習機構清單'];
-                if (currentHash.includes('intern_view/record')) return ['實習資料瀏覽', '實習記錄清單'];
-                
-                if (currentHash.includes('intern_manage/staging_review')) return ['實習資料管理', '批次匯入審查中心'];
-                if (currentHash.includes('intern_manage/course')) return ['實習資料管理', '實習課程管理'];
-                if (currentHash.includes('intern_manage/students')) return ['實習資料管理', '實習學生管理'];
-                if (currentHash.includes('intern_manage/institution')) return ['實習資料管理', '實習機構管理'];
-                if (currentHash.includes('intern_manage/record')) return ['實習資料管理', '實習記錄管理'];
-
-                if (currentHash.includes('moe-indicators')) return ['審查項目設定', '教育部審查指標設定'];
-                if (currentHash.includes('administrative_files')) return ['審查項目設定', '行政文件審查設定'];
-                if (currentHash.includes('students_files')) return ['審查項目設定', '學生文件審查設定'];
-                if (currentHash.includes('institution_files')) return ['審查項目設定', '機構文件審查設定'];
-                if (currentHash.includes('other_files')) return ['審查項目設定', '其他文件審查設定'];
-                
-                if (currentHash.includes('departments')) return ['系統設定', '系所清單管理'];
-                if (currentHash.includes('roles')) return ['系統設定', '用戶權限管理'];
-                
-                return ['實習課程書面審查作業系統'];
-            };
-
-            const breadcrumbs = getBreadcrumbs();
-
-            return (
-                <div id="app">
-                    {/* Mobile Overlay */}
-                    {isSidebarOpen && <div className="mobile-overlay" onClick={() => setIsSidebarOpen(false)}></div>}
-
-                    {/* Sidebar */}
-                    <nav id="sidebar" className={`custom-scroll ${isSidebarOpen ? 'open' : ''} ${isCollapsed ? 'collapsed' : ''}`}>
-                        <div className="sidebar-logo">
-                            <div className="logo-icon"><i className="ti ti-briefcase-2"></i></div>
-                            <div>
-                                <div className="logo-text">東海大學實習中心</div>
-                                <div className="logo-sub">實習課程書面審查作業系統</div>
-                            </div>
-                        </div>
-                        
-                        <div className="sidebar-nav custom-scroll">
-                            <MenuBtn active={currentHash === '/dashboard-content.html'} label="首頁" icon="ti ti-home" onClick={() => navigate('/dashboard-content.html')} collapsed={isCollapsed} />
-                            
-                            <div className="nav-group-label">審查作業</div>
-                            <MenuBtn active={currentHash === '/list.html'} label="學生待查核名單" icon="ti ti-user-check" onClick={() => navigate('/list.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/review/department.html'} label="系所審查作業" icon="ti ti-building-community" onClick={() => navigate('/review/department.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/review/school.html'} label="校級審查作業" icon="ti ti-building-bank" onClick={() => navigate('/review/school.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/review/institution.html'} label="機構審查作業" icon="ti ti-building-skyscraper" onClick={() => navigate('/review/institution.html')} collapsed={isCollapsed} />
-                            
-                            <div className="nav-group-label">實習資料瀏覽</div>
-                            <MenuBtn active={currentHash === '/intern_view/course.html'} label="實習課程清單" icon="ti ti-book" onClick={() => navigate('/intern_view/course.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/intern_view/students.html'} label="實習學生清單" icon="ti ti-address-book" onClick={() => navigate('/intern_view/students.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/intern_view/institution.html'} label="實習機構清單" icon="ti ti-building" onClick={() => navigate('/intern_view/institution.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/intern_view/record.html'} label="實習記錄清單" icon="ti ti-clipboard-list" onClick={() => navigate('/intern_view/record.html')} collapsed={isCollapsed} />
-                            
-                            <div className="nav-group-label">實習資料管理</div>
-                            <MenuBtn active={currentHash === '/intern_manage/staging_review.html'} label="批次匯入審查中心" icon="ti ti-cloud-upload" onClick={() => navigate('/intern_manage/staging_review.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/intern_manage/course.html'} label="實習課程管理" icon="ti ti-book" onClick={() => navigate('/intern_manage/course.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/intern_manage/students.html'} label="實習學生管理" icon="ti ti-user-cog" onClick={() => navigate('/intern_manage/students.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/intern_manage/institution.html'} label="實習機構管理" icon="ti ti-building" onClick={() => navigate('/intern_manage/institution.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/intern_manage/record.html'} label="實習記錄管理" icon="ti ti-clipboard-check" onClick={() => navigate('/intern_manage/record.html')} collapsed={isCollapsed} />
-                            
-                            <div className="nav-group-label">審查項目設定</div>
-                            <MenuBtn active={currentHash === '/settings/moe-indicators.html'} label="教育部審查指標設定" icon="ti ti-list-check" onClick={() => navigate('/settings/moe-indicators.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/settings/administrative_files.html'} label="行政文件審查設定" icon="ti ti-folder" onClick={() => navigate('/settings/administrative_files.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/settings/students_files.html'} label="學生文件審查設定" icon="ti ti-file-text" onClick={() => navigate('/settings/students_files.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/settings/institution_files.html'} label="機構文件審查設定" icon="ti ti-file-pencil" onClick={() => navigate('/settings/institution_files.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/settings/other_files.html'} label="其他文件審查設定" icon="ti ti-file-plus" onClick={() => navigate('/settings/other_files.html')} collapsed={isCollapsed} />
-                            
-                            <div className="nav-group-label">系統設定</div>
-                            <MenuBtn active={currentHash === '/manage/departments.html'} label="系所清單管理" icon="ti ti-school" onClick={() => navigate('/manage/departments.html')} collapsed={isCollapsed} />
-                            <MenuBtn active={currentHash === '/manage/roles.html'} label="用戶權限管理" icon="ti ti-shield-lock" onClick={() => navigate('/manage/roles.html')} collapsed={isCollapsed} />
-                        </div>
-                        
-                        <div className="sidebar-footer">
-                            <div className={`user-row ${currentHash === 'profile-settings' ? 'bg-[color:var(--bg)]' : ''}`} onClick={() => navigate('profile-settings')} title={isCollapsed ? "個人資料與偏好設定" : ""}>
-                                <div className="user-avatar">{userData?.name ? userData.name.charAt(0) : 'U'}</div>
-                                <div className="user-info">
-                                    <div className="user-name">{userData ? `${userData.jobTitle || ''} ${userData.name || '管理員'}` : '使用者'}</div>
-                                    <div className="user-role">{userData ? `${userData.level1Unit || ''} | ${userData.level2Unit || ''}` : '資料讀取中...'}</div>
-                                </div>
-                                <i className="ti ti-settings settings-icon" style={{fontSize:'16px', color: currentHash === 'profile-settings' ? 'var(--brand)' : 'var(--text-muted)'}}></i>
-                            </div>
-                        </div>
-                    </nav>
-
-                    {/* Main Content Area */}
-                    <div id="main">
-                        <header id="topbar">
-                            <div className="breadcrumb">
-                                {/* Desktop Toggle Button */}
-                                <button className="hidden sm:flex icon-btn menu-toggle mr-3" onClick={() => setIsCollapsed(!isCollapsed)} title="收合/展開側邊選單">
-                                    <i className="ti ti-menu-2"></i>
-                                </button>
-                                
-                                {/* Mobile Toggle Button */}
-                                <button className="mobile-menu-btn" onClick={() => setIsSidebarOpen(true)}>
-                                    <i className="ti ti-menu-2"></i>
-                                </button>
-                                
-                                <span className="hidden sm:inline">實習書審</span>
-                                {breadcrumbs.map((crumb, index) => (
-                                    <React.Fragment key={index}>
-                                        <i className="ti ti-chevron-right arrow hidden sm:inline"></i>
-                                        <span className={index === breadcrumbs.length - 1 ? "crumb-active" : "hidden sm:inline"}>
-                                            {crumb}
-                                        </span>
-                                    </React.Fragment>
-                                ))}
-                            </div>
-                            
-                            <div className="topbar-actions">
-                                <div className="icon-btn" title="系統通知">
-                                    <i className="ti ti-bell"></i>
-                                </div>
-                                <div className="v-divider"></div>
-                                <div className="icon-btn danger" title="登出系統" onClick={handleLogout}>
-                                    <i className="ti ti-logout"></i>
-                                </div>
-                            </div>
-                        </header>
-
-                        <div id="content" className="custom-scroll" style={{ WebkitOverflowScrolling: 'touch' }}>
-                            {currentHash === 'profile-settings' ? (
-                                <ProfileSettingsView user={user} userData={userData} setUserData={setUserData} auth={auth} db={db} />
-                            ) : currentHash ? (
-                                <iframe 
-                                    src={getCacheBustedUrl(currentHash)} 
-                                    key={currentHash}
-                                    className="animate-fade"
-                                    title="Content View"
-                                />
-                            ) : null}
-                        </div>
-                    </div>
-                </div>
-            );
+            if (previousLabel) {
+                breadParent.textContent = previousLabel;
+                breadChild.textContent = labelName;
+                breadChild.classList.remove('hidden');
+                subArrow.classList.remove('hidden');
+            } else {
+                breadParent.textContent = labelName;
+                breadChild.textContent = "";
+                breadChild.classList.add('hidden');
+                subArrow.classList.add('hidden');
+            }
         }
 
-        function MenuBtn({ active, label, icon, onClick, collapsed }) {
-            return (
-                <div onClick={onClick} className={`nav-item ${active ? 'active' : ''}`} title={collapsed ? label : ""}>
-                    <i className={icon}></i>
-                    <span>{label}</span>
-                </div>
-            );
-        }
+        // ─── 核心功能四：登出解構 ───
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            if (confirm("確認要登出東海實習書審作業系統？")) {
+                signOut(auth).then(() => {
+                    localStorage.clear();
+                    window.location.replace('/login.html');
+                });
+            }
+        });
 
-        /* ─── 新增：個人資料與偏好設定視圖 ─── */
-        function ProfileSettingsView({ user, userData, setUserData, auth, db }) {
-            const [isUpdatingPwd, setIsUpdatingPwd] = useState(false);
-            const [pwd, setPwd] = useState('');
-            const [confirmPwd, setConfirmPwd] = useState('');
-            const [showPwd, setShowPwd] = useState(false);
-            const [showConfirmPwd, setShowConfirmPwd] = useState(false);
+        // ─── 核心功能五：個人資料與配色同步 View ───
+        function loadNativeProfileView() {
+            const container = document.getElementById('profile-view-container');
+            const currentTheme = localStorage.getItem('user_theme') || 'blue';
+            const uName = localStorage.getItem('user_name') || '管理員';
+            const uRole = localStorage.getItem('user_role') || 'user';
 
-            const handleUpdatePwd = async (e) => {
-                e.preventDefault();
-                const pwdRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,20}$/;
-                if (!pwdRegex.test(pwd)) {
-                    alert("密碼不符合安全規則！\n請輸入 8~20 個字元，並包含至少一個「大寫字母」、一個「小寫字母」及「數字」。");
-                    return;
-                }
-                if (pwd !== confirmPwd) {
-                    alert("兩次輸入的密碼不相符，請重新確認！");
-                    return;
-                }
-                
-                setIsUpdatingPwd(true);
-                try {
-                    await updatePassword(user, pwd);
-                    alert("✅ 密碼變更成功！下次請使用新密碼登入。");
-                    setPwd('');
-                    setConfirmPwd('');
-                } catch (err) {
-                    if (err.code === 'auth/requires-recent-login') {
-                        alert("基於安全考量，變更密碼需要您最近有登入紀錄。請重新登入後再進行修改。");
-                        signOut(auth);
-                    } else {
-                        alert("密碼變更失敗：" + err.message);
-                    }
-                } finally {
-                    setIsUpdatingPwd(false);
-                }
-            };
-
-            const handleThemeChange = async (themeKey) => {
-                // 1. 即時套用至畫面
-                applyTheme(themeKey);
-                // 2. 更新 React 狀態
-                setUserData(prev => ({ ...prev, theme: themeKey }));
-                // 3. 同步至 Firebase (如果是預設展示帳號則不寫入)
-                if (!userData?.isDefaultAdmin) {
-                    try {
-                        await updateDoc(doc(db, "users", user.uid), { theme: themeKey });
-                    } catch (err) {
-                        console.error("無法儲存主題偏好：", err);
-                    }
-                }
-            };
-
-            return (
-                <div className="w-full max-w-4xl mx-auto p-4 md:p-8 animate-fade">
-                    
-                    {/* 基本資料 (唯讀區塊) */}
-                    <div className="mb-6" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '24px', boxShadow: 'var(--shadow-sm)' }}>
-                        <h3 style={{ fontSize: '15px', fontWeight: '700', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
-                            <i className="ti ti-user-circle text-lg" style={{color: 'var(--brand)'}}></i> 帳號基本資料
+            // 動態渲染出完全符合原版規格的配置畫面，但邏輯完全 SPA 化
+            container.innerHTML = `
+                <div class="w-full max-w-4xl mx-auto p-4 md:p-8 animate-fade">
+                    <div class="mb-6 bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                        <h3 class="text-sm font-bold mb-5 flex items-center gap-2 text-gray-800">
+                            <i class="ti ti-user-circle text-lg" style="color: var(--brand)"></i> 帳號基本資料
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div>
-                                <label className="block text-xs font-semibold mb-1" style={{color: 'var(--text-muted)'}}>姓名</label>
-                                <div className="p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: '13px', color: 'var(--text-primary)' }}>
-                                    {userData?.name || '管理員'}
-                                </div>
+                                <label class="block text-xs font-semibold mb-1 text-gray-400">姓名</label>
+                                <div class="p-3 bg-gray-50 border border-gray-200 rounded-md text-xs text-gray-700">${uName}</div>
                             </div>
                             <div>
-                                <label className="block text-xs font-semibold mb-1" style={{color: 'var(--text-muted)'}}>登入帳號 (Email)</label>
-                                <div className="p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: '13px', color: 'var(--text-primary)' }}>
-                                    {user.email}
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-xs font-semibold mb-1" style={{color: 'var(--text-muted)'}}>所屬一級單位</label>
-                                <div className="p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: '13px', color: 'var(--text-primary)' }}>
-                                    {userData?.level1Unit || '未設定'}
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-xs font-semibold mb-1" style={{color: 'var(--text-muted)'}}>所屬二級單位與職稱</label>
-                                <div className="p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: '13px', color: 'var(--text-primary)' }}>
-                                    {userData?.level2Unit || '未設定'} - {userData?.jobTitle || '無職稱'}
-                                </div>
+                                <label class="block text-xs font-semibold mb-1 text-gray-400">系統權限角色</label>
+                                <div class="p-3 bg-gray-50 border border-gray-200 rounded-md text-xs text-gray-700">${uRole.toUpperCase()}</div>
                             </div>
                         </div>
                     </div>
 
-                    {/* 系統配色 */}
-                    <div className="mb-6" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '24px', boxShadow: 'var(--shadow-sm)' }}>
-                        <h3 style={{ fontSize: '15px', fontWeight: '700', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
-                            <i className="ti ti-palette text-lg" style={{color: 'var(--brand)'}}></i> 自訂系統配色
+                    <div class="mb-6 bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                        <h3 class="text-sm font-bold mb-1 flex items-center gap-2 text-gray-800">
+                            <i class="ti ti-palette text-lg" style="color: var(--brand)"></i> 自訂系統配色
                         </h3>
-                        <p style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '20px'}}>選擇您喜歡的品牌主題色，設定將自動跨裝置同步儲存。</p>
-                        
-                        <div className="flex flex-wrap gap-5">
-                            {Object.entries(THEMES).map(([key, t]) => {
-                                const isActive = (userData?.theme || 'blue') === key;
-                                return (
-                                    <button 
-                                        key={key}
-                                        onClick={() => handleThemeChange(key)}
-                                        className="flex flex-col items-center gap-2 transition-transform hover:-translate-y-1 active:scale-95"
-                                    >
-                                        <div style={{
-                                            width: '44px', height: '44px', borderRadius: '50%', background: t.brand, 
-                                            border: isActive ? '3px solid var(--text-primary)' : '3px solid transparent',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white',
-                                            boxShadow: isActive ? '0 4px 12px rgba(0,0,0,0.1)' : 'var(--shadow-sm)',
-                                            transition: 'all 0.2s'
-                                        }}>
-                                            {isActive && <i className="ti ti-check text-xl"></i>}
-                                        </div>
-                                        <span style={{fontSize: '12px', fontWeight: isActive ? '700' : '500', color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)'}}>
-                                            {t.name}
-                                        </span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
-
-                    {/* 變更密碼 */}
-                    <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '24px', boxShadow: 'var(--shadow-sm)' }}>
-                        <h3 style={{ fontSize: '15px', fontWeight: '700', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
-                            <i className="ti ti-key text-lg" style={{color: 'var(--brand)'}}></i> 變更登入密碼
-                        </h3>
-                        <p style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '20px'}}>請定期更新您的密碼以確保帳號安全。</p>
-                        
-                        <form onSubmit={handleUpdatePwd} className="max-w-md space-y-4">
-                            <div>
-                                <label className="block text-xs font-semibold mb-1" style={{color: 'var(--text-secondary)'}}>輸入新密碼</label>
-                                <div className="relative">
-                                    <input 
-                                        type={showPwd ? "text" : "password"} 
-                                        value={pwd} onChange={e => setPwd(e.target.value)}
-                                        className="input-field pr-10" placeholder="8~20 碼，含大小寫字母及數字" required 
-                                    />
-                                    <button type="button" onClick={() => setShowPwd(!showPwd)} className="absolute right-3 top-1/2 -translate-y-1/2" style={{color: 'var(--text-muted)', fontSize: '18px'}}>
-                                        <i className={showPwd ? 'ti ti-eye-off' : 'ti ti-eye'}></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-xs font-semibold mb-1" style={{color: 'var(--text-secondary)'}}>再次確認新密碼</label>
-                                <div className="relative">
-                                    <input 
-                                        type={showConfirmPwd ? "text" : "password"} 
-                                        value={confirmPwd} onChange={e => setConfirmPwd(e.target.value)}
-                                        className="input-field pr-10" placeholder="請再次輸入相同密碼" required 
-                                    />
-                                    <button type="button" onClick={() => setShowConfirmPwd(!showConfirmPwd)} className="absolute right-3 top-1/2 -translate-y-1/2" style={{color: 'var(--text-muted)', fontSize: '18px'}}>
-                                        <i className={showConfirmPwd ? 'ti ti-eye-off' : 'ti ti-eye'}></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <button 
-                                disabled={isUpdatingPwd || !pwd || !confirmPwd} 
-                                style={{
-                                    width: '100%', background: 'var(--brand)', color: 'white', padding: '10px 16px', 
-                                    borderRadius: 'var(--radius)', fontWeight: '600', border: 'none', 
-                                    cursor: (isUpdatingPwd || !pwd || !confirmPwd) ? 'not-allowed' : 'pointer', 
-                                    opacity: (isUpdatingPwd || !pwd || !confirmPwd) ? 0.6 : 1, 
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                                    transition: 'background var(--transition)', marginTop: '24px'
-                                }}
-                            >
-                                {isUpdatingPwd ? <><i className="ti ti-loader icon-spin"></i> 更新中...</> : "確認變更密碼"}
-                            </button>
-                        </form>
+                        <p class="text-xs text-gray-400 mb-5">選擇您喜歡的品牌主題色，設定將自動同步變更。</p>
+                        <div class="flex flex-wrap gap-5" id="themePickerContainer"></div>
                     </div>
                 </div>
-            );
+            `;
+
+            // 注入主題選擇按鈕
+            const pickerContainer = document.getElementById('themePickerContainer');
+            const themeNames = { blue: '經典藍', emerald: '翡翠綠', violet: '羅蘭紫', rose: '玫瑰紅', slate: '沉穩灰' };
+            
+            Object.keys(THEMES).forEach(key => {
+                const isActive = currentTheme === key;
+                const btn = document.createElement('button');
+                btn.className = 'flex flex-col items-center gap-2 transition-transform hover:-translate-y-0.5 active:scale-95';
+                btn.innerHTML = `
+                    <div style="width: 44px; height: 44px; background: ${THEMES[key].brand}; border: ${isActive ? '3px solid #111827' : '3px solid transparent'}" class="rounded-full flex items-center justify-center text-white shadow-sm transition-all">
+                        ${isActive ? '<i class="ti ti-check text-xl"></i>' : ''}
+                    </div>
+                    <span class="text-xs ${isActive ? 'font-bold text-gray-900' : 'text-gray-500'}">${themeNames[key]}</span>
+                `;
+                btn.onclick = () => {
+                    localStorage.setItem('user_theme', key);
+                    applySystemTheme(key);
+                    loadNativeProfileView(); // 重新局部刷新
+                };
+                pickerContainer.appendChild(btn);
+            });
+        }
+    </script>
+
+    <script>
+        function toggleDesktopSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
         }
 
-        /* ─── 首次登入視圖 (略有精簡重構) ─── */
-        function FirstTimeSetupView({ user, onComplete }) {
-            const [isUpdating, setIsUpdating] = useState(false);
-            const [showPwd, setShowPwd] = useState(false);
-            const [showConfirmPwd, setShowConfirmPwd] = useState(false);
-
-            const handleUpdate = async (e) => {
-                e.preventDefault();
-                const pwd = e.target.password.value;
-                const confirmPwd = e.target.confirmPassword.value;
-                const pwdRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,20}$/;
-                if (!pwdRegex.test(pwd)) {
-                    alert("密碼不符合安全規則！\n請輸入 8~20 個字元，並包含至少一個「大寫字母」、一個「小寫字母」及「數字」。");
-                    return;
-                }
-                if (pwd !== confirmPwd) {
-                    alert("兩次輸入的密碼不相符，請重新確認！");
-                    return;
-                }
-                setIsUpdating(true);
-                try {
-                    await updatePassword(user, pwd);
-                    await updateDoc(doc(db, "users", user.uid), { isFirstLogin: false });
-                    alert("✅ 專屬密碼設定成功！即將為您導向系統。");
-                    onComplete();
-                } catch (err) {
-                    if (err.code === 'auth/requires-recent-login') {
-                        alert("基於安全考量，請重新登入後再進行密碼設定。");
-                        signOut(auth);
-                    } else { alert("密碼設定失敗：" + err.message); }
-                } finally { setIsUpdating(false); }
-            };
-
-            return (
-                <div className="min-h-screen w-full flex items-center justify-center p-4" style={{backgroundColor: 'var(--bg)'}}>
-                    <form onSubmit={handleUpdate} className="w-full max-w-md animate-fade" style={{background: 'var(--surface)', padding: '40px', borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow)', border: '1px solid var(--border)'}}>
-                        <div className="flex flex-col items-center mb-8 text-center">
-                            <div style={{width: '48px', height: '48px', borderRadius: 'var(--radius-lg)', background: 'var(--success-bg)', color: 'var(--success)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', fontSize: '24px'}}>
-                                <i className="ti ti-user-key"></i>
-                            </div>
-                            <h1 style={{fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)'}}>初次啟用帳號</h1>
-                            <p style={{fontSize: '13px', color: 'var(--text-secondary)', marginTop: '8px', lineHeight: '1.6'}}>
-                                歡迎加入實習書審平台！<br/>基於安全規範，請設定您的專屬登入密碼。
-                            </p>
-                        </div>
-                        <div className="space-y-4">
-                            <div>
-                                <div className="relative">
-                                    <input name="password" type={showPwd ? "text" : "password"} placeholder="設定新密碼" className="input-field pr-10" required />
-                                    <button type="button" onClick={() => setShowPwd(!showPwd)} className="absolute right-3 top-1/2 -translate-y-1/2" style={{color: 'var(--text-muted)', fontSize: '18px'}}>
-                                        <i className={showPwd ? 'ti ti-eye-off' : 'ti ti-eye'}></i>
-                                    </button>
-                                </div>
-                                <p style={{fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px'}}><i className="ti ti-info-circle" style={{color: 'var(--brand)', fontSize: '14px'}}></i> 需為 8~20 碼，並包含大小寫字母與數字。</p>
-                            </div>
-                            <div className="relative">
-                                <input name="confirmPassword" type={showConfirmPwd ? "text" : "password"} placeholder="再次確認新密碼" className="input-field pr-10" required />
-                                <button type="button" onClick={() => setShowConfirmPwd(!showConfirmPwd)} className="absolute right-3 top-1/2 -translate-y-1/2" style={{color: 'var(--text-muted)', fontSize: '18px'}}>
-                                    <i className={showConfirmPwd ? 'ti ti-eye-off' : 'ti ti-eye'}></i>
-                                </button>
-                            </div>
-                        </div>
-                        <button disabled={isUpdating} style={{width: '100%', background: 'var(--brand)', color: 'white', padding: '12px', borderRadius: 'var(--radius)', fontWeight: '600', marginTop: '24px', border: 'none', cursor: isUpdating ? 'not-allowed' : 'pointer', opacity: isUpdating ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'}}>
-                            {isUpdating ? <><i className="ti ti-loader icon-spin text-lg"></i> 設定中...</> : "確認設定並進入系統"}
-                        </button>
-                    </form>
-                </div>
-            );
+        function toggleMobileSidebar(open) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            if (open) {
+                sidebar.classList.add('open');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.remove('open');
+                overlay.classList.add('hidden');
+            }
         }
-
-        /* ─── 登入視圖 ─── */
-        function LoginView() {
-            const [isLoggingIn, setIsLoggingIn] = useState(false);
-            const [email, setEmail] = useState('');
-            const [password, setPassword] = useState('');
-            const [showPassword, setShowPassword] = useState(false);
-
-            const handleLogin = async (e) => {
-                e.preventDefault();
-                setIsLoggingIn(true);
-                let emailInput = email.trim();
-
-                if (emailInput && !emailInput.includes('@')) {
-                    const fullEmail = emailInput + '@thu.edu.tw';
-                    setEmail(fullEmail); 
-                    emailInput = fullEmail;
-                }
-
-                try {
-                    await signInWithEmailAndPassword(auth, emailInput, password);
-                } catch (err) {
-                    alert("登入失敗：請確認帳號或密碼是否正確。\n(若為初次啟用，請使用管理員配發之初始密碼)");
-                } finally { setIsLoggingIn(false); }
-            };
-
-            return (
-                <div className="min-h-screen w-full flex items-center justify-center p-4" style={{backgroundColor: 'var(--bg)'}}>
-                    <form onSubmit={handleLogin} className="w-full max-w-md animate-fade" style={{background: 'var(--surface)', padding: '40px', borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow)', border: '1px solid var(--border)'}}>
-                        <div className="flex flex-col items-center mb-8 text-center">
-                            <div style={{width: '56px', height: '56px', borderRadius: 'var(--radius-lg)', background: 'var(--brand)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', fontSize: '28px', boxShadow: 'var(--shadow-sm)'}}>
-                                <i className="ti ti-user-key"></i>
-                            </div>
-                            <h1 style={{fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)'}}>東海大學實習中心</h1>
-                            <p style={{fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px'}}>實習課程書面審查作業系統</p>
-                        </div>
-                        <div className="space-y-4">
-                            <input 
-                                name="email" 
-                                type="text" 
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="請輸入帳號或電子郵件 (@thu.edu.tw)" 
-                                className="input-field"
-                                required 
-                            />
-                            <div className="relative">
-                                <input 
-                                    name="password" 
-                                    type={showPassword ? "text" : "password"} 
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="請輸入密碼" 
-                                    className="input-field pr-10"
-                                    required 
-                                />
-                                <button 
-                                    type="button" 
-                                    onClick={() => setShowPassword(!showPassword)} 
-                                    className="absolute right-3 top-1/2 -translate-y-1/2"
-                                    style={{color: 'var(--text-muted)', fontSize: '18px'}}
-                                >
-                                    <i className={showPassword ? 'ti ti-eye-off' : 'ti ti-eye'}></i>
-                                </button>
-                            </div>
-                        </div>
-                        <button disabled={isLoggingIn} style={{width: '100%', background: 'var(--brand)', color: 'white', padding: '14px', borderRadius: 'var(--radius)', fontWeight: '600', marginTop: '24px', border: 'none', cursor: isLoggingIn ? 'not-allowed' : 'pointer', opacity: isLoggingIn ? 0.7 : 1, transition: 'background var(--transition)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'}}>
-                            {isLoggingIn ? <><i className="ti ti-loader icon-spin text-lg"></i> 連線中...</> : "進入系統"}
-                        </button>
-                    </form>
-                </div>
-            );
-        }
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
     </script>
 </body>
 </html>
