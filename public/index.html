@@ -20,7 +20,7 @@
         }
         html, body, #app { height: 100%; overflow: hidden; font-family: 'Noto Sans TC', sans-serif; color: var(--text-primary); background: var(--bg); -webkit-font-smoothing: antialiased; }
         
-        /* 💡 預設完全隱藏，待 Firebase 驗證通過後才拉開帷幕，100% 防止後台選單閃現 */
+        /* 隱藏直到身分驗證完成 */
         body { visibility: hidden; }
 
         #sidebar { width: var(--sidebar-w); background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; z-index: 30; transition: width var(--transition), transform var(--transition); }
@@ -34,7 +34,6 @@
         .nav-item i { font-size: 18px; flex-shrink: 0; text-align: center; width: 20px; }
         .nav-item:hover { background: var(--bg); color: var(--text-primary); }
         .nav-item.active { background: var(--brand-light); color: var(--brand); font-weight: 700; }
-        #content-frame { border: none; width: 100%; height: 100%; background: transparent; }
         .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
         @media (max-width: 768px) { #sidebar { position: fixed; height: 100%; transform: translateX(-100%); } #sidebar.open { transform: translateX(0); } .mobile-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 25; } }
@@ -48,7 +47,7 @@
 
     <div id="sysLoading" class="fixed inset-0 flex flex-col items-center justify-center bg-[#f8f9fc] z-[9999]">
         <i class="ti ti-loader icon-spin text-4xl" style="color: var(--brand)"></i>
-        <p class="mt-3 text-sm font-bold text-gray-400">權限安全性查核中...</p>
+        <p class="mt-3 text-sm font-bold text-gray-400">系統初始化中...</p>
     </div>
 
     <div id="mobileOverlay" class="mobile-overlay hidden" onclick="toggleMobileSidebar(false)"></div>
@@ -67,80 +66,18 @@
             </div>
             
             <div class="flex-1 px-2 py-3 overflow-y-auto custom-scroll" id="sidebarMenu">
-                <div class="nav-item" data-page="dashboard" data-path="/dashboard-content.html" data-roles="all">
-                    <i class="ti ti-home"></i><span>首頁</span>
-                </div>
-                
-                <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-4 mb-1" data-roles="admin,teacher">審查作業</div>
-                <div class="nav-item" data-page="list" data-path="/list.html" data-roles="admin,teacher">
-                    <i class="ti ti-user-check"></i><span>學生待查核名單</span>
-                </div>
-                <div class="nav-item" data-page="review-dept" data-path="/review/department.html" data-roles="admin,teacher">
-                    <i class="ti ti-building-community"></i><span>系所審查作業</span>
-                </div>
-                <div class="nav-item" data-page="review-school" data-path="/review/school.html" data-roles="admin">
-                    <i class="ti ti-building-bank"></i><span>校級審查作業</span>
-                </div>
-                <div class="nav-item" data-page="review-inst" data-path="/review/institution.html" data-roles="admin,teacher">
-                    <i class="ti ti-building-skyscraper"></i><span>機構審查作業</span>
-                </div>
-                
-                <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-4 mb-1" data-roles="admin,teacher">實習資料瀏覽</div>
-                <div class="nav-item" data-page="view-course" data-path="/intern_view/course.html" data-roles="admin,teacher">
-                    <i class="ti ti-book"></i><span>實習課程清單</span>
-                </div>
-                <div class="nav-item" data-page="view-students" data-path="/intern_view/students.html" data-roles="admin,teacher">
-                    <i class="ti ti-address-book"></i><span>實習學生清單</span>
-                </div>
-                <div class="nav-item" data-page="view-inst" data-path="/intern_view/institution.html" data-roles="admin,teacher">
-                    <i class="ti ti-building"></i><span>實習機構清單</span>
-                </div>
-                <div class="nav-item" data-page="view-record" data-path="/intern_view/record.html" data-roles="admin,teacher">
-                    <i class="ti ti-clipboard-list"></i><span>實習記錄清單</span>
-                </div>
-                
-                <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-4 mb-1" data-roles="admin">實習資料管理</div>
-                <div class="nav-item" data-page="manage-staging" data-path="/intern_manage/staging_review.html" data-roles="admin">
-                    <i class="ti ti-cloud-upload"></i><span>批次匯入審查中心</span>
-                </div>
-                <div class="nav-item" data-page="manage-course" data-path="/intern_manage/course.html" data-roles="admin">
-                    <i class="ti ti-book"></i><span>實習課程管理</span>
-                </div>
-                <div class="nav-item" data-page="manage-students" data-path="/intern_manage/students.html" data-roles="admin">
-                    <i class="ti ti-user-cog"></i><span>實習學生管理</span>
-                </div>
-                <div class="nav-item" data-page="manage-inst" data-path="/intern_manage/institution.html" data-roles="admin">
-                    <i class="ti ti-building"></i><span>實習機構管理</span>
-                </div>
-                <div class="nav-item" data-page="manage-record" data-path="/intern_manage/record.html" data-roles="admin">
-                    <i class="ti ti-clipboard-check"></i><span>實習記錄管理</span>
-                </div>
-                
-                <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-4 mb-1" data-roles="admin">審查項目設定</div>
-                <div class="nav-item" data-page="set-moe" data-path="/settings/moe-indicators.html" data-roles="admin">
-                    <i class="ti ti-list-check"></i><span>教育部審查指標設定</span>
-                </div>
-                <div class="nav-item" data-page="set-admin" data-path="/settings/administrative_files.html" data-roles="admin">
-                    <i class="ti ti-folder"></i><span>行政文件審查設定</span>
-                </div>
-                <div class="nav-item" data-page="set-stu" data-path="/settings/students_files.html" data-roles="admin">
-                    <i class="ti ti-file-text"></i><span>學生文件審查設定</span>
-                </div>
-                <div class="nav-item" data-page="set-inst" data-path="/settings/institution_files.html" data-roles="admin">
-                    <i class="ti ti-file-pencil"></i><span>機構文件審查設定</span>
+                <div class="nav-item" data-hash="dashboard" data-roles="all">
+                    <i class="ti ti-home"></i><span>首頁看板</span>
                 </div>
                 
                 <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-4 mb-1" data-roles="admin">系統設定</div>
-                <div class="nav-item" data-page="sys-dept" data-path="/manage/departments.html" data-roles="admin">
-                    <i class="ti ti-school"></i><span>系所清單管理</span>
-                </div>
-                <div class="nav-item" data-page="sys-roles" data-path="/manage/roles.html" data-roles="admin">
+                <div class="nav-item" data-hash="manage/roles" data-roles="admin">
                     <i class="ti ti-shield-lock"></i><span>用戶權限管理</span>
                 </div>
-            </div>
+                </div>
             
             <div class="p-2 border-t border-gray-200 bg-white flex-shrink-0">
-                <div class="nav-item !mb-0" id="profileBtn" data-page="profile" data-path="profile-settings" data-roles="all">
+                <div class="nav-item !mb-0" id="profileBtn" data-hash="profile" data-roles="all">
                     <div class="w-7 h-7 rounded-full text-xs font-bold flex items-center justify-center" style="background: var(--brand-light); color: var(--brand); border: 1.5px solid var(--brand-border)" id="userAvatar">U</div>
                     <div class="user-info flex-1 min-w-0">
                         <div class="text-xs font-bold text-gray-900 truncate" id="userTitleName">載入中...</div>
@@ -163,26 +100,18 @@
                 <div class="flex items-center gap-1.5 text-xs font-medium text-gray-400 flex-1 truncate">
                     <span class="hidden sm:inline">實習書審</span>
                     <i class="ti ti-chevron-right hidden sm:inline"></i>
-                    <span id="breadcrumbParent">首頁</span>
-                    <i class="ti ti-chevron-right id-sub-arrow hidden"></i>
-                    <span id="breadcrumbChild" class="text-gray-900 font-semibold"></span>
+                    <span id="breadcrumbChild" class="text-gray-900 font-semibold">載入中...</span>
                 </div>
                 
                 <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-md border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 cursor-pointer relative">
-                        <i class="ti ti-bell text-lg"></i>
-                    </div>
-                    <div class="w-px h-5 bg-gray-200 mx-1"></div>
-                    <div class="w-8 h-8 rounded-md border border-red-100 bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-100 cursor-pointer" id="logoutBtn">
+                    <div class="w-8 h-8 rounded-md border border-red-100 bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-100 cursor-pointer transition" id="logoutBtn">
                         <i class="ti ti-logout text-lg"></i>
                     </div>
                 </div>
             </header>
 
-            <div id="content" class="flex-1 overflow-hidden bg-[#f8f9fc]">
-                <iframe id="content-frame" class="w-full h-full hidden animate-fade"></iframe>
-                <div id="profile-view-container" class="w-full h-full overflow-y-auto hidden"></div>
-            </div>
+            <div id="content-view-container" class="flex-1 overflow-y-auto bg-[#f8f9fc] p-4 md:p-6 custom-scroll">
+                </div>
         </div>
     </div>
 
@@ -191,21 +120,13 @@
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const THEMES = {
-            blue: { brand: '#1a56db', hover: '#1649c0', light: '#eff4ff', border: '#c3d2f9' },
-            emerald: { brand: '#059669', hover: '#047857', light: '#ecfdf5', border: '#a7f3d0' },
-            violet: { brand: '#7c3aed', hover: '#6d28d9', light: '#f5f3ff', border: '#ddd6fe' },
-            rose: { brand: '#e11d48', hover: '#be123c', light: '#fff1f2', border: '#fecdd3' },
-            slate: { brand: '#475569', hover: '#334155', light: '#f8fafc', border: '#cbd5e1' }
-        };
-
+        // 主題配置
+        const THEMES = { blue: { brand: '#1a56db', hover: '#1649c0', light: '#eff4ff', border: '#c3d2f9' } };
         const applySystemTheme = (themeKey) => {
             const t = THEMES[themeKey] || THEMES.blue;
             const root = document.documentElement;
-            root.style.setProperty('--brand', t.brand);
-            root.style.setProperty('--brand-hover', t.hover);
-            root.style.setProperty('--brand-light', t.light);
-            root.style.setProperty('--brand-border', t.border);
+            root.style.setProperty('--brand', t.brand); root.style.setProperty('--brand-hover', t.hover);
+            root.style.setProperty('--brand-light', t.light); root.style.setProperty('--brand-border', t.border);
         };
 
         const firebaseConfig = {
@@ -221,11 +142,11 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // 💡 拋棄上方的同步踢除，完全交由全域安全生命週期控制
-        const cacheTheme = localStorage.getItem('user_theme') || 'blue';
-        applySystemTheme(cacheTheme);
+        // 啟動視圖
+        applySystemTheme('blue');
         document.body.style.visibility = 'visible';
 
+        // 登入狀態與權限控管
         onAuthStateChanged(auth, async (user) => {
             const sysLoading = document.getElementById('sysLoading');
             if (user) {
@@ -233,55 +154,45 @@
                     let role = localStorage.getItem('user_role');
                     let name = localStorage.getItem('user_name');
 
-                    // 💡 如果本地快取遺失（例如手動清除或新裝置驗證過來），主動由後端安全鏈補發抓取
                     if (!role) {
                         const userDoc = await getDoc(doc(db, "users", user.uid));
                         if (userDoc.exists()) {
                             const d = userDoc.data();
-                            role = d.role || 'user';
-                            name = d.name || '使用者';
-                            localStorage.setItem('user_role', role);
-                            localStorage.setItem('user_name', name);
-                            localStorage.setItem('user_theme', d.theme || 'blue');
+                            role = d.role || 'user'; name = d.name || '使用者';
+                            localStorage.setItem('user_role', role); localStorage.setItem('user_name', name);
                         } else if (user.email === 'thu.isac.review@gmail.com') {
                             role = 'admin'; name = '最高權限管理者';
-                            localStorage.setItem('user_role', role);
-                            localStorage.setItem('user_name', name);
+                            localStorage.setItem('user_role', role); localStorage.setItem('user_name', name);
                         }
                     }
 
-                    if (!role) {
-                        throw new Error("無權限身分");
-                    }
+                    if (!role) throw new Error("無權限身分");
 
                     document.getElementById('userAvatar').textContent = name.charAt(0);
                     document.getElementById('userTitleName').textContent = name;
                     document.getElementById('userRoleTag').textContent = role.toUpperCase();
 
                     filterSidebarMenuByRole(role);
-                    initSpaRouter();
+                    
+                    // 💡 初始化純 JS 動態路由引擎
+                    initPureSpaRouter(db);
 
                     if(sysLoading) sysLoading.style.display = 'none';
 
                 } catch (err) {
                     console.error("安全性結構建置失敗:", err);
-                    localStorage.clear();
-                    window.location.replace('login.html');
+                    localStorage.clear(); window.location.replace('login.html');
                 }
             } else {
-                localStorage.clear();
-                window.location.replace('login.html');
+                localStorage.clear(); window.location.replace('login.html');
             }
         });
 
+        // 權限過濾
         function filterSidebarMenuByRole(userRole) {
-            const menuItems = document.querySelectorAll('#sidebarMenu .nav-item, #sidebarMenu .nav-group-label');
-            menuItems.forEach(item => {
-                const allowedRoles = item.getAttribute('data-roles');
-                if (allowedRoles === 'all') {
-                    item.style.display = 'flex'; return;
-                }
-                if (allowedRoles.split(',').includes(userRole)) {
+            document.querySelectorAll('#sidebarMenu .nav-item, #sidebarMenu .nav-group-label').forEach(item => {
+                const allowed = item.getAttribute('data-roles');
+                if (allowed === 'all' || allowed.split(',').includes(userRole)) {
                     item.style.display = item.classList.contains('nav-group-label') ? 'block' : 'flex';
                 } else {
                     item.style.display = 'none';
@@ -289,151 +200,73 @@
             });
         }
 
-        function initSpaRouter() {
-            const contentFrame = document.getElementById('content-frame');
-            const profileContainer = document.getElementById('profile-view-container');
+        // 💡 核心引擎：動態載入 JS 模組
+        function initPureSpaRouter(dbInstance) {
+            const container = document.getElementById('content-view-container');
 
-            const handleHashRouting = () => {
-                let hash = window.location.hash.replace('#', '');
-                if (!hash) {
-                    window.location.hash = '/dashboard-content.html'; return;
-                }
+            const loadView = async () => {
+                let hash = window.location.hash.replace('#', '') || 'dashboard';
 
+                // 更新選單高亮與麵包屑
                 document.querySelectorAll('#sidebar .nav-item, #profileBtn').forEach(btn => {
-                    const btnPath = btn.getAttribute('data-path');
-                    if (hash === btnPath || (hash === 'profile-settings' && btn.getAttribute('data-page') === 'profile')) {
+                    const btnHash = btn.getAttribute('data-hash');
+                    if (hash === btnHash) {
                         btn.classList.add('active');
-                        updateBreadcrumbs(btn);
+                        document.getElementById('breadcrumbChild').textContent = btn.querySelector('span') ? btn.querySelector('span').textContent : '設定';
                     } else {
                         btn.classList.remove('active');
                     }
                 });
 
-                if (hash === 'profile-settings') {
-                    contentFrame.classList.add('hidden');
-                    profileContainer.classList.remove('hidden');
-                    loadNativeProfileView(); return;
-                }
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-64 text-gray-400">
+                        <i class="ti ti-loader icon-spin text-3xl text-blue-500 mb-2"></i>
+                        <p class="text-sm">載入模組中...</p>
+                    </div>
+                `;
 
-                profileContainer.classList.add('hidden');
-                contentFrame.classList.remove('hidden');
-                
-                const currentSrc = contentFrame.contentWindow.location.pathname + contentFrame.contentWindow.location.search;
-                if (!currentSrc.includes(hash)) {
-                    contentFrame.src = hash;
+                try {
+                    // 動態引入對應的 JS 檔案 (如：./assets/js/pages/manage/roles.js)
+                    // 如果是開發測試還沒建檔，我們用 catch 處理 404
+                    const module = await import(`./assets/js/pages/${hash}.js`);
+                    
+                    // 呼叫模組內導出的 render 函數，並把資料庫實例傳給它
+                    if(module.render) {
+                        await module.render('content-view-container', { db: dbInstance });
+                    }
+                } catch (error) {
+                    console.warn("路由加載失敗:", error);
+                    container.innerHTML = `
+                        <div class="flex flex-col items-center justify-center h-64 text-gray-500">
+                            <i class="ti ti-plug-x text-5xl text-gray-300 mb-3"></i>
+                            <h2 class="text-lg font-bold">該功能模組建置中</h2>
+                            <p class="text-xs mt-1 text-gray-400">找不到路徑：/assets/js/pages/${hash}.js</p>
+                        </div>
+                    `;
                 }
             };
 
-            window.addEventListener('hashchange', handleHashRouting);
-            handleHashRouting();
+            window.addEventListener('hashchange', loadView);
+            loadView(); // 初次載入觸發
 
-            document.querySelectorAll('#sidebarMenu .nav-item, #profileBtn').forEach(item => {
+            document.querySelectorAll('#sidebar .nav-item, #profileBtn').forEach(item => {
                 item.addEventListener('click', () => {
-                    const path = item.getAttribute('data-path');
-                    if(path) {
-                        window.location.hash = path;
-                        toggleMobileSidebar(false);
-                    }
+                    const path = item.getAttribute('data-hash');
+                    if(path) { window.location.hash = path; toggleMobileSidebar(false); }
                 });
             });
-        }
-
-        function updateBreadcrumbs(activeElement) {
-            const spanEl = activeElement.querySelector('span');
-            const labelName = spanEl ? spanEl.textContent : (activeElement.id === 'profileBtn' ? '個人資料設定' : '系統選項');
-            const breadParent = document.getElementById('breadcrumbParent');
-            const breadChild = document.getElementById('breadcrumbChild');
-            const subArrow = document.querySelector('.id-sub-arrow');
-
-            let previousLabel = "";
-            let sibling = activeElement.previousElementSibling;
-            while (sibling) {
-                if (sibling.classList.contains('nav-group-label') && sibling.style.display !== 'none') {
-                    previousLabel = sibling.textContent; break;
-                }
-                sibling = sibling.previousElementSibling;
-            }
-
-            if (previousLabel) {
-                breadParent.textContent = previousLabel; breadChild.textContent = labelName;
-                breadChild.classList.remove('hidden'); subArrow.classList.remove('hidden');
-            } else {
-                breadParent.textContent = labelName; breadChild.textContent = "";
-                breadChild.classList.add('hidden'); subArrow.classList.add('hidden');
-            }
         }
 
         document.getElementById('logoutBtn').addEventListener('click', () => {
-            if (confirm("確認要登出東海實習書審作業系統？")) {
-                signOut(auth).then(() => {
-                    localStorage.clear(); window.location.replace('login.html');
-                });
-            }
+            if (confirm("確認登出？")) { signOut(auth).then(() => { localStorage.clear(); window.location.replace('login.html'); }); }
         });
-
-        function loadNativeProfileView() {
-            const container = document.getElementById('profile-view-container');
-            const currentTheme = localStorage.getItem('user_theme') || 'blue';
-            const uName = localStorage.getItem('user_name') || '管理員';
-            const uRole = localStorage.getItem('user_role') || 'user';
-
-            container.innerHTML = `
-                <div class="w-full max-w-4xl mx-auto p-4 md:p-8 animate-fade">
-                    <div class="mb-6 bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-                        <h3 class="text-sm font-bold mb-5 flex items-center gap-2 text-gray-800">
-                            <i class="ti ti-user-circle text-lg" style="color: var(--brand)"></i> 帳號基本資料
-                        </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div>
-                                <label class="block text-xs font-semibold mb-1 text-gray-400">姓名</label>
-                                <div class="p-3 bg-gray-50 border border-gray-200 rounded-md text-xs text-gray-700">${uName}</div>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold mb-1 text-gray-400">系統權限角色</label>
-                                <div class="p-3 bg-gray-50 border border-gray-200 rounded-md text-xs text-gray-700">${uRole.toUpperCase()}</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mb-6 bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-                        <h3 class="text-sm font-bold mb-1 flex items-center gap-2 text-gray-800">
-                            <i class="ti ti-palette text-lg" style="color: var(--brand)"></i> 自訂系統配色
-                        </h3>
-                        <p class="text-xs text-gray-400 mb-5">選擇您喜歡的品牌主題色，設定將自動同步變更。</p>
-                        <div class="flex flex-wrap gap-5" id="themePickerContainer"></div>
-                    </div>
-                </div>
-            `;
-
-            const pickerContainer = document.getElementById('themePickerContainer');
-            const themeNames = { blue: '經典藍', emerald: '翡翠綠', violet: '羅蘭紫', rose: '玫瑰紅', slate: '沉穩灰' };
-            
-            Object.keys(THEMES).forEach(key => {
-                const isActive = currentTheme === key;
-                const btn = document.createElement('button');
-                btn.className = 'flex flex-col items-center gap-2 transition-transform hover:-translate-y-0.5 active:scale-95';
-                btn.innerHTML = `
-                    <div style="width: 44px; height: 44px; background: ${THEMES[key].brand}; border: ${isActive ? '3px solid #111827' : '3px solid transparent'}" class="rounded-full flex items-center justify-center text-white shadow-sm transition-all">
-                        ${isActive ? '<i class="ti ti-check text-xl"></i>' : ''}
-                    </div>
-                    <span class="text-xs ${isActive ? 'font-bold text-gray-900' : 'text-gray-500'}">${themeNames[key]}</span>
-                `;
-                btn.onclick = () => {
-                    localStorage.setItem('user_theme', key);
-                    applySystemTheme(key);
-                    loadNativeProfileView(); 
-                };
-                pickerContainer.appendChild(btn);
-            });
-        }
     </script>
 
     <script>
         function toggleDesktopSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
         function toggleMobileSidebar(open) {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('mobileOverlay');
-            if (open) { sidebar.classList.add('open'); overlay.classList.remove('hidden'); }
-            else { sidebar.classList.remove('open'); overlay.classList.add('hidden'); }
+            if (open) { document.getElementById('sidebar').classList.add('open'); document.getElementById('mobileOverlay').classList.remove('hidden'); }
+            else { document.getElementById('sidebar').classList.remove('open'); document.getElementById('mobileOverlay').classList.add('hidden'); }
         }
     </script>
 </body>
