@@ -146,9 +146,9 @@
         const togglePasswordBtn = document.getElementById('togglePassword');
         const errorMsg = document.getElementById('errorMsg');
 
-        // 狀態攔截：如果已經登入，直接跳轉到 index.html
+        // 💡 狀態攔截修正：必須「已登入」且「本地已有權限資料」才允許自動跳轉
         onAuthStateChanged(auth, (user) => {
-            if (user) {
+            if (user && localStorage.getItem('user_role')) {
                 window.location.replace('index.html');
             }
         });
@@ -183,7 +183,7 @@
             // 自動補齊東海網域
             if (emailVal && !emailVal.includes('@')) {
                 emailVal += '@thu.edu.tw';
-                emailInput.value = emailVal; // 更新畫面讓使用者知道
+                emailInput.value = emailVal;
             }
 
             try {
@@ -193,19 +193,21 @@
 
                 // 2. 獲取使用者的資料與權限角色
                 let userData = null;
-                const userDoc = await getDoc(doc(db, "users", user.uid));
-                
-                if (userDoc.exists()) {
-                    userData = userDoc.data();
-                } else if (user.email === 'thu.isac.review@gmail.com') {
-                    // 預設最高權限管理員處理
+                try {
+                    // 防護：若 Firestore 權限不足或無網路，不會卡死
+                    const userDoc = await getDoc(doc(db, "users", user.uid));
+                    if (userDoc.exists()) {
+                        userData = userDoc.data();
+                    }
+                } catch (dbError) {
+                    console.warn("無法讀取個人資料，將採用預設身分：", dbError);
+                }
+
+                // 針對預設開發者信箱給予管理員權限
+                if (!userData && user.email === 'thu.isac.review@gmail.com') {
                     userData = {
-                        role: 'admin', // 賦予管理員角色
-                        level1Unit: '系統管理中心',
-                        level2Unit: '核心維運組',
-                        jobTitle: '管理員',
+                        role: 'admin',
                         name: '預設管理者',
-                        isFirstLogin: false,
                         theme: 'blue'
                     };
                 }
@@ -213,17 +215,16 @@
                 // 3. 將關鍵資料存入 localStorage 供 SPA 讀取 (RBAC 核心)
                 if (userData) {
                     localStorage.setItem('user_name', userData.name || '使用者');
-                    localStorage.setItem('user_role', userData.role || 'user'); // 預設為 user
+                    localStorage.setItem('user_role', userData.role || 'user'); 
                     localStorage.setItem('user_theme', userData.theme || 'blue');
-                    
-                    if (userData.isFirstLogin) {
-                        localStorage.setItem('must_change_password', '1');
-                    } else {
-                        localStorage.removeItem('must_change_password');
-                    }
+                } else {
+                    // 萬一完全沒有建立資料，給予基礎權限避免報錯
+                    localStorage.setItem('user_name', '一般訪客');
+                    localStorage.setItem('user_role', 'user'); 
+                    localStorage.setItem('user_theme', 'blue');
                 }
 
-                // 4. 跳轉至系統主框架
+                // 4. 確實存完資料後，再手動跳轉至系統主框架
                 window.location.replace('index.html');
 
             } catch (error) {
