@@ -133,7 +133,7 @@ function injectUI(container) {
             .toggle-label.inactive { color: var(--text-muted); }
             .row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; opacity: 1; }
 
-            .pagination-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; border: 1px solid var(--border); background: var(--surface); border-bottom-left-radius: var(--radius-lg); border-bottom-right-radius: var(--radius-lg); flex-shrink: 0; flex-wrap: wrap; gap: 10px; }
+            .pagination-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; gap: 10px; }
             .pagination-info { font-size: 12px; color: var(--text-muted); }
             .pagination-info strong { color: var(--text-primary); }
             .pagination-bar-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
