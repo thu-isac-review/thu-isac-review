@@ -1418,14 +1418,12 @@ input[type=number] { -moz-appearance: textfield; }
                 
                 const stu = allStudents.find(s => s.student_id === stuId);
                 const stuDept = stu ? getDeptShort(stu.department) : '未綁定學系';
-
-                const courseCount = Array.isArray(data.courses) ? data.courses.length : 0;
-                let totalCredits = 0;
-                if (courseCount > 0) {
-                    data.courses.forEach(cid => {
-                        const c = allCourses.find(x => x.id === cid);
-                        if (c && c.credits) totalCredits += Number(c.credits);
-                    });
+            
+                // ✨【關鍵新增】解決主畫面表格配對重名機構的防呆邏輯
+                let instMatch = allInsts.find(inst => inst.id === data.inst_id);
+                if (!instMatch) {
+                    // 相容舊資料：如果這筆紀錄以前沒存過 inst_id，就用名稱去盲猜
+                    instMatch = allInsts.find(inst => inst.name === data.inst_raw);
                 }
 
                 let coursesHtml = '-';
