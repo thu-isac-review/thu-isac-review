@@ -1052,12 +1052,6 @@ input[type=number] { -moz-appearance: textfield; }
                 if (!e.target.closest('#input-institution') && !e.target.closest('#institution-dropdown')) instDropdown?.classList.remove('show');
                 if (!e.target.closest('#input-course-search') && !e.target.closest('#course-dropdown')) courseDropdown?.classList.remove('show');
             });
-
-            document.getElementById('input-institution')?.addEventListener('input', (e) => {
-                // 當使用者手動打字或修改時，清除之前藏匿的精準辨識標籤
-                delete e.target.dataset.selectedAddress;
-                delete e.target.dataset.selectedTaxId;
-            });
         }
 
         window.updateRespDeptOptions = (preselectedValue = '') => {
@@ -1131,26 +1125,17 @@ input[type=number] { -moz-appearance: textfield; }
             
             let html = '';
             filtered.slice(0, 30).forEach(i => {
-                const safeAddress = (i.address || '').replace(/'/g, "\\'");
-                const safeTaxId = (i.tax_id || '').replace(/'/g, "\\'");
-                const safeName = i.name.replace(/'/g, "\\'");
-            
                 html += `
-                <div class="search-item" onclick="window.selectInst('${safeName}', '${safeAddress}', '${safeTaxId}')">
+                <div class="search-item" onclick="window.selectInst('${i.name}')">
                     <div class="search-item-title">${i.name}</div>
                     <div class="search-item-desc">${i.tax_id || '統編：無統一編號'} | ${i.address || ''}</div>
                 </div>`;
             });
             dropdown.innerHTML = html;
         }
-       window.selectInst = (name, address, taxId) => { 
+        window.selectInst = (name) => { 
             const instIn = document.getElementById('input-institution');
-            instIn.value = name; // 儲存與顯示都維持乾淨的名稱
-            
-            // 把精準辨識用的資訊藏在 dataset 裡面
-            instIn.dataset.selectedAddress = address || '';
-            instIn.dataset.selectedTaxId = taxId || '';
-        
+            instIn.value = name; 
             document.getElementById('institution-dropdown').classList.remove('show');
             document.getElementById('btn-info-inst').disabled = false;
         };
@@ -1243,27 +1228,8 @@ input[type=number] { -moz-appearance: textfield; }
                     <div class="info-item"><span class="info-item-label">所屬學院</span><div class="info-item-value">${stu.college}</div></div>
                 `;
             } else {
-                const instIn = document.getElementById('input-institution');
-                const instName = instIn.value.trim();
-                const hiddenAddress = instIn.dataset.selectedAddress || '';
-                const hiddenTaxId = instIn.dataset.selectedTaxId || '';
-                
-                let inst = null;
-                
-                // 如果有選中時藏下來的地址或統編，進行精準雙重比對
-                if (hiddenAddress || hiddenTaxId) {
-                    inst = allInsts.find(i => 
-                        i.name === instName && 
-                        (hiddenAddress ? i.address === hiddenAddress : true) &&
-                        (hiddenTaxId ? i.tax_id === hiddenTaxId : true)
-                    );
-                }
-                
-                // 如果找不到（例如點擊舊資料編輯、或是使用者自己手打的），就退回用名稱尋找第一筆
-                if (!inst) {
-                    inst = allInsts.find(i => i.name === instName);
-                }
-                
+                const instName = document.getElementById('input-institution').value;
+                const inst = allInsts.find(i => i.name === instName);
                 if (!inst) return;
                 title.innerHTML = '<i class="ti ti-building-skyscraper" style="color:var(--success); margin-right:4px;"></i> 機構詳細資訊';
                 html = `
@@ -1769,17 +1735,7 @@ input[type=number] { -moz-appearance: textfield; }
             const data = allRecords.find(d => d.id === id); if (!data) return;
             editingId = id;
             document.getElementById('input-student').value = data.student_raw || '';
-            const currentInstRaw = data.inst_raw || '';
-            // 尋找主檔中是否有對應填報系所或名稱相符的機構
-            // 如果要在編輯時就精準還原，這裡建議配合一開始寫入的習慣，或是去尋找符合的機構主檔
-            const matchedInst = allInsts.find(i => i.name === currentInstRaw); 
-            
-            if (matchedInst) {
-                // 如果主檔有地址，自動組合出具備區別力的顯示名稱
-                document.getElementById('input-institution').value = matchedInst.address ? `${matchedInst.name} (${matchedInst.address})` : (matchedInst.tax_id ? `${matchedInst.name} (${matchedInst.tax_id})` : matchedInst.name);
-            } else {
-                document.getElementById('input-institution').value = currentInstRaw;
-            }
+            document.getElementById('input-institution').value = data.inst_raw || '';
             document.getElementById('input-duration').value = data.duration || '';
             document.getElementById('input-hours').value = data.hours !== undefined && data.hours !== '' ? data.hours : '';
             document.getElementById('input-notes').value = data.notes || '';
