@@ -543,6 +543,7 @@ input[type=number] { -moz-appearance: textfield; }
                             <div style="display:flex; gap:8px;">
                                 <div class="search-input-wrap" style="flex:1;">
                                     <input type="text" id="input-institution" class="field-input" placeholder="搜尋機構名稱或統編..." autocomplete="off">
+                                    <input type="hidden" id="input-institution-id">
                                     <div id="institution-dropdown" class="search-dropdown custom-scroll"></div>
                                 </div>
                                 <button type="button" id="btn-info-inst" class="btn-info-pop" onclick="window.showInfoPopup('inst')" disabled title="查看機構詳情"><i class="ti ti-info-circle"></i></button>
@@ -1125,22 +1126,18 @@ input[type=number] { -moz-appearance: textfield; }
             
             let html = '';
             filtered.slice(0, 30).forEach(i => {
-                // 關鍵修改：將 onclick 改為傳遞名稱、地址、ID，或者直接傳遞單一組合字串
-                // 為了防呆，我們使用 escape 處理可能含有的特殊符號，或是直接用組合字串
-                const displayValue = i.address ? `${i.name} (${i.address})` : i.name;
-                
+                // 關鍵修改：onclick 改為傳入 i.id 和 i.name
                 html += `
-                <div class="search-item" onclick="window.selectInst('${i.name.replace(/'/g, "\\'")}', '${(i.address || '').replace(/'/g, "\\'")}')">
+                <div class="search-item" onclick="window.selectInst('${i.id}', '${i.name.replace(/'/g, "\\'")}')">
                     <div class="search-item-title">${i.name}</div>
                     <div class="search-item-desc">${i.tax_id || '統編：無一編號'} | ${i.address || '無地址'}</div>
                 </div>`;
             });
             dropdown.innerHTML = html;
         }
-        window.selectInst = (name, address) => { 
-            const instIn = document.getElementById('input-institution');
-            // 如果有地址，就用 名稱 (地址) 的格式呈現，確保唯一性；沒地址就維持原樣
-            instIn.value = address ? `${name} (${address})` : name; 
+        window.selectInst = (id, name) => { 
+            document.getElementById('input-institution').value = name;          // 畫面上只顯示純名稱
+            document.getElementById('input-institution-id').value = id;         // 背後默默記錄唯一的 ID
             document.getElementById('institution-dropdown').classList.remove('show');
             document.getElementById('btn-info-inst').disabled = false;
         };
@@ -1233,16 +1230,14 @@ input[type=number] { -moz-appearance: textfield; }
                     <div class="info-item"><span class="info-item-label">所屬學院</span><div class="info-item-value">${stu.college}</div></div>
                 `;
             } else {
-               const instRawVal = data.inst_raw || '';
-               let instMatch = null;
-               const matchParts = instRawVal.match(/^(.+)\s\((.+)\)$/);
-               
-               if (matchParts) {
-                   const [, name, address] = matchParts;
-                   instMatch = allInsts.find(inst => inst.name === name && inst.address === address);
-               } else {
-                   instMatch = allInsts.find(inst => inst.name === instRawVal);
-               }
+                const instId = document.getElementById('input-institution-id').value;
+                const instName = document.getElementById('input-institution').value.trim();
+                
+                // 優先用唯一的 ID 去尋找機構主檔，找不到才用名稱盲猜（相容舊資料）
+                let instMatch = allInsts.find(i => i.id === instId);
+                if (!instMatch) {
+                    instMatch = allInsts.find(i => i.name === instName);
+                }
                 
                 if (!instMatch) return;
                 title.innerHTML = '<i class="ti ti-building-skyscraper" style="color:var(--success); margin-right:4px;"></i> 機構詳細資訊';
@@ -1287,6 +1282,7 @@ input[type=number] { -moz-appearance: textfield; }
                 document.getElementById('input-student').value = '';
                 document.getElementById('input-grade').value = '';
                 document.getElementById('input-institution').value = '';
+                document.getElementById('input-institution-id').value = '';  
                 document.getElementById('input-duration').value = '';
                 document.getElementById('input-hours').value = '';
                 document.getElementById('input-period-type').value = '';
@@ -1634,9 +1630,27 @@ input[type=number] { -moz-appearance: textfield; }
                         const studentMatch = allStudents.find(s => s.student_id.toUpperCase() === record.stuId);
                         if (!studentMatch) rowWarnings.push("未綁定系統學生主檔");
                         
-                        const instMatch = allInsts.find(inst => inst.name === record.inst_raw);
-                        if (!instMatch) rowWarnings.push("未綁定系統機構主檔");
-
+                        const sameNameInsts = allInsts.filter(inst => inst.name === record.inst_raw);
+                        
+                        let instMatch = null;
+                        
+                        if (sameNameInsts.length === 1) {
+                            // 如果全系統只有這麼一間，沒人和它重名，那就直接綁定它
+                            instMatch = sameNameInsts[0];
+                        } else if (sameNameInsts.length > 1) {
+                            // 關鍵防呆：如果有兩間以上都叫這個名字（例如西屯和南屯）
+                            // 因為 Excel 裡面沒有寫 ID，系統不知道該選誰，所以我們故意讓 instMatch 保持 null
+                            // 並且在下面跳出一個更精準的「警告說明」給行政同仁看
+                            instMatch = null;
+                        }
+                        
+                        // 2. 根據尋找的結果，決定要不要在匯入報告畫面上顯示警告
+                        if (sameNameInsts.length > 1) {
+                            rowWarnings.push("有重複名稱的機構（如不同地址），請匯入後手動編輯確認");
+                        } else if (!instMatch) {
+                            rowWarnings.push("未綁定系統機構主檔");
+                        }
+                      
                         let uniqueCourses = [...new Set(record.coursesRawList)];
                         uniqueCourses.forEach(token => {
                             const cMatch = token.match(/(\d+-\d+)[_：:](.+)/);
@@ -1722,7 +1736,8 @@ input[type=number] { -moz-appearance: textfield; }
             const payload = { 
                 student_raw: document.getElementById('input-student').value.trim(), 
                 grade: document.getElementById('input-grade').value,
-                inst_raw: document.getElementById('input-institution').value.trim(), 
+                inst_raw: document.getElementById('input-institution').value.trim(),
+                inst_id: document.getElementById('input-institution-id').value,
                 period_type: document.getElementById('input-period-type').value,
                 duration: durationInput, 
                 insurance: document.getElementById('input-insurance').value, 
@@ -1750,6 +1765,7 @@ input[type=number] { -moz-appearance: textfield; }
             editingId = id;
             document.getElementById('input-student').value = data.student_raw || '';
             document.getElementById('input-institution').value = data.inst_raw || '';
+            document.getElementById('input-institution-id').value = data.inst_id || '';
             document.getElementById('input-duration').value = data.duration || '';
             document.getElementById('input-hours').value = data.hours !== undefined && data.hours !== '' ? data.hours : '';
             document.getElementById('input-notes').value = data.notes || '';
