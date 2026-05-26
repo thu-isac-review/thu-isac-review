@@ -274,7 +274,7 @@ tr.selected td { background: #f0f4ff; }
 .fs-topbar-left { display: flex; align-items: center; gap: 12px; }
 .fs-topbar-title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-left: 8px; }
 
-/* 修改重點 1：改回 display: flex 達成垂直與水平正居中，並將 overflow 設為 hidden 強制不產生捲動軸 */
+/* ─── MODAL CONTENT ─── */
 .fs-content { 
   flex: 1; 
   overflow-y: auto; 
@@ -286,14 +286,12 @@ tr.selected td { background: #f0f4ff; }
 .split-col { display: flex; flex-direction: column; height: 100%; }
 .stretch-section { flex: 1; display: flex; flex-direction: column; margin-bottom: 0 !important; min-height: 0; }
   
-/* 修改重點 2：利用 margin: auto 將內容推到正中間 */
 .split-layout { 
   display: grid; grid-template-columns: 1fr 1fr; gap: 20px 48px; 
   width: 100%; max-width: 1100px; 
   margin: auto; 
 }
 .clean-section { margin-bottom: 24px; } 
-/* 修改重點 3：消除最後一排的隱藏高度，讓置中視覺完全精準對稱 */
 .split-layout > .clean-section:last-child { margin-bottom: 0; }
 @media (min-width: 1025px) {
   .split-layout > .clean-section:nth-last-child(2) { margin-bottom: 0; }
@@ -335,8 +333,8 @@ input[type=number] { -moz-appearance: textfield; }
 
 .selected-course-item { 
     display: flex; align-items: center; justify-content: space-between; 
-    padding: 12px 8px; /* 稍微放大上下間距讓閱讀更舒適 */
-    border-bottom: 1px dashed var(--border-strong); /* 課程之間的虛線分隔線 */
+    padding: 12px 8px; 
+    border-bottom: 1px dashed var(--border-strong);
 }
 .selected-course-item:last-child {
     border-bottom: none; 
@@ -402,7 +400,7 @@ input[type=number] { -moz-appearance: textfield; }
   .v-divider { display: none; }
   .form-grid { grid-template-columns: 1fr; }
   .fs-topbar { padding: 0 16px; }
-  .fs-content { padding: 16px 16px 40px 16px; } /* 手機版底部留白 */
+  .fs-content { padding: 16px 16px 40px 16px; } 
 
   .filter-row { flex-wrap: nowrap; overflow-x: auto; padding-right: 0; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
   .filter-row::-webkit-scrollbar { display: none; }
@@ -543,7 +541,6 @@ input[type=number] { -moz-appearance: textfield; }
                             <div style="display:flex; gap:8px;">
                                 <div class="search-input-wrap" style="flex:1;">
                                     <input type="text" id="input-institution" class="field-input" placeholder="搜尋機構名稱或統編..." autocomplete="off">
-                                    <input type="hidden" id="input-institution-id">
                                     <div id="institution-dropdown" class="search-dropdown custom-scroll"></div>
                                 </div>
                                 <button type="button" id="btn-info-inst" class="btn-info-pop" onclick="window.showInfoPopup('inst')" disabled title="查看機構詳情"><i class="ti ti-info-circle"></i></button>
@@ -1041,7 +1038,12 @@ input[type=number] { -moz-appearance: textfield; }
             stuInput?.addEventListener('input', () => { handleFocus(stuDropdown); renderStudentDropdown(allStudents, stuInput.value); checkBtn(stuInput, 'btn-info-student', allStudents, 'student_id'); window.updateRespDeptOptions(); });
             
             instInput?.addEventListener('focus', () => { handleFocus(instDropdown); renderInstDropdown(allInsts, instInput.value); });
-            instInput?.addEventListener('input', () => { handleFocus(instDropdown); renderInstDropdown(allInsts, instInput.value); checkBtn(instInput, 'btn-info-inst', allInsts, 'name'); });
+            instInput?.addEventListener('input', (e) => { 
+                e.target.dataset.id = ''; // 清空隱藏的ID，要求使用者必須從下拉選單重新點擊選擇
+                document.getElementById('btn-info-inst').disabled = true;
+                handleFocus(instDropdown); 
+                renderInstDropdown(allInsts, instInput.value); 
+            });
             
             courseInput?.addEventListener('focus', () => { handleFocus(courseDropdown); renderCourseDropdown(allCourses, courseInput.value); });
             courseInput?.addEventListener('input', () => { handleFocus(courseDropdown); renderCourseDropdown(allCourses, courseInput.value); });
@@ -1126,18 +1128,19 @@ input[type=number] { -moz-appearance: textfield; }
             
             let html = '';
             filtered.slice(0, 30).forEach(i => {
-                // 關鍵修改：onclick 改為傳入 i.id 和 i.name
+                // 將 i.id 一併傳入 selectInst 中
                 html += `
-                <div class="search-item" onclick="window.selectInst('${i.id}', '${i.name.replace(/'/g, "\\'")}')">
+                <div class="search-item" onclick="window.selectInst('${i.id}', '${i.name}')">
                     <div class="search-item-title">${i.name}</div>
-                    <div class="search-item-desc">${i.tax_id || '統編：無一編號'} | ${i.address || '無地址'}</div>
+                    <div class="search-item-desc">${i.tax_id || '統編：無統一編號'} | ${i.address || ''}</div>
                 </div>`;
             });
             dropdown.innerHTML = html;
         }
         window.selectInst = (id, name) => { 
-            document.getElementById('input-institution').value = name;          // 畫面上只顯示純名稱
-            document.getElementById('input-institution-id').value = id;         // 背後默默記錄唯一的 ID
+            const instIn = document.getElementById('input-institution');
+            instIn.value = name; 
+            instIn.dataset.id = id; // 將真實資料庫 ID 綁定在隱藏屬性上
             document.getElementById('institution-dropdown').classList.remove('show');
             document.getElementById('btn-info-inst').disabled = false;
         };
@@ -1148,13 +1151,12 @@ input[type=number] { -moz-appearance: textfield; }
             const available = list.filter(c => !selectedCourseIds.includes(c.id));
             
             const filtered = available.filter(c => {
-                // 取得該課程的系所簡稱並轉為小寫
                 const deptShort = getDeptShort(c.department).toLowerCase();
                 
                 return c.course_name.toLowerCase().includes(val) || 
                        c.course_code.toLowerCase().includes(val) || 
                        c.department.toLowerCase().includes(val) ||
-                       deptShort.includes(val); // 新增：比對系所簡稱
+                       deptShort.includes(val); 
             });
             
             if (filtered.length === 0) { dropdown.innerHTML = '<div style="padding:12px; text-align:center; font-size:11px; color:var(--text-muted);">查無相符或可選擇之課程</div>'; return; }
@@ -1230,21 +1232,22 @@ input[type=number] { -moz-appearance: textfield; }
                     <div class="info-item"><span class="info-item-label">所屬學院</span><div class="info-item-value">${stu.college}</div></div>
                 `;
             } else {
-                const instId = document.getElementById('input-institution-id').value;
-                const instName = document.getElementById('input-institution').value.trim();
-                
-                // 優先用唯一的 ID 去尋找機構主檔，找不到才用名稱盲猜（相容舊資料）
-                let instMatch = allInsts.find(i => i.id === instId);
-                if (!instMatch) {
-                    instMatch = allInsts.find(i => i.name === instName);
+                // 優先使用 dataset.id 來找該機構，如果舊資料沒有，再退回到用名稱找
+                const instId = document.getElementById('input-institution').dataset.id;
+                let inst;
+                if (instId) {
+                    inst = allInsts.find(i => i.id === instId);
+                } else {
+                    const instName = document.getElementById('input-institution').value;
+                    inst = allInsts.find(i => i.name === instName);
                 }
                 
-                if (!instMatch) return;
+                if (!inst) return;
                 title.innerHTML = '<i class="ti ti-building-skyscraper" style="color:var(--success); margin-right:4px;"></i> 機構詳細資訊';
                 html = `
-                    <div class="info-item"><span class="info-item-label">機構名稱</span><div class="info-item-value">${instMatch.name}</div></div>
-                    <div class="info-item"><span class="info-item-label">統一編號</span><div class="info-item-value">${instMatch.tax_id || '無'}</div></div>
-                    <div class="info-item"><span class="info-item-label">通訊地址</span><div class="info-item-value">${instMatch.address || '無'}</div></div>
+                    <div class="info-item"><span class="info-item-label">機構名稱</span><div class="info-item-value">${inst.name}</div></div>
+                    <div class="info-item"><span class="info-item-label">統一編號</span><div class="info-item-value">${inst.tax_id || '無'}</div></div>
+                    <div class="info-item"><span class="info-item-label">通訊地址</span><div class="info-item-value">${inst.address || '無'}</div></div>
                 `;
             }
             container.innerHTML = html;
@@ -1281,8 +1284,9 @@ input[type=number] { -moz-appearance: textfield; }
             if (!editingId) { 
                 document.getElementById('input-student').value = '';
                 document.getElementById('input-grade').value = '';
-                document.getElementById('input-institution').value = '';
-                document.getElementById('input-institution-id').value = '';  
+                const instInput = document.getElementById('input-institution');
+                instInput.value = '';
+                instInput.dataset.id = ''; // 清空新增狀態下的隱藏ID
                 document.getElementById('input-duration').value = '';
                 document.getElementById('input-hours').value = '';
                 document.getElementById('input-period-type').value = '';
@@ -1418,12 +1422,14 @@ input[type=number] { -moz-appearance: textfield; }
                 
                 const stu = allStudents.find(s => s.student_id === stuId);
                 const stuDept = stu ? getDeptShort(stu.department) : '未綁定學系';
-            
-                // ✨【關鍵新增】解決主畫面表格配對重名機構的防呆邏輯
-                let instMatch = allInsts.find(inst => inst.id === data.inst_id);
-                if (!instMatch) {
-                    // 相容舊資料：如果這筆紀錄以前沒存過 inst_id，就用名稱去盲猜
-                    instMatch = allInsts.find(inst => inst.name === data.inst_raw);
+
+                const courseCount = Array.isArray(data.courses) ? data.courses.length : 0;
+                let totalCredits = 0;
+                if (courseCount > 0) {
+                    data.courses.forEach(cid => {
+                        const c = allCourses.find(x => x.id === cid);
+                        if (c && c.credits) totalCredits += Number(c.credits);
+                    });
                 }
 
                 let coursesHtml = '-';
@@ -1628,27 +1634,10 @@ input[type=number] { -moz-appearance: textfield; }
                         const studentMatch = allStudents.find(s => s.student_id.toUpperCase() === record.stuId);
                         if (!studentMatch) rowWarnings.push("未綁定系統學生主檔");
                         
-                        const sameNameInsts = allInsts.filter(inst => inst.name === record.inst_raw);
-                        
-                        let instMatch = null;
-                        
-                        if (sameNameInsts.length === 1) {
-                            // 如果全系統只有這麼一間，沒人和它重名，那就直接綁定它
-                            instMatch = sameNameInsts[0];
-                        } else if (sameNameInsts.length > 1) {
-                            // 關鍵防呆：如果有兩間以上都叫這個名字（例如西屯和南屯）
-                            // 因為 Excel 裡面沒有寫 ID，系統不知道該選誰，所以我們故意讓 instMatch 保持 null
-                            // 並且在下面跳出一個更精準的「警告說明」給行政同仁看
-                            instMatch = null;
-                        }
-                        
-                        // 2. 根據尋找的結果，決定要不要在匯入報告畫面上顯示警告
-                        if (sameNameInsts.length > 1) {
-                            rowWarnings.push("有重複名稱的機構（如不同地址），請匯入後手動編輯確認");
-                        } else if (!instMatch) {
-                            rowWarnings.push("未綁定系統機構主檔");
-                        }
-                      
+                        // 匯入時因無 Excel ID 只能透過名稱比對（若有重複會自動抓第一筆）
+                        const instMatch = allInsts.find(inst => inst.name === record.inst_raw);
+                        if (!instMatch) rowWarnings.push("未綁定系統機構主檔");
+
                         let uniqueCourses = [...new Set(record.coursesRawList)];
                         uniqueCourses.forEach(token => {
                             const cMatch = token.match(/(\d+-\d+)[_：:](.+)/);
@@ -1667,7 +1656,9 @@ input[type=number] { -moz-appearance: textfield; }
                         if (record.courseIds.length === 0) rowWarnings.push("無法綁定任何實習課程");
 
                         const payload = {
-                            student_raw: record.student_raw, grade: record.grade, inst_raw: record.inst_raw, courses: record.courseIds, duration: record.duration,
+                            student_raw: record.student_raw, grade: record.grade, inst_raw: record.inst_raw, 
+                            inst_id: instMatch ? instMatch.id : '', // 儲存關聯機構的 ID
+                            courses: record.courseIds, duration: record.duration,
                             hours: record.hours, period_type: record.period_type, proof_type: record.proof_type, insurance: record.insurance,
                             employment: record.employment, notes: record.notes, 
                             resp_dept: record.resp_dept || (studentMatch ? studentMatch.department : ''), 
@@ -1724,6 +1715,7 @@ input[type=number] { -moz-appearance: textfield; }
             const durationInput = document.getElementById('input-duration').value.trim();
             const respDeptInput = document.getElementById('input-resp-dept').value;
             const hoursVal = document.getElementById('input-hours').value.trim();
+            const instInput = document.getElementById('input-institution');
             
             const regex = /^\d{2,3}\/\d{2}\/\d{2}-\d{2,3}\/\d{2}\/\d{2}$/;
             
@@ -1734,8 +1726,8 @@ input[type=number] { -moz-appearance: textfield; }
             const payload = { 
                 student_raw: document.getElementById('input-student').value.trim(), 
                 grade: document.getElementById('input-grade').value,
-                inst_raw: document.getElementById('input-institution').value.trim(),
-                inst_id: document.getElementById('input-institution-id').value,
+                inst_raw: instInput.value.trim(), 
+                inst_id: instInput.dataset.id || '', // 將隱藏的機構 ID 存入資料庫
                 period_type: document.getElementById('input-period-type').value,
                 duration: durationInput, 
                 insurance: document.getElementById('input-insurance').value, 
@@ -1762,8 +1754,10 @@ input[type=number] { -moz-appearance: textfield; }
             const data = allRecords.find(d => d.id === id); if (!data) return;
             editingId = id;
             document.getElementById('input-student').value = data.student_raw || '';
-            document.getElementById('input-institution').value = data.inst_raw || '';
-            document.getElementById('input-institution-id').value = data.inst_id || '';
+            const instInput = document.getElementById('input-institution');
+            instInput.value = data.inst_raw || '';
+            instInput.dataset.id = data.inst_id || ''; // 讀取並還原隱藏的 ID
+            
             document.getElementById('input-duration').value = data.duration || '';
             document.getElementById('input-hours').value = data.hours !== undefined && data.hours !== '' ? data.hours : '';
             document.getElementById('input-notes').value = data.notes || '';
@@ -1775,7 +1769,14 @@ input[type=number] { -moz-appearance: textfield; }
             document.getElementById('input-employment').value = data.employment || '';
 
             document.getElementById('btn-info-student').disabled = false;
-            document.getElementById('btn-info-inst').disabled = false;
+            
+            // 只要有讀到 ID (或名稱能在資料庫對應上)，就解開詳情按鈕
+            if (data.inst_id) {
+                document.getElementById('btn-info-inst').disabled = false;
+            } else {
+                const exists = allInsts.some(i => i.name === data.inst_raw);
+                document.getElementById('btn-info-inst').disabled = !exists;
+            }
 
             selectedCourseIds = Array.isArray(data.courses) ? [...data.courses] : [];
             window.renderSelectedCourseChips(true);
