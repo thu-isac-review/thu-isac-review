@@ -707,7 +707,7 @@
                             else currentVal += char;
                         }
                         cols.push(currentVal.trim());
-                        while(cols.length < 31) cols.push(''); // Ensure we have enough columns for the new schema
+                        while(cols.length < 31) cols.push(''); 
 
                         const c_year = cols[0]; const c_term = cols[1]; const c_edu = cols[2]; const c_col = cols[3]; 
                         const c_dept = cols[4]; const c_code = cols[5]; const c_name = cols[6]; const c_type = cols[7]; 
@@ -728,7 +728,7 @@
                         const inst_tax = cols[25];
                         const inst_city = cols[26]; 
                         const inst_addr = cols[27]; 
-                        const stu_nat = cols[28] || '-';  // ★ 在這裡改為預設帶入 '-'
+                        const stu_nat = cols[28] || '-';  
                         const resp_dept = window.resolveDept(cols[29]);
                         const notes = cols[30] || '';
 
@@ -1053,14 +1053,20 @@
             }
 
             try {
-                const isMatchInst = existingInstitutions.find(i => i.country === inst_country && i.name === inst_name && i.tax_id === inst_tax && i.city === inst_city && i.address === inst_addr);
+                let isMatchInst = existingInstitutions.find(i => i.country === inst_country && i.name === inst_name && i.tax_id === inst_tax && i.city === inst_city && i.address === inst_addr);
+                let targetInstId = '';
+
+                // 如果機構不存在則建立新機構並取得 ID，否則直接沿用現有機構的 ID
                 if (!isMatchInst) {
                     const instRef = await addDoc(collection(db, "internship_institutions"), {
                         country: inst_country, name: inst_name, tax_id: inst_tax, city: inst_city, address: inst_addr,
                         venue_type: inst_venue, industry: inst_industry,
                         created_at: serverTimestamp()
                     });
-                    existingInstitutions.push({ id: instRef.id, country: inst_country, name: inst_name, tax_id: inst_tax, city: inst_city, address: inst_addr });
+                    targetInstId = instRef.id;
+                    existingInstitutions.push({ id: targetInstId, country: inst_country, name: inst_name, tax_id: inst_tax, city: inst_city, address: inst_addr });
+                } else {
+                    targetInstId = isMatchInst.id;
                 }
 
                 const courseIds = rowData.coursesInfo.map(c => {
@@ -1070,7 +1076,9 @@
                 
                 await addDoc(collection(db, "internship_records"), {
                     student_raw: `${stuId} - ${stuName}`, grade: grade,
-                    inst_raw: inst_name, courses: courseIds, duration: duration, hours: hours,
+                    inst_raw: inst_name, 
+                    inst_id: targetInstId, // 🌟 關鍵新增：綁定機構 ID
+                    courses: courseIds, duration: duration, hours: hours,
                     period_type: period_type, proof_type: proof_type, insurance: insurance, employment: employment, resp_dept: resp_dept,
                     notes: notes, created_at: serverTimestamp()
                 });
