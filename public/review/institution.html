@@ -445,7 +445,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                         </div>
 
                         <div class="custom-scroll" style="flex: 1; overflow: auto;">
-                            <!-- 修正：將欄位寬度改為百分比 -->
                             <table class="inner-table" style="min-width: 600px;">
                                 <thead>
                                     <tr>
@@ -492,7 +491,6 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                         </div>
 
                         <div class="custom-scroll" style="flex: 1; overflow: auto;">
-                            <!-- 修正：將欄位寬度改為百分比 -->
                             <table class="inner-table" style="min-width: 500px;">
                                 <thead>
                                     <tr>
@@ -843,7 +841,8 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
             if (allInstitutions.length === 0 || allRecords.length === 0) return;
 
             aggregatedData = allInstitutions.map(inst => {
-                let instRecords = allRecords.filter(r => r.inst_raw === inst.name);
+                // 🌟 核心修正：使用 inst_id 優先匹配，如果沒有才用機構名稱匹配
+                let instRecords = allRecords.filter(r => r.inst_id === inst.id || (!r.inst_id && r.inst_raw === inst.name));
                 let cohortsObj = {};
                 let totalStudents = 0;
 
@@ -1454,7 +1453,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> 確認儲存';
             }
         };
-      
+       
         window.addEventListener('keydown', (event) => {
             // 1. 處理 Ctrl + S (或 Mac 的 Cmd + S) - 儲存評估
             if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
@@ -1512,7 +1511,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 }
             }
         });
-      
+       
     </script>
 </body>
 </html>
