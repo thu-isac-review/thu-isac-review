@@ -1125,17 +1125,22 @@ input[type=number] { -moz-appearance: textfield; }
             
             let html = '';
             filtered.slice(0, 30).forEach(i => {
+                // 關鍵修改：將 onclick 改為傳遞名稱、地址、ID，或者直接傳遞單一組合字串
+                // 為了防呆，我們使用 escape 處理可能含有的特殊符號，或是直接用組合字串
+                const displayValue = i.address ? `${i.name} (${i.address})` : i.name;
+                
                 html += `
-                <div class="search-item" onclick="window.selectInst('${i.name}')">
+                <div class="search-item" onclick="window.selectInst('${i.name.replace(/'/g, "\\'")}', '${(i.address || '').replace(/'/g, "\\'")}')">
                     <div class="search-item-title">${i.name}</div>
-                    <div class="search-item-desc">${i.tax_id || '統編：無統一編號'} | ${i.address || ''}</div>
+                    <div class="search-item-desc">${i.tax_id || '統編：無一編號'} | ${i.address || '無地址'}</div>
                 </div>`;
             });
             dropdown.innerHTML = html;
         }
-        window.selectInst = (name) => { 
+        window.selectInst = (name, address) => { 
             const instIn = document.getElementById('input-institution');
-            instIn.value = name; 
+            // 如果有地址，就用 名稱 (地址) 的格式呈現，確保唯一性；沒地址就維持原樣
+            instIn.value = address ? `${name} (${address})` : name; 
             document.getElementById('institution-dropdown').classList.remove('show');
             document.getElementById('btn-info-inst').disabled = false;
         };
@@ -1228,14 +1233,23 @@ input[type=number] { -moz-appearance: textfield; }
                     <div class="info-item"><span class="info-item-label">所屬學院</span><div class="info-item-value">${stu.college}</div></div>
                 `;
             } else {
-                const instName = document.getElementById('input-institution').value;
-                const inst = allInsts.find(i => i.name === instName);
-                if (!inst) return;
+               const instRawVal = data.inst_raw || '';
+               let instMatch = null;
+               const matchParts = instRawVal.match(/^(.+)\s\((.+)\)$/);
+               
+               if (matchParts) {
+                   const [, name, address] = matchParts;
+                   instMatch = allInsts.find(inst => inst.name === name && inst.address === address);
+               } else {
+                   instMatch = allInsts.find(inst => inst.name === instRawVal);
+               }
+                
+                if (!instMatch) return;
                 title.innerHTML = '<i class="ti ti-building-skyscraper" style="color:var(--success); margin-right:4px;"></i> 機構詳細資訊';
                 html = `
-                    <div class="info-item"><span class="info-item-label">機構名稱</span><div class="info-item-value">${inst.name}</div></div>
-                    <div class="info-item"><span class="info-item-label">統一編號</span><div class="info-item-value">${inst.tax_id || '無'}</div></div>
-                    <div class="info-item"><span class="info-item-label">通訊地址</span><div class="info-item-value">${inst.address || '無'}</div></div>
+                    <div class="info-item"><span class="info-item-label">機構名稱</span><div class="info-item-value">${instMatch.name}</div></div>
+                    <div class="info-item"><span class="info-item-label">統一編號</span><div class="info-item-value">${instMatch.tax_id || '無'}</div></div>
+                    <div class="info-item"><span class="info-item-label">通訊地址</span><div class="info-item-value">${instMatch.address || '無'}</div></div>
                 `;
             }
             container.innerHTML = html;
