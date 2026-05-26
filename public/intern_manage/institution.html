@@ -1204,9 +1204,11 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                     const batch = writeBatch(db);
                     batch.update(doc(db, "internship_institutions", editingId), { ...payload, updated_at: serverTimestamp() });
                     
+                    // 如果名稱有改，必須找出使用到這筆機構的紀錄來更新名稱
                     if (editingOldName && editingOldName !== payload.name) {
                         allRecords.forEach(record => {
-                            if (record.inst_raw === editingOldName) {
+                            // 優先比對 inst_id，如果沒有 inst_id 才比對舊名稱 (相容舊資料)
+                            if (record.inst_id === editingId || (!record.inst_id && record.inst_raw === editingOldName)) {
                                 batch.update(doc(db, "internship_records", record.id), { 
                                     inst_raw: payload.name, 
                                     updated_at: serverTimestamp() 
@@ -1218,7 +1220,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
                     if (editingOldName && editingOldName !== payload.name) {
                         const snap = await getDocs(recordsCol);
-                        allRecords = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                        allRecords = snap.docs.map(d => ({ id: d.id, ...doc.data() }));
                     }
                 } 
                 else { 
@@ -1309,10 +1311,12 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
                 const batch = writeBatch(db);
 
                 allRecords.forEach(record => {
-                    if (deletedNames.includes(record.inst_raw)) {
+                    // 優先比對 inst_id，如果沒有 inst_id 才比對被刪除機構的名稱 (相容舊資料)
+                    if (instsToDelete.includes(record.inst_id) || (!record.inst_id && deletedNames.includes(record.inst_raw))) {
                         const recordRef = doc(db, "internship_records", record.id);
                         batch.update(recordRef, { 
                             inst_raw: masterInst.name,
+                            inst_id: masterInst.id, // 更換為保留主體的 ID
                             updated_at: serverTimestamp() 
                         });
                     }
