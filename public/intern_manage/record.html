@@ -1052,6 +1052,12 @@ input[type=number] { -moz-appearance: textfield; }
                 if (!e.target.closest('#input-institution') && !e.target.closest('#institution-dropdown')) instDropdown?.classList.remove('show');
                 if (!e.target.closest('#input-course-search') && !e.target.closest('#course-dropdown')) courseDropdown?.classList.remove('show');
             });
+
+            document.getElementById('input-institution')?.addEventListener('input', (e) => {
+                // 當使用者手動打字或修改時，清除之前藏匿的精準辨識標籤
+                delete e.target.dataset.selectedAddress;
+                delete e.target.dataset.selectedTaxId;
+            });
         }
 
         window.updateRespDeptOptions = (preselectedValue = '') => {
@@ -1125,18 +1131,26 @@ input[type=number] { -moz-appearance: textfield; }
             
             let html = '';
             filtered.slice(0, 30).forEach(i => {
-                const displayValue = i.address ? `${i.name} (${i.address})` : (i.tax_id ? `${i.name} (${i.tax_id})` : i.name);
+                const safeAddress = (i.address || '').replace(/'/g, "\\'");
+                const safeTaxId = (i.tax_id || '').replace(/'/g, "\\'");
+                const safeName = i.name.replace(/'/g, "\\'");
+            
                 html += `
-                <div class="search-item" onclick="window.selectInst('${displayValue.replace(/'/g, "\\'")}')">
+                <div class="search-item" onclick="window.selectInst('${safeName}', '${safeAddress}', '${safeTaxId}')">
                     <div class="search-item-title">${i.name}</div>
                     <div class="search-item-desc">${i.tax_id || '統編：無統一編號'} | ${i.address || ''}</div>
                 </div>`;
             });
             dropdown.innerHTML = html;
         }
-        window.selectInst = (displayValue) => { 
+       window.selectInst = (name, address, taxId) => { 
             const instIn = document.getElementById('input-institution');
-            instIn.value = displayValue; // 讓輸入框帶有完整的識別資訊
+            instIn.value = name; // 儲存與顯示都維持乾淨的名稱
+            
+            // 把精準辨識用的資訊藏在 dataset 裡面
+            instIn.dataset.selectedAddress = address || '';
+            instIn.dataset.selectedTaxId = taxId || '';
+        
             document.getElementById('institution-dropdown').classList.remove('show');
             document.getElementById('btn-info-inst').disabled = false;
         };
@@ -1229,22 +1243,25 @@ input[type=number] { -moz-appearance: textfield; }
                     <div class="info-item"><span class="info-item-label">所屬學院</span><div class="info-item-value">${stu.college}</div></div>
                 `;
             } else {
-                const rawValue = document.getElementById('input-institution').value.trim();
+                const instIn = document.getElementById('input-institution');
+                const instName = instIn.value.trim();
+                const hiddenAddress = instIn.dataset.selectedAddress || '';
+                const hiddenTaxId = instIn.dataset.selectedTaxId || '';
                 
-                // 利用正規表達式拆解 "名稱 (地址)" 或 "名稱 (統編)"
-                const match = rawValue.match(/^(.+?)\s*\((.+?)\)$/);
                 let inst = null;
                 
-                if (match) {
-                    const instName = match[1].trim();
-                    const extraInfo = match[2].trim();
-                    // 優先用名稱 + 地址比對，若對不上再用名稱 + 統編比對
-                    inst = allInsts.find(i => i.name === instName && (i.address === extraInfo || i.tax_id === extraInfo));
+                // 如果有選中時藏下來的地址或統編，進行精準雙重比對
+                if (hiddenAddress || hiddenTaxId) {
+                    inst = allInsts.find(i => 
+                        i.name === instName && 
+                        (hiddenAddress ? i.address === hiddenAddress : true) &&
+                        (hiddenTaxId ? i.tax_id === hiddenTaxId : true)
+                    );
                 }
                 
-                // 如果找不到（例如舊資料或手打資料），就退回原本單純用名稱找第一筆的邏輯
+                // 如果找不到（例如點擊舊資料編輯、或是使用者自己手打的），就退回用名稱尋找第一筆
                 if (!inst) {
-                    inst = allInsts.find(i => i.name === rawValue);
+                    inst = allInsts.find(i => i.name === instName);
                 }
                 
                 if (!inst) return;
