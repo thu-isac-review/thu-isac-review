@@ -1,6 +1,6 @@
 import { collection, getDocs, doc, updateDoc, deleteDoc, addDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-// --- 模組區域變數 (SPA 本地狀態狀態管理) ---
+// --- 模組區域變數 ---
 let db;
 let allData = []; 
 let allRecords = []; 
@@ -30,23 +30,18 @@ export async function render(containerId, context) {
     db = context.db;
     const container = document.getElementById(containerId);
     
-    // 初始化狀態
     selectedIds = [];
     currentPage = 1;
 
-    // 1. 注入保留完整高階 UI/UX 且取消分頁列外側圓角的 HTML 與 CSS
     injectUI(container);
-
-    // 2. 靜態下拉選項初始化
     initSelectOptions();
-
-    // 3. 綁定事件監聽
     bindEvents(container);
-
-    // 4. 執行單次讀取取代監聽
     await fetchInitialDataOnce();
 }
 
+// ==========================================
+// 1. UI 注入模組
+// ==========================================
 function injectUI(container) {
     container.innerHTML = `
     <div id="institution-page-wrapper" style="height: 100%; display: flex; flex-direction: column;">
@@ -113,7 +108,7 @@ function injectUI(container) {
             .batch-info { font-size: 13px; font-weight: 600; color: var(--brand); display: flex; align-items: center; gap: 8px; }
             .batch-info span { font-size: 16px; font-weight: 700; margin: 0 2px; }
 
-            .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; }
+            .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; border-left: none; border-right: none; }
             .table-scroll { flex: 1; overflow: auto; }
             table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 1000px; }
             th { padding: 12px 16px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; position: sticky; top: 0; z-index: 10; background: var(--surface); box-shadow: inset 0 -2px 0 var(--border); }
@@ -170,6 +165,21 @@ function injectUI(container) {
             .merge-option-content { flex: 1; }
             .merge-option-title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
             .merge-option-desc { font-size: 12px; color: var(--text-secondary); margin-top: 4px; line-height: 1.4; }
+
+            .toggle { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
+            .toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+            .toggle-slider { width: 34px; height: 18px; background: var(--border-strong); border-radius: 20px; transition: 0.3s; position: relative; }
+            .toggle-slider::before { content: ""; position: absolute; width: 12px; height: 12px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; box-shadow: var(--shadow-sm); }
+            .toggle input:checked + .toggle-slider { background: var(--success); }
+            .toggle input:checked + .toggle-slider::before { transform: translateX(16px); }
+            .toggle.disabled { opacity: 0.5; cursor: not-allowed; }
+            .toggle-label { margin-left: 8px; font-size: 11px; font-weight: 700; }
+            .toggle-label.active { color: var(--success); }
+            .toggle-label.inactive { color: var(--text-muted); }
+
+            .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
+            .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
+            .empty-text { font-size: 13px; font-weight: 600; }
 
             @media (max-width: 768px) {
                 .col-checkbox { display: none !important; }
@@ -257,7 +267,7 @@ function injectUI(container) {
             <div class="table-scroll custom-scroll">
                 <table>
                     <thead>
-                        <tr>
+                        <tr id="inst-table-head">
                             <th class="col-checkbox" style="width: 4%;">
                                 <div style="display:flex; justify-content:center; align-items:center;">
                                     <input type="checkbox" id="selectAll" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
@@ -270,7 +280,7 @@ function injectUI(container) {
                             <th data-sort="country" style="width: 8%;">國別 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="city" style="width: 8%;">縣市別 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="address" style="width: 16%;">實習場所地址 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th style="width: 8%;">操作</th>
+                            <th style="width: 12%;">操作</th>
                         </tr>
                     </thead>
                     <tbody id="table-body">
@@ -360,468 +370,4 @@ function injectUI(container) {
                             若保持「-- 不修改 --」，則該欄位維持原資料不變。
                         </p>
                     </div>
-                    <div class="field"><label class="field-label">批次套用：行業別</label><select id="batch-input-industry" class="field-select"></select></div>
-                    <div class="field"><label class="field-label">批次套用：實習場所</label><select id="batch-input-venue" class="field-select"></select></div>
-                </div>
-                <div class="dialog-footer">
-                    <button type="button" class="btn btn-secondary" id="btn-cancel-batch">取消</button>
-                    <button type="button" id="btn-batch-edit-submit" class="btn btn-primary"><i class="ti ti-check"></i> 確認批次更新</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    `;
-}
-
-// ==========================================
-// 2. 下拉選項與靜態清單初始化
-// ==========================================
-function initSelectOptions() {
-    let countryHtml = '';
-    LIST_COUNTRIES.forEach(item => countryHtml += `<option value="${item}">${item}</option>`);
-    document.getElementById('input-country').innerHTML = countryHtml;
-
-    let cityHtml = `<option value="">請選擇</option>`;
-    LIST_CITIES.forEach(item => cityHtml += `<option value="${item}">${item}</option>`);
-    document.getElementById('input-city').innerHTML = cityHtml;
-
-    let industryHtml = `<option value="">請選擇</option>`;
-    LIST_INDUSTRIES.forEach(item => industryHtml += `<option value="${item}">${item}</option>`);
-    document.getElementById('input-industry').innerHTML = industryHtml;
-
-    let venueHtml = `<option value="">請選擇</option>`;
-    LIST_VENUES.forEach(item => venueHtml += `<option value="${item}">${item}</option>`);
-    document.getElementById('input-venue-type').innerHTML = venueHtml;
-
-    let filterCountryHtml = '';
-    LIST_COUNTRIES.forEach(item => {
-        filterCountryHtml += `<label class="filter-option"><input type="checkbox" class="filter-chk-country" value="${item}"><span>${item}</span></label>`;
-    });
-    document.getElementById('country-options-container').innerHTML = filterCountryHtml;
-
-    let filterCityHtml = '';
-    LIST_CITIES.forEach(item => {
-        filterCityHtml += `<label class="filter-option"><input type="checkbox" class="filter-chk-city" value="${item}"><span>${item}</span></label>`;
-    });
-    document.getElementById('city-options-container').innerHTML = filterCityHtml;
-
-    let filterIndustryHtml = '';
-    LIST_INDUSTRIES.forEach(item => {
-        filterIndustryHtml += `<label class="filter-option"><input type="checkbox" class="filter-chk-industry" value="${item}"><span>${item}</span></label>`;
-    });
-    document.getElementById('industry-options-container').innerHTML = filterIndustryHtml;
-
-    let filterVenueHtml = '';
-    LIST_VENUES.forEach(item => {
-        filterVenueHtml += `<label class="filter-option"><input type="checkbox" class="filter-chk-venue" value="${item}"><span>${item}</span></label>`;
-    });
-    document.getElementById('venue-options-container').innerHTML = filterVenueHtml;
-    
-    let batchIndHtml = '<option value="NO_CHANGE">-- 不修改 --</option><option value="">[清空此欄位]</option>';
-    LIST_INDUSTRIES.forEach(item => batchIndHtml += `<option value="${item}">${item}</option>`);
-    document.getElementById('batch-input-industry').innerHTML = batchIndHtml;
-
-    let batchVenueHtml = '<option value="NO_CHANGE">-- 不修改 --</option><option value="">[清空此欄位]</option>';
-    LIST_VENUES.forEach(item => batchVenueHtml += `<option value="${item}">${item}</option>`);
-    document.getElementById('batch-input-venue').innerHTML = batchVenueHtml;
-}
-
-// ==========================================
-// 3. 事件代理重整
-// ==========================================
-function bindEvents(container) {
-    container.querySelector('#btn-export-csv').addEventListener('click', exportToCSV);
-    container.querySelector('#btn-import-trigger').addEventListener('click', () => container.querySelector('#import-file').click());
-    container.querySelector('#import-file').addEventListener('change', handleImport);
-    container.querySelector('#btn-create-inst').addEventListener('click', openCreateModal);
-    container.querySelector('#search-input').addEventListener('input', () => { currentPage = 1; renderTable(); });
-
-    container.querySelector('#pill-country').addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('country'); });
-    container.querySelector('#pill-city').addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('city'); });
-    container.querySelector('#pill-industry').addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('industry'); });
-    container.querySelector('#pill-venue').addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('venue'); });
-
-    container.querySelector('#search-country-input').addEventListener('keyup', (e) => filterDropdownItems(e.target, 'country-options-container'));
-    container.querySelector('#search-city-input').addEventListener('keyup', (e) => filterDropdownItems(e.target, 'city-options-container'));
-    container.querySelector('#search-industry-input').addEventListener('keyup', (e) => filterDropdownItems(e.target, 'industry-options-container'));
-    container.querySelector('#search-venue-input').addEventListener('keyup', (e) => filterDropdownItems(e.target, 'venue-options-container'));
-
-    container.querySelector('#country-options-container').addEventListener('change', (e) => { if(e.target.type==='checkbox') toggleFilterCheck('country', e.target.value); });
-    container.querySelector('#city-options-container').addEventListener('change', (e) => { if(e.target.type==='checkbox') toggleFilterCheck('city', e.target.value); });
-    container.querySelector('#industry-options-container').addEventListener('change', (e) => { if(e.target.type==='checkbox') toggleFilterCheck('industry', e.target.value); });
-    container.querySelector('#venue-options-container').addEventListener('change', (e) => { if(e.target.type==='checkbox') toggleFilterCheck('venue', e.target.value); });
-
-    container.querySelector('#btn-clear-country').addEventListener('click', () => clearFilter('country'));
-    container.querySelector('#btn-clear-city').addEventListener('click', () => clearFilter('city'));
-    container.querySelector('#btn-clear-industry').addEventListener('click', () => clearFilter('industry'));
-    container.querySelector('#btn-clear-venue').addEventListener('click', () => clearFilter('venue'));
-
-    container.querySelector('#selectAll').addEventListener('change', toggleSelectPage);
-    container.querySelector('#btn-select-all-filtered').addEventListener('click', selectAllFiltered);
-    container.querySelector('#btn-clear-selection').addEventListener('click', clearSelection);
-    container.querySelector('#btn-batch-delete').addEventListener('click', batchDelete);
-    container.querySelector('#btn-batch-edit').addEventListener('click', openBatchEditModal);
-    container.querySelector('#btn-batch-merge').addEventListener('click', openMergeModal);
-
-    container.querySelector('#per-page-select').addEventListener('change', (e) => { itemsPerPage = Number(e.target.value); currentPage = 1; renderTable(); });
-    container.querySelector('#roles-page-wrapper #inst-table-head').addEventListener('click', (e) => {
-        const th = e.target.closest('th[data-sort]');
-        if (th) handleSort(th);
-    });
-
-    container.querySelector('#input-country').addEventListener('change', handleCountryChange);
-    container.querySelector('#btn-close-modal-x').addEventListener('click', closeModal);
-    container.querySelector('#btn-cancel-modal').addEventListener('click', closeModal);
-    container.querySelector('#btn-submit').addEventListener('click', submitForm);
-
-    container.querySelector('#btn-close-batch-x').addEventListener('click', closeBatchEditModal);
-    container.querySelector('#btn-cancel-batch').addEventListener('click', closeBatchEditModal);
-    container.querySelector('#btn-batch-edit-submit').addEventListener('click', executeBatchEdit);
-
-    container.querySelector('#btn-close-merge-x').addEventListener('click', closeMergeModal);
-    container.querySelector('#btn-cancel-merge').addEventListener('click', closeMergeModal);
-    container.querySelector('#btn-merge-submit').addEventListener('click', executeMerge);
-
-    container.querySelector('#table-body').addEventListener('click', (e) => {
-        const rowChk = e.target.closest('.row-select-chk');
-        const btnEdit = e.target.closest('.btn-row-edit');
-        const btnDel = e.target.closest('.btn-row-delete');
-        
-        if (rowChk) { toggleSelect(rowChk.value); }
-        else if (btnEdit) { editData(btnEdit.dataset.id); }
-        else if (btnDel) { deleteData(btnDel.dataset.id, btnDel.dataset.name); }
-    });
-
-    container.querySelector('#merge-options-container').addEventListener('change', (e) => {
-        if(e.target.name === 'master_inst') {
-            document.getElementById('btn-merge-submit').disabled = false;
-        }
-    });
-}
-
-// ==========================================
-// 4. 資料維護核心 (SPA 0Reads 快取架構)
-// ==========================================
-async function handleInitialLoadEngine() {
-    try {
-        const recordsCol = collection(db, "internship_records");
-        const recordSnap = await getDocs(recordsCol);
-        allRecords = recordSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    } catch(e) { console.warn("歷史名單預載未完成", e); }
-}
-
-async function fetchInitialDataOnce() {
-    try {
-        const dataSnap = await getDocs(collection(db, "internship_institutions"));
-        allData = dataSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        selectedIds = [];
-        updateBatchActionBar();
-        renderTable();
-        await handleInitialLoadEngine();
-    } catch (error) {
-        document.getElementById('table-body').innerHTML = `<tr><td colspan="9" class="empty-state"><i class="ti ti-lock empty-icon" style="color:var(--danger); opacity:1;"></i><div class="empty-text">雲端資料同步中斷。</div></td></tr>`;
-    }
-}
-
-function updatePillActive(type) {
-    let set, typeName;
-    if(type === 'country') { set = filterCountrySet; typeName = '國別'; }
-    else if(type === 'city') { set = filterCitySet; typeName = '縣市'; }
-    else if(type === 'industry') { set = filterIndustrySet; typeName = '行業別'; }
-    else { set = filterVenueSet; typeName = '場所'; }
-
-    const pill = document.getElementById(`pill-${type}`);
-    if (set.size > 0) {
-        pill.classList.add('active');
-        pill.innerHTML = `${typeName} <span class="pill-count">${set.size}</span> <i class="ti ti-chevron-down"></i>`;
-    } else {
-        pill.classList.remove('active');
-        pill.innerHTML = `全部${typeName} <i class="ti ti-chevron-down"></i>`;
-    }
-}
-
-function renderTable() {
-    const tbody = document.getElementById('table-body');
-    const searchTerm = document.getElementById('search-input').value.toLowerCase();
-
-    filteredInstitutions = allData.filter(d => {
-        const matchSearch = (d.name || '').toLowerCase().includes(searchTerm) || (d.tax_id || '').toLowerCase().includes(searchTerm);
-        const matchCountry = filterCountrySet.size === 0 || filterCountrySet.has(d.country);
-        const matchCity = filterCitySet.size === 0 || filterCitySet.has(d.city);
-        const matchIndustry = filterIndustrySet.size === 0 || filterIndustrySet.has(d.industry);
-        const matchVenue = filterVenueSet.size === 0 || filterVenueSet.has(d.venue_type);
-        return matchSearch && matchCountry && matchCity && matchIndustry && matchVenue;
-    });
-
-    if (sortCol) {
-        filteredInstitutions.sort((a, b) => {
-            let valA = a[sortCol] || '';
-            let valB = b[sortCol] || '';
-            if (sortCol === 'country') {
-                const aIsDomestic = valA === '中華民國' ? 0 : 1;
-                const bIsDomestic = valB === '中華民國' ? 0 : 1;
-                if (aIsDomestic !== bIsDomestic) return sortDir === 'asc' ? aIsDomestic - bIsDomestic : bIsDomestic - aIsDomestic;
-            }
-            valA = valA.toString().toLowerCase(); valB = valB.toString().toLowerCase();
-            if (valA < valB) return sortDir === 'asc' ? -1 : 1;
-            if (valA > valB) return sortDir === 'asc' ? 1 : -1;
-            return 0;
-        });
-    }
-
-    const total = filteredInstitutions.length;
-    const totalPages = Math.max(1, Math.ceil(total / itemsPerPage));
-    if (currentPage > totalPages) currentPage = totalPages;
-    
-    const start = (currentPage - 1) * itemsPerPage;
-    const paginatedItems = filteredInstitutions.slice(start, start + itemsPerPage);
-
-    document.getElementById('pagination-info').innerHTML = total > 0 ? `共 <strong>${total}</strong> 筆，顯示第 ${start + 1}–${Math.min(start + itemsPerPage, total)} 筆` : `共 <strong>0</strong> 筆`;
-    
-    let pHtml = `<button class="page-btn page-step-btn" data-page="${currentPage-1}" ${currentPage<=1?'disabled':''}><i class="ti ti-chevron-left"></i></button>`;
-    const pages = [];
-    for (let p=1; p<=totalPages; p++) {
-        if (p===1 || p===totalPages || Math.abs(p-currentPage)<=1) pages.push(p);
-        else if (pages[pages.length-1] !== '…') pages.push('…');
-    }
-    pages.forEach(p => {
-        if (p === '…') pHtml += `<span class="page-btn" style="cursor:default;border:none">…</span>`;
-        else pHtml += `<button class="page-btn page-num-btn ${p === currentPage ? 'active' : ''}" data-page="${p}">${p}</button>`;
-    });
-    pHtml += `<button class="page-btn page-step-btn" data-page="${currentPage+1}" ${currentPage>=totalPages?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
-    document.getElementById('pagination-controls').innerHTML = pHtml;
-
-    document.querySelectorAll('#institution-page-wrapper .page-step-btn, #institution-page-wrapper .page-num-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const p = Number(e.currentTarget.dataset.page);
-            if(p && p >= 1 && p <= totalPages) { currentPage = p; renderTable(); }
-        });
-    });
-
-    const currentPaginatedIds = paginatedItems.map(d => d.id);
-    document.getElementById('selectAll').checked = currentPaginatedIds.length > 0 && currentPaginatedIds.every(id => selectedIds.includes(id));
-
-    if (total === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">找不到符合條件的機構資料。</div></td></tr>`;
-        return;
-    }
-
-    tbody.innerHTML = paginatedItems.map((data) => {
-        const isChecked = selectedIds.includes(data.id) ? 'checked' : '';
-        const isDomestic = data.country === '中華民國';
-        return `
-        <tr class="${isChecked ? 'selected' : ''}">
-            <td class="col-checkbox" style="text-align: center;">
-                <div style="display:flex; justify-content:center; align-items:center;">
-                    <input type="checkbox" value="${data.id}" class="row-select-chk" ${isChecked} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
-                </div>
-            </td>
-            <td><div class="cell-primary bold" title="${data.name}">${data.name}</div></td>
-            <td style="text-align: center;"><div class="cell-primary" style="color: var(--text-muted); font-family: monospace;">${isDomestic && data.tax_id ? data.tax_id : '-'}</div></td>
-            <td style="text-align: center;"><div class="cell-primary">${data.industry || '-'}</div></td>
-            <td style="text-align: center;"><div class="cell-primary">${data.venue_type || '-'}</div></td>
-            <td style="text-align: center;"><div class="cell-primary">${data.country}</div></td>
-            <td style="text-align: center;"><div class="cell-primary">${isDomestic && data.city ? data.city : '-'}</div></td>
-            <td><div class="cell-primary" title="${data.address}">${data.address}</div></td>
-            <td style="text-align: center;">
-                <div class="row-actions">
-                    <button data-id="${data.id}" class="btn btn-secondary btn-icon sm btn-row-edit" title="編輯"><i class="ti ti-edit"></i></button>
-                    <button data-id="${data.id}" data-name="${data.name}" class="btn btn-danger btn-icon sm btn-row-delete" title="刪除"><i class="ti ti-trash"></i></button>
-                </div>
-            </td>
-        </tr>`;
-    }).join('');
-}
-
-function exportToCSV() {
-    if (filteredInstitutions.length === 0) { alert("沒有資料可供匯出！"); return; }
-    let csv = '\uFEFF實習機構名稱,統一編號,行業別,實習場所,實習場所國別,縣市別,實習場所地址,備註\n';
-    filteredInstitutions.forEach(d => {
-        csv += [d.name, d.tax_id || '-', d.industry || '', d.venue_type || '', d.country, d.city || '-', d.address, d.remarks || ''].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
-    });
-    const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-    link.download = `實習機構清單_${new Date().toISOString().split('T')[0]}.csv`; link.click();
-}
-
-async function handleImport(e) {
-    const file = e.target.files[0]; if (!file) return;
-    const btn = document.getElementById('btn-import-trigger');
-    const originalHtml = btn.innerHTML;
-    btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> <span class="btn-text">匯入中...</span>';
-    btn.disabled = true;
-
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-        try {
-            const rows = event.target.result.split('\n').map(row => row.trim()).filter(row => row);
-            let parsedRows = [];
-            for (let i = 1; i < rows.length; i++) {
-                let cols = []; let inQuotes = false; let currentVal = '';
-                for (let char of rows[i]) {
-                    if (char === '"') inQuotes = !inQuotes;
-                    else if (char === ',' && !inQuotes) { cols.push(currentVal.trim()); currentVal = ''; }
-                    else currentVal += char;
-                }
-                cols.push(currentVal.trim());
-                if (cols.length >= 7) {
-                    const payload = {
-                        name: cols[0], tax_id: cols[1] || '', industry: cols[2] || '', venue_type: cols[3] || '',
-                        country: cols[4] || '中華民國', city: cols[5] || '', address: cols[6] || '', remarks: cols[7] || ''
-                    };
-                    if (!payload.name) continue;
-                    parsedRows.push(payload);
-                }
-            }
-            for (let payload of parsedRows) {
-                const docRef = await addDoc(collection(db, "internship_institutions"), { ...payload, created_at: serverTimestamp() });
-                allData.unshift({ id: docRef.id, ...payload });
-            }
-            alert(`✅ 成功匯入！`); fetchInitialDataOnce();
-        } catch (error) { alert("格式錯誤\n" + error.message); } 
-        finally { btn.innerHTML = originalHtml; btn.disabled = false; e.target.value = ''; }
-    };
-    reader.readAsText(file);
-}
-
-function openCreateModal() {
-    editingId = null; editingOldName = null;
-    document.getElementById('data-form').reset();
-    handleCountryChange();
-    document.getElementById('modal-title').innerHTML = '<i class="ti ti-building-skyscraper"></i> 新增實習機構';
-    document.getElementById('data-modal').classList.add('open');
-}
-
-function closeModal() { document.getElementById('data-modal').classList.remove('open'); editingId = null; }
-
-async function submitForm() {
-    const btn = document.getElementById('btn-submit');
-    const isDomestic = document.getElementById('input-country').value === '中華民國';
-    const payload = { 
-        country: document.getElementById('input-country').value,
-        name: document.getElementById('input-name').value.trim(),
-        tax_id: isDomestic ? document.getElementById('input-tax-id').value.trim() : '',
-        city: isDomestic ? document.getElementById('input-city').value : '',
-        industry: document.getElementById('input-industry').value,
-        venue_type: document.getElementById('input-venue-type').value,
-        address: document.getElementById('input-address').value.trim(),
-        remarks: document.getElementById('input-remarks').value.trim()
-    };
-    if(!payload.country || !payload.name || !payload.address) { alert("請填寫所有必填欄位！"); return; }
-    btn.disabled = true; btn.innerHTML = '儲存中...';
-    try {
-        if (editingId) {
-            const batch = writeBatch(db);
-            batch.update(doc(db, "internship_institutions", editingId), { ...payload, updated_at: serverTimestamp() });
-            if (editingOldName && editingOldName !== payload.name) {
-                allRecords.forEach(record => {
-                    if (record.inst_id === editingId || (!record.inst_id && record.inst_raw === editingOldName)) {
-                        batch.update(doc(db, "internship_records", record.id), { inst_raw: payload.name, updated_at: serverTimestamp() });
-                    }
-                });
-            }
-            await batch.commit();
-        } else {
-            await addDoc(collection(db, "internship_institutions"), { ...payload, created_at: serverTimestamp() });
-        }
-        closeModal(); fetchInitialDataOnce();
-    } catch (err) { alert("儲存失敗"); } finally { btn.disabled = false; btn.innerHTML = '確認儲存'; }
-}
-
-function editData(id) {
-    const docData = allData.find(d => d.id === id); if (!docData) return;
-    editingId = id; editingOldName = docData.name || '';
-    document.getElementById('input-country').value = docData.country || '中華民國';
-    document.getElementById('input-name').value = docData.name || '';
-    document.getElementById('input-tax-id').value = docData.tax_id || '';
-    document.getElementById('input-city').value = docData.city || '';
-    document.getElementById('input-industry').value = docData.industry || '';
-    document.getElementById('input-venue-type').value = docData.venue_type || '';
-    document.getElementById('input-address').value = docData.address || '';
-    document.getElementById('input-remarks').value = docData.remarks || '';
-    handleCountryChange();
-    document.getElementById('modal-title').innerHTML = '<i class="ti ti-edit"></i> 編輯實習機構';
-    document.getElementById('data-modal').classList.add('open');
-}
-
-async function deleteData(id, name) {
-    if (confirm(`確定要刪除機構「${name}」嗎？`)) {
-        try {
-            await deleteDoc(doc(db, "internship_institutions", id));
-            allData = allData.filter(d => d.id !== id);
-            selectedIds = selectedIds.filter(sid => sid !== id);
-            updateBatchActionBar(); renderTable();
-        } catch(e) { alert("刪除失敗"); }
-    }
-}
-
-function openBatchEditModal() {
-    if (selectedIds.length === 0) return;
-    document.getElementById('batch-edit-count').innerText = selectedIds.length;
-    document.getElementById('batch-input-industry').value = 'NO_CHANGE';
-    document.getElementById('batch-input-venue').value = 'NO_CHANGE';
-    document.getElementById('batch-edit-modal').classList.add('open');
-}
-function closeBatchEditModal() { document.getElementById('batch-edit-modal').classList.remove('open'); }
-
-async function executeBatchEdit() {
-    const indVal = document.getElementById('batch-input-industry').value;
-    const venVal = document.getElementById('batch-input-venue').value;
-    if (!confirm(`確定要批次修改這 ${selectedIds.length} 筆機構嗎？`)) return;
-    try {
-        const batch = writeBatch(db);
-        selectedIds.forEach(id => {
-            const updates = { updated_at: serverTimestamp() };
-            if (indVal !== 'NO_CHANGE') updates.industry = indVal;
-            if (venVal !== 'NO_CHANGE') updates.venue_type = venVal;
-            batch.update(doc(db, "internship_institutions", id), updates);
-        });
-        await batch.commit();
-        closeBatchEditModal(); fetchInitialDataOnce();
-    } catch(e) { alert("更新失敗"); }
-}
-
-function openMergeModal() {
-    if(selectedIds.length < 2) { alert("請至少勾選 2 個機構進行合併！"); return; }
-    document.getElementById('merge-count').innerText = selectedIds.length;
-    const container = document.getElementById('merge-options-container');
-    const targetInsts = allData.filter(i => selectedIds.includes(i.id));
-    container.innerHTML = targetInsts.map(inst => `
-        <label class="merge-option">
-            <input type="radio" name="master_inst" value="${inst.id}">
-            <div class="merge-option-content">
-                <div class="merge-option-title">${inst.name}</div>
-                <div class="merge-option-desc">統編：${inst.tax_id || '無'} | 地址：${inst.address || '無'}</div>
-            </div>
-        </label>
-    `).join('');
-    document.getElementById('merge-modal').classList.add('open');
-}
-function closeMergeModal() { document.getElementById('merge-modal').classList.remove('open'); }
-
-async function executeMerge() {
-    const masterId = document.querySelector('input[name="master_inst"]:checked')?.value; if(!masterId) return;
-    const masterInst = allData.find(i => i.id === masterId);
-    const instsToDelete = selectedIds.filter(id => id !== masterId);
-    const deletedNames = allData.filter(i => instsToDelete.includes(i.id)).map(i => i.name);
-    if(!confirm(`確認合併？`)) return;
-    try {
-        const batch = writeBatch(db);
-        allRecords.forEach(record => {
-            if (instsToDelete.includes(record.inst_id) || (!record.inst_id && deletedNames.includes(record.inst_raw))) {
-                batch.update(doc(db, "internship_records", record.id), { inst_raw: masterInst.name, inst_id: masterInst.id, updated_at: serverTimestamp() });
-            }
-        });
-        instsToDelete.forEach(id => batch.delete(doc(db, "internship_institutions", id)));
-        await batch.commit();
-        closeMergeModal(); fetchInitialDataOnce();
-    } catch(e) { alert("合併失敗"); }
-}
-
-async function batchDelete() {
-    if (!confirm(`確定刪除這 ${selectedIds.length} 筆機構嗎？`)) return;
-    try {
-        const batch = writeBatch(db);
-        selectedIds.forEach(id => batch.delete(doc(db, "internship_institutions", id)));
-        await batch.commit(); fetchInitialDataOnce();
-    } catch (e) { alert("刪除失敗"); }
-}
+                    <div class="field"><label class="field-label
