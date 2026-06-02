@@ -46,7 +46,7 @@ export async function render(containerId, context) {
 }
 
 // ==========================================
-// 1. UI 注入模組 (美化 CSS 配置)
+// 1. UI 注入模組
 // ==========================================
 function injectUI(container) {
     container.innerHTML = `
@@ -60,28 +60,24 @@ function injectUI(container) {
             @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
             .ti-spin { animation: spin 1s linear infinite; display: inline-block; }
 
-            /* ✨ 2. 開合按鈕背景常駐固定顯示 */
-            .tree-toggle { background: #f3f4f6; border: none; cursor: pointer; padding: 4px; display: inline-flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: transform 0.2s, background var(--transition); outline: none; margin-right: 8px; border-radius: var(--radius-sm); width: 24px; height: 24px; flex-shrink: 0; }
-            .tree-toggle:hover { color: var(--brand); background: var(--brand-light); }
-            .tree-toggle.expanded { transform: rotate(90deg); color: var(--brand); background: var(--brand-light); }
+            /* ✨ 修正 2：展開按鈕固定背景色與邊框 */
+            .tree-toggle { width: 24px; height: 24px; background: var(--bg); border: 1px solid var(--border-strong); cursor: pointer; padding: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: all 0.2s; outline: none; margin-right: 8px; border-radius: 6px; flex-shrink: 0; }
+            .tree-toggle:hover { color: var(--brand); border-color: var(--brand); background: var(--brand-light); }
+            .tree-toggle.expanded { transform: rotate(90deg); color: var(--brand); border-color: var(--brand); background: var(--brand-light); }
             
             .child-row { background-color: #fbfdff; }
             .child-row td { border-bottom: 1px dashed var(--border); }
             .child-row:hover td { background-color: #f0f7ff; }
-            
-            /* ✨ 3. 機構名稱文字對齊線基準 */
-            .name-align-container { display: flex; align-items: center; width: 100%; text-align: left; }
-            .tree-placeholder { display: inline-block; width: 32px; flex-shrink: 0; } /* 24px按鈕 + 8px間距 */
-            .child-name-wrap { display: flex; align-items: center; padding-left: 12px; color: var(--text-secondary); font-size: 13px; }
-            .child-name-wrap i { margin-right: 8px; font-size: 16px; opacity: 0.6; color: var(--brand); flex-shrink: 0; }
 
-            /* ✨ 6. 主機構可搜尋下拉清單完美美化 */
-            .searchable-select-wrap { position: relative; width: 100%; }
-            .searchable-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--radius); box-shadow: var(--shadow-md); max-height: 210px; overflow-y: auto; z-index: 150; display: none; padding: 4px; }
+            /* ✨ 修正 6：原生搜尋選單美化 */
+            .searchable-select-wrap { position: relative; }
+            .searchable-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-md); max-height: 200px; overflow-y: auto; z-index: 150; display: none; }
             .searchable-dropdown.show { display: block; }
-            .searchable-option { padding: 8px 12px; font-size: 13px; cursor: pointer; border-radius: var(--radius-sm); transition: all 0.1s; color: var(--text-primary); }
+            .searchable-option { padding: 10px 12px; font-size: 13px; color: var(--text-primary); cursor: pointer; border-bottom: 1px solid var(--border); transition: all 0.15s; display: flex; align-items: center; justify-content: space-between; }
             .searchable-option:hover { background: var(--brand-light); color: var(--brand); font-weight: 600; }
-            .searchable-option.empty-opt { color: var(--text-muted); font-style: italic; background: transparent; text-align: center; padding: 12px; }
+            .searchable-option:last-child { border-bottom: none; }
+            .searchable-option.empty-opt { color: var(--text-muted); font-style: italic; background: var(--bg); font-weight: 400; justify-content: center; }
+            .searchable-option.empty-opt:hover { background: var(--bg); color: var(--text-muted); cursor: default; font-weight: 400; }
 
             .toolbar { padding: 12px 24px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; flex-wrap: wrap; }
             .search-wrap { position: relative; flex: 0 0 260px; }
@@ -93,7 +89,6 @@ function injectUI(container) {
             .v-divider { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; margin: 0 4px; }
             .toolbar-actions { display: flex; align-items: center; gap: 8px; }
 
-            /* ✨ 4. 操作按鈕固定正方圓角矩形 */
             .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 14px; height: 34px; border-radius: var(--radius); font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; border: none; white-space: nowrap; transition: all var(--transition); text-decoration: none; }
             .btn-primary { background: var(--brand); color: white; border: 1px solid var(--brand); }
             .btn-primary:hover { background: var(--brand-hover); }
@@ -106,8 +101,9 @@ function injectUI(container) {
             .btn-indigo-solid { background: var(--indigo); color: white; border: 1px solid var(--indigo); }
             .btn-indigo-solid:hover { background: #4338ca; }
             
-            /* ✨ 4. 精確限縮正方操作鈕尺寸與半徑 */
-            .btn-icon.sm { width: 30px !important; height: 30px !important; padding: 0 !important; border-radius: var(--radius) !important; flex-shrink: 0; justify-content: center; align-items: center; }
+            /* ✨ 修正 4：操作按鈕強制鎖定正方圓角 */
+            .btn-icon { width: 34px; padding: 0; justify-content: center; }
+            .btn-icon.sm { min-width: 28px; width: 28px; height: 28px; border-radius: 6px; padding: 0; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
             .btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
             .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
@@ -125,6 +121,7 @@ function injectUI(container) {
             .filter-dropdown-list { max-height: 200px; overflow-y: auto; padding: 4px; }
             .filter-option { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: var(--radius-sm); cursor: pointer; font-size: 12px; color: var(--text-secondary); transition: background var(--transition); }
             .filter-option:hover { background: var(--bg); color: var(--text-primary); }
+            .filter-option input[type=checkbox] { accent-color: var(--brand); flex-shrink: 0; }
             .filter-dropdown-footer { padding: 6px 8px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; }
             .filter-dropdown-footer button { font-size: 11px; font-weight: 600; color: var(--danger); background: none; border: none; cursor: pointer; padding: 2px 4px; border-radius: var(--radius-sm); }
             .filter-dropdown-footer button:hover { background: var(--danger-bg); }
@@ -148,7 +145,6 @@ function injectUI(container) {
 
             .cell-primary { font-size: 13px; color: var(--text-primary); line-height: 1.4; }
             .cell-primary.bold { font-weight: 700; color: #000000; }
-            .cell-secondary { font-size: 11px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
             .row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; }
 
             .pagination-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; gap: 10px; border-radius: 0 !important; }
@@ -314,13 +310,13 @@ function injectUI(container) {
                         
                         <div class="field">
                             <label class="field-label">隸屬主機構 (若為分公司請搜尋並選擇)</label>
-                            <div class="searchable-select-wrap relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="ti ti-building text-gray-400" style="font-size: 16px;"></i>
+                            <div class="searchable-select-wrap">
+                                <div style="position: absolute; left: 12px; top: 0; bottom: 0; display: flex; align-items: center; pointer-events: none;">
+                                    <i class="ti ti-building" style="color: var(--text-muted); font-size: 16px;"></i>
                                 </div>
-                                <input type="text" id="parent-search-input" class="field-input style-reset" style="padding-left: 34px; padding-right: 34px; background: var(--bg);" placeholder="輸入關鍵字搜尋... (留空代表獨立機構)" autocomplete="off">
-                                <button type="button" id="btn-clear-parent" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-red-500 cursor-pointer" style="display:none; background:transparent; border:none; outline:none; height: 100%;">
-                                    <i class="ti ti-x" style="font-size: 14px;"></i>
+                                <input type="text" id="parent-search-input" class="field-input" style="padding-left: 36px; padding-right: 32px;" placeholder="輸入關鍵字搜尋... (留空代表獨立機構)" autocomplete="off">
+                                <button type="button" id="btn-clear-parent" style="position: absolute; right: 10px; top: 0; bottom: 0; background: none; border: none; cursor: pointer; display: none; align-items: center; color: var(--text-muted); transition: 0.2s;">
+                                    <i class="ti ti-x" style="font-size: 16px;"></i>
                                 </button>
                                 <input type="hidden" id="input-parent-id">
                                 <div id="parent-dropdown-list" class="searchable-dropdown custom-scroll"></div>
@@ -403,7 +399,68 @@ function injectUI(container) {
 }
 
 // ==========================================
-// 3. 事件代理與控制核心
+// 2. 下拉選項與動態選單初始化
+// ==========================================
+function initSelectOptions() {
+    let countryHtml = '';
+    LIST_COUNTRIES.forEach(item => countryHtml += `<option value="${item}">${item}</option>`);
+    document.getElementById('input-country').innerHTML = countryHtml;
+
+    let cityHtml = `<option value="">請選擇</option>`;
+    LIST_CITIES.forEach(item => cityHtml += `<option value="${item}">${item}</option>`);
+    document.getElementById('input-city').innerHTML = cityHtml;
+
+    let industryHtml = `<option value="">請選擇</option>`;
+    LIST_INDUSTRIES.forEach(item => industryHtml += `<option value="${item}">${item}</option>`);
+    document.getElementById('input-industry').innerHTML = industryHtml;
+
+    let venueHtml = `<option value="">請選擇</option>`;
+    LIST_VENUES.forEach(item => venueHtml += `<option value="${item}">${item}</option>`);
+    document.getElementById('input-venue-type').innerHTML = venueHtml;
+
+    let filterCountryHtml = '';
+    LIST_COUNTRIES.forEach(item => { filterCountryHtml += `<label class="filter-option"><input type="checkbox" class="filter-chk-country" value="${item}"><span>${item}</span></label>`; });
+    document.getElementById('country-options-container').innerHTML = filterCountryHtml;
+
+    let filterCityHtml = '';
+    LIST_CITIES.forEach(item => { filterCityHtml += `<label class="filter-option"><input type="checkbox" class="filter-chk-city" value="${item}"><span>${item}</span></label>`; });
+    document.getElementById('city-options-container').innerHTML = filterCityHtml;
+
+    let filterIndustryHtml = '';
+    LIST_INDUSTRIES.forEach(item => { filterIndustryHtml += `<label class="filter-option"><input type="checkbox" class="filter-chk-industry" value="${item}"><span>${item}</span></label>`; });
+    document.getElementById('industry-options-container').innerHTML = filterIndustryHtml;
+
+    let filterVenueHtml = '';
+    LIST_VENUES.forEach(item => { filterVenueHtml += `<label class="filter-option"><input type="checkbox" class="filter-chk-venue" value="${item}"><span>${item}</span></label>`; });
+    document.getElementById('venue-options-container').innerHTML = filterVenueHtml;
+    
+    let batchIndHtml = '<option value="NO_CHANGE">-- 不修改 --</option><option value="">[清空此欄位]</option>';
+    LIST_INDUSTRIES.forEach(item => batchIndHtml += `<option value="${item}">${item}</option>`);
+    document.getElementById('batch-input-industry').innerHTML = batchIndHtml;
+
+    let batchVenueHtml = '<option value="NO_CHANGE">-- 不修改 --</option><option value="">[清空此欄位]</option>';
+    LIST_VENUES.forEach(item => batchVenueHtml += `<option value="${item}">${item}</option>`);
+    document.getElementById('batch-input-venue').innerHTML = batchVenueHtml;
+}
+
+function populateParentDropdown(excludeId = null) {
+    const listContainer = document.getElementById('parent-dropdown-list');
+    let html = '<div class="searchable-option empty-opt" data-id="" data-name="">-- 獨立機構 / 總公司 (無隸屬) --</div>';
+    
+    allData.forEach(d => {
+        if (!d.parent_id && d.id !== excludeId) {
+            html += `
+            <div class="searchable-option" data-id="${d.id}" data-name="${d.name}">
+                <span>${d.name}</span> 
+                <span style="font-size: 11px; color: var(--text-muted); font-family: inherit;">${d.tax_id || ''}</span>
+            </div>`;
+        }
+    });
+    listContainer.innerHTML = html;
+}
+
+// ==========================================
+// 3. 事件代理綁定
 // ==========================================
 function bindEvents(container) {
     container.querySelector('#btn-export-csv').addEventListener('click', exportToCSV);
@@ -437,7 +494,6 @@ function bindEvents(container) {
     container.querySelector('#btn-clear-industry').addEventListener('click', () => clearFilter('industry'));
     container.querySelector('#btn-clear-venue').addEventListener('click', () => clearFilter('venue'));
 
-    // ✨ 修正 3：顯示設定點擊後維持選單開啟不關閉
     const btnDisplaySettings = container.querySelector('#btn-display-settings');
     const displayMenu = container.querySelector('#display-settings-menu');
     btnDisplaySettings.addEventListener('click', (e) => {
@@ -445,18 +501,18 @@ function bindEvents(container) {
         displayMenu.classList.toggle('hidden');
     });
     container.querySelector('#btn-toggle-tree').addEventListener('click', (e) => {
-        e.stopPropagation(); // 阻止冒泡，維持清單停留
+        e.stopPropagation();
         isTreeMode = !isTreeMode;
         container.querySelector('#btn-toggle-tree').innerHTML = isTreeMode ? `<i class="ti ti-list-tree text-brand mr-2"></i> 切換為扁平列表` : `<i class="ti ti-list text-brand mr-2"></i> 切換為樹狀檢視`;
         renderTable();
     });
     container.querySelector('#btn-expand-all').addEventListener('click', (e) => {
-        e.stopPropagation(); // 阻止冒泡，維持清單停留
+        e.stopPropagation();
         allData.forEach(d => { if (!d.parent_id) expandedParents.add(d.id); });
         renderTable();
     });
     container.querySelector('#btn-collapse-all').addEventListener('click', (e) => {
-        e.stopPropagation(); // 阻止冒泡，維持清單停留
+        e.stopPropagation();
         expandedParents.clear();
         renderTable();
     });
@@ -469,6 +525,7 @@ function bindEvents(container) {
     container.querySelector('#btn-batch-merge').addEventListener('click', openMergeModal);
 
     container.querySelector('#per-page-select').addEventListener('change', (e) => { itemsPerPage = Number(e.target.value); currentPage = 1; renderTable(); });
+    
     container.querySelector('#pagination-controls').addEventListener('click', (e) => {
         const btn = e.target.closest('.page-btn');
         if (!btn || btn.disabled || btn.classList.contains('active')) return;
@@ -486,20 +543,24 @@ function bindEvents(container) {
     container.querySelector('#btn-cancel-modal').addEventListener('click', closeModal);
     container.querySelector('#btn-submit').addEventListener('click', submitForm);
 
-    // ✨ 原生搜尋型主機構輸入框綁定
     const parentSearchInput = container.querySelector('#parent-search-input');
     const parentDropdown = container.querySelector('#parent-dropdown-list');
     const parentIdHidden = container.querySelector('#input-parent-id');
     const btnClearParent = container.querySelector('#btn-clear-parent');
 
     const updateParentClearBtn = () => {
-        if (parentSearchInput.value) btnClearParent.style.display = 'flex';
-        else btnClearParent.style.display = 'none';
+        if (parentSearchInput.value) {
+            btnClearParent.style.display = 'flex';
+            btnClearParent.addEventListener('mouseover', () => btnClearParent.style.color = 'var(--danger)');
+            btnClearParent.addEventListener('mouseout', () => btnClearParent.style.color = 'var(--text-muted)');
+        } else {
+            btnClearParent.style.display = 'none';
+        }
     };
 
     parentSearchInput.addEventListener('focus', () => {
         parentDropdown.classList.add('show');
-        parentDropdown.querySelectorAll('.searchable-option').forEach(o => o.style.display = 'block');
+        parentDropdown.querySelectorAll('.searchable-option').forEach(o => o.style.display = 'flex');
     });
     parentSearchInput.addEventListener('input', (e) => {
         const term = e.target.value.toLowerCase();
@@ -507,7 +568,7 @@ function bindEvents(container) {
         updateParentClearBtn();
         parentDropdown.classList.add('show');
         parentDropdown.querySelectorAll('.searchable-option:not(.empty-opt)').forEach(opt => {
-            opt.style.display = opt.textContent.toLowerCase().includes(term) ? 'block' : 'none';
+            opt.style.display = opt.textContent.toLowerCase().includes(term) ? 'flex' : 'none';
         });
     });
     btnClearParent.addEventListener('click', (e) => {
@@ -527,7 +588,6 @@ function bindEvents(container) {
         }
     });
 
-    // 全域點擊防呆閉合
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.searchable-select-wrap')) {
             parentDropdown.classList.remove('show');
@@ -571,12 +631,13 @@ function bindEvents(container) {
 }
 
 // ==========================================
-// 4. 高光與資料組裝輔助
+// 4. 輔助函式與狀態操作
 // ==========================================
+// ✨ 修正 1：純淨反黃標記 (移除 padding，貼齊 Chrome 原生)
 function highlightKeyword(text, keyword) {
     if (!keyword || !text) return text || '';
     const regex = new RegExp(`(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-    return text.toString().replace(regex, '<mark style="background-color: #ffeb3b; color: #000; padding: 0;">$1</mark>');
+    return text.toString().replace(regex, '<mark style="background-color: #ffeb3b; color: #000;">$1</mark>');
 }
 
 function handleSort(thElement) {
@@ -649,6 +710,31 @@ function updatePillActive(type) {
     }
 }
 
+function handleCountryChange() {
+    const country = document.getElementById('input-country').value;
+    const isDomestic = country === '中華民國';
+    
+    const wrapTax = document.getElementById('wrap-tax-id');
+    const wrapCity = document.getElementById('wrap-city');
+    const wrapNameTrans = document.getElementById('wrap-name-translated');
+    const wrapNameLocal = document.getElementById('wrap-name-local');
+    const wrapOverseasTax = document.getElementById('wrap-overseas-tax');
+
+    const taxInput = document.getElementById('input-tax-id');
+    const cityInput = document.getElementById('input-city');
+
+    if (isDomestic) {
+        wrapTax.style.display = 'flex'; wrapCity.style.display = 'flex';
+        wrapNameTrans.style.display = 'none'; wrapNameLocal.style.display = 'none'; wrapOverseasTax.style.display = 'none';
+        taxInput.required = true; cityInput.required = true;
+    } else {
+        wrapTax.style.display = 'none'; wrapCity.style.display = 'none';
+        wrapNameTrans.style.display = 'flex'; wrapNameLocal.style.display = 'flex'; wrapOverseasTax.style.display = 'flex';
+        taxInput.required = false; cityInput.required = false;
+        taxInput.value = ''; cityInput.value = '';
+    }
+}
+
 function toggleSelectPage(e) {
     const isChecked = e.target.checked;
     const visibleIds = [];
@@ -672,6 +758,7 @@ function toggleSelect(id) {
     const index = selectedIds.indexOf(id);
     if (index === -1) selectedIds.push(id); else selectedIds.splice(index, 1);
     updateBatchActionBar(); 
+    
     const chk = document.querySelector(`.row-select-chk[value="${id}"]`);
     if(chk) {
         const row = chk.closest('tr');
@@ -696,7 +783,7 @@ function clearSelection() {
 }
 
 // ==========================================
-// 5. 資料處理與樹狀架構渲染
+// 5. 資料維護核心與 API 讀取
 // ==========================================
 async function handleInitialLoadEngine() {
     try {
@@ -719,11 +806,39 @@ async function fetchInitialDataOnce() {
     }
 }
 
+function updateBatchActionBar() {
+    const bar = document.getElementById('batch-bar');
+    const count = document.getElementById('selected-count');
+    const btnSelectAll = document.getElementById('btn-select-all-filtered');
+    
+    if (selectedIds.length > 0) {
+        bar.classList.add('visible');
+        count.innerText = selectedIds.length;
+        
+        let totalMatched = 0;
+        if(isTreeMode) {
+            filteredInstitutions.forEach(p => { totalMatched += 1 + p.children.length; });
+        } else {
+            totalMatched = filteredInstitutions.length;
+        }
+
+        if (selectedIds.length < totalMatched) {
+            btnSelectAll.style.display = 'inline-flex';
+            btnSelectAll.innerText = `選取全部符合條件 (${totalMatched})`;
+        } else {
+            btnSelectAll.style.display = 'none';
+        }
+    } else {
+        bar.classList.remove('visible');
+    }
+}
+
 function renderTable() {
     const tbody = document.getElementById('table-body');
-    const searchTerm = document.getElementById('search-input').value.toLowerCase();
+    const searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
 
     const checkMatch = (d) => {
+        // ✨ 修正 1：地址納入搜尋範圍
         const matchSearch = (d.name || '').toLowerCase().includes(searchTerm) || 
                             (d.tax_id || '').toLowerCase().includes(searchTerm) ||
                             (d.address || '').toLowerCase().includes(searchTerm);
@@ -793,7 +908,7 @@ function renderTable() {
     const start = (currentPage - 1) * itemsPerPage;
     const paginatedItems = filteredInstitutions.slice(start, start + itemsPerPage);
 
-    // ✨ 9. 左下角統計數據更新為指定格式
+    // ✨ 修正 9：左下角精確統計數據顯示
     let totalAllMatched = 0;
     let totalChildrenMatched = 0;
     if (isTreeMode) {
@@ -819,6 +934,9 @@ function renderTable() {
     pHtml += `<button class="page-btn page-step-btn" data-page="${currentPage+1}" ${currentPage>=totalPages?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
     document.getElementById('pagination-controls').innerHTML = pHtml;
 
+    const currentPaginatedIds = paginatedItems.map(d => d.id);
+    document.getElementById('selectAll').checked = currentPaginatedIds.length > 0 && currentPaginatedIds.every(id => selectedIds.includes(id));
+
     if (totalMainItems === 0) {
         tbody.innerHTML = `<tr><td colspan="9" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">找不到符合條件的機構資料。</div></td></tr>`;
         return;
@@ -828,23 +946,22 @@ function renderTable() {
         const isChecked = selectedIds.includes(data.id) ? 'checked' : '';
         const isDomestic = data.country === '中華民國';
         
-        // ✨ 3. 只顯示統編，海外機構完全保持留白 '-' (黑體字)
         let dispTax = '-';
         if (isDomestic && data.tax_id) dispTax = highlightKeyword(data.tax_id, searchTerm);
         
-        const toggleHtml = hasChildren ? `<button class="tree-toggle ${isExpanded ? 'expanded' : ''}"><i class="ti ti-chevron-right"></i></button>` : `<span class="tree-placeholder"></span>`;
+        const toggleHtml = hasChildren ? `<button class="tree-toggle ${isExpanded ? 'expanded' : ''}"><i class="ti ti-chevron-right"></i></button>` : `<span style="display:inline-block; width:24px; height:24px; margin-right:8px; flex-shrink:0;"></span>`;
         
-        // ✨ 1. 子機構標籤改成無框正方圓角矩形設計
+        // ✨ 修正 2：子機構無邊框藍色數字標籤
         let childCountHtml = '';
         if (hasChildren && !isExpanded && data.children) {
-            childCountHtml = `<span style="background: var(--brand-light); color: var(--brand); border: none; padding: 2px 6px; border-radius: var(--radius-sm); font-size: 11px; font-weight: 700; margin-left: 8px;">${data.children.length}</span>`;
+            childCountHtml = `<span style="background: var(--brand-light); color: var(--brand); padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-left: 8px;">${data.children.length}</span>`;
         }
 
         const hName = highlightKeyword(data.name, searchTerm);
-        // ✨ 8. 子公司收起或打開時，子公司文字不要粗體
+        // ✨ 修正 8：子機構不顯示粗體
         const nameHtml = isChild 
-            ? `<div class="child-name-wrap"><i class="ti ti-corner-down-right"></i> <span class="cell-primary">${hName}</span></div>` 
-            : `<div class="name-align-container">${toggleHtml} <span class="cell-primary bold">${hName}</span>${childCountHtml}</div>`;
+            ? `<div class="child-name-wrap" style="padding-left: 32px;"><i class="ti ti-corner-down-right"></i> <span class="cell-primary">${hName}</span></div>` 
+            : `<div style="display:flex; align-items:center;">${toggleHtml} <span class="cell-primary bold">${hName}</span>${childCountHtml}</div>`;
 
         const hAddress = highlightKeyword(data.address, searchTerm);
 
@@ -855,7 +972,7 @@ function renderTable() {
                     <input type="checkbox" value="${data.id}" class="row-select-chk" ${isChecked} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                 </div>
             </td>
-            <td style="text-align: left; padding-left: 16px;">${nameHtml}</td>
+            <td style="text-align: left; padding-left: 24px;">${nameHtml}</td>
             <td style="text-align: center;"><div class="cell-primary" style="color: var(--text-muted); font-family: inherit;">${dispTax}</div></td>
             <td style="text-align: center;"><div class="cell-primary">${data.industry || '-'}</div></td>
             <td style="text-align: center;"><div class="cell-primary">${data.venue_type || '-'}</div></td>
@@ -881,103 +998,21 @@ function renderTable() {
         }
     });
     tbody.innerHTML = finalHtml;
-}
-
-function openCreateModal() {
-    editingId = null; editingOldName = null;
-    document.getElementById('data-form').reset();
     
-    // ✨ 4. 新增時徹底洗淨所有快取 ID 欄位，防止繼承分公司
-    document.getElementById('input-parent-id').value = '';
-    document.getElementById('parent-search-input').value = '';
-    document.getElementById('btn-clear-parent').style.display = 'none';
-    
-    populateParentDropdown();
-    handleCountryChange();
-    document.getElementById('modal-title').innerHTML = '<i class="ti ti-building-skyscraper"></i> 新增實習機構';
-    document.getElementById('data-modal').classList.add('open');
-}
-
-function closeModal() { document.getElementById('data-modal').classList.remove('open'); editingId = null; }
-
-async function submitForm() {
-    const btn = document.getElementById('btn-submit');
-    const isDomestic = document.getElementById('input-country').value === '中華民國';
-    
-    const payload = { 
-        parent_id: document.getElementById('input-parent-id').value || '',
-        country: document.getElementById('input-country').value,
-        name: document.getElementById('input-name').value.trim(),
-        name_translated: isDomestic ? '' : document.getElementById('input-name-translated').value.trim(),
-        name_local: isDomestic ? '' : document.getElementById('input-name-local').value.trim(),
-        tax_id: isDomestic ? document.getElementById('input-tax-id').value.trim() : '',
-        overseas_tax_id: isDomestic ? '' : document.getElementById('input-overseas-tax-id').value.trim(),
-        city: isDomestic ? document.getElementById('input-city').value : '',
-        industry: document.getElementById('input-industry').value,
-        venue_type: document.getElementById('input-venue-type').value,
-        address: document.getElementById('input-address').value.trim(),
-        remarks: document.getElementById('input-remarks').value.trim()
-    };
-
-    if(!payload.country || !payload.name || !payload.address) { alert("請填寫所有必填欄位！"); return; }
-    if (isDomestic && (!payload.tax_id || !payload.city)) { alert("中華民國機構必須填寫「統一編號」與「縣市別」！"); return; }
-
-    btn.disabled = true; btn.innerHTML = '儲存中...';
-    try {
-        if (editingId) {
-            const batch = writeBatch(db);
-            batch.update(doc(db, "internship_institutions", editingId), { ...payload, updated_at: serverTimestamp() });
-            if (editingOldName && editingOldName !== payload.name) {
-                allRecords.forEach(record => {
-                    if (record.inst_id === editingId || (!record.inst_id && record.inst_raw === editingOldName)) {
-                        batch.update(doc(db, "internship_records", record.id), { inst_raw: payload.name, updated_at: serverTimestamp() });
-                    }
-                });
-            }
-            await batch.commit();
-        } else {
-            await addDoc(collection(db, "internship_institutions"), { ...payload, created_at: serverTimestamp() });
+    const currentVisibleIds = [];
+    document.querySelectorAll('#table-body tr').forEach(tr => {
+        if(tr.style.display !== 'none') {
+            const chk = tr.querySelector('.row-select-chk');
+            if(chk) currentVisibleIds.push(chk.value);
         }
-        closeModal(); fetchInitialDataOnce();
-    } catch (err) { alert("儲存失敗"); } finally { btn.disabled = false; btn.innerHTML = '確認儲存'; }
-}
-
-function editData(id) {
-    const docData = allData.find(d => d.id === id); if (!docData) return;
-    editingId = id; editingOldName = docData.name || '';
-    
-    populateParentDropdown(id); 
-    document.getElementById('input-parent-id').value = docData.parent_id || '';
-    
-    if (docData.parent_id) {
-        const parentObj = allData.find(p => p.id === docData.parent_id);
-        document.getElementById('parent-search-input').value = parentObj ? parentObj.name : '';
-        document.getElementById('btn-clear-parent').style.display = 'flex';
-    } else {
-        document.getElementById('parent-search-input').value = '';
-        document.getElementById('btn-clear-parent').style.display = 'none';
-    }
-    
-    document.getElementById('input-country').value = docData.country || '中華民國';
-    document.getElementById('input-name').value = docData.name || '';
-    document.getElementById('input-name-translated').value = docData.name_translated || '';
-    document.getElementById('input-name-local').value = docData.name_local || '';
-    document.getElementById('input-tax-id').value = docData.tax_id || '';
-    document.getElementById('input-overseas-tax-id').value = docData.overseas_tax_id || '';
-    document.getElementById('input-city').value = docData.city || '';
-    document.getElementById('input-industry').value = docData.industry || '';
-    document.getElementById('input-venue-type').value = docData.venue_type || '';
-    document.getElementById('input-address').value = docData.address || '';
-    document.getElementById('input-remarks').value = docData.remarks || '';
-    
-    handleCountryChange(); 
-    document.getElementById('modal-title').innerHTML = '<i class="ti ti-edit"></i> 編輯實習機構';
-    document.getElementById('data-modal').classList.add('open');
+    });
+    document.getElementById('selectAll').checked = currentVisibleIds.length > 0 && currentVisibleIds.every(id => selectedIds.includes(id));
 }
 
 function exportToCSV() {
     if (filteredInstitutions.length === 0) { alert("沒有資料可供匯出！"); return; }
     let csv = '\uFEFF實習機構主名稱,隸屬主機構,中文譯名,當地語言名稱,統一編號,海外稅號,行業別,實習場所,實習場所國別,縣市別,實習場所地址,備註\n';
+    
     if (isTreeMode) {
         filteredInstitutions.forEach(p => {
             csv += [ p.name, '', p.name_translated || '', p.name_local || '', p.tax_id || '', p.overseas_tax_id || '', p.industry || '', p.venue_type || '', p.country, p.city || '', p.address, p.remarks || '' ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
@@ -1032,6 +1067,97 @@ async function handleImport(e) {
         finally { btn.innerHTML = originalHtml; btn.disabled = false; e.target.value = ''; }
     };
     reader.readAsText(file);
+}
+
+function openCreateModal() {
+    editingId = null; editingOldName = null;
+    document.getElementById('data-form').reset();
+    
+    document.getElementById('input-parent-id').value = '';
+    document.getElementById('parent-search-input').value = '';
+    document.getElementById('btn-clear-parent').style.display = 'none';
+    
+    populateParentDropdown();
+    handleCountryChange();
+    document.getElementById('modal-title').innerHTML = '<i class="ti ti-building-skyscraper"></i> 新增實習機構';
+    document.getElementById('data-modal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('data-modal').classList.remove('open'); editingId = null; }
+
+async function submitForm() {
+    const btn = document.getElementById('btn-submit');
+    const isDomestic = document.getElementById('input-country').value === '中華民國';
+    
+    const payload = { 
+        parent_id: document.getElementById('input-parent-id').value || '',
+        country: document.getElementById('input-country').value,
+        name: document.getElementById('input-name').value.trim(),
+        name_translated: isDomestic ? '' : document.getElementById('input-name-translated').value.trim(),
+        name_local: isDomestic ? '' : document.getElementById('input-name-local').value.trim(),
+        tax_id: isDomestic ? document.getElementById('input-tax-id').value.trim() : '',
+        overseas_tax_id: isDomestic ? '' : document.getElementById('input-overseas-tax-id').value.trim(),
+        city: isDomestic ? document.getElementById('input-city').value : '',
+        industry: document.getElementById('input-industry').value,
+        venue_type: document.getElementById('input-venue-type').value,
+        address: document.getElementById('input-address').value.trim(),
+        remarks: document.getElementById('input-remarks').value.trim()
+    };
+
+    if(!payload.country || !payload.name || !payload.address) { alert("請填寫所有必填欄位！"); return; }
+    if (isDomestic && (!payload.tax_id || !payload.city)) { alert("中華民國機構必須填寫「統一編號」與「縣市別」！"); return; }
+
+    btn.disabled = true; btn.innerHTML = '儲存中...';
+    try {
+        if (editingId) {
+            const batch = writeBatch(db);
+            batch.update(doc(db, "internship_institutions", editingId), { ...payload, updated_at: serverTimestamp() });
+            
+            if (editingOldName && editingOldName !== payload.name) {
+                allRecords.forEach(record => {
+                    if (record.inst_id === editingId || (!record.inst_id && record.inst_raw === editingOldName)) {
+                        batch.update(doc(db, "internship_records", record.id), { inst_raw: payload.name, updated_at: serverTimestamp() });
+                    }
+                });
+            }
+            await batch.commit();
+        } else {
+            await addDoc(collection(db, "internship_institutions"), { ...payload, created_at: serverTimestamp() });
+        }
+        closeModal(); fetchInitialDataOnce();
+    } catch (err) { alert("儲存失敗"); } finally { btn.disabled = false; btn.innerHTML = '確認儲存'; }
+}
+
+function editData(id) {
+    const docData = allData.find(d => d.id === id); if (!docData) return;
+    editingId = id; editingOldName = docData.name || '';
+    
+    populateParentDropdown(id); 
+    document.getElementById('input-parent-id').value = docData.parent_id || '';
+    if (docData.parent_id) {
+        const parentObj = allData.find(p => p.id === docData.parent_id);
+        document.getElementById('parent-search-input').value = parentObj ? parentObj.name : '';
+        document.getElementById('btn-clear-parent').style.display = 'flex';
+    } else {
+        document.getElementById('parent-search-input').value = '';
+        document.getElementById('btn-clear-parent').style.display = 'none';
+    }
+    
+    document.getElementById('input-country').value = docData.country || '中華民國';
+    document.getElementById('input-name').value = docData.name || '';
+    document.getElementById('input-name-translated').value = docData.name_translated || '';
+    document.getElementById('input-name-local').value = docData.name_local || '';
+    document.getElementById('input-tax-id').value = docData.tax_id || '';
+    document.getElementById('input-overseas-tax-id').value = docData.overseas_tax_id || '';
+    document.getElementById('input-city').value = docData.city || '';
+    document.getElementById('input-industry').value = docData.industry || '';
+    document.getElementById('input-venue-type').value = docData.venue_type || '';
+    document.getElementById('input-address').value = docData.address || '';
+    document.getElementById('input-remarks').value = docData.remarks || '';
+    
+    handleCountryChange(); 
+    document.getElementById('modal-title').innerHTML = '<i class="ti ti-edit"></i> 編輯實習機構';
+    document.getElementById('data-modal').classList.add('open');
 }
 
 async function deleteData(id, name) {
@@ -1099,7 +1225,9 @@ async function executeMerge() {
     const masterInst = allData.find(i => i.id === masterId);
     const instsToDelete = selectedIds.filter(id => id !== masterId);
     const deletedNames = allData.filter(i => instsToDelete.includes(i.id)).map(i => i.name);
+    
     if(!confirm(`確認合併？\n\n📌 保留主體：${masterInst.name}\n🗑️ 刪除對象：${deletedNames.join('、')}`)) return;
+    
     try {
         const batch = writeBatch(db);
         allRecords.forEach(record => {
