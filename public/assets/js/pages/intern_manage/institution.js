@@ -20,10 +20,10 @@ let filterVenueSet = new Set();
 let sortCol = ''; 
 let sortDir = '';
 
-// ✨ 狀態記憶
+// 狀態記憶
 let isTreeMode = true; 
 let expandedParents = new Set();
-let isSearchAutoExpand = false; // 用於判斷是否為剛觸發搜尋
+let isSearchAutoExpand = false; 
 
 const LIST_COUNTRIES = ["中華民國","大陸地區","日本","美國","越南","泰國","澳大利亞","香港","澳門","馬來西亞","菲律賓","印尼","印度","孟加拉","緬甸","柬埔寨","黎巴嫩","蒙古","巴西","巴拉圭","秘魯"];
 const LIST_CITIES = ["臺北市","新北市","基隆市","桃園市","新竹縣","新竹市","苗栗縣","臺中市","彰化縣","南投縣","雲林縣","嘉義縣","嘉義市","臺南市","高雄市","屏東縣","宜蘭縣","花蓮縣","臺東縣","澎湖縣","金門縣","連江縣"];
@@ -46,7 +46,7 @@ export async function render(containerId, context) {
 }
 
 // ==========================================
-// 1. UI 注入模組
+// 1. UI 注入模組 (美化 CSS 配置)
 // ==========================================
 function injectUI(container) {
     container.innerHTML = `
@@ -60,21 +60,28 @@ function injectUI(container) {
             @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
             .ti-spin { animation: spin 1s linear infinite; display: inline-block; }
 
-            .tree-toggle { background: transparent; border: none; cursor: pointer; padding: 4px; display: inline-flex; align-items: center; justify-content: center; color: var(--text-muted); transition: transform 0.2s; outline: none; margin-right: 4px; border-radius: 4px; }
+            /* ✨ 2. 開合按鈕背景常駐固定顯示 */
+            .tree-toggle { background: #f3f4f6; border: none; cursor: pointer; padding: 4px; display: inline-flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: transform 0.2s, background var(--transition); outline: none; margin-right: 8px; border-radius: var(--radius-sm); width: 24px; height: 24px; flex-shrink: 0; }
             .tree-toggle:hover { color: var(--brand); background: var(--brand-light); }
-            .tree-toggle.expanded { transform: rotate(90deg); color: var(--brand); }
+            .tree-toggle.expanded { transform: rotate(90deg); color: var(--brand); background: var(--brand-light); }
+            
             .child-row { background-color: #fbfdff; }
             .child-row td { border-bottom: 1px dashed var(--border); }
             .child-row:hover td { background-color: #f0f7ff; }
-            .child-name-wrap { display: flex; align-items: center; padding-left: 28px; color: var(--text-secondary); font-size: 13px; }
-            .child-name-wrap i { margin-right: 6px; font-size: 16px; opacity: 0.6; color: var(--brand); }
+            
+            /* ✨ 3. 機構名稱文字對齊線基準 */
+            .name-align-container { display: flex; align-items: center; width: 100%; text-align: left; }
+            .tree-placeholder { display: inline-block; width: 32px; flex-shrink: 0; } /* 24px按鈕 + 8px間距 */
+            .child-name-wrap { display: flex; align-items: center; padding-left: 12px; color: var(--text-secondary); font-size: 13px; }
+            .child-name-wrap i { margin-right: 8px; font-size: 16px; opacity: 0.6; color: var(--brand); flex-shrink: 0; }
 
-            .searchable-select-wrap { position: relative; }
-            .searchable-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow-md); max-height: 200px; overflow-y: auto; z-index: 150; display: none; }
+            /* ✨ 6. 主機構可搜尋下拉清單完美美化 */
+            .searchable-select-wrap { position: relative; width: 100%; }
+            .searchable-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--radius); box-shadow: var(--shadow-md); max-height: 210px; overflow-y: auto; z-index: 150; display: none; padding: 4px; }
             .searchable-dropdown.show { display: block; }
-            .searchable-option { padding: 8px 12px; font-size: 13px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background 0.1s; }
-            .searchable-option:hover { background: var(--bg); color: var(--brand); font-weight: bold; }
-            .searchable-option.empty-opt { color: var(--text-muted); font-style: italic; background: var(--bg); }
+            .searchable-option { padding: 8px 12px; font-size: 13px; cursor: pointer; border-radius: var(--radius-sm); transition: all 0.1s; color: var(--text-primary); }
+            .searchable-option:hover { background: var(--brand-light); color: var(--brand); font-weight: 600; }
+            .searchable-option.empty-opt { color: var(--text-muted); font-style: italic; background: transparent; text-align: center; padding: 12px; }
 
             .toolbar { padding: 12px 24px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; flex-wrap: wrap; }
             .search-wrap { position: relative; flex: 0 0 260px; }
@@ -86,6 +93,7 @@ function injectUI(container) {
             .v-divider { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; margin: 0 4px; }
             .toolbar-actions { display: flex; align-items: center; gap: 8px; }
 
+            /* ✨ 4. 操作按鈕固定正方圓角矩形 */
             .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 14px; height: 34px; border-radius: var(--radius); font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; border: none; white-space: nowrap; transition: all var(--transition); text-decoration: none; }
             .btn-primary { background: var(--brand); color: white; border: 1px solid var(--brand); }
             .btn-primary:hover { background: var(--brand-hover); }
@@ -97,8 +105,9 @@ function injectUI(container) {
             .btn-success-solid:hover { background: #047857; }
             .btn-indigo-solid { background: var(--indigo); color: white; border: 1px solid var(--indigo); }
             .btn-indigo-solid:hover { background: #4338ca; }
-            .btn-icon { width: 34px; padding: 0; justify-content: center; }
-            .btn-icon.sm { width: 28px; height: 28px; }
+            
+            /* ✨ 4. 精確限縮正方操作鈕尺寸與半徑 */
+            .btn-icon.sm { width: 30px !important; height: 30px !important; padding: 0 !important; border-radius: var(--radius) !important; flex-shrink: 0; justify-content: center; align-items: center; }
             .btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
             .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
@@ -116,7 +125,6 @@ function injectUI(container) {
             .filter-dropdown-list { max-height: 200px; overflow-y: auto; padding: 4px; }
             .filter-option { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: var(--radius-sm); cursor: pointer; font-size: 12px; color: var(--text-secondary); transition: background var(--transition); }
             .filter-option:hover { background: var(--bg); color: var(--text-primary); }
-            .filter-option input[type=checkbox] { accent-color: var(--brand); flex-shrink: 0; }
             .filter-dropdown-footer { padding: 6px 8px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; }
             .filter-dropdown-footer button { font-size: 11px; font-weight: 600; color: var(--danger); background: none; border: none; cursor: pointer; padding: 2px 4px; border-radius: var(--radius-sm); }
             .filter-dropdown-footer button:hover { background: var(--danger-bg); }
@@ -140,6 +148,7 @@ function injectUI(container) {
 
             .cell-primary { font-size: 13px; color: var(--text-primary); line-height: 1.4; }
             .cell-primary.bold { font-weight: 700; color: #000000; }
+            .cell-secondary { font-size: 11px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
             .row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; }
 
             .pagination-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; gap: 10px; border-radius: 0 !important; }
@@ -169,6 +178,10 @@ function injectUI(container) {
             .field-label .req { color: var(--danger); margin-left: 2px; }
             .field-input, .field-select { width: 100%; height: 36px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); padding: 0 12px; font-size: 13px; font-family: inherit; color: var(--text-primary); outline: none; transition: all var(--transition); }
             .field-input:focus, .field-select:focus, textarea.field-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); background: var(--surface); }
+
+            .merge-option { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border: 2px solid var(--border); border-radius: var(--radius-lg); cursor: pointer; transition: all var(--transition); background: var(--surface); margin-bottom: 10px; }
+            .merge-option:hover { border-color: var(--indigo-border); background: var(--bg); }
+            .merge-option:has(input:radio:checked) { border-color: var(--indigo); background: var(--indigo-bg); }
 
             .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
             .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
@@ -257,7 +270,7 @@ function injectUI(container) {
                                     <input type="checkbox" id="selectAll" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                                 </div>
                             </th>
-                            <th data-sort="name" style="width: 28%; text-align: left; padding-left: 40px;">實習機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="name" style="width: 28%; text-align: center;">實習機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="tax_id" style="width: 12%;">統一編號 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="industry" style="width: 12%;">行業別 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="venue_type" style="width: 12%;">實習場所 <i class="ti ti-arrows-sort sort-icon"></i></th>
@@ -303,14 +316,14 @@ function injectUI(container) {
                             <label class="field-label">隸屬主機構 (若為分公司請搜尋並選擇)</label>
                             <div class="searchable-select-wrap relative">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="ti ti-building text-gray-400"></i>
+                                    <i class="ti ti-building text-gray-400" style="font-size: 16px;"></i>
                                 </div>
-                                <input type="text" id="parent-search-input" class="w-full pl-9 pr-8 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none bg-gray-50 focus:bg-white" placeholder="輸入關鍵字搜尋... (留空代表獨立機構)" autocomplete="off">
-                                <button type="button" id="btn-clear-parent" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-red-500 cursor-pointer" style="display:none;">
-                                    <i class="ti ti-x text-base"></i>
+                                <input type="text" id="parent-search-input" class="field-input style-reset" style="padding-left: 34px; padding-right: 34px; background: var(--bg);" placeholder="輸入關鍵字搜尋... (留空代表獨立機構)" autocomplete="off">
+                                <button type="button" id="btn-clear-parent" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-red-500 cursor-pointer" style="display:none; background:transparent; border:none; outline:none; height: 100%;">
+                                    <i class="ti ti-x" style="font-size: 14px;"></i>
                                 </button>
                                 <input type="hidden" id="input-parent-id">
-                                <div id="parent-dropdown-list" class="searchable-dropdown absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-52 overflow-y-auto"></div>
+                                <div id="parent-dropdown-list" class="searchable-dropdown custom-scroll"></div>
                             </div>
                         </div>
                         
@@ -390,64 +403,7 @@ function injectUI(container) {
 }
 
 // ==========================================
-// 2. 下拉選項與動態選單初始化
-// ==========================================
-function initSelectOptions() {
-    let countryHtml = '';
-    LIST_COUNTRIES.forEach(item => countryHtml += `<option value="${item}">${item}</option>`);
-    document.getElementById('input-country').innerHTML = countryHtml;
-
-    let cityHtml = `<option value="">請選擇</option>`;
-    LIST_CITIES.forEach(item => cityHtml += `<option value="${item}">${item}</option>`);
-    document.getElementById('input-city').innerHTML = cityHtml;
-
-    let industryHtml = `<option value="">請選擇</option>`;
-    LIST_INDUSTRIES.forEach(item => industryHtml += `<option value="${item}">${item}</option>`);
-    document.getElementById('input-industry').innerHTML = industryHtml;
-
-    let venueHtml = `<option value="">請選擇</option>`;
-    LIST_VENUES.forEach(item => venueHtml += `<option value="${item}">${item}</option>`);
-    document.getElementById('input-venue-type').innerHTML = venueHtml;
-
-    let filterCountryHtml = '';
-    LIST_COUNTRIES.forEach(item => { filterCountryHtml += `<label class="filter-option"><input type="checkbox" class="filter-chk-country" value="${item}"><span>${item}</span></label>`; });
-    document.getElementById('country-options-container').innerHTML = filterCountryHtml;
-
-    let filterCityHtml = '';
-    LIST_CITIES.forEach(item => { filterCityHtml += `<label class="filter-option"><input type="checkbox" class="filter-chk-city" value="${item}"><span>${item}</span></label>`; });
-    document.getElementById('city-options-container').innerHTML = filterCityHtml;
-
-    let filterIndustryHtml = '';
-    LIST_INDUSTRIES.forEach(item => { filterIndustryHtml += `<label class="filter-option"><input type="checkbox" class="filter-chk-industry" value="${item}"><span>${item}</span></label>`; });
-    document.getElementById('industry-options-container').innerHTML = filterIndustryHtml;
-
-    let filterVenueHtml = '';
-    LIST_VENUES.forEach(item => { filterVenueHtml += `<label class="filter-option"><input type="checkbox" class="filter-chk-venue" value="${item}"><span>${item}</span></label>`; });
-    document.getElementById('venue-options-container').innerHTML = filterVenueHtml;
-    
-    let batchIndHtml = '<option value="NO_CHANGE">-- 不修改 --</option><option value="">[清空此欄位]</option>';
-    LIST_INDUSTRIES.forEach(item => batchIndHtml += `<option value="${item}">${item}</option>`);
-    document.getElementById('batch-input-industry').innerHTML = batchIndHtml;
-
-    let batchVenueHtml = '<option value="NO_CHANGE">-- 不修改 --</option><option value="">[清空此欄位]</option>';
-    LIST_VENUES.forEach(item => batchVenueHtml += `<option value="${item}">${item}</option>`);
-    document.getElementById('batch-input-venue').innerHTML = batchVenueHtml;
-}
-
-function populateParentDropdown(excludeId = null) {
-    const listContainer = document.getElementById('parent-dropdown-list');
-    let html = '<div class="searchable-option empty-opt" data-id="" data-name="">-- 獨立機構 / 總公司 (無隸屬) --</div>';
-    
-    allData.forEach(d => {
-        if (!d.parent_id && d.id !== excludeId) {
-            html += `<div class="searchable-option" data-id="${d.id}" data-name="${d.name}">${d.name} <span class="text-xs text-gray-400 ml-2">${d.tax_id || ''}</span></div>`;
-        }
-    });
-    listContainer.innerHTML = html;
-}
-
-// ==========================================
-// 3. 事件代理綁定
+// 3. 事件代理與控制核心
 // ==========================================
 function bindEvents(container) {
     container.querySelector('#btn-export-csv').addEventListener('click', exportToCSV);
@@ -455,7 +411,6 @@ function bindEvents(container) {
     container.querySelector('#import-file').addEventListener('change', handleImport);
     container.querySelector('#btn-create-inst').addEventListener('click', openCreateModal);
     
-    // ✨ 搜尋列：觸發搜尋時改變全域旗標，讓命中資料自動展開
     container.querySelector('#search-input').addEventListener('input', () => { 
         currentPage = 1; 
         isSearchAutoExpand = true;
@@ -482,7 +437,7 @@ function bindEvents(container) {
     container.querySelector('#btn-clear-industry').addEventListener('click', () => clearFilter('industry'));
     container.querySelector('#btn-clear-venue').addEventListener('click', () => clearFilter('venue'));
 
-    // ✨ 顯示設定按鈕控制
+    // ✨ 修正 3：顯示設定點擊後維持選單開啟不關閉
     const btnDisplaySettings = container.querySelector('#btn-display-settings');
     const displayMenu = container.querySelector('#display-settings-menu');
     btnDisplaySettings.addEventListener('click', (e) => {
@@ -490,18 +445,18 @@ function bindEvents(container) {
         displayMenu.classList.toggle('hidden');
     });
     container.querySelector('#btn-toggle-tree').addEventListener('click', (e) => {
-        e.stopPropagation();
+        e.stopPropagation(); // 阻止冒泡，維持清單停留
         isTreeMode = !isTreeMode;
         container.querySelector('#btn-toggle-tree').innerHTML = isTreeMode ? `<i class="ti ti-list-tree text-brand mr-2"></i> 切換為扁平列表` : `<i class="ti ti-list text-brand mr-2"></i> 切換為樹狀檢視`;
         renderTable();
     });
     container.querySelector('#btn-expand-all').addEventListener('click', (e) => {
-        e.stopPropagation();
+        e.stopPropagation(); // 阻止冒泡，維持清單停留
         allData.forEach(d => { if (!d.parent_id) expandedParents.add(d.id); });
         renderTable();
     });
     container.querySelector('#btn-collapse-all').addEventListener('click', (e) => {
-        e.stopPropagation();
+        e.stopPropagation(); // 阻止冒泡，維持清單停留
         expandedParents.clear();
         renderTable();
     });
@@ -531,7 +486,7 @@ function bindEvents(container) {
     container.querySelector('#btn-cancel-modal').addEventListener('click', closeModal);
     container.querySelector('#btn-submit').addEventListener('click', submitForm);
 
-    // ✨ 原生可搜尋下拉框控制
+    // ✨ 原生搜尋型主機構輸入框綁定
     const parentSearchInput = container.querySelector('#parent-search-input');
     const parentDropdown = container.querySelector('#parent-dropdown-list');
     const parentIdHidden = container.querySelector('#input-parent-id');
@@ -572,7 +527,7 @@ function bindEvents(container) {
         }
     });
 
-    // 全域點擊防呆
+    // 全域點擊防呆閉合
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.searchable-select-wrap')) {
             parentDropdown.classList.remove('show');
@@ -602,7 +557,6 @@ function bindEvents(container) {
             const pId = tr.dataset.id;
             const isExpanded = toggleBtn.classList.toggle('expanded');
             
-            // 精準記憶
             if (isExpanded) expandedParents.add(pId);
             else expandedParents.delete(pId);
             
@@ -617,9 +571,8 @@ function bindEvents(container) {
 }
 
 // ==========================================
-// 4. 輔助函式與狀態操作
+// 4. 高光與資料組裝輔助
 // ==========================================
-// ✨ 修正 1：純淨反黃標記，移除多餘 padding
 function highlightKeyword(text, keyword) {
     if (!keyword || !text) return text || '';
     const regex = new RegExp(`(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
@@ -696,31 +649,6 @@ function updatePillActive(type) {
     }
 }
 
-function handleCountryChange() {
-    const country = document.getElementById('input-country').value;
-    const isDomestic = country === '中華民國';
-    
-    const wrapTax = document.getElementById('wrap-tax-id');
-    const wrapCity = document.getElementById('wrap-city');
-    const wrapNameTrans = document.getElementById('wrap-name-translated');
-    const wrapNameLocal = document.getElementById('wrap-name-local');
-    const wrapOverseasTax = document.getElementById('wrap-overseas-tax');
-
-    const taxInput = document.getElementById('input-tax-id');
-    const cityInput = document.getElementById('input-city');
-
-    if (isDomestic) {
-        wrapTax.style.display = 'flex'; wrapCity.style.display = 'flex';
-        wrapNameTrans.style.display = 'none'; wrapNameLocal.style.display = 'none'; wrapOverseasTax.style.display = 'none';
-        taxInput.required = true; cityInput.required = true;
-    } else {
-        wrapTax.style.display = 'none'; wrapCity.style.display = 'none';
-        wrapNameTrans.style.display = 'flex'; wrapNameLocal.style.display = 'flex'; wrapOverseasTax.style.display = 'flex';
-        taxInput.required = false; cityInput.required = false;
-        taxInput.value = ''; cityInput.value = '';
-    }
-}
-
 function toggleSelectPage(e) {
     const isChecked = e.target.checked;
     const visibleIds = [];
@@ -744,7 +672,6 @@ function toggleSelect(id) {
     const index = selectedIds.indexOf(id);
     if (index === -1) selectedIds.push(id); else selectedIds.splice(index, 1);
     updateBatchActionBar(); 
-    
     const chk = document.querySelector(`.row-select-chk[value="${id}"]`);
     if(chk) {
         const row = chk.closest('tr');
@@ -769,7 +696,7 @@ function clearSelection() {
 }
 
 // ==========================================
-// 5. 資料維護核心與 API 讀取
+// 5. 資料處理與樹狀架構渲染
 // ==========================================
 async function handleInitialLoadEngine() {
     try {
@@ -789,33 +716,6 @@ async function fetchInitialDataOnce() {
         await handleInitialLoadEngine();
     } catch (error) {
         document.getElementById('table-body').innerHTML = `<tr><td colspan="9" class="empty-state"><i class="ti ti-lock empty-icon" style="color:var(--danger); opacity:1;"></i><div class="empty-text">雲端資料同步中斷。</div></td></tr>`;
-    }
-}
-
-function updateBatchActionBar() {
-    const bar = document.getElementById('batch-bar');
-    const count = document.getElementById('selected-count');
-    const btnSelectAll = document.getElementById('btn-select-all-filtered');
-    
-    if (selectedIds.length > 0) {
-        bar.classList.add('visible');
-        count.innerText = selectedIds.length;
-        
-        let totalMatched = 0;
-        if(isTreeMode) {
-            filteredInstitutions.forEach(p => { totalMatched += 1 + p.children.length; });
-        } else {
-            totalMatched = filteredInstitutions.length;
-        }
-
-        if (selectedIds.length < totalMatched) {
-            btnSelectAll.style.display = 'inline-flex';
-            btnSelectAll.innerText = `選取全部符合條件 (${totalMatched})`;
-        } else {
-            btnSelectAll.style.display = 'none';
-        }
-    } else {
-        bar.classList.remove('visible');
     }
 }
 
@@ -854,7 +754,6 @@ function renderTable() {
             const matchedChildren = parent.children.filter(c => checkMatch(c));
             
             if (pMatch || matchedChildren.length > 0) {
-                // ✨ 修正 3：搜尋改變時自動展開，不破壞原先記錄
                 if (isSearchAutoExpand && searchTerm && matchedChildren.length > 0) {
                     expandedParents.add(parent.id);
                 }
@@ -871,7 +770,7 @@ function renderTable() {
         filteredInstitutions = allData.filter(d => checkMatch(d));
     }
     
-    isSearchAutoExpand = false; // 重設搜尋展開旗標
+    isSearchAutoExpand = false; 
 
     if (sortCol) {
         filteredInstitutions.sort((a, b) => {
@@ -894,7 +793,7 @@ function renderTable() {
     const start = (currentPage - 1) * itemsPerPage;
     const paginatedItems = filteredInstitutions.slice(start, start + itemsPerPage);
 
-    // ✨ 修正 6：精確顯示統計數字
+    // ✨ 9. 左下角統計數據更新為指定格式
     let totalAllMatched = 0;
     let totalChildrenMatched = 0;
     if (isTreeMode) {
@@ -920,9 +819,6 @@ function renderTable() {
     pHtml += `<button class="page-btn page-step-btn" data-page="${currentPage+1}" ${currentPage>=totalPages?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
     document.getElementById('pagination-controls').innerHTML = pHtml;
 
-    const currentPaginatedIds = paginatedItems.map(d => d.id);
-    document.getElementById('selectAll').checked = currentPaginatedIds.length > 0 && currentPaginatedIds.every(id => selectedIds.includes(id));
-
     if (totalMainItems === 0) {
         tbody.innerHTML = `<tr><td colspan="9" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">找不到符合條件的機構資料。</div></td></tr>`;
         return;
@@ -932,22 +828,23 @@ function renderTable() {
         const isChecked = selectedIds.includes(data.id) ? 'checked' : '';
         const isDomestic = data.country === '中華民國';
         
+        // ✨ 3. 只顯示統編，海外機構完全保持留白 '-' (黑體字)
         let dispTax = '-';
         if (isDomestic && data.tax_id) dispTax = highlightKeyword(data.tax_id, searchTerm);
         
-        const toggleHtml = hasChildren ? `<button class="tree-toggle ${isExpanded ? 'expanded' : ''}"><i class="ti ti-chevron-right"></i></button>` : `<span style="display:inline-block; width:24px;"></span>`;
+        const toggleHtml = hasChildren ? `<button class="tree-toggle ${isExpanded ? 'expanded' : ''}"><i class="ti ti-chevron-right"></i></button>` : `<span class="tree-placeholder"></span>`;
         
-        // ✨ 修正 2：子機構數字顯示優化
+        // ✨ 1. 子機構標籤改成無框正方圓角矩形設計
         let childCountHtml = '';
         if (hasChildren && !isExpanded && data.children) {
-            childCountHtml = `<span style="background: var(--brand-light); color: var(--brand); border: 1px solid var(--brand-border); padding: 0px 6px; border-radius: 99px; font-size: 11px; font-weight: 700; margin-left: 6px;">${data.children.length}</span>`;
+            childCountHtml = `<span style="background: var(--brand-light); color: var(--brand); border: none; padding: 2px 6px; border-radius: var(--radius-sm); font-size: 11px; font-weight: 700; margin-left: 8px;">${data.children.length}</span>`;
         }
 
         const hName = highlightKeyword(data.name, searchTerm);
-        // ✨ 修正 8：子機構不顯示粗體
+        // ✨ 8. 子公司收起或打開時，子公司文字不要粗體
         const nameHtml = isChild 
             ? `<div class="child-name-wrap"><i class="ti ti-corner-down-right"></i> <span class="cell-primary">${hName}</span></div>` 
-            : `<div style="display:flex; align-items:center;">${toggleHtml} <span class="cell-primary bold">${hName}</span>${childCountHtml}</div>`;
+            : `<div class="name-align-container">${toggleHtml} <span class="cell-primary bold">${hName}</span>${childCountHtml}</div>`;
 
         const hAddress = highlightKeyword(data.address, searchTerm);
 
@@ -959,7 +856,7 @@ function renderTable() {
                 </div>
             </td>
             <td style="text-align: left; padding-left: 16px;">${nameHtml}</td>
-            <td style="text-align: center;"><div class="cell-primary" style="color: var(--text-muted);">${dispTax}</div></td>
+            <td style="text-align: center;"><div class="cell-primary" style="color: var(--text-muted); font-family: inherit;">${dispTax}</div></td>
             <td style="text-align: center;"><div class="cell-primary">${data.industry || '-'}</div></td>
             <td style="text-align: center;"><div class="cell-primary">${data.venue_type || '-'}</div></td>
             <td style="text-align: center;"><div class="cell-primary">${data.country}</div></td>
@@ -984,82 +881,13 @@ function renderTable() {
         }
     });
     tbody.innerHTML = finalHtml;
-    
-    const currentVisibleIds = [];
-    document.querySelectorAll('#table-body tr').forEach(tr => {
-        if(tr.style.display !== 'none') {
-            const chk = tr.querySelector('.row-select-chk');
-            if(chk) currentVisibleIds.push(chk.value);
-        }
-    });
-    document.getElementById('selectAll').checked = currentVisibleIds.length > 0 && currentVisibleIds.every(id => selectedIds.includes(id));
-}
-
-function exportToCSV() {
-    if (filteredInstitutions.length === 0) { alert("沒有資料可供匯出！"); return; }
-    let csv = '\uFEFF實習機構主名稱,隸屬主機構,中文譯名,當地語言名稱,統一編號,海外稅號,行業別,實習場所,實習場所國別,縣市別,實習場所地址,備註\n';
-    
-    if (isTreeMode) {
-        filteredInstitutions.forEach(p => {
-            csv += [ p.name, '', p.name_translated || '', p.name_local || '', p.tax_id || '', p.overseas_tax_id || '', p.industry || '', p.venue_type || '', p.country, p.city || '', p.address, p.remarks || '' ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
-            p.children.forEach(c => { csv += [ c.name, p.name, c.name_translated || '', c.name_local || '', c.tax_id || '', c.overseas_tax_id || '', c.industry || '', c.venue_type || '', c.country, c.city || '', c.address, c.remarks || '' ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n'; });
-        });
-    } else {
-        filteredInstitutions.forEach(d => {
-            csv += [ d.name, '', d.name_translated || '', d.name_local || '', d.tax_id || '', d.overseas_tax_id || '', d.industry || '', d.venue_type || '', d.country, d.city || '', d.address, d.remarks || '' ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
-        });
-    }
-    const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-    link.download = `實習機構清單_${new Date().toISOString().split('T')[0]}.csv`; link.click();
-}
-
-async function handleImport(e) {
-    const file = e.target.files[0]; if (!file) return;
-    const btn = document.getElementById('btn-import-trigger');
-    const originalHtml = btn.innerHTML;
-    btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> <span class="btn-text">匯入中...</span>';
-    btn.disabled = true;
-
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-        try {
-            const rows = event.target.result.split('\n').map(row => row.trim()).filter(row => row);
-            let parsedRows = [];
-            for (let i = 1; i < rows.length; i++) {
-                let cols = []; let inQuotes = false; let currentVal = '';
-                for (let char of rows[i]) {
-                    if (char === '"') inQuotes = !inQuotes;
-                    else if (char === ',' && !inQuotes) { cols.push(currentVal.trim()); currentVal = ''; }
-                    else currentVal += char;
-                }
-                cols.push(currentVal.trim());
-                if (cols.length >= 10) {
-                    const payload = {
-                        name: cols[0], name_translated: cols[1] || '', name_local: cols[2] || '', 
-                        tax_id: cols[3] || '', overseas_tax_id: cols[4] || '', industry: cols[5] || '', venue_type: cols[6] || '',
-                        country: cols[7] || '中華民國', city: cols[8] || '', address: cols[9] || '', remarks: cols[10] || '',
-                        parent_id: '' 
-                    };
-                    if (!payload.name) continue;
-                    parsedRows.push(payload);
-                }
-            }
-            for (let payload of parsedRows) {
-                const docRef = await addDoc(collection(db, "internship_institutions"), { ...payload, created_at: serverTimestamp() });
-                allData.unshift({ id: docRef.id, ...payload });
-            }
-            alert(`✅ 成功批次匯入完成！`); fetchInitialDataOnce();
-        } catch (error) { alert("格式錯誤\n" + error.message); } 
-        finally { btn.innerHTML = originalHtml; btn.disabled = false; e.target.value = ''; }
-    };
-    reader.readAsText(file);
 }
 
 function openCreateModal() {
     editingId = null; editingOldName = null;
     document.getElementById('data-form').reset();
     
-    // ✨ 修正 4：新增時清除父級 ID 快取，避免歸類錯誤
+    // ✨ 4. 新增時徹底洗淨所有快取 ID 欄位，防止繼承分公司
     document.getElementById('input-parent-id').value = '';
     document.getElementById('parent-search-input').value = '';
     document.getElementById('btn-clear-parent').style.display = 'none';
@@ -1120,6 +948,7 @@ function editData(id) {
     
     populateParentDropdown(id); 
     document.getElementById('input-parent-id').value = docData.parent_id || '';
+    
     if (docData.parent_id) {
         const parentObj = allData.find(p => p.id === docData.parent_id);
         document.getElementById('parent-search-input').value = parentObj ? parentObj.name : '';
@@ -1144,6 +973,65 @@ function editData(id) {
     handleCountryChange(); 
     document.getElementById('modal-title').innerHTML = '<i class="ti ti-edit"></i> 編輯實習機構';
     document.getElementById('data-modal').classList.add('open');
+}
+
+function exportToCSV() {
+    if (filteredInstitutions.length === 0) { alert("沒有資料可供匯出！"); return; }
+    let csv = '\uFEFF實習機構主名稱,隸屬主機構,中文譯名,當地語言名稱,統一編號,海外稅號,行業別,實習場所,實習場所國別,縣市別,實習場所地址,備註\n';
+    if (isTreeMode) {
+        filteredInstitutions.forEach(p => {
+            csv += [ p.name, '', p.name_translated || '', p.name_local || '', p.tax_id || '', p.overseas_tax_id || '', p.industry || '', p.venue_type || '', p.country, p.city || '', p.address, p.remarks || '' ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+            p.children.forEach(c => { csv += [ c.name, p.name, c.name_translated || '', c.name_local || '', c.tax_id || '', c.overseas_tax_id || '', c.industry || '', c.venue_type || '', c.country, c.city || '', c.address, c.remarks || '' ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n'; });
+        });
+    } else {
+        filteredInstitutions.forEach(d => {
+            csv += [ d.name, '', d.name_translated || '', d.name_local || '', d.tax_id || '', d.overseas_tax_id || '', d.industry || '', d.venue_type || '', d.country, d.city || '', d.address, d.remarks || '' ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+        });
+    }
+    const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+    link.download = `實習機構清單_${new Date().toISOString().split('T')[0]}.csv`; link.click();
+}
+
+async function handleImport(e) {
+    const file = e.target.files[0]; if (!file) return;
+    const btn = document.getElementById('btn-import-trigger');
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> <span class="btn-text">匯入中...</span>';
+    btn.disabled = true;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+        try {
+            const rows = event.target.result.split('\n').map(row => row.trim()).filter(row => row);
+            let parsedRows = [];
+            for (let i = 1; i < rows.length; i++) {
+                let cols = []; let inQuotes = false; let currentVal = '';
+                for (let char of rows[i]) {
+                    if (char === '"') inQuotes = !inQuotes;
+                    else if (char === ',' && !inQuotes) { cols.push(currentVal.trim()); currentVal = ''; }
+                    else currentVal += char;
+                }
+                cols.push(currentVal.trim());
+                if (cols.length >= 10) {
+                    const payload = {
+                        name: cols[0], name_translated: cols[1] || '', name_local: cols[2] || '', 
+                        tax_id: cols[3] || '', overseas_tax_id: cols[4] || '', industry: cols[5] || '', venue_type: cols[6] || '',
+                        country: cols[7] || '中華民國', city: cols[8] || '', address: cols[9] || '', remarks: cols[10] || '',
+                        parent_id: '' 
+                    };
+                    if (!payload.name) continue;
+                    parsedRows.push(payload);
+                }
+            }
+            for (let payload of parsedRows) {
+                const docRef = await addDoc(collection(db, "internship_institutions"), { ...payload, created_at: serverTimestamp() });
+                allData.unshift({ id: docRef.id, ...payload });
+            }
+            alert(`✅ 成功批次匯入完成！`); fetchInitialDataOnce();
+        } catch (error) { alert("格式錯誤\n" + error.message); } 
+        finally { btn.innerHTML = originalHtml; btn.disabled = false; e.target.value = ''; }
+    };
+    reader.readAsText(file);
 }
 
 async function deleteData(id, name) {
@@ -1211,9 +1099,7 @@ async function executeMerge() {
     const masterInst = allData.find(i => i.id === masterId);
     const instsToDelete = selectedIds.filter(id => id !== masterId);
     const deletedNames = allData.filter(i => instsToDelete.includes(i.id)).map(i => i.name);
-    
     if(!confirm(`確認合併？\n\n📌 保留主體：${masterInst.name}\n🗑️ 刪除對象：${deletedNames.join('、')}`)) return;
-    
     try {
         const batch = writeBatch(db);
         allRecords.forEach(record => {
