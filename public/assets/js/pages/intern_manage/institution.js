@@ -166,17 +166,6 @@ function injectUI(container) {
             .merge-option-title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
             .merge-option-desc { font-size: 12px; color: var(--text-secondary); margin-top: 4px; line-height: 1.4; }
 
-            .toggle { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
-            .toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
-            .toggle-slider { width: 34px; height: 18px; background: var(--border-strong); border-radius: 20px; transition: 0.3s; position: relative; }
-            .toggle-slider::before { content: ""; position: absolute; width: 12px; height: 12px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; box-shadow: var(--shadow-sm); }
-            .toggle input:checked + .toggle-slider { background: var(--success); }
-            .toggle input:checked + .toggle-slider::before { transform: translateX(16px); }
-            .toggle.disabled { opacity: 0.5; cursor: not-allowed; }
-            .toggle-label { margin-left: 8px; font-size: 11px; font-weight: 700; }
-            .toggle-label.active { color: var(--success); }
-            .toggle-label.inactive { color: var(--text-muted); }
-
             .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
             .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
             .empty-text { font-size: 13px; font-weight: 600; }
@@ -203,7 +192,7 @@ function injectUI(container) {
         <div class="toolbar">
             <div class="search-wrap">
                 <i class="ti ti-search"></i>
-                <input type="text" id="search-input" placeholder="搜尋機構名稱或統編..." class="search-input">
+                <input type="text" id="search-input" placeholder="搜尋機構名稱、統編或海外稅號..." class="search-input">
             </div>
             <div class="flex-spacer"></div>
             <div class="toolbar-actions">
@@ -280,7 +269,7 @@ function injectUI(container) {
                             <th data-sort="country" style="width: 8%;">國別 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="city" style="width: 8%;">縣市別 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="address" style="width: 16%;">實習場所地址 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th style="width: 12%;">操作</th>
+                            <th style="width: 8%;">操作</th>
                         </tr>
                     </thead>
                     <tbody id="table-body">
@@ -314,11 +303,18 @@ function injectUI(container) {
                 <form id="data-form" class="dialog-body custom-scroll" style="display: flex; gap: 24px;">
                     <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
                         <div class="form-section-title" style="margin-bottom: 0;"><i class="ti ti-building-skyscraper"></i> 機構基本資料</div>
+                        
                         <div class="field"><label class="field-label">實習場所國別 <span class="req">*</span></label><select id="input-country" required class="field-select"></select></div>
-                        <div class="field"><label class="field-label">實習機構名稱 <span class="req">*</span></label><input type="text" id="input-name" required placeholder="例如：台灣積體電路製造股份有限公司" class="field-input"></div>
-                        <div class="field"><label class="field-label">統一編號 <span id="req-tax" class="req">*</span></label><input type="text" id="input-tax-id" required placeholder="如: 12345678" class="field-input" style="text-transform:uppercase;"></div>
-                        <div class="field"><label class="field-label">縣市別 <span id="req-city" class="req">*</span></label><select id="input-city" required class="field-select"><option value="">請選擇</option></select></div>
-                        <div class="field"><label class="field-label">完整實習地址 <span class="req">*</span></label><input type="text" id="input-address" required placeholder="如: 臺灣大道四段1727號" class="field-input"></div>
+                        <div class="field"><label class="field-label">機構主名稱 <span class="req">*</span></label><input type="text" id="input-name" required placeholder="國內/外機構主要識別名稱" class="field-input"></div>
+                        
+                        <div class="field" id="wrap-name-translated" style="display:none;"><label class="field-label">中文譯名</label><input type="text" id="input-name-translated" placeholder="例如：蘋果公司 (選填)" class="field-input"></div>
+                        <div class="field" id="wrap-name-local" style="display:none;"><label class="field-label">當地語言名稱</label><input type="text" id="input-name-local" placeholder="例如：Apple Inc. (選填)" class="field-input"></div>
+                        <div class="field" id="wrap-overseas-tax" style="display:none;"><label class="field-label">海外稅號 / 立案號碼</label><input type="text" id="input-overseas-tax-id" placeholder="當地稅務或機構登記號碼 (選填)" class="field-input"></div>
+                        
+                        <div class="field" id="wrap-tax-id"><label class="field-label">統一編號 <span class="req">*</span></label><input type="text" id="input-tax-id" required placeholder="如: 12345678" class="field-input" style="text-transform:uppercase;"></div>
+                        <div class="field" id="wrap-city"><label class="field-label">縣市別 <span class="req">*</span></label><select id="input-city" required class="field-select"><option value="">請選擇</option></select></div>
+                        
+                        <div class="field"><label class="field-label">完整實習地址 <span class="req">*</span></label><input type="text" id="input-address" required placeholder="詳細地址" class="field-input"></div>
                     </div>
                     <div class="v-divider-modal" style="width: 1px; background: var(--border); margin: 0;"></div>
                     <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
@@ -493,14 +489,11 @@ function bindEvents(container) {
         else if (btnEdit) { editData(btnEdit.dataset.id); }
         else if (btnDel) { deleteData(btnDel.dataset.id, btnDel.dataset.name); }
     });
-    
-    container.querySelector('#table-body').addEventListener('change', (e) => {
-        const toggle = e.target.closest('.toggle-inst-status-chk');
-        if(toggle) toggleStatus(toggle.dataset.id, toggle.checked);
-    });
 
     container.querySelector('#merge-options-container').addEventListener('change', (e) => {
-        if(e.target.name === 'master_inst') document.getElementById('btn-merge-submit').disabled = false;
+        if(e.target.name === 'master_inst') {
+            document.getElementById('btn-merge-submit').disabled = false;
+        }
     });
 }
 
@@ -577,24 +570,40 @@ function updatePillActive(type) {
     }
 }
 
+// 💡 核心變動：海外機構欄位動態切換
 function handleCountryChange() {
     const country = document.getElementById('input-country').value;
+    const isDomestic = country === '中華民國';
+    
+    const wrapTax = document.getElementById('wrap-tax-id');
+    const wrapCity = document.getElementById('wrap-city');
+    const wrapNameTrans = document.getElementById('wrap-name-translated');
+    const wrapNameLocal = document.getElementById('wrap-name-local');
+    const wrapOverseasTax = document.getElementById('wrap-overseas-tax');
+
     const taxInput = document.getElementById('input-tax-id');
     const cityInput = document.getElementById('input-city');
-    const reqTax = document.getElementById('req-tax');
-    const reqCity = document.getElementById('req-city');
-    
-    const isDomestic = country === '中華民國';
-    taxInput.disabled = !isDomestic;
-    cityInput.disabled = !isDomestic;
-    taxInput.required = isDomestic;
-    cityInput.required = isDomestic;
-    
+
     if (isDomestic) {
-        reqTax.style.display = 'inline'; reqCity.style.display = 'inline';
+        wrapTax.style.display = 'flex';
+        wrapCity.style.display = 'flex';
+        wrapNameTrans.style.display = 'none';
+        wrapNameLocal.style.display = 'none';
+        wrapOverseasTax.style.display = 'none';
+        
+        taxInput.required = true;
+        cityInput.required = true;
     } else {
-        reqTax.style.display = 'none'; reqCity.style.display = 'none';
-        taxInput.value = ''; cityInput.value = '';
+        wrapTax.style.display = 'none';
+        wrapCity.style.display = 'none';
+        wrapNameTrans.style.display = 'flex';
+        wrapNameLocal.style.display = 'flex';
+        wrapOverseasTax.style.display = 'flex';
+        
+        taxInput.required = false;
+        cityInput.required = false;
+        taxInput.value = '';
+        cityInput.value = '';
     }
 }
 
@@ -631,7 +640,7 @@ function clearSelection() {
 }
 
 // ==========================================
-// 5. 資料維護核心與 API 讀取 (Get Once)
+// 5. 資料維護核心與 API 讀取
 // ==========================================
 async function handleInitialLoadEngine() {
     try {
@@ -678,7 +687,7 @@ function renderTable() {
     const searchTerm = document.getElementById('search-input').value.toLowerCase();
 
     filteredInstitutions = allData.filter(d => {
-        const matchSearch = (d.name || '').toLowerCase().includes(searchTerm) || (d.tax_id || '').toLowerCase().includes(searchTerm);
+        const matchSearch = (d.name || '').toLowerCase().includes(searchTerm) || (d.tax_id || '').toLowerCase().includes(searchTerm) || (d.overseas_tax_id || '').toLowerCase().includes(searchTerm);
         const matchCountry = filterCountrySet.size === 0 || filterCountrySet.has(d.country);
         const matchCity = filterCitySet.size === 0 || filterCitySet.has(d.city);
         const matchIndustry = filterIndustrySet.size === 0 || filterIndustrySet.has(d.industry);
@@ -742,6 +751,8 @@ function renderTable() {
     tbody.innerHTML = paginatedItems.map((data) => {
         const isChecked = selectedIds.includes(data.id) ? 'checked' : '';
         const isDomestic = data.country === '中華民國';
+        
+        // 💡 保持原有列表，海外顯示 '-' 或海外專用欄位
         return `
         <tr class="${isChecked ? 'selected' : ''}">
             <td class="col-checkbox" style="text-align: center;">
@@ -766,17 +777,30 @@ function renderTable() {
     }).join('');
 }
 
+// 💡 擴充為 11 個匯出欄位
 function exportToCSV() {
     if (filteredInstitutions.length === 0) { alert("沒有資料可供匯出！"); return; }
-    let csv = '\uFEFF實習機構名稱,統一編號,行業別,實習場所,實習場所國別,縣市別,實習場所地址,備註\n';
+    let csv = '\uFEFF實習機構主名稱,中文譯名,當地語言名稱,統一編號,海外稅號,行業別,實習場所,實習場所國別,縣市別,實習場所地址,備註\n';
     filteredInstitutions.forEach(d => {
-        const isDomestic = d.country === '中華民國';
-        csv += [d.name, isDomestic ? d.tax_id : '-', d.industry || '', d.venue_type || '', d.country, isDomestic ? d.city : '-', d.address, d.remarks || ''].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+        csv += [
+            d.name, 
+            d.name_translated || '', 
+            d.name_local || '', 
+            d.tax_id || '', 
+            d.overseas_tax_id || '', 
+            d.industry || '', 
+            d.venue_type || '', 
+            d.country, 
+            d.city || '', 
+            d.address, 
+            d.remarks || ''
+        ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
     });
     const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
     link.download = `實習機構清單_${new Date().toISOString().split('T')[0]}.csv`; link.click();
 }
 
+// 💡 擴充支援 11 個欄位的匯入對應
 async function handleImport(e) {
     const file = e.target.files[0]; if (!file) return;
     const btn = document.getElementById('btn-import-trigger');
@@ -797,10 +821,19 @@ async function handleImport(e) {
                     else currentVal += char;
                 }
                 cols.push(currentVal.trim());
-                if (cols.length >= 7) {
+                if (cols.length >= 10) {
                     const payload = {
-                        name: cols[0], tax_id: cols[1] || '', industry: cols[2] || '', venue_type: cols[3] || '',
-                        country: cols[4] || '中華民國', city: cols[5] || '', address: cols[6] || '', remarks: cols[7] || ''
+                        name: cols[0], 
+                        name_translated: cols[1] || '', 
+                        name_local: cols[2] || '', 
+                        tax_id: cols[3] || '', 
+                        overseas_tax_id: cols[4] || '',
+                        industry: cols[5] || '', 
+                        venue_type: cols[6] || '',
+                        country: cols[7] || '中華民國', 
+                        city: cols[8] || '', 
+                        address: cols[9] || '', 
+                        remarks: cols[10] || ''
                     };
                     if (!payload.name) continue;
                     parsedRows.push(payload);
@@ -830,17 +863,25 @@ function closeModal() { document.getElementById('data-modal').classList.remove('
 async function submitForm() {
     const btn = document.getElementById('btn-submit');
     const isDomestic = document.getElementById('input-country').value === '中華民國';
+    
+    // 💡 根據國別過濾收集欄位
     const payload = { 
         country: document.getElementById('input-country').value,
         name: document.getElementById('input-name').value.trim(),
+        name_translated: isDomestic ? '' : document.getElementById('input-name-translated').value.trim(),
+        name_local: isDomestic ? '' : document.getElementById('input-name-local').value.trim(),
         tax_id: isDomestic ? document.getElementById('input-tax-id').value.trim() : '',
+        overseas_tax_id: isDomestic ? '' : document.getElementById('input-overseas-tax-id').value.trim(),
         city: isDomestic ? document.getElementById('input-city').value : '',
         industry: document.getElementById('input-industry').value,
         venue_type: document.getElementById('input-venue-type').value,
         address: document.getElementById('input-address').value.trim(),
         remarks: document.getElementById('input-remarks').value.trim()
     };
+
     if(!payload.country || !payload.name || !payload.address) { alert("請填寫所有必填欄位！"); return; }
+    if (isDomestic && (!payload.tax_id || !payload.city)) { alert("中華民國機構必須填寫「統一編號」與「縣市別」！"); return; }
+
     btn.disabled = true; btn.innerHTML = '儲存中...';
     try {
         if (editingId) {
@@ -864,15 +905,22 @@ async function submitForm() {
 function editData(id) {
     const docData = allData.find(d => d.id === id); if (!docData) return;
     editingId = id; editingOldName = docData.name || '';
+    
     document.getElementById('input-country').value = docData.country || '中華民國';
     document.getElementById('input-name').value = docData.name || '';
+    document.getElementById('input-name-translated').value = docData.name_translated || '';
+    document.getElementById('input-name-local').value = docData.name_local || '';
     document.getElementById('input-tax-id').value = docData.tax_id || '';
+    document.getElementById('input-overseas-tax-id').value = docData.overseas_tax_id || '';
     document.getElementById('input-city').value = docData.city || '';
+    
     document.getElementById('input-industry').value = docData.industry || '';
     document.getElementById('input-venue-type').value = docData.venue_type || '';
     document.getElementById('input-address').value = docData.address || '';
     document.getElementById('input-remarks').value = docData.remarks || '';
-    handleCountryChange();
+    
+    handleCountryChange(); // 動態開關對應欄位
+    
     document.getElementById('modal-title').innerHTML = '<i class="ti ti-edit"></i> 編輯實習機構';
     document.getElementById('data-modal').classList.add('open');
 }
@@ -886,15 +934,6 @@ async function deleteData(id, name) {
             updateBatchActionBar(); renderTable();
         } catch(e) { alert("刪除失敗"); }
     }
-}
-
-async function toggleStatus(id, isChecked) {
-    try {
-        await updateDoc(doc(db, "internship_institutions", id), { is_active: isChecked });
-        const inst = allData.find(u => u.id === id);
-        if(inst) inst.is_active = isChecked;
-        renderTable();
-    } catch (err) { alert("變更狀態失敗"); renderTable(); }
 }
 
 function openBatchEditModal() {
