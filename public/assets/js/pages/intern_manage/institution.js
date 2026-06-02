@@ -266,13 +266,15 @@ function injectUI(container) {
                                     <input type="checkbox" id="selectAll" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                                 </div>
                             </th>
-                            <th data-sort="name" style="width: 20%;">實習機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <!-- ✨ 加上 text-align: left 與 padding-left: 40px (16預設 + 24箭頭寬度) -->
+                            <th data-sort="name" style="width: 28%; text-align: left; padding-left: 40px;">實習機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="tax_id" style="width: 12%;">統編 / 稅號 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="industry" style="width: 12%;">行業別 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="venue_type" style="width: 12%;">實習場所 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="country" style="width: 8%;">國別 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="city" style="width: 8%;">縣市別 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="address" style="width: 16%;">實習場所地址 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <!-- ✨ 地址長文字也改為靠左對齊 -->
+                            <th data-sort="address" style="width: 16%; text-align: left;">實習場所地址 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th style="width: 8%;">操作</th>
                         </tr>
                     </thead>
@@ -887,13 +889,15 @@ function renderTable() {
                     <input type="checkbox" value="${data.id}" class="row-select-chk" ${isChecked} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                 </div>
             </td>
-            <td>${nameHtml}</td>
+            <!-- ✨ 確保機構名稱靠左對齊 -->
+            <td style="text-align: left;">${nameHtml}</td>
             <td style="text-align: center;"><div class="cell-primary" style="color: var(--text-muted); font-family: monospace;">${dispTax}</div></td>
             <td style="text-align: center;"><div class="cell-primary">${data.industry || '-'}</div></td>
             <td style="text-align: center;"><div class="cell-primary">${data.venue_type || '-'}</div></td>
             <td style="text-align: center;"><div class="cell-primary">${data.country}</div></td>
             <td style="text-align: center;"><div class="cell-primary">${isDomestic && data.city ? data.city : '-'}</div></td>
-            <td><div class="cell-primary" title="${data.address}">${data.address}</div></td>
+            <!-- ✨ 確保地址靠左對齊 -->
+            <td style="text-align: left;"><div class="cell-primary" title="${data.address}">${data.address}</div></td>
             <td style="text-align: center;">
                 <div class="row-actions">
                     <button data-id="${data.id}" class="btn btn-secondary btn-icon sm btn-row-edit" title="編輯"><i class="ti ti-edit"></i></button>
