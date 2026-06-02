@@ -19,7 +19,7 @@
             --brand-light: #eff4ff; 
             --brand-border: #c3d2f9;
             
-            /* 2. 狀態顏色 (成功、危險、標籤色) - 補回 */
+            /* 2. 狀態顏色 (成功、危險、標籤色) */
             --success: #059669; --success-bg: #ecfdf5; --success-border: #a7f3d0;
             --danger: #dc2626; --danger-bg: #fef2f2; --danger-border: #fecaca;
             --indigo: #4f46e5; --indigo-bg: #e0e7ff; --indigo-border: #c7d2fe;
@@ -29,13 +29,13 @@
             --bg: #f8f9fc; --surface: #ffffff; --border: #e5e7ef; --border-strong: #cdd0dd;
             --text-primary: #111827; --text-secondary: #4b5563; --text-muted: #9ca3af;
             
-            /* 4. 圓角系統 (你消失的圓角都在這！) - 補回 */
+            /* 4. 圓角系統 */
             --radius-sm: 6px; 
             --radius: 8px; 
             --radius-lg: 12px; 
             --radius-xl: 16px;
             
-            /* 5. 陰影系統 - 補回 */
+            /* 5. 陰影系統 */
             --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
             --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
             --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.04);
@@ -94,11 +94,16 @@
                     <i class="ti ti-home"></i><span>首頁看板</span>
                 </div>
                 
+                <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-4 mb-1" data-roles="admin">實習資料管理</div>
+                <div class="nav-item" data-hash="intern_manage/institution" data-roles="admin">
+                    <i class="ti ti-building"></i><span>實習機構管理</span>
+                </div>
+
                 <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-4 mb-1" data-roles="admin">系統設定</div>
                 <div class="nav-item" data-hash="manage/roles" data-roles="admin">
                     <i class="ti ti-shield-lock"></i><span>用戶權限管理</span>
                 </div>
-                </div>
+            </div>
             
             <div class="p-2 border-t border-gray-200 bg-white flex-shrink-0">
                 <div class="nav-item !mb-0" id="profileBtn" data-hash="profile" data-roles="all">
@@ -135,7 +140,7 @@
             </header>
 
             <div id="content-view-container" class="flex-1 overflow-y-auto bg-[#f8f9fc] custom-scroll flex flex-col">
-                </div>
+            </div>
         </div>
     </div>
 
@@ -198,7 +203,7 @@
 
                     filterSidebarMenuByRole(role);
                     
-                    // 💡 初始化純 JS 動態路由引擎
+                    // 初始化純 JS 動態路由引擎
                     initPureSpaRouter(db);
 
                     if(sysLoading) sysLoading.style.display = 'none';
@@ -224,7 +229,7 @@
             });
         }
 
-        // 💡 核心引擎：動態載入 JS 模組
+        // 核心引擎：動態載入 JS 模組
         function initPureSpaRouter(dbInstance) {
             const container = document.getElementById('content-view-container');
 
@@ -250,11 +255,10 @@
                 `;
 
                 try {
-                    // 動態引入對應的 JS 檔案 (如：./assets/js/pages/manage/roles.js)
-                    // 如果是開發測試還沒建檔，我們用 catch 處理 404
+                    // 動態引入對應的 JS 檔案
                     const module = await import(`./assets/js/pages/${hash}.js`);
                     
-                    // 呼叫模組內導出的 render 函數，並把資料庫實例傳給它
+                    // 呼叫模組內導出的 render 函數
                     if(module.render) {
                         await module.render('content-view-container', { db: dbInstance });
                     }
