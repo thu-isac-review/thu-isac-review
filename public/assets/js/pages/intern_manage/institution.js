@@ -30,26 +30,23 @@ export async function render(containerId, context) {
     db = context.db;
     const container = document.getElementById(containerId);
     
-    // 重置模組狀態（防止跨網頁殘留快取）
+    // 初始化狀態
     selectedIds = [];
     currentPage = 1;
 
     // 1. 注入保留完整高階 UI/UX 且取消分頁列外側圓角的 HTML 與 CSS
     injectUI(container);
 
-    // 2. 靜態下拉選單與篩選清單初始化
+    // 2. 靜態下拉選項初始化
     initSelectOptions();
 
-    // 3. 綁定事件監聽 (移除 inline onClick)
+    // 3. 綁定事件監聽
     bindEvents(container);
 
-    // 4. 執行極致省流單次下載 (Get Once)
+    // 4. 執行單次讀取取代監聽
     await fetchInitialDataOnce();
 }
 
-// ==========================================
-// 1. UI 注入模組 (100% 保留您的精美排版與變數)
-// ==========================================
 function injectUI(container) {
     container.innerHTML = `
     <div id="institution-page-wrapper" style="height: 100%; display: flex; flex-direction: column;">
@@ -133,7 +130,6 @@ function injectUI(container) {
             .cell-secondary { font-size: 11px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
             .row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; }
 
-            /* ✨ 修正：徹底拔除下方選單分頁外側圓角，100% 直角貼齊主框架邊緣 */
             .pagination-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; gap: 10px; border-radius: 0 !important; }
             .pagination-info { font-size: 12px; color: var(--text-muted); }
             .pagination-info strong { color: var(--text-primary); }
@@ -431,49 +427,35 @@ function initSelectOptions() {
 }
 
 // ==========================================
-// 3. 全面移除 inline 監聽，重整安全事件代理
+// 3. 事件代理重整
 // ==========================================
 function bindEvents(container) {
-    // 基礎 Toolbar 控制
     container.querySelector('#btn-export-csv').addEventListener('click', exportToCSV);
     container.querySelector('#btn-import-trigger').addEventListener('click', () => container.querySelector('#import-file').click());
     container.querySelector('#import-file').addEventListener('change', handleImport);
     container.querySelector('#btn-create-inst').addEventListener('click', openCreateModal);
     container.querySelector('#search-input').addEventListener('input', () => { currentPage = 1; renderTable(); });
 
-    // 下拉式複合篩選點擊監聽
     container.querySelector('#pill-country').addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('country'); });
     container.querySelector('#pill-city').addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('city'); });
     container.querySelector('#pill-industry').addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('industry'); });
     container.querySelector('#pill-venue').addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('venue'); });
 
-    // 篩選選單內的搜尋輸入框監聽
     container.querySelector('#search-country-input').addEventListener('keyup', (e) => filterDropdownItems(e.target, 'country-options-container'));
     container.querySelector('#search-city-input').addEventListener('keyup', (e) => filterDropdownItems(e.target, 'city-options-container'));
     container.querySelector('#search-industry-input').addEventListener('keyup', (e) => filterDropdownItems(e.target, 'industry-options-container'));
     container.querySelector('#search-venue-input').addEventListener('keyup', (e) => filterDropdownItems(e.target, 'venue-options-container'));
 
-    // 篩選選單複選框監聽 (事件代理)
     container.querySelector('#country-options-container').addEventListener('change', (e) => { if(e.target.type==='checkbox') toggleFilterCheck('country', e.target.value); });
     container.querySelector('#city-options-container').addEventListener('change', (e) => { if(e.target.type==='checkbox') toggleFilterCheck('city', e.target.value); });
     container.querySelector('#industry-options-container').addEventListener('change', (e) => { if(e.target.type==='checkbox') toggleFilterCheck('industry', e.target.value); });
     container.querySelector('#venue-options-container').addEventListener('change', (e) => { if(e.target.type==='checkbox') toggleFilterCheck('venue', e.target.value); });
 
-    // 篩選清除按鈕
     container.querySelector('#btn-clear-country').addEventListener('click', () => clearFilter('country'));
     container.querySelector('#btn-clear-city').addEventListener('click', () => clearFilter('city'));
     container.querySelector('#btn-clear-industry').addEventListener('click', () => clearFilter('industry'));
     container.querySelector('#btn-clear-venue').addEventListener('click', () => clearFilter('venue'));
 
-    // 點擊外部自動收起下拉選單
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.filter-pill-wrap')) {
-            document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
-            document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
-        }
-    });
-
-    // 批次頂控制底列操作
     container.querySelector('#selectAll').addEventListener('change', toggleSelectPage);
     container.querySelector('#btn-select-all-filtered').addEventListener('click', selectAllFiltered);
     container.querySelector('#btn-clear-selection').addEventListener('click', clearSelection);
@@ -481,14 +463,12 @@ function bindEvents(container) {
     container.querySelector('#btn-batch-edit').addEventListener('click', openBatchEditModal);
     container.querySelector('#btn-batch-merge').addEventListener('click', openMergeModal);
 
-    // 排序控制與分頁顯示筆數切換
     container.querySelector('#per-page-select').addEventListener('change', (e) => { itemsPerPage = Number(e.target.value); currentPage = 1; renderTable(); });
-    container.querySelector('#inst-table-head').addEventListener('click', (e) => {
+    container.querySelector('#roles-page-wrapper #inst-table-head').addEventListener('click', (e) => {
         const th = e.target.closest('th[data-sort]');
         if (th) handleSort(th);
     });
 
-    // 燈箱控制按鈕綁定
     container.querySelector('#input-country').addEventListener('change', handleCountryChange);
     container.querySelector('#btn-close-modal-x').addEventListener('click', closeModal);
     container.querySelector('#btn-cancel-modal').addEventListener('click', closeModal);
@@ -502,7 +482,6 @@ function bindEvents(container) {
     container.querySelector('#btn-cancel-merge').addEventListener('click', closeMergeModal);
     container.querySelector('#btn-merge-submit').addEventListener('click', executeMerge);
 
-    // 核心資料表：精確事件委派防夾設定（點選單行、編輯、刪除單筆）
     container.querySelector('#table-body').addEventListener('click', (e) => {
         const rowChk = e.target.closest('.row-select-chk');
         const btnEdit = e.target.closest('.btn-row-edit');
@@ -513,7 +492,6 @@ function bindEvents(container) {
         else if (btnDel) { deleteData(btnDel.dataset.id, btnDel.dataset.name); }
     });
 
-    // 合併重複機構燈箱內的 Radio 選擇監聽引擎 (事件委派)
     container.querySelector('#merge-options-container').addEventListener('change', (e) => {
         if(e.target.name === 'master_inst') {
             document.getElementById('btn-merge-submit').disabled = false;
@@ -522,82 +500,27 @@ function bindEvents(container) {
 }
 
 // ==========================================
-// 4. 業務邏輯處理核心 (SPA 高密度快取)
+// 4. 資料維護核心 (SPA 0Reads 快取架構)
 // ==========================================
+async function handleInitialLoadEngine() {
+    try {
+        const recordsCol = collection(db, "internship_records");
+        const recordSnap = await getDocs(recordsCol);
+        allRecords = recordSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch(e) { console.warn("歷史名單預載未完成", e); }
+}
 
 async function fetchInitialDataOnce() {
     try {
         const dataSnap = await getDocs(collection(db, "internship_institutions"));
         allData = dataSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-        const recordSnap = await getDocs(collection(db, "internship_records"));
-        allRecords = recordSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
         selectedIds = [];
         updateBatchActionBar();
         renderTable();
+        await handleInitialLoadEngine();
     } catch (error) {
-        console.error("安全資料鏈連線中斷:", error);
-        document.getElementById('table-body').innerHTML = `<tr><td colspan="9" class="empty-state"><i class="ti ti-lock empty-icon" style="color:var(--danger); opacity:1;"></i><div class="empty-text">唯讀安全阻斷：資料下載失敗。</div></td></tr>`;
+        document.getElementById('table-body').innerHTML = `<tr><td colspan="9" class="empty-state"><i class="ti ti-lock empty-icon" style="color:var(--danger); opacity:1;"></i><div class="empty-text">雲端資料同步中斷。</div></td></tr>`;
     }
-}
-
-function handleSort(thElement) {
-    const col = thElement.dataset.sort;
-    if (sortCol === col) { sortDir = sortDir === 'asc' ? 'desc' : 'asc'; } 
-    else { sortCol = col; sortDir = 'asc'; }
-    
-    document.querySelectorAll('th[data-sort]').forEach(t => {
-        t.classList.remove('sort-asc', 'sort-desc');
-        t.querySelector('.sort-icon').className = 'ti ti-arrows-sort sort-icon';
-    });
-    
-    thElement.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
-    thElement.querySelector('.sort-icon').className = `ti ti-sort-${sortDir === 'asc' ? 'ascending' : 'descending'} sort-icon`;
-    renderTable();
-}
-
-function toggleDropdown(type) {
-    const drop = document.getElementById(`drop-${type}`);
-    const wrap = document.getElementById(`pill-wrap-${type}`);
-    const isOpen = drop.classList.contains('show');
-    document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
-    document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
-    if (!isOpen) { drop.classList.add('show'); wrap.classList.add('open'); }
-}
-
-function filterDropdownItems(inputElement, containerId) {
-    const term = inputElement.value.toLowerCase();
-    const labels = document.getElementById(containerId).querySelectorAll('.filter-option');
-    labels.forEach(lbl => {
-        const text = lbl.textContent.toLowerCase();
-        lbl.style.display = text.includes(term) ? 'flex' : 'none';
-    });
-}
-
-function toggleFilterCheck(type, val) {
-    let set = type === 'country' ? filterCountrySet : (type === 'city' ? filterCitySet : (type === 'industry' ? filterIndustrySet : filterVenueSet));
-    
-    if (set.has(val)) set.delete(val); else set.add(val);
-    document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
-    
-    currentPage = 1; 
-    updatePillActive(type); 
-    renderTable();
-}
-
-function clearFilter(type) {
-    let set = type === 'country' ? filterCountrySet : (type === 'city' ? filterCitySet : (type === 'industry' ? filterIndustrySet : filterVenueSet));
-    set.clear();
-    document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = false);
-    const searchInput = document.getElementById(`search-${type}-input`);
-    if (searchInput) {
-        searchInput.value = '';
-        filterDropdownItems(searchInput, `${type}-options-container`);
-    }
-    currentPage = 1; 
-    updatePillActive(type); 
-    renderTable();
 }
 
 function updatePillActive(type) {
@@ -614,81 +537,6 @@ function updatePillActive(type) {
     } else {
         pill.classList.remove('active');
         pill.innerHTML = `全部${typeName} <i class="ti ti-chevron-down"></i>`;
-    }
-}
-
-function handleCountryChange() {
-    const country = document.getElementById('input-country').value;
-    const taxInput = document.getElementById('input-tax-id');
-    const cityInput = document.getElementById('input-city');
-    const reqTax = document.getElementById('req-tax');
-    const reqCity = document.getElementById('req-city');
-    
-    const isDomestic = country === '中華民國';
-    taxInput.disabled = !isDomestic;
-    cityInput.disabled = !isDomestic;
-    taxInput.required = isDomestic;
-    cityInput.required = isDomestic;
-    
-    if (isDomestic) {
-        reqTax.style.display = 'inline';
-        reqCity.style.display = 'inline';
-    } else {
-        reqTax.style.display = 'none';
-        reqCity.style.display = 'none';
-        taxInput.value = '';
-        cityInput.value = '';
-    }
-}
-
-function toggleSelectPage(e) {
-    const isChecked = e.target.checked;
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const currentPaginatedIds = filteredInstitutions.slice(startIndex, startIndex + itemsPerPage).map(d => d.id);
-    if (isChecked) {
-        currentPaginatedIds.forEach(id => { if (!selectedIds.includes(id)) selectedIds.push(id); });
-    } else {
-        selectedIds = selectedIds.filter(id => !currentPaginatedIds.includes(id));
-    }
-    updateBatchActionBar();
-    renderTable();
-}
-
-function toggleSelect(id) {
-    const index = selectedIds.indexOf(id);
-    if (index === -1) selectedIds.push(id); else selectedIds.splice(index, 1);
-    updateBatchActionBar(); 
-    renderTable();
-}
-
-function selectAllFiltered() {
-    selectedIds = filteredInstitutions.map(d => d.id);
-    updateBatchActionBar(); 
-    renderTable();
-}
-
-function clearSelection() {
-    selectedIds = []; 
-    updateBatchActionBar(); 
-    renderTable();
-}
-
-function updateBatchActionBar() {
-    const bar = document.getElementById('batch-bar');
-    const count = document.getElementById('selected-count');
-    const btnSelectAll = document.getElementById('btn-select-all-filtered');
-    
-    if (selectedIds.length > 0) {
-        bar.classList.add('visible');
-        count.innerText = selectedIds.length;
-        if (selectedIds.length < filteredInstitutions.length) {
-            btnSelectAll.style.display = 'inline-flex';
-            btnSelectAll.innerText = `選取全部符合條件 (${filteredInstitutions.length})`;
-        } else {
-            btnSelectAll.style.display = 'none';
-        }
-    } else {
-        bar.classList.remove('visible');
     }
 }
 
@@ -709,30 +557,12 @@ function renderTable() {
         filteredInstitutions.sort((a, b) => {
             let valA = a[sortCol] || '';
             let valB = b[sortCol] || '';
-
             if (sortCol === 'country') {
                 const aIsDomestic = valA === '中華民國' ? 0 : 1;
                 const bIsDomestic = valB === '中華民國' ? 0 : 1;
                 if (aIsDomestic !== bIsDomestic) return sortDir === 'asc' ? aIsDomestic - bIsDomestic : bIsDomestic - aIsDomestic;
             }
-            if (sortCol === 'city') {
-                const orderCityA = LIST_CITIES.indexOf(valA) !== -1 ? LIST_CITIES.indexOf(valA) : 999;
-                const orderCityB = LIST_CITIES.indexOf(valB) !== -1 ? LIST_CITIES.indexOf(valB) : 999;
-                if (orderCityA !== orderCityB) return sortDir === 'asc' ? orderCityA - orderCityB : orderCityB - orderCityA;
-            }
-            if (sortCol === 'industry') {
-                const orderIndA = LIST_INDUSTRIES.indexOf(valA) !== -1 ? LIST_INDUSTRIES.indexOf(valA) : 999;
-                const orderIndB = LIST_INDUSTRIES.indexOf(valB) !== -1 ? LIST_INDUSTRIES.indexOf(valB) : 999;
-                if (orderIndA !== orderIndB) return sortDir === 'asc' ? orderIndA - orderIndB : orderIndB - orderIndA;
-            }
-            if (sortCol === 'venue_type') {
-                const orderVenueA = LIST_VENUES.indexOf(valA) !== -1 ? LIST_VENUES.indexOf(valA) : 999;
-                const orderVenueB = LIST_VENUES.indexOf(valB) !== -1 ? LIST_VENUES.indexOf(valB) : 999;
-                if (orderVenueA !== orderVenueB) return sortDir === 'asc' ? orderVenueA - orderVenueB : orderVenueB - orderVenueA;
-            }
-
-            valA = valA.toString().toLowerCase(); 
-            valB = valB.toString().toLowerCase();
+            valA = valA.toString().toLowerCase(); valB = valB.toString().toLowerCase();
             if (valA < valB) return sortDir === 'asc' ? -1 : 1;
             if (valA > valB) return sortDir === 'asc' ? 1 : -1;
             return 0;
@@ -761,7 +591,7 @@ function renderTable() {
     pHtml += `<button class="page-btn page-step-btn" data-page="${currentPage+1}" ${currentPage>=totalPages?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
     document.getElementById('pagination-controls').innerHTML = pHtml;
 
-    document.querySelectorAll('#roles-page-wrapper .page-step-btn, #roles-page-wrapper .page-num-btn').forEach(btn => {
+    document.querySelectorAll('#institution-page-wrapper .page-step-btn, #institution-page-wrapper .page-num-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const p = Number(e.currentTarget.dataset.page);
             if(p && p >= 1 && p <= totalPages) { currentPage = p; renderTable(); }
@@ -779,11 +609,6 @@ function renderTable() {
     tbody.innerHTML = paginatedItems.map((data) => {
         const isChecked = selectedIds.includes(data.id) ? 'checked' : '';
         const isDomestic = data.country === '中華民國';
-        const dispTaxId = isDomestic && data.tax_id ? data.tax_id : '<span style="color: var(--text-muted)">-</span>';
-        const dispCity = isDomestic && data.city ? data.city : '<span style="color: var(--text-muted)">-</span>';
-        const dispIndustry = data.industry ? data.industry : '<span style="color: var(--text-muted)">-</span>';
-        const dispVenueType = data.venue_type ? data.venue_type : '<span style="color: var(--text-muted)">-</span>';
-
         return `
         <tr class="${isChecked ? 'selected' : ''}">
             <td class="col-checkbox" style="text-align: center;">
@@ -792,11 +617,11 @@ function renderTable() {
                 </div>
             </td>
             <td><div class="cell-primary bold" title="${data.name}">${data.name}</div></td>
-            <td style="text-align: center;"><div class="cell-primary" style="color: var(--text-muted); text-transform: uppercase; font-family: monospace;">${dispTaxId}</div></td>
-            <td style="text-align: center;"><div class="cell-primary">${dispIndustry}</div></td>
-            <td style="text-align: center;"><div class="cell-primary">${dispVenueType}</div></td>
+            <td style="text-align: center;"><div class="cell-primary" style="color: var(--text-muted); font-family: monospace;">${isDomestic && data.tax_id ? data.tax_id : '-'}</div></td>
+            <td style="text-align: center;"><div class="cell-primary">${data.industry || '-'}</div></td>
+            <td style="text-align: center;"><div class="cell-primary">${data.venue_type || '-'}</div></td>
             <td style="text-align: center;"><div class="cell-primary">${data.country}</div></td>
-            <td style="text-align: center;"><div class="cell-primary">${dispCity}</div></td>
+            <td style="text-align: center;"><div class="cell-primary">${isDomestic && data.city ? data.city : '-'}</div></td>
             <td><div class="cell-primary" title="${data.address}">${data.address}</div></td>
             <td style="text-align: center;">
                 <div class="row-actions">
@@ -808,26 +633,18 @@ function renderTable() {
     }).join('');
 }
 
-// ==========================================
-// 5. 資料維護核心與合併批次作業 (SPA 0Reads 核心)
-// ==========================================
-
 function exportToCSV() {
     if (filteredInstitutions.length === 0) { alert("沒有資料可供匯出！"); return; }
     let csv = '\uFEFF實習機構名稱,統一編號,行業別,實習場所,實習場所國別,縣市別,實習場所地址,備註\n';
     filteredInstitutions.forEach(d => {
-        const isDomestic = d.country === '中華民國';
-        csv += [d.name, isDomestic ? d.tax_id : '-', d.industry, d.venue_type, d.country, isDomestic ? d.city : '-', d.address, d.remarks].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+        csv += [d.name, d.tax_id || '-', d.industry || '', d.venue_type || '', d.country, d.city || '-', d.address, d.remarks || ''].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
     });
-    const link = document.createElement('a'); 
-    link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-    link.download = `實習機構清單_${new Date().toISOString().split('T')[0]}.csv`; 
-    link.click();
+    const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+    link.download = `實習機構清單_${new Date().toISOString().split('T')[0]}.csv`; link.click();
 }
 
 async function handleImport(e) {
-    const file = e.target.files[0];
-    if (!file) return;
+    const file = e.target.files[0]; if (!file) return;
     const btn = document.getElementById('btn-import-trigger');
     const originalHtml = btn.innerHTML;
     btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> <span class="btn-text">匯入中...</span>';
@@ -852,47 +669,33 @@ async function handleImport(e) {
                         country: cols[4] || '中華民國', city: cols[5] || '', address: cols[6] || '', remarks: cols[7] || ''
                     };
                     if (!payload.name) continue;
-                    if (payload.country !== '中華民國') { payload.tax_id = ''; payload.city = ''; }
                     parsedRows.push(payload);
                 }
             }
-            
-            let addedCount = 0;
             for (let payload of parsedRows) {
                 const docRef = await addDoc(collection(db, "internship_institutions"), { ...payload, created_at: serverTimestamp() });
                 allData.unshift({ id: docRef.id, ...payload });
-                addedCount++;
             }
-            alert(`✅ 成功匯入 ${addedCount} 筆機構資料！`);
-            renderTable();
-        } catch (error) { 
-            alert("匯入失敗，格式錯誤。\n" + error.message); 
-        } finally { 
-            btn.innerHTML = originalHtml; btn.disabled = false; e.target.value = ''; 
-        }
+            alert(`✅ 成功匯入！`); fetchInitialDataOnce();
+        } catch (error) { alert("格式錯誤\n" + error.message); } 
+        finally { btn.innerHTML = originalHtml; btn.disabled = false; e.target.value = ''; }
     };
     reader.readAsText(file);
 }
 
 function openCreateModal() {
-    editingId = null;
-    editingOldName = null;
+    editingId = null; editingOldName = null;
     document.getElementById('data-form').reset();
     handleCountryChange();
     document.getElementById('modal-title').innerHTML = '<i class="ti ti-building-skyscraper"></i> 新增實習機構';
     document.getElementById('data-modal').classList.add('open');
 }
 
-function closeModal() {
-    document.getElementById('data-modal').classList.remove('open');
-    editingId = null;
-    editingOldName = null;
-}
+function closeModal() { document.getElementById('data-modal').classList.remove('open'); editingId = null; }
 
 async function submitForm() {
     const btn = document.getElementById('btn-submit');
     const isDomestic = document.getElementById('input-country').value === '中華民國';
-    
     const payload = { 
         country: document.getElementById('input-country').value,
         name: document.getElementById('input-name').value.trim(),
@@ -903,43 +706,30 @@ async function submitForm() {
         address: document.getElementById('input-address').value.trim(),
         remarks: document.getElementById('input-remarks').value.trim()
     };
-
     if(!payload.country || !payload.name || !payload.address) { alert("請填寫所有必填欄位！"); return; }
-    if (isDomestic && (!payload.tax_id || !payload.city)) { alert("中華民國機構必須填寫「統一編號」與「縣市別」！"); return; }
-
-    btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 儲存中...';
+    btn.disabled = true; btn.innerHTML = '儲存中...';
     try {
         if (editingId) {
             const batch = writeBatch(db);
             batch.update(doc(db, "internship_institutions", editingId), { ...payload, updated_at: serverTimestamp() });
-            
             if (editingOldName && editingOldName !== payload.name) {
                 allRecords.forEach(record => {
                     if (record.inst_id === editingId || (!record.inst_id && record.inst_raw === editingOldName)) {
                         batch.update(doc(db, "internship_records", record.id), { inst_raw: payload.name, updated_at: serverTimestamp() });
-                        record.inst_raw = payload.name; // 本地狀態同步
                     }
                 });
             }
             await batch.commit();
-            
-            const idx = allData.findIndex(d => d.id === editingId);
-            if(idx > -1) allData[idx] = { ...allData[idx], ...payload };
         } else {
-            const docRef = await addDoc(collection(db, "internship_institutions"), { ...payload, created_at: serverTimestamp() });
-            allData.unshift({ id: docRef.id, ...payload });
+            await addDoc(collection(db, "internship_institutions"), { ...payload, created_at: serverTimestamp() });
         }
-        closeModal();
-        renderTable();
-    } catch (err) { alert("儲存失敗：" + err.message); }
-    finally { btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> 確認儲存'; }
+        closeModal(); fetchInitialDataOnce();
+    } catch (err) { alert("儲存失敗"); } finally { btn.disabled = false; btn.innerHTML = '確認儲存'; }
 }
 
 function editData(id) {
     const docData = allData.find(d => d.id === id); if (!docData) return;
-    editingId = id;
-    editingOldName = docData.name || '';
-    
+    editingId = id; editingOldName = docData.name || '';
     document.getElementById('input-country').value = docData.country || '中華民國';
     document.getElementById('input-name').value = docData.name || '';
     document.getElementById('input-tax-id').value = docData.tax_id || '';
@@ -948,20 +738,18 @@ function editData(id) {
     document.getElementById('input-venue-type').value = docData.venue_type || '';
     document.getElementById('input-address').value = docData.address || '';
     document.getElementById('input-remarks').value = docData.remarks || '';
-    
     handleCountryChange();
     document.getElementById('modal-title').innerHTML = '<i class="ti ti-edit"></i> 編輯實習機構';
     document.getElementById('data-modal').classList.add('open');
 }
 
 async function deleteData(id, name) {
-    if (confirm(`警告：確定要刪除機構「${name}」嗎？\n刪除後關聯實習紀錄可能會失去關聯！`)) {
+    if (confirm(`確定要刪除機構「${name}」嗎？`)) {
         try {
             await deleteDoc(doc(db, "internship_institutions", id));
             allData = allData.filter(d => d.id !== id);
             selectedIds = selectedIds.filter(sid => sid !== id);
-            updateBatchActionBar();
-            renderTable();
+            updateBatchActionBar(); renderTable();
         } catch(e) { alert("刪除失敗"); }
     }
 }
@@ -973,39 +761,23 @@ function openBatchEditModal() {
     document.getElementById('batch-input-venue').value = 'NO_CHANGE';
     document.getElementById('batch-edit-modal').classList.add('open');
 }
-
 function closeBatchEditModal() { document.getElementById('batch-edit-modal').classList.remove('open'); }
 
 async function executeBatchEdit() {
     const indVal = document.getElementById('batch-input-industry').value;
     const venVal = document.getElementById('batch-input-venue').value;
-    if (indVal === 'NO_CHANGE' && venVal === 'NO_CHANGE') { alert("請選擇修改屬性！"); return; }
     if (!confirm(`確定要批次修改這 ${selectedIds.length} 筆機構嗎？`)) return;
-
-    const btn = document.getElementById('btn-batch-edit-submit');
-    btn.disabled = true; btn.innerHTML = '處理中...';
     try {
         const batch = writeBatch(db);
         selectedIds.forEach(id => {
-            const ref = doc(db, "internship_institutions", id);
             const updates = { updated_at: serverTimestamp() };
             if (indVal !== 'NO_CHANGE') updates.industry = indVal;
             if (venVal !== 'NO_CHANGE') updates.venue_type = venVal;
-            batch.update(ref, updates);
-            
-            const idx = allData.findIndex(d => d.id === id);
-            if(idx > -1) {
-                if (indVal !== 'NO_CHANGE') allData[idx].industry = indVal;
-                if (venVal !== 'NO_CHANGE') allData[idx].venue_type = venVal;
-            }
+            batch.update(doc(db, "internship_institutions", id), updates);
         });
         await batch.commit();
-        selectedIds = [];
-        updateBatchActionBar();
-        closeBatchEditModal();
-        renderTable();
+        closeBatchEditModal(); fetchInitialDataOnce();
     } catch(e) { alert("更新失敗"); }
-    finally { btn.disabled = false; btn.innerHTML = '確認批次更新'; }
 }
 
 function openMergeModal() {
@@ -1013,68 +785,43 @@ function openMergeModal() {
     document.getElementById('merge-count').innerText = selectedIds.length;
     const container = document.getElementById('merge-options-container');
     const targetInsts = allData.filter(i => selectedIds.includes(i.id));
-
     container.innerHTML = targetInsts.map(inst => `
         <label class="merge-option">
             <input type="radio" name="master_inst" value="${inst.id}">
             <div class="merge-option-content">
                 <div class="merge-option-title">${inst.name}</div>
-                <div class="merge-option-desc">統編：${inst.tax_id || '無'} | 行業：${inst.industry || '無'} | 地址：${inst.address || '無'}</div>
+                <div class="merge-option-desc">統編：${inst.tax_id || '無'} | 地址：${inst.address || '無'}</div>
             </div>
         </label>
     `).join('');
-    document.getElementById('btn-merge-submit').disabled = true;
     document.getElementById('merge-modal').classList.add('open');
 }
-
 function closeMergeModal() { document.getElementById('merge-modal').classList.remove('open'); }
 
 async function executeMerge() {
-    const masterId = document.querySelector('input[name="master_inst"]:checked')?.value;
-    if(!masterId) return;
-
+    const masterId = document.querySelector('input[name="master_inst"]:checked')?.value; if(!masterId) return;
     const masterInst = allData.find(i => i.id === masterId);
     const instsToDelete = selectedIds.filter(id => id !== masterId);
     const deletedNames = allData.filter(i => instsToDelete.includes(i.id)).map(i => i.name);
-
-    if(!confirm(`確認合併？\n\n📌 保留主體：${masterInst.name}\n🗑️ 刪除對象：${deletedNames.join('、')}`)) return;
-
-    const btn = document.getElementById('btn-merge-submit');
-    btn.disabled = true; btn.innerHTML = '合併中...';
+    if(!confirm(`確認合併？`)) return;
     try {
         const batch = writeBatch(db);
         allRecords.forEach(record => {
             if (instsToDelete.includes(record.inst_id) || (!record.inst_id && deletedNames.includes(record.inst_raw))) {
-                batch.update(doc(db, "internship_records", record.id), { 
-                    inst_raw: masterInst.name, inst_id: masterInst.id, updated_at: serverTimestamp() 
-                });
-                record.inst_raw = masterInst.name;
-                record.inst_id = masterInst.id;
+                batch.update(doc(db, "internship_records", record.id), { inst_raw: masterInst.name, inst_id: masterInst.id, updated_at: serverTimestamp() });
             }
         });
-
         instsToDelete.forEach(id => batch.delete(doc(db, "internship_institutions", id)));
         await batch.commit();
-
-        allData = allData.filter(d => !instsToDelete.includes(d.id));
-        selectedIds = [];
-        updateBatchActionBar();
-        closeMergeModal();
-        renderTable();
-        alert("✅ 合併與紀錄連動更新成功！");
+        closeMergeModal(); fetchInitialDataOnce();
     } catch(e) { alert("合併失敗"); }
-    finally { btn.disabled = false; btn.innerHTML = '確認執行合併作業'; }
 }
 
 async function batchDelete() {
-    if (!confirm(`警告：確定刪除這 ${selectedIds.length} 筆機構嗎？`)) return;
+    if (!confirm(`確定刪除這 ${selectedIds.length} 筆機構嗎？`)) return;
     try {
         const batch = writeBatch(db);
         selectedIds.forEach(id => batch.delete(doc(db, "internship_institutions", id)));
-        await batch.commit();
-        allData = allData.filter(d => !selectedIds.includes(d.id));
-        selectedIds = [];
-        updateBatchActionBar();
-        renderTable();
+        await batch.commit(); fetchInitialDataOnce();
     } catch (e) { alert("刪除失敗"); }
 }
