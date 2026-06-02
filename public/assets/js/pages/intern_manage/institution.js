@@ -1,34 +1,54 @@
-import { getApp, getApps, initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { collection, getDocs, doc, updateDoc, deleteDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { collection, getDocs, doc, updateDoc, deleteDoc, addDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-// --- 模組區域變數 (SPA 本地狀態) ---
+// --- 模組區域變數 (SPA 本地狀態狀態管理) ---
 let db;
-let allInstitutions = []; 
+let allData = []; 
+let allRecords = []; 
 let editingId = null; 
+let editingOldName = null; 
+
 let currentPage = 1; 
-let itemsPerPage = 10;
-let filterStatusSet = new Set(); 
-let filterScaleSet = new Set(); // 規模篩選 (國內/國外或金流等)
-let sortCol = 'created_at'; 
-let sortDir = 'desc';
+let itemsPerPage = 15;
+let selectedIds = [];
+let filteredInstitutions = []; 
+
+let filterCountrySet = new Set();
+let filterCitySet = new Set();
+let filterIndustrySet = new Set();
+let filterVenueSet = new Set();
+
+let sortCol = ''; 
+let sortDir = '';
+
+const LIST_COUNTRIES = ["中華民國","大陸地區","日本","美國","越南","泰國","澳大利亞","香港","澳門","馬來西亞","菲律賓","印尼","印度","孟加拉","緬甸","柬埔寨","黎巴嫩","蒙古","巴西","巴拉圭","秘魯"];
+const LIST_CITIES = ["臺北市","新北市","基隆市","桃園市","新竹縣","新竹市","苗栗縣","臺中市","彰化縣","南投縣","雲林縣","嘉義縣","嘉義市","臺南市","高雄市","屏東縣","宜蘭縣","花蓮縣","臺東縣","澎湖縣","金門縣","連江縣"];
+const LIST_INDUSTRIES = ["農、林、漁、牧業","礦業及土石採取業","製造業","電力及燃氣供應業","用水供應及污染整治業","營建工程業","批發及零售業","運輸及倉儲業","住宿及餐飲業","出版及影音等內容傳播業","電信及資訊服務業","金融及保險業","不動產業","專業、科學及技術服務業","支援服務業","公共行政及國防；強制性社會安全","教育業","醫療保健及社會工作服務業","藝術、運動及休閒服務業","其他服務業"];
+const LIST_VENUES = ["企業機構","其他機構","政府機構","就讀學校附屬機構"];
 
 // --- 主渲染入口 ---
 export async function render(containerId, context) {
     db = context.db;
     const container = document.getElementById(containerId);
+    
+    // 重置模組狀態（防止跨網頁殘留快取）
+    selectedIds = [];
+    currentPage = 1;
 
-    // 1. 注入保留完整 UI/UX 的 HTML 與 CSS (移除外側圓角與內邊距，滿版設計)
+    // 1. 注入保留完整高階 UI/UX 且取消分頁列外側圓角的 HTML 與 CSS
     injectUI(container);
 
-    // 2. 綁定事件監聽 (全面改用 SPA 安全事件代理與監聽機制)
+    // 2. 靜態下拉選單與篩選清單初始化
+    initSelectOptions();
+
+    // 3. 綁定事件監聽 (移除 inline onClick)
     bindEvents(container);
 
-    // 3. 執行單次讀取 (Get Once) 極致省流，排除 onSnapshot
-    await fetchInstitutionsOnce();
+    // 4. 執行極致省流單次下載 (Get Once)
+    await fetchInitialDataOnce();
 }
 
 // ==========================================
-// 1. UI 注入模組 (完美還原原版機構管理 UI/UX)
+// 1. UI 注入模組 (100% 保留您的精美排版與變數)
 // ==========================================
 function injectUI(container) {
     container.innerHTML = `
@@ -61,12 +81,15 @@ function injectUI(container) {
             .btn-danger:hover { background: #fee2e2; }
             .btn-success-solid { background: var(--success); color: white; border: 1px solid var(--success); }
             .btn-success-solid:hover { background: #047857; }
+            .btn-indigo-solid { background: var(--indigo); color: white; border: 1px solid var(--indigo); }
+            .btn-indigo-solid:hover { background: #4338ca; }
             .btn-icon { width: 34px; padding: 0; justify-content: center; }
             .btn-icon.sm { width: 28px; height: 28px; }
+            .btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
             .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-            .btn i { font-size: 16px; }
+            .btn i { font-size: 16px; display: inline-flex; align-items: center; justify-content: center; }
 
-            .filter-row { padding: 10px 24px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
+            .filter-row { padding: 10px 24px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; position: relative; }
             .filter-pill-wrap { position: relative; }
             .filter-pill { display: inline-flex; align-items: center; gap: 5px; padding: 0 10px; height: 28px; border: 1px solid var(--border); border-radius: 99px; background: var(--surface); font-size: 12px; font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: all var(--transition); white-space: nowrap; }
             .filter-pill:hover { border-color: var(--border-strong); color: var(--text-primary); }
@@ -74,8 +97,11 @@ function injectUI(container) {
             .filter-pill .pill-count { background: var(--brand); color: white; border-radius: 99px; font-size: 10px; font-weight: 700; padding: 0 5px; min-width: 16px; text-align: center; }
             .filter-pill i { font-size: 14px; transition: transform 0.2s; }
             .filter-pill-wrap.open .filter-pill i { transform: rotate(180deg); }
-            .filter-dropdown { position: absolute; top: calc(100% + 6px); left: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); min-width: 200px; z-index: 100; display: none; flex-direction: column; overflow: hidden; }
+            .filter-dropdown { position: absolute; top: calc(100% + 6px); left: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); min-width: 220px; z-index: 100; display: none; flex-direction: column; overflow: hidden; }
             .filter-dropdown.show { display: flex; }
+            .filter-dropdown-search { padding: 8px; border-bottom: 1px solid var(--border); }
+            .filter-dropdown-search input { width: 100%; height: 30px; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0 10px; font-size: 12px; outline: none; background: var(--bg); transition: 0.2s; }
+            .filter-dropdown-search input:focus { border-color: var(--brand); background: var(--surface); box-shadow: 0 0 0 2px rgba(26,86,219,0.1); }
             .filter-dropdown-list { max-height: 200px; overflow-y: auto; padding: 4px; }
             .filter-option { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: var(--radius-sm); cursor: pointer; font-size: 12px; color: var(--text-secondary); transition: background var(--transition); }
             .filter-option:hover { background: var(--bg); color: var(--text-primary); }
@@ -84,41 +110,30 @@ function injectUI(container) {
             .filter-dropdown-footer button { font-size: 11px; font-weight: 600; color: var(--danger); background: none; border: none; cursor: pointer; padding: 2px 4px; border-radius: var(--radius-sm); }
             .filter-dropdown-footer button:hover { background: var(--danger-bg); }
 
+            #batch-bar { display: none; align-items: center; gap: 12px; padding: 8px 24px; background: var(--brand-light); border-bottom: 1px solid var(--brand-border); flex-shrink: 0; position: absolute; top: 0; left: 0; right: 0; height: 100%; z-index: 20; }
+            #batch-bar.visible { display: flex; animation: slideDown 0.2s ease-out; }
+            @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+            .batch-info { font-size: 13px; font-weight: 600; color: var(--brand); display: flex; align-items: center; gap: 8px; }
+            .batch-info span { font-size: 16px; font-weight: 700; margin: 0 2px; }
+
             .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; }
             .table-scroll { flex: 1; overflow: auto; }
-            table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 900px; }
-            thead { position: sticky; top: 0; z-index: 10; background: var(--surface); }
-            thead tr { border-bottom: 2px solid var(--border); }
-            th { padding: 12px 16px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
+            table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 1000px; }
+            th { padding: 12px 16px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; position: sticky; top: 0; z-index: 10; background: var(--surface); box-shadow: inset 0 -2px 0 var(--border); }
             th[data-sort] { cursor: pointer; user-select: none; transition: color var(--transition); }
             th[data-sort]:hover { color: var(--text-secondary); }
             th .sort-icon { margin-left: 4px; font-size: 14px; opacity: 0.4; vertical-align: middle; }
             th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand); }
             td { padding: 12px 16px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); }
             tr:hover td { background: #fafbff; }
-            tr.disabled td { opacity: 0.6; filter: grayscale(40%); background: var(--bg); }
+            tr.selected td { background: #f0f4ff; }
 
             .cell-primary { font-size: 13px; color: var(--text-primary); line-height: 1.4; }
             .cell-primary.bold { font-weight: 600; }
             .cell-secondary { font-size: 11px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
-            .cell-flex { display: flex; align-items: center; gap: 10px; }
-            .institution-avatar { width: 32px; height: 32px; border-radius: var(--radius); background: var(--brand-light); border: 1px solid var(--brand-border); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--brand); flex-shrink: 0; }
-            
-            .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; }
-            .badge-blue { background: var(--brand-light); color: var(--brand); border: 1px solid var(--brand-border); }
-            
-            .toggle { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
-            .toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
-            .toggle-slider { width: 34px; height: 18px; background: var(--border-strong); border-radius: 20px; transition: 0.3s; position: relative; }
-            .toggle-slider::before { content: ""; position: absolute; width: 12px; height: 12px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; box-shadow: var(--shadow-sm); }
-            .toggle input:checked + .toggle-slider { background: var(--success); }
-            .toggle input:checked + .toggle-slider::before { transform: translateX(16px); }
-            .toggle.disabled { opacity: 0.5; cursor: not-allowed; }
-            .toggle-label { margin-left: 8px; font-size: 11px; font-weight: 700; }
-            .toggle-label.active { color: var(--success); }
-            .toggle-label.inactive { color: var(--text-muted); }
-            .row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; opacity: 1; }
+            .row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; }
 
+            /* ✨ 修正：徹底拔除下方選單分頁外側圓角，100% 直角貼齊主框架邊緣 */
             .pagination-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; gap: 10px; border-radius: 0 !important; }
             .pagination-info { font-size: 12px; color: var(--text-muted); }
             .pagination-info strong { color: var(--text-primary); }
@@ -142,28 +157,39 @@ function injectUI(container) {
             .dialog-body { padding: 24px; overflow-y: auto; max-height: calc(85vh - 130px); }
             .dialog-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg); }
 
-            .form-section-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+            .form-section-title { font-size: 13px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px; margin-bottom: 16px; }
             .form-section-title i { color: var(--text-muted); font-size: 16px; }
-            .field { display: flex; flex-direction: column; gap: 4px; }
+            .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
             .field-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
             .field-label .req { color: var(--danger); margin-left: 2px; }
-            .field-input, .field-select { width: 100%; height: 36px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); padding: 0 12px; font-size: 13px; font-family: inherit; color: var(--text-primary); outline: none; transition: border-color var(--transition), box-shadow var(--transition); }
-            .field-input:focus, .field-select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); background: var(--surface); }
+            .field-input, .field-select { width: 100%; height: 36px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); padding: 0 12px; font-size: 13px; font-family: inherit; color: var(--text-primary); outline: none; transition: all var(--transition); }
+            .field-input:focus, .field-select:focus, textarea.field-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); background: var(--surface); }
+            .field-input:disabled, .field-select:disabled { opacity: 0.5; cursor: not-allowed; }
             select.field-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; }
 
+            .merge-option { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border: 2px solid var(--border); border-radius: var(--radius-lg); cursor: pointer; transition: all var(--transition); background: var(--surface); margin-bottom: 10px; }
+            .merge-option:hover { border-color: var(--indigo-border); background: var(--bg); }
+            .merge-option:has(input:radio:checked) { border-color: var(--indigo); background: var(--indigo-bg); }
+            .merge-option input[type="radio"] { width: 16px; height: 16px; accent-color: var(--indigo); flex-shrink: 0; margin-top: 2px; cursor: pointer; }
+            .merge-option-content { flex: 1; }
+            .merge-option-title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+            .merge-option-desc { font-size: 12px; color: var(--text-secondary); margin-top: 4px; line-height: 1.4; }
+
             @media (max-width: 768px) {
+                .col-checkbox { display: none !important; }
+                #batch-bar { display: none !important; }
                 .toolbar { padding: 12px 16px; justify-content: flex-end; }
                 .search-wrap { flex: 0 0 100%; order: 1; margin-bottom: 8px; }
                 .flex-spacer { display: none; }
-                .toolbar-actions { order: 2; width: 100%; justify-content: space-between; }
-                .toolbar-actions .btn { flex: 1; }
+                .toolbar-actions { order: 2; width: 100%; justify-content: space-between; display: flex; gap: 8px; }
+                .toolbar-actions .btn { flex: 1; padding: 0 4px; font-size: 11px; margin: 0; }
                 .v-divider { display: none; }
                 .filter-row { padding: 10px 16px; }
                 .pagination-bar { flex-direction: column; align-items: flex-start; padding: 12px 16px; gap: 12px; }
                 .pagination-bar-right { width: 100%; justify-content: space-between; }
                 .dialog-overlay { padding: 12px; }
-                #inst-form { flex-direction: column !important; gap: 16px !important; }
-                #inst-form > div { width: 100% !important; margin: 0 !important; }
+                #data-form { flex-direction: column !important; gap: 16px !important; }
+                #data-form > div { width: 100% !important; margin: 0 !important; }
                 .v-divider-modal { display: block !important; width: 100% !important; height: 1px !important; min-height: 1px !important; background-color: var(--border) !important; margin: 8px 0 !important; flex-shrink: 0 !important; }
             }
         </style>
@@ -171,106 +197,179 @@ function injectUI(container) {
         <div class="toolbar">
             <div class="search-wrap">
                 <i class="ti ti-search"></i>
-                <input type="text" id="inst-search-input" placeholder="搜尋機構名稱、統一編號..." class="search-input">
+                <input type="text" id="search-input" placeholder="搜尋機構名稱或統編..." class="search-input">
             </div>
             <div class="flex-spacer"></div>
             <div class="toolbar-actions">
-                <button id="btn-export-inst" class="btn btn-success-solid"><i class="ti ti-file-export"></i> <span class="btn-text">匯出</span></button>
+                <button id="btn-export-csv" class="btn btn-success-solid"><i class="ti ti-file-export"></i> <span class="btn-text">匯出清單</span></button>
+                <button id="btn-import-trigger" class="btn btn-indigo-solid"><i class="ti ti-file-import"></i> <span class="btn-text">批次匯入</span></button>
                 <div class="v-divider"></div>
-                <button id="btn-open-inst-modal" class="btn btn-primary"><i class="ti ti-building-plus"></i> <span class="btn-text">新增實習機構</span></button>
+                <button id="btn-create-inst" class="btn btn-primary"><i class="ti ti-plus"></i> <span class="btn-text">新增機構</span></button>
             </div>
+            <input type="file" id="import-file" accept=".csv" style="display:none;">
         </div>
 
         <div class="filter-row">
-            <div class="filter-pill-wrap" id="pill-wrap-scale">
-                <button class="filter-pill" id="pill-scale">機構地域規格 <i class="ti ti-chevron-down"></i></button>
-                <div class="filter-dropdown" id="drop-scale">
-                    <div class="filter-dropdown-list">
-                        <label class="filter-option"><input type="checkbox" class="filter-chk-scale" value="國內企業"><span>國內企業</span></label>
-                        <label class="filter-option"><input type="checkbox" class="filter-chk-scale" value="境外/國外企業"><span>境外/國外企業</span></label>
-                        <label class="filter-option"><input type="checkbox" class="filter-chk-scale" value="公家機關/法人"><span>公家機關/法人</span></label>
-                    </div>
-                    <div class="filter-dropdown-footer"><button id="btn-clear-scale">清除此篩選</button></div>
+            <div class="filter-pill-wrap" id="pill-wrap-country">
+                <button class="filter-pill" id="pill-country">全部國別 <i class="ti ti-chevron-down"></i></button>
+                <div class="filter-dropdown" id="drop-country">
+                    <div class="filter-dropdown-search"><input type="text" id="search-country-input" placeholder="搜尋國別..."></div>
+                    <div class="filter-dropdown-list" id="country-options-container"></div>
+                    <div class="filter-dropdown-footer"><button id="btn-clear-country">清除此篩選</button></div>
                 </div>
             </div>
-            <div class="filter-pill-wrap" id="pill-wrap-status">
-                <button class="filter-pill" id="pill-status">合作狀態 <i class="ti ti-chevron-down"></i></button>
-                <div class="filter-dropdown" id="drop-status">
-                    <div class="filter-dropdown-list">
-                        <label class="filter-option"><input type="checkbox" class="filter-chk-status" value="active"><span>合作中</span></label>
-                        <label class="filter-option"><input type="checkbox" class="filter-chk-status" value="inactive"><span>暫停合作</span></label>
-                    </div>
-                    <div class="filter-dropdown-footer"><button id="btn-clear-status">清除此篩選</button></div>
+
+            <div class="filter-pill-wrap" id="pill-wrap-city">
+                <button class="filter-pill" id="pill-city">全部縣市 <i class="ti ti-chevron-down"></i></button>
+                <div class="filter-dropdown" id="drop-city">
+                    <div class="filter-dropdown-search"><input type="text" id="search-city-input" placeholder="搜尋縣市..."></div>
+                    <div class="filter-dropdown-list" id="city-options-container"></div>
+                    <div class="filter-dropdown-footer"><button id="btn-clear-city">清除此篩選</button></div>
                 </div>
+            </div>
+
+            <div class="filter-pill-wrap" id="pill-wrap-industry">
+                <button class="filter-pill" id="pill-industry">全部行業別 <i class="ti ti-chevron-down"></i></button>
+                <div class="filter-dropdown" id="drop-industry">
+                    <div class="filter-dropdown-search"><input type="text" id="search-industry-input" placeholder="搜尋行業別..."></div>
+                    <div class="filter-dropdown-list" id="industry-options-container"></div>
+                    <div class="filter-dropdown-footer"><button id="btn-clear-industry">清除此篩選</button></div>
+                </div>
+            </div>
+
+            <div class="filter-pill-wrap" id="pill-wrap-venue">
+                <button class="filter-pill" id="pill-venue">全部場所 <i class="ti ti-chevron-down"></i></button>
+                <div class="filter-dropdown" id="drop-venue">
+                    <div class="filter-dropdown-search"><input type="text" id="search-venue-input" placeholder="搜尋場所..."></div>
+                    <div class="filter-dropdown-list" id="venue-options-container"></div>
+                    <div class="filter-dropdown-footer"><button id="btn-clear-venue">清除此篩選</button></div>
+                </div>
+            </div>
+
+            <div id="batch-bar">
+                <div class="batch-info"><i class="ti ti-checks" style="font-size:18px;"></i> 已選 <span id="selected-count">0</span> 筆機構</div>
+                <button id="btn-select-all-filtered" class="btn btn-sm btn-secondary">選取全部符合條件</button>
+                <button id="btn-clear-selection" class="btn btn-sm btn-secondary">取消選取</button>
+                <div class="flex-spacer"></div>
+                <button id="btn-batch-edit" class="btn btn-sm btn-primary"><i class="ti ti-edit"></i> 批次修改屬性</button>
+                <button id="btn-batch-merge" class="btn btn-sm btn-indigo-solid"><i class="ti ti-link"></i> 合併勾選</button>
+                <button id="btn-batch-delete" class="btn btn-sm btn-danger"><i class="ti ti-trash"></i> 批次刪除</button>
             </div>
         </div>
 
         <div class="table-wrap">
             <div class="table-scroll custom-scroll">
                 <table>
-                    <thead id="inst-table-head">
+                    <thead>
                         <tr>
-                            <th data-sort="name" style="width: 30%;">實習機構資訊 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="tax_id" style="width: 15%;">統一編號 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="scale" style="width: 15%;">地域規格 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="contact_name" style="width: 15%;">主要聯絡人 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="is_active" style="width: 12%;">合作狀態 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th style="width: 13%;">操作</th>
+                            <th class="col-checkbox" style="width: 4%;">
+                                <div style="display:flex; justify-content:center; align-items:center;">
+                                    <input type="checkbox" id="selectAll" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
+                                </div>
+                            </th>
+                            <th data-sort="name" style="width: 20%;">實習機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="tax_id" style="width: 12%;">統一編號 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="industry" style="width: 12%;">行業別 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="venue_type" style="width: 12%;">實習場所 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="country" style="width: 8%;">國別 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="city" style="width: 8%;">縣市別 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="address" style="width: 16%;">實習場所地址 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th style="width: 8%;">操作</th>
                         </tr>
                     </thead>
-                    <tbody id="inst-table-body">
-                        <tr><td colspan="6" class="empty-state"><i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i><div class="empty-text">同步機構資料中...</div></td></tr>
+                    <tbody id="table-body">
+                        <tr><td colspan="9" class="empty-state"><i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i><div class="empty-text">資料載入中...</div></td></tr>
                     </tbody>
                 </table>
             </div>
+            
             <div class="pagination-bar">
-                <div class="pagination-info" id="inst-pagination-info">共 0 筆</div>
+                <div class="pagination-info" id="pagination-info">共 0 筆</div>
                 <div class="pagination-bar-right">
                     <div style="display:flex; align-items:center; gap:6px;">
                         <span style="font-size:12px; color:var(--text-muted)">每頁顯示</span>
-                        <select class="per-page-select" id="inst-per-page-select">
-                            <option value="10">10 筆</option>
+                        <select class="per-page-select" id="per-page-select">
+                            <option value="15">15 筆</option>
                             <option value="25">25 筆</option>
                             <option value="50">50 筆</option>
                         </select>
                     </div>
-                    <div class="pagination-controls" id="inst-pagination-controls"></div>
+                    <div class="pagination-controls" id="pagination-controls"></div>
                 </div>
             </div>
         </div>
 
-        <div id="inst-modal" class="dialog-overlay">
+        <div id="data-modal" class="dialog-overlay">
             <div class="dialog-box" style="max-width: 800px;">
                 <div class="dialog-header">
-                    <h3 id="inst-modal-title"><i class="ti ti-building-plus"></i> 新增實習機構</h3>
-                    <button type="button" class="dialog-close" id="btn-close-inst-x"><i class="ti ti-x"></i></button>
+                    <h3 id="modal-title"><i class="ti ti-building-skyscraper"></i> 新增實習機構</h3>
+                    <button type="button" class="dialog-close" id="btn-close-modal-x"><i class="ti ti-x"></i></button>
                 </div>
-                <form id="inst-form" class="dialog-body custom-scroll" style="display: flex; gap: 24px;">
+                <form id="data-form" class="dialog-body custom-scroll" style="display: flex; gap: 24px;">
                     <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
-                        <div class="form-section-title" style="margin-bottom: 0;"><i class="ti ti-building"></i> 機構核心登記資料</div>
-                        <div class="field"><label class="field-label">機構名稱 <span class="req">*</span></label><input type="text" id="input-inst-name" required placeholder="例如：台積電股份有限公司" class="field-input"></div>
-                        <div class="field"><label class="field-label">統一編號 / 登記碼 <span class="req">*</span></label><input type="text" id="input-inst-tax" required placeholder="請輸入 8 位統一編號" class="field-input" style="font-family:monospace"></div>
-                        <div class="field">
-                            <label class="field-label">地域規格 <span class="req">*</span></label>
-                            <select id="input-inst-scale" required class="field-select">
-                                <option value="">請選擇...</option>
-                                <option value="國內企業">國內企業</option>
-                                <option value="境外/國外企業">境外/國外企業</option>
-                                <option value="公家機關/法人">公家機關/法人</option>
-                            </select>
-                        </div>
+                        <div class="form-section-title" style="margin-bottom: 0;"><i class="ti ti-building-skyscraper"></i> 機構基本資料</div>
+                        <div class="field"><label class="field-label">實習場所國別 <span class="req">*</span></label><select id="input-country" required class="field-select"></select></div>
+                        <div class="field"><label class="field-label">實習機構名稱 <span class="req">*</span></label><input type="text" id="input-name" required placeholder="例如：台灣積體電路製造股份有限公司" class="field-input"></div>
+                        <div class="field"><label class="field-label">統一編號 <span id="req-tax" class="req">*</span></label><input type="text" id="input-tax-id" required placeholder="如: 12345678" class="field-input" style="text-transform:uppercase;"></div>
+                        <div class="field"><label class="field-label">縣市別 <span id="req-city" class="req">*</span></label><select id="input-city" required class="field-select"><option value="">請選擇</option></select></div>
+                        <div class="field"><label class="field-label">完整實習地址 <span class="req">*</span></label><input type="text" id="input-address" required placeholder="如: 臺灣大道四段1727號" class="field-input"></div>
                     </div>
                     <div class="v-divider-modal" style="width: 1px; background: var(--border); margin: 0;"></div>
                     <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
-                        <div class="form-section-title" style="margin-bottom: 0;"><i class="ti ti-user-phone"></i> 主要聯絡窗口</div>
-                        <div class="field"><label class="field-label">聯絡人姓名 <span class="req">*</span></label><input type="text" id="input-inst-contact" required placeholder="請輸入主窗口姓名" class="field-input"></div>
-                        <div class="field"><label class="field-label">聯絡電話 <span class="req">*</span></label><input type="text" id="input-inst-phone" required placeholder="例如：02-23456789 #123" class="field-input"></div>
-                        <div class="field"><label class="field-label">電子郵件 <span class="req">*</span></label><input type="email" id="input-inst-email" required placeholder="例如：hr@company.com" class="field-input" style="font-family:monospace"></div>
+                        <div class="form-section-title" style="margin-bottom: 0;"><i class="ti ti-tags"></i> 分類與備註</div>
+                        <div class="field"><label class="field-label">行業別</label><select id="input-industry" class="field-select"><option value="">請選擇</option></select></div>
+                        <div class="field"><label class="field-label">實習場所</label><select id="input-venue-type" class="field-select"><option value="">請選擇</option></select></div>
+                        <div class="field" style="flex: 1;"><label class="field-label">機構備註</label><textarea id="input-remarks" class="field-input" placeholder="可輸入與該機構相關之備註說明..." style="height: 100%; min-height: 120px; resize: none; padding: 10px 12px; line-height: 1.5;"></textarea></div>
                     </div>
                 </form>
                 <div class="dialog-footer">
-                    <button type="button" class="btn btn-secondary" id="btn-cancel-inst">取消</button>
-                    <button type="button" class="btn btn-primary" id="btn-submit-inst"><i class="ti ti-check"></i> 確認儲存</button>
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-modal">取消</button>
+                    <button type="button" id="btn-submit" class="btn btn-primary"><i class="ti ti-check"></i> 確認儲存</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="merge-modal" class="dialog-overlay">
+            <div class="dialog-box" style="max-width: 650px;">
+                <div class="dialog-header">
+                    <h3 style="color: var(--indigo)"><i class="ti ti-link" style="color: var(--indigo)"></i> 合併重複機構</h3>
+                    <button type="button" class="dialog-close" id="btn-close-merge-x"><i class="ti ti-x"></i></button>
+                </div>
+                <div class="dialog-body custom-scroll" style="background: var(--bg);">
+                    <div style="background: var(--indigo-light); border: 1px solid var(--indigo-border); padding: 12px; border-radius: var(--radius); margin-bottom: 16px;">
+                        <p style="font-size: 13px; color: var(--indigo); font-weight: 600; line-height: 1.5;">
+                            您已選取 <span id="merge-count" style="font-size: 16px; font-weight: 700; margin: 0 4px;">0</span> 個機構準備進行合併。<br>
+                            請在下方選擇<strong style="color: var(--danger); margin: 0 4px;">「唯一要保留的主體機構」</strong>。合併後，其餘被勾選的機構將被刪除，且系統會自動更新所有關聯到被刪除機構的實習紀錄。
+                        </p>
+                    </div>
+                    <div id="merge-options-container" style="display: flex; flex-direction: column;"></div>
+                </div>
+                <div class="dialog-footer">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-merge">取消</button>
+                    <button type="button" id="btn-merge-submit" class="btn btn-indigo-solid" disabled><i class="ti ti-link"></i> 確認執行合併作業</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="batch-edit-modal" class="dialog-overlay">
+            <div class="dialog-box" style="max-width: 450px;">
+                <div class="dialog-header">
+                    <h3 style="color: var(--brand)"><i class="ti ti-edit" style="color: var(--brand)"></i> 批次修改機構屬性</h3>
+                    <button type="button" class="dialog-close" id="btn-close-batch-x"><i class="ti ti-x"></i></button>
+                </div>
+                <div class="dialog-body custom-scroll" style="background: var(--bg);">
+                    <div style="background: var(--brand-light); border: 1px solid var(--brand-border); padding: 12px; border-radius: var(--radius); margin-bottom: 16px;">
+                        <p style="font-size: 13px; color: var(--brand); font-weight: 600; line-height: 1.5;">
+                            將針對已選取的 <span id="batch-edit-count" style="font-size: 16px; font-weight: 700; margin: 0 4px;">0</span> 筆機構進行統一修改。<br>
+                            若保持「-- 不修改 --」，則該欄位維持原資料不變。
+                        </p>
+                    </div>
+                    <div class="field"><label class="field-label">批次套用：行業別</label><select id="batch-input-industry" class="field-select"></select></div>
+                    <div class="field"><label class="field-label">批次套用：實習場所</label><select id="batch-input-venue" class="field-select"></select></div>
+                </div>
+                <div class="dialog-footer">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-batch">取消</button>
+                    <button type="button" id="btn-batch-edit-submit" class="btn btn-primary"><i class="ti ti-check"></i> 確認批次更新</button>
                 </div>
             </div>
         </div>
@@ -279,85 +378,167 @@ function injectUI(container) {
 }
 
 // ==========================================
-// 2. 核心安全事件代理與監聽機制
+// 2. 下拉選項與靜態清單初始化
+// ==========================================
+function initSelectOptions() {
+    let countryHtml = '';
+    LIST_COUNTRIES.forEach(item => countryHtml += `<option value="${item}">${item}</option>`);
+    document.getElementById('input-country').innerHTML = countryHtml;
+
+    let cityHtml = `<option value="">請選擇</option>`;
+    LIST_CITIES.forEach(item => cityHtml += `<option value="${item}">${item}</option>`);
+    document.getElementById('input-city').innerHTML = cityHtml;
+
+    let industryHtml = `<option value="">請選擇</option>`;
+    LIST_INDUSTRIES.forEach(item => industryHtml += `<option value="${item}">${item}</option>`);
+    document.getElementById('input-industry').innerHTML = industryHtml;
+
+    let venueHtml = `<option value="">請選擇</option>`;
+    LIST_VENUES.forEach(item => venueHtml += `<option value="${item}">${item}</option>`);
+    document.getElementById('input-venue-type').innerHTML = venueHtml;
+
+    let filterCountryHtml = '';
+    LIST_COUNTRIES.forEach(item => {
+        filterCountryHtml += `<label class="filter-option"><input type="checkbox" class="filter-chk-country" value="${item}"><span>${item}</span></label>`;
+    });
+    document.getElementById('country-options-container').innerHTML = filterCountryHtml;
+
+    let filterCityHtml = '';
+    LIST_CITIES.forEach(item => {
+        filterCityHtml += `<label class="filter-option"><input type="checkbox" class="filter-chk-city" value="${item}"><span>${item}</span></label>`;
+    });
+    document.getElementById('city-options-container').innerHTML = filterCityHtml;
+
+    let filterIndustryHtml = '';
+    LIST_INDUSTRIES.forEach(item => {
+        filterIndustryHtml += `<label class="filter-option"><input type="checkbox" class="filter-chk-industry" value="${item}"><span>${item}</span></label>`;
+    });
+    document.getElementById('industry-options-container').innerHTML = filterIndustryHtml;
+
+    let filterVenueHtml = '';
+    LIST_VENUES.forEach(item => {
+        filterVenueHtml += `<label class="filter-option"><input type="checkbox" class="filter-chk-venue" value="${item}"><span>${item}</span></label>`;
+    });
+    document.getElementById('venue-options-container').innerHTML = filterVenueHtml;
+    
+    let batchIndHtml = '<option value="NO_CHANGE">-- 不修改 --</option><option value="">[清空此欄位]</option>';
+    LIST_INDUSTRIES.forEach(item => batchIndHtml += `<option value="${item}">${item}</option>`);
+    document.getElementById('batch-input-industry').innerHTML = batchIndHtml;
+
+    let batchVenueHtml = '<option value="NO_CHANGE">-- 不修改 --</option><option value="">[清空此欄位]</option>';
+    LIST_VENUES.forEach(item => batchVenueHtml += `<option value="${item}">${item}</option>`);
+    document.getElementById('batch-input-venue').innerHTML = batchVenueHtml;
+}
+
+// ==========================================
+// 3. 全面移除 inline 監聽，重整安全事件代理
 // ==========================================
 function bindEvents(container) {
-    container.querySelector('#btn-export-inst').addEventListener('click', exportToCSV);
-    container.querySelector('#btn-open-inst-modal').addEventListener('click', () => {
-        editingId = null;
-        document.getElementById('inst-form').reset();
-        document.getElementById('inst-modal-title').innerHTML = '<i class="ti ti-building-plus" style="color:var(--brand)"></i> 新增實習機構';
-        document.getElementById('input-inst-tax').readOnly = false;
-        document.getElementById('input-inst-tax').style.background = 'var(--bg)';
-        document.getElementById('inst-modal').classList.add('open');
-    });
-    container.querySelector('#inst-search-input').addEventListener('input', () => { currentPage = 1; renderTable(); });
+    // 基礎 Toolbar 控制
+    container.querySelector('#btn-export-csv').addEventListener('click', exportToCSV);
+    container.querySelector('#btn-import-trigger').addEventListener('click', () => container.querySelector('#import-file').click());
+    container.querySelector('#import-file').addEventListener('change', handleImport);
+    container.querySelector('#btn-create-inst').addEventListener('click', openCreateModal);
+    container.querySelector('#search-input').addEventListener('input', () => { currentPage = 1; renderTable(); });
 
-    container.querySelector('#inst-per-page-select').addEventListener('change', (e) => { itemsPerPage = Number(e.target.value); currentPage = 1; renderTable(); });
+    // 下拉式複合篩選點擊監聽
+    container.querySelector('#pill-country').addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('country'); });
+    container.querySelector('#pill-city').addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('city'); });
+    container.querySelector('#pill-industry').addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('industry'); });
+    container.querySelector('#pill-venue').addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('venue'); });
+
+    // 篩選選單內的搜尋輸入框監聽
+    container.querySelector('#search-country-input').addEventListener('keyup', (e) => filterDropdownItems(e.target, 'country-options-container'));
+    container.querySelector('#search-city-input').addEventListener('keyup', (e) => filterDropdownItems(e.target, 'city-options-container'));
+    container.querySelector('#search-industry-input').addEventListener('keyup', (e) => filterDropdownItems(e.target, 'industry-options-container'));
+    container.querySelector('#search-venue-input').addEventListener('keyup', (e) => filterDropdownItems(e.target, 'venue-options-container'));
+
+    // 篩選選單複選框監聽 (事件代理)
+    container.querySelector('#country-options-container').addEventListener('change', (e) => { if(e.target.type==='checkbox') toggleFilterCheck('country', e.target.value); });
+    container.querySelector('#city-options-container').addEventListener('change', (e) => { if(e.target.type==='checkbox') toggleFilterCheck('city', e.target.value); });
+    container.querySelector('#industry-options-container').addEventListener('change', (e) => { if(e.target.type==='checkbox') toggleFilterCheck('industry', e.target.value); });
+    container.querySelector('#venue-options-container').addEventListener('change', (e) => { if(e.target.type==='checkbox') toggleFilterCheck('venue', e.target.value); });
+
+    // 篩選清除按鈕
+    container.querySelector('#btn-clear-country').addEventListener('click', () => clearFilter('country'));
+    container.querySelector('#btn-clear-city').addEventListener('click', () => clearFilter('city'));
+    container.querySelector('#btn-clear-industry').addEventListener('click', () => clearFilter('industry'));
+    container.querySelector('#btn-clear-venue').addEventListener('click', () => clearFilter('venue'));
+
+    // 點擊外部自動收起下拉選單
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.filter-pill-wrap')) {
+            document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
+            document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
+        }
+    });
+
+    // 批次頂控制底列操作
+    container.querySelector('#selectAll').addEventListener('change', toggleSelectPage);
+    container.querySelector('#btn-select-all-filtered').addEventListener('click', selectAllFiltered);
+    container.querySelector('#btn-clear-selection').addEventListener('click', clearSelection);
+    container.querySelector('#btn-batch-delete').addEventListener('click', batchDelete);
+    container.querySelector('#btn-batch-edit').addEventListener('click', openBatchEditModal);
+    container.querySelector('#btn-batch-merge').addEventListener('click', openMergeModal);
+
+    // 排序控制與分頁顯示筆數切換
+    container.querySelector('#per-page-select').addEventListener('change', (e) => { itemsPerPage = Number(e.target.value); currentPage = 1; renderTable(); });
     container.querySelector('#inst-table-head').addEventListener('click', (e) => {
         const th = e.target.closest('th[data-sort]');
-        if(th) handleSort(th);
+        if (th) handleSort(th);
     });
 
-    const toggleDrop = (type) => {
-        const drop = document.getElementById(`drop-${type}`);
-        const wrap = document.getElementById(`pill-wrap-${type}`);
-        const isOpen = drop.classList.contains('show');
-        document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
-        document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
-        if (!isOpen) { drop.classList.add('show'); wrap.classList.add('open'); }
-    };
-    container.querySelector('#pill-scale').addEventListener('click', (e) => { e.stopPropagation(); toggleDrop('scale'); });
-    container.querySelector('#pill-status').addEventListener('click', (e) => { e.stopPropagation(); toggleDrop('status'); });
-    
-    container.querySelector('#btn-clear-scale').addEventListener('click', () => clearFilter('scale'));
-    container.querySelector('#btn-clear-status').addEventListener('click', () => clearFilter('status'));
+    // 燈箱控制按鈕綁定
+    container.querySelector('#input-country').addEventListener('change', handleCountryChange);
+    container.querySelector('#btn-close-modal-x').addEventListener('click', closeModal);
+    container.querySelector('#btn-cancel-modal').addEventListener('click', closeModal);
+    container.querySelector('#btn-submit').addEventListener('click', submitForm);
 
-    container.querySelectorAll('.filter-chk-scale').forEach(chk => {
-        chk.addEventListener('change', (e) => handleFilterCheck('scale', e.target.value, e.target.checked));
-    });
-    container.querySelectorAll('.filter-chk-status').forEach(chk => {
-        chk.addEventListener('change', (e) => handleFilterCheck('status', e.target.value, e.target.checked));
+    container.querySelector('#btn-close-batch-x').addEventListener('click', closeBatchEditModal);
+    container.querySelector('#btn-cancel-batch').addEventListener('click', closeBatchEditModal);
+    container.querySelector('#btn-batch-edit-submit').addEventListener('click', executeBatchEdit);
+
+    container.querySelector('#btn-close-merge-x').addEventListener('click', closeMergeModal);
+    container.querySelector('#btn-cancel-merge').addEventListener('click', closeMergeModal);
+    container.querySelector('#btn-merge-submit').addEventListener('click', executeMerge);
+
+    // 核心資料表：精確事件委派防夾設定（點選單行、編輯、刪除單筆）
+    container.querySelector('#table-body').addEventListener('click', (e) => {
+        const rowChk = e.target.closest('.row-select-chk');
+        const btnEdit = e.target.closest('.btn-row-edit');
+        const btnDel = e.target.closest('.btn-row-delete');
+        
+        if (rowChk) { toggleSelect(rowChk.value); }
+        else if (btnEdit) { editData(btnEdit.dataset.id); }
+        else if (btnDel) { deleteData(btnDel.dataset.id, btnDel.dataset.name); }
     });
 
-    const closeInstModal = () => document.getElementById('inst-modal').classList.remove('open');
-    container.querySelector('#btn-close-inst-x').addEventListener('click', closeInstModal);
-    container.querySelector('#btn-cancel-inst').addEventListener('click', closeInstModal);
-    container.querySelector('#btn-submit-inst').addEventListener('click', submitInstForm);
-
-    // ✨ 表格行內按鈕：精確防錯事件委派機制 (與最新現況 roles 一致)
-    container.querySelector('#inst-table-body').addEventListener('click', (e) => {
-        const btnEdit = e.target.closest('.btn-edit-inst');
-        const btnDel = e.target.closest('.btn-delete-inst');
-        if(btnEdit) editInstitution(btnEdit.dataset.id);
-        if(btnDel) deleteInstitution(btnDel.dataset.id, btnDel.dataset.name);
-    });
-    
-    container.querySelector('#inst-table-body').addEventListener('change', (e) => {
-        const toggle = e.target.closest('.toggle-inst-status-chk');
-        if(toggle) toggleStatus(toggle.dataset.id, toggle.checked);
+    // 合併重複機構燈箱內的 Radio 選擇監聽引擎 (事件委派)
+    container.querySelector('#merge-options-container').addEventListener('change', (e) => {
+        if(e.target.name === 'master_inst') {
+            document.getElementById('btn-merge-submit').disabled = false;
+        }
     });
 }
 
 // ==========================================
-// 3. 業務資料處理核心 (Get Once)
+// 4. 業務邏輯處理核心 (SPA 高密度快取)
 // ==========================================
-async function fetchInstitutionsOnce() {
+
+async function fetchInitialDataOnce() {
     try {
-        const snapshot = await getDocs(collection(db, "internship_institutions"));
-        allInstitutions = snapshot.docs.map(doc => {
-            const data = doc.data();
-            let createdDate = '未知';
-            if (data.created_at && data.created_at.toDate) {
-                const date = data.created_at.toDate();
-                createdDate = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
-            }
-            return { id: doc.id, ...data, createdDate };
-        });
-        
+        const dataSnap = await getDocs(collection(db, "internship_institutions"));
+        allData = dataSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        const recordSnap = await getDocs(collection(db, "internship_records"));
+        allRecords = recordSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        selectedIds = [];
+        updateBatchActionBar();
         renderTable();
     } catch (error) {
-        document.getElementById('inst-table-body').innerHTML = `<tr><td colspan="6" class="empty-state"><i class="ti ti-lock empty-icon" style="color:var(--danger); opacity:1;"></i><div class="empty-text">機構資料同步失敗，請聯絡中心管理員。</div></td></tr>`;
+        console.error("安全資料鏈連線中斷:", error);
+        document.getElementById('table-body').innerHTML = `<tr><td colspan="9" class="empty-state"><i class="ti ti-lock empty-icon" style="color:var(--danger); opacity:1;"></i><div class="empty-text">唯讀安全阻斷：資料下載失敗。</div></td></tr>`;
     }
 }
 
@@ -376,72 +557,197 @@ function handleSort(thElement) {
     renderTable();
 }
 
-function handleFilterCheck(type, val, isChecked) {
-    const set = type === 'scale' ? filterScaleSet : filterStatusSet;
-    if (isChecked) set.add(val); else set.delete(val);
-    currentPage = 1;
-    updatePillActive(type);
+function toggleDropdown(type) {
+    const drop = document.getElementById(`drop-${type}`);
+    const wrap = document.getElementById(`pill-wrap-${type}`);
+    const isOpen = drop.classList.contains('show');
+    document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
+    document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
+    if (!isOpen) { drop.classList.add('show'); wrap.classList.add('open'); }
+}
+
+function filterDropdownItems(inputElement, containerId) {
+    const term = inputElement.value.toLowerCase();
+    const labels = document.getElementById(containerId).querySelectorAll('.filter-option');
+    labels.forEach(lbl => {
+        const text = lbl.textContent.toLowerCase();
+        lbl.style.display = text.includes(term) ? 'flex' : 'none';
+    });
+}
+
+function toggleFilterCheck(type, val) {
+    let set = type === 'country' ? filterCountrySet : (type === 'city' ? filterCitySet : (type === 'industry' ? filterIndustrySet : filterVenueSet));
+    
+    if (set.has(val)) set.delete(val); else set.add(val);
+    document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
+    
+    currentPage = 1; 
+    updatePillActive(type); 
     renderTable();
 }
 
 function clearFilter(type) {
-    const set = type === 'scale' ? filterScaleSet : filterStatusSet;
+    let set = type === 'country' ? filterCountrySet : (type === 'city' ? filterCitySet : (type === 'industry' ? filterIndustrySet : filterVenueSet));
     set.clear();
     document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = false);
-    currentPage = 1;
-    updatePillActive(type);
+    const searchInput = document.getElementById(`search-${type}-input`);
+    if (searchInput) {
+        searchInput.value = '';
+        filterDropdownItems(searchInput, `${type}-options-container`);
+    }
+    currentPage = 1; 
+    updatePillActive(type); 
     renderTable();
 }
 
 function updatePillActive(type) {
-    const set = type === 'scale' ? filterScaleSet : filterStatusSet;
+    let set, typeName;
+    if(type === 'country') { set = filterCountrySet; typeName = '國別'; }
+    else if(type === 'city') { set = filterCitySet; typeName = '縣市'; }
+    else if(type === 'industry') { set = filterIndustrySet; typeName = '行業別'; }
+    else { set = filterVenueSet; typeName = '場所'; }
+
     const pill = document.getElementById(`pill-${type}`);
-    let typeName = type === 'scale' ? '機構地域規格' : '合作狀態';
-    
     if (set.size > 0) {
         pill.classList.add('active');
         pill.innerHTML = `${typeName} <span class="pill-count">${set.size}</span> <i class="ti ti-chevron-down"></i>`;
     } else {
         pill.classList.remove('active');
-        pill.innerHTML = `${typeName} <i class="ti ti-chevron-down"></i>`;
+        pill.innerHTML = `全部${typeName} <i class="ti ti-chevron-down"></i>`;
+    }
+}
+
+function handleCountryChange() {
+    const country = document.getElementById('input-country').value;
+    const taxInput = document.getElementById('input-tax-id');
+    const cityInput = document.getElementById('input-city');
+    const reqTax = document.getElementById('req-tax');
+    const reqCity = document.getElementById('req-city');
+    
+    const isDomestic = country === '中華民國';
+    taxInput.disabled = !isDomestic;
+    cityInput.disabled = !isDomestic;
+    taxInput.required = isDomestic;
+    cityInput.required = isDomestic;
+    
+    if (isDomestic) {
+        reqTax.style.display = 'inline';
+        reqCity.style.display = 'inline';
+    } else {
+        reqTax.style.display = 'none';
+        reqCity.style.display = 'none';
+        taxInput.value = '';
+        cityInput.value = '';
+    }
+}
+
+function toggleSelectPage(e) {
+    const isChecked = e.target.checked;
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const currentPaginatedIds = filteredInstitutions.slice(startIndex, startIndex + itemsPerPage).map(d => d.id);
+    if (isChecked) {
+        currentPaginatedIds.forEach(id => { if (!selectedIds.includes(id)) selectedIds.push(id); });
+    } else {
+        selectedIds = selectedIds.filter(id => !currentPaginatedIds.includes(id));
+    }
+    updateBatchActionBar();
+    renderTable();
+}
+
+function toggleSelect(id) {
+    const index = selectedIds.indexOf(id);
+    if (index === -1) selectedIds.push(id); else selectedIds.splice(index, 1);
+    updateBatchActionBar(); 
+    renderTable();
+}
+
+function selectAllFiltered() {
+    selectedIds = filteredInstitutions.map(d => d.id);
+    updateBatchActionBar(); 
+    renderTable();
+}
+
+function clearSelection() {
+    selectedIds = []; 
+    updateBatchActionBar(); 
+    renderTable();
+}
+
+function updateBatchActionBar() {
+    const bar = document.getElementById('batch-bar');
+    const count = document.getElementById('selected-count');
+    const btnSelectAll = document.getElementById('btn-select-all-filtered');
+    
+    if (selectedIds.length > 0) {
+        bar.classList.add('visible');
+        count.innerText = selectedIds.length;
+        if (selectedIds.length < filteredInstitutions.length) {
+            btnSelectAll.style.display = 'inline-flex';
+            btnSelectAll.innerText = `選取全部符合條件 (${filteredInstitutions.length})`;
+        } else {
+            btnSelectAll.style.display = 'none';
+        }
+    } else {
+        bar.classList.remove('visible');
     }
 }
 
 function renderTable() {
-    const tbody = document.getElementById('inst-table-body');
-    const searchTerm = document.getElementById('inst-search-input').value.toLowerCase();
+    const tbody = document.getElementById('table-body');
+    const searchTerm = document.getElementById('search-input').value.toLowerCase();
 
-    let filtered = allInstitutions.filter(u => {
-        const matchSearch = (u.name || '').toLowerCase().includes(searchTerm) || (u.tax_id || '').toLowerCase().includes(searchTerm) || (u.contact_name || '').toLowerCase().includes(searchTerm);
-        const matchScale = filterScaleSet.size === 0 || filterScaleSet.has(u.scale);
-        const statusStr = u.is_active ? 'active' : 'inactive';
-        const matchStatus = filterStatusSet.size === 0 || filterStatusSet.has(statusStr);
-        return matchSearch && matchScale && matchStatus;
+    filteredInstitutions = allData.filter(d => {
+        const matchSearch = (d.name || '').toLowerCase().includes(searchTerm) || (d.tax_id || '').toLowerCase().includes(searchTerm);
+        const matchCountry = filterCountrySet.size === 0 || filterCountrySet.has(d.country);
+        const matchCity = filterCitySet.size === 0 || filterCitySet.has(d.city);
+        const matchIndustry = filterIndustrySet.size === 0 || filterIndustrySet.has(d.industry);
+        const matchVenue = filterVenueSet.size === 0 || filterVenueSet.has(d.venue_type);
+        return matchSearch && matchCountry && matchCity && matchIndustry && matchVenue;
     });
 
     if (sortCol) {
-        filtered.sort((a, b) => {
-            let valA = (a[sortCol] || '').toString().toLowerCase();
-            let valB = (b[sortCol] || '').toString().toLowerCase();
-            if (sortCol === 'created_at') {
-                valA = a.created_at?.toMillis ? a.created_at.toMillis() : 0;
-                valB = b.created_at?.toMillis ? b.created_at.toMillis() : 0;
+        filteredInstitutions.sort((a, b) => {
+            let valA = a[sortCol] || '';
+            let valB = b[sortCol] || '';
+
+            if (sortCol === 'country') {
+                const aIsDomestic = valA === '中華民國' ? 0 : 1;
+                const bIsDomestic = valB === '中華民國' ? 0 : 1;
+                if (aIsDomestic !== bIsDomestic) return sortDir === 'asc' ? aIsDomestic - bIsDomestic : bIsDomestic - aIsDomestic;
             }
+            if (sortCol === 'city') {
+                const orderCityA = LIST_CITIES.indexOf(valA) !== -1 ? LIST_CITIES.indexOf(valA) : 999;
+                const orderCityB = LIST_CITIES.indexOf(valB) !== -1 ? LIST_CITIES.indexOf(valB) : 999;
+                if (orderCityA !== orderCityB) return sortDir === 'asc' ? orderCityA - orderCityB : orderCityB - orderCityA;
+            }
+            if (sortCol === 'industry') {
+                const orderIndA = LIST_INDUSTRIES.indexOf(valA) !== -1 ? LIST_INDUSTRIES.indexOf(valA) : 999;
+                const orderIndB = LIST_INDUSTRIES.indexOf(valB) !== -1 ? LIST_INDUSTRIES.indexOf(valB) : 999;
+                if (orderIndA !== orderIndB) return sortDir === 'asc' ? orderIndA - orderIndB : orderIndB - orderIndA;
+            }
+            if (sortCol === 'venue_type') {
+                const orderVenueA = LIST_VENUES.indexOf(valA) !== -1 ? LIST_VENUES.indexOf(valA) : 999;
+                const orderVenueB = LIST_VENUES.indexOf(valB) !== -1 ? LIST_VENUES.indexOf(valB) : 999;
+                if (orderVenueA !== orderVenueB) return sortDir === 'asc' ? orderVenueA - orderVenueB : orderVenueB - orderVenueA;
+            }
+
+            valA = valA.toString().toLowerCase(); 
+            valB = valB.toString().toLowerCase();
             if (valA < valB) return sortDir === 'asc' ? -1 : 1;
             if (valA > valB) return sortDir === 'asc' ? 1 : -1;
             return 0;
         });
     }
 
-    const total = filtered.length;
+    const total = filteredInstitutions.length;
     const totalPages = Math.max(1, Math.ceil(total / itemsPerPage));
     if (currentPage > totalPages) currentPage = totalPages;
-    const start = (currentPage - 1) * itemsPerPage;
-    const items = filtered.slice(start, start + itemsPerPage);
-
-    document.getElementById('inst-pagination-info').innerHTML = total > 0 ? `共 <strong>${total}</strong> 筆，顯示第 ${start + 1}–${Math.min(start + itemsPerPage, total)} 筆` : `共 <strong>0</strong> 筆`;
     
-    //分頁選單生成
+    const start = (currentPage - 1) * itemsPerPage;
+    const paginatedItems = filteredInstitutions.slice(start, start + itemsPerPage);
+
+    document.getElementById('pagination-info').innerHTML = total > 0 ? `共 <strong>${total}</strong> 筆，顯示第 ${start + 1}–${Math.min(start + itemsPerPage, total)} 筆` : `共 <strong>0</strong> 筆`;
+    
     let pHtml = `<button class="page-btn page-step-btn" data-page="${currentPage-1}" ${currentPage<=1?'disabled':''}><i class="ti ti-chevron-left"></i></button>`;
     const pages = [];
     for (let p=1; p<=totalPages; p++) {
@@ -453,52 +759,49 @@ function renderTable() {
         else pHtml += `<button class="page-btn page-num-btn ${p === currentPage ? 'active' : ''}" data-page="${p}">${p}</button>`;
     });
     pHtml += `<button class="page-btn page-step-btn" data-page="${currentPage+1}" ${currentPage>=totalPages?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
-    
-    document.getElementById('inst-pagination-controls').innerHTML = pHtml;
-    document.querySelectorAll('#inst-pagination-controls .page-btn').forEach(btn => {
+    document.getElementById('pagination-controls').innerHTML = pHtml;
+
+    document.querySelectorAll('#roles-page-wrapper .page-step-btn, #roles-page-wrapper .page-num-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const p = Number(e.currentTarget.dataset.page);
             if(p && p >= 1 && p <= totalPages) { currentPage = p; renderTable(); }
         });
     });
 
-    if (total === 0) { 
-        tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><div class="empty-icon"><i class="ti ti-building-broadcast"></i></div><div class="empty-text">沒有符合篩選條件的實習機構。</div></td></tr>`; 
-        return; 
+    const currentPaginatedIds = paginatedItems.map(d => d.id);
+    document.getElementById('selectAll').checked = currentPaginatedIds.length > 0 && currentPaginatedIds.every(id => selectedIds.includes(id));
+
+    if (total === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">找不到符合條件的機構資料。</div></td></tr>`;
+        return;
     }
 
-    tbody.innerHTML = items.map(data => {
-        const initial = data.name ? data.name.charAt(0) : '🏢';
+    tbody.innerHTML = paginatedItems.map((data) => {
+        const isChecked = selectedIds.includes(data.id) ? 'checked' : '';
+        const isDomestic = data.country === '中華民國';
+        const dispTaxId = isDomestic && data.tax_id ? data.tax_id : '<span style="color: var(--text-muted)">-</span>';
+        const dispCity = isDomestic && data.city ? data.city : '<span style="color: var(--text-muted)">-</span>';
+        const dispIndustry = data.industry ? data.industry : '<span style="color: var(--text-muted)">-</span>';
+        const dispVenueType = data.venue_type ? data.venue_type : '<span style="color: var(--text-muted)">-</span>';
+
         return `
-        <tr class="${!data.is_active ? 'disabled' : ''}">
-            <td>
-                <div class="cell-flex">
-                    <div class="institution-avatar">${initial}</div>
-                    <div style="min-width:0">
-                        <div class="cell-primary bold" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${data.name || '未名'}</div>
-                        <div class="cell-secondary" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px;">建檔時間: ${data.createdDate}</div>
-                    </div>
+        <tr class="${isChecked ? 'selected' : ''}">
+            <td class="col-checkbox" style="text-align: center;">
+                <div style="display:flex; justify-content:center; align-items:center;">
+                    <input type="checkbox" value="${data.id}" class="row-select-chk" ${isChecked} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                 </div>
             </td>
-            <td style="text-align: center; font-family: monospace;">${data.tax_id || '-'}</td>
-            <td style="text-align: center;"><span class="badge badge-blue">${data.scale || '未分類'}</span></td>
-            <td style="text-align: center;">
-                <div class="cell-primary font-bold">${data.contact_name || '-'}</div>
-                <div class="cell-secondary" style="margin-top:2px;">${data.contact_phone || ''}</div>
-            </td>
-            <td style="text-align: center;">
-                <div style="display:flex; justify-content:center;">
-                    <label class="toggle">
-                        <input type="checkbox" class="toggle-inst-status-chk" data-id="${data.id}" ${data.is_active ? 'checked' : ''}>
-                        <span class="toggle-slider"></span>
-                        <span class="toggle-label ${data.is_active ? 'active' : 'inactive'}">${data.is_active ? '合作中' : '暫停'}</span>
-                    </label>
-                </div>
-            </td>
+            <td><div class="cell-primary bold" title="${data.name}">${data.name}</div></td>
+            <td style="text-align: center;"><div class="cell-primary" style="color: var(--text-muted); text-transform: uppercase; font-family: monospace;">${dispTaxId}</div></td>
+            <td style="text-align: center;"><div class="cell-primary">${dispIndustry}</div></td>
+            <td style="text-align: center;"><div class="cell-primary">${dispVenueType}</div></td>
+            <td style="text-align: center;"><div class="cell-primary">${data.country}</div></td>
+            <td style="text-align: center;"><div class="cell-primary">${dispCity}</div></td>
+            <td><div class="cell-primary" title="${data.address}">${data.address}</div></td>
             <td style="text-align: center;">
                 <div class="row-actions">
-                    <button data-id="${data.id}" class="btn btn-secondary btn-icon sm btn-edit-inst" title="編輯機構資訊"><i class="ti ti-edit"></i></button>
-                    <button data-id="${data.id}" data-name="${data.name}" class="btn btn-danger btn-icon sm btn-delete-inst" title="刪除機構資訊"><i class="ti ti-trash"></i></button>
+                    <button data-id="${data.id}" class="btn btn-secondary btn-icon sm btn-row-edit" title="編輯"><i class="ti ti-edit"></i></button>
+                    <button data-id="${data.id}" data-name="${data.name}" class="btn btn-danger btn-icon sm btn-row-delete" title="刪除"><i class="ti ti-trash"></i></button>
                 </div>
             </td>
         </tr>`;
@@ -506,91 +809,272 @@ function renderTable() {
 }
 
 // ==========================================
-// 4. 記憶體狀態同步（0 次 Firebase Reads 消耗）
+// 5. 資料維護核心與合併批次作業 (SPA 0Reads 核心)
 // ==========================================
+
 function exportToCSV() {
-    if (allInstitutions.length === 0) return;
-    let csv = '\uFEFF機構名稱,統一編號,地域規格,聯絡人,聯絡電話,電子郵件,合作狀態,建立時間\n';
-    allInstitutions.forEach(u => csv += [u.name, u.tax_id, u.scale, u.contact_name, u.contact_phone, u.contact_email, u.is_active? '合作中':'暫停合作', u.createdDate].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n');
+    if (filteredInstitutions.length === 0) { alert("沒有資料可供匯出！"); return; }
+    let csv = '\uFEFF實習機構名稱,統一編號,行業別,實習場所,實習場所國別,縣市別,實習場所地址,備註\n';
+    filteredInstitutions.forEach(d => {
+        const isDomestic = d.country === '中華民國';
+        csv += [d.name, isDomestic ? d.tax_id : '-', d.industry, d.venue_type, d.country, isDomestic ? d.city : '-', d.address, d.remarks].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+    });
     const link = document.createElement('a'); 
     link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-    link.download = `實習機構清單歷史庫_${new Date().toISOString().split('T')[0]}.csv`; 
+    link.download = `實習機構清單_${new Date().toISOString().split('T')[0]}.csv`; 
     link.click();
 }
 
-async function submitInstForm() {
-    const btn = document.getElementById('btn-submit-inst');
+async function handleImport(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const btn = document.getElementById('btn-import-trigger');
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> <span class="btn-text">匯入中...</span>';
+    btn.disabled = true;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+        try {
+            const rows = event.target.result.split('\n').map(row => row.trim()).filter(row => row);
+            let parsedRows = [];
+            for (let i = 1; i < rows.length; i++) {
+                let cols = []; let inQuotes = false; let currentVal = '';
+                for (let char of rows[i]) {
+                    if (char === '"') inQuotes = !inQuotes;
+                    else if (char === ',' && !inQuotes) { cols.push(currentVal.trim()); currentVal = ''; }
+                    else currentVal += char;
+                }
+                cols.push(currentVal.trim());
+                if (cols.length >= 7) {
+                    const payload = {
+                        name: cols[0], tax_id: cols[1] || '', industry: cols[2] || '', venue_type: cols[3] || '',
+                        country: cols[4] || '中華民國', city: cols[5] || '', address: cols[6] || '', remarks: cols[7] || ''
+                    };
+                    if (!payload.name) continue;
+                    if (payload.country !== '中華民國') { payload.tax_id = ''; payload.city = ''; }
+                    parsedRows.push(payload);
+                }
+            }
+            
+            let addedCount = 0;
+            for (let payload of parsedRows) {
+                const docRef = await addDoc(collection(db, "internship_institutions"), { ...payload, created_at: serverTimestamp() });
+                allData.unshift({ id: docRef.id, ...payload });
+                addedCount++;
+            }
+            alert(`✅ 成功匯入 ${addedCount} 筆機構資料！`);
+            renderTable();
+        } catch (error) { 
+            alert("匯入失敗，格式錯誤。\n" + error.message); 
+        } finally { 
+            btn.innerHTML = originalHtml; btn.disabled = false; e.target.value = ''; 
+        }
+    };
+    reader.readAsText(file);
+}
+
+function openCreateModal() {
+    editingId = null;
+    editingOldName = null;
+    document.getElementById('data-form').reset();
+    handleCountryChange();
+    document.getElementById('modal-title').innerHTML = '<i class="ti ti-building-skyscraper"></i> 新增實習機構';
+    document.getElementById('data-modal').classList.add('open');
+}
+
+function closeModal() {
+    document.getElementById('data-modal').classList.remove('open');
+    editingId = null;
+    editingOldName = null;
+}
+
+async function submitForm() {
+    const btn = document.getElementById('btn-submit');
+    const isDomestic = document.getElementById('input-country').value === '中華民國';
+    
     const payload = { 
-        name: document.getElementById('input-inst-name').value.trim(),
-        tax_id: document.getElementById('input-inst-tax').value.trim(),
-        scale: document.getElementById('input-inst-scale').value,
-        contact_name: document.getElementById('input-inst-contact').value.trim(),
-        contact_phone: document.getElementById('input-inst-phone').value.trim(),
-        contact_email: document.getElementById('input-inst-email').value.trim()
+        country: document.getElementById('input-country').value,
+        name: document.getElementById('input-name').value.trim(),
+        tax_id: isDomestic ? document.getElementById('input-tax-id').value.trim() : '',
+        city: isDomestic ? document.getElementById('input-city').value : '',
+        industry: document.getElementById('input-industry').value,
+        venue_type: document.getElementById('input-venue-type').value,
+        address: document.getElementById('input-address').value.trim(),
+        remarks: document.getElementById('input-remarks').value.trim()
     };
 
-    if(Object.values(payload).some(v => !v)) { alert("請填寫實習機構所有星號欄位"); return; }
+    if(!payload.country || !payload.name || !payload.address) { alert("請填寫所有必填欄位！"); return; }
+    if (isDomestic && (!payload.tax_id || !payload.city)) { alert("中華民國機構必須填寫「統一編號」與「縣市別」！"); return; }
+
     btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 儲存中...';
-    
     try {
-        if (editingId) { 
-            await updateDoc(doc(db, "internship_institutions", editingId), { ...payload, updated_at: serverTimestamp() });
-            const idx = allInstitutions.findIndex(u => u.id === editingId);
-            if (idx > -1) allInstitutions[idx] = { ...allInstitutions[idx], ...payload };
-        } else {
-            // 用統一編號作為 Firestore Document ID，天然防重複
-            const docRef = doc(db, "internship_institutions", payload.tax_id);
-            const newInstData = { ...payload, is_active: true, created_at: serverTimestamp() };
-            await setDoc(docRef, newInstData);
+        if (editingId) {
+            const batch = writeBatch(db);
+            batch.update(doc(db, "internship_institutions", editingId), { ...payload, updated_at: serverTimestamp() });
             
-            const date = new Date();
-            const createdDate = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
-            allInstitutions.unshift({ id: payload.tax_id, ...newInstData, createdDate });
+            if (editingOldName && editingOldName !== payload.name) {
+                allRecords.forEach(record => {
+                    if (record.inst_id === editingId || (!record.inst_id && record.inst_raw === editingOldName)) {
+                        batch.update(doc(db, "internship_records", record.id), { inst_raw: payload.name, updated_at: serverTimestamp() });
+                        record.inst_raw = payload.name; // 本地狀態同步
+                    }
+                });
+            }
+            await batch.commit();
+            
+            const idx = allData.findIndex(d => d.id === editingId);
+            if(idx > -1) allData[idx] = { ...allData[idx], ...payload };
+        } else {
+            const docRef = await addDoc(collection(db, "internship_institutions"), { ...payload, created_at: serverTimestamp() });
+            allData.unshift({ id: docRef.id, ...payload });
         }
-        document.getElementById('inst-modal').classList.remove('open');
+        closeModal();
         renderTable();
-    } catch (err) { 
-        alert("錯誤: " + err.message); 
-    } finally { 
-        btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> 確認儲存'; 
-    }
+    } catch (err) { alert("儲存失敗：" + err.message); }
+    finally { btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> 確認儲存'; }
 }
 
-function editInstitution(id) {
-    const inst = allInstitutions.find(u => u.id === id);
-    if (!inst) return;
+function editData(id) {
+    const docData = allData.find(d => d.id === id); if (!docData) return;
     editingId = id;
-    document.getElementById('input-inst-name').value = inst.name || '';
-    document.getElementById('input-inst-tax').value = inst.tax_id || '';
-    document.getElementById('input-inst-scale').value = inst.scale || '';
-    document.getElementById('input-inst-contact').value = inst.contact_name || '';
-    document.getElementById('input-inst-phone').value = inst.contact_phone || '';
-    document.getElementById('input-inst-email').value = inst.contact_email || '';
+    editingOldName = docData.name || '';
     
-    document.getElementById('input-inst-tax').readOnly = true;
-    document.getElementById('input-inst-tax').style.background = 'var(--surface)';
-    document.getElementById('inst-modal-title').innerHTML = '<i class="ti ti-edit" style="color:var(--brand)"></i> 編輯機構資料';
-    document.getElementById('inst-modal').classList.add('open');
+    document.getElementById('input-country').value = docData.country || '中華民國';
+    document.getElementById('input-name').value = docData.name || '';
+    document.getElementById('input-tax-id').value = docData.tax_id || '';
+    document.getElementById('input-city').value = docData.city || '';
+    document.getElementById('input-industry').value = docData.industry || '';
+    document.getElementById('input-venue-type').value = docData.venue_type || '';
+    document.getElementById('input-address').value = docData.address || '';
+    document.getElementById('input-remarks').value = docData.remarks || '';
+    
+    handleCountryChange();
+    document.getElementById('modal-title').innerHTML = '<i class="ti ti-edit"></i> 編輯實習機構';
+    document.getElementById('data-modal').classList.add('open');
 }
 
-async function toggleStatus(id, isChecked) {
-    try {
-        await updateDoc(doc(db, "internship_institutions", id), { is_active: isChecked });
-        const inst = allInstitutions.find(u => u.id === id);
-        if(inst) inst.is_active = isChecked;
-        renderTable();
-    } catch (err) {
-        alert("變更狀態失敗");
-        renderTable();
-    }
-}
-
-async function deleteInstitution(id, name) { 
-    if (confirm(`警告：確定要徹底刪除實習機構「${name}」的所有建檔紀錄嗎？`)) {
+async function deleteData(id, name) {
+    if (confirm(`警告：確定要刪除機構「${name}」嗎？\n刪除後關聯實習紀錄可能會失去關聯！`)) {
         try {
             await deleteDoc(doc(db, "internship_institutions", id));
-            allInstitutions = allInstitutions.filter(u => u.id !== id);
+            allData = allData.filter(d => d.id !== id);
+            selectedIds = selectedIds.filter(sid => sid !== id);
+            updateBatchActionBar();
             renderTable();
-        } catch (err) { alert("刪除失敗"); }
+        } catch(e) { alert("刪除失敗"); }
     }
+}
+
+function openBatchEditModal() {
+    if (selectedIds.length === 0) return;
+    document.getElementById('batch-edit-count').innerText = selectedIds.length;
+    document.getElementById('batch-input-industry').value = 'NO_CHANGE';
+    document.getElementById('batch-input-venue').value = 'NO_CHANGE';
+    document.getElementById('batch-edit-modal').classList.add('open');
+}
+
+function closeBatchEditModal() { document.getElementById('batch-edit-modal').classList.remove('open'); }
+
+async function executeBatchEdit() {
+    const indVal = document.getElementById('batch-input-industry').value;
+    const venVal = document.getElementById('batch-input-venue').value;
+    if (indVal === 'NO_CHANGE' && venVal === 'NO_CHANGE') { alert("請選擇修改屬性！"); return; }
+    if (!confirm(`確定要批次修改這 ${selectedIds.length} 筆機構嗎？`)) return;
+
+    const btn = document.getElementById('btn-batch-edit-submit');
+    btn.disabled = true; btn.innerHTML = '處理中...';
+    try {
+        const batch = writeBatch(db);
+        selectedIds.forEach(id => {
+            const ref = doc(db, "internship_institutions", id);
+            const updates = { updated_at: serverTimestamp() };
+            if (indVal !== 'NO_CHANGE') updates.industry = indVal;
+            if (venVal !== 'NO_CHANGE') updates.venue_type = venVal;
+            batch.update(ref, updates);
+            
+            const idx = allData.findIndex(d => d.id === id);
+            if(idx > -1) {
+                if (indVal !== 'NO_CHANGE') allData[idx].industry = indVal;
+                if (venVal !== 'NO_CHANGE') allData[idx].venue_type = venVal;
+            }
+        });
+        await batch.commit();
+        selectedIds = [];
+        updateBatchActionBar();
+        closeBatchEditModal();
+        renderTable();
+    } catch(e) { alert("更新失敗"); }
+    finally { btn.disabled = false; btn.innerHTML = '確認批次更新'; }
+}
+
+function openMergeModal() {
+    if(selectedIds.length < 2) { alert("請至少勾選 2 個機構進行合併！"); return; }
+    document.getElementById('merge-count').innerText = selectedIds.length;
+    const container = document.getElementById('merge-options-container');
+    const targetInsts = allData.filter(i => selectedIds.includes(i.id));
+
+    container.innerHTML = targetInsts.map(inst => `
+        <label class="merge-option">
+            <input type="radio" name="master_inst" value="${inst.id}">
+            <div class="merge-option-content">
+                <div class="merge-option-title">${inst.name}</div>
+                <div class="merge-option-desc">統編：${inst.tax_id || '無'} | 行業：${inst.industry || '無'} | 地址：${inst.address || '無'}</div>
+            </div>
+        </label>
+    `).join('');
+    document.getElementById('btn-merge-submit').disabled = true;
+    document.getElementById('merge-modal').classList.add('open');
+}
+
+function closeMergeModal() { document.getElementById('merge-modal').classList.remove('open'); }
+
+async function executeMerge() {
+    const masterId = document.querySelector('input[name="master_inst"]:checked')?.value;
+    if(!masterId) return;
+
+    const masterInst = allData.find(i => i.id === masterId);
+    const instsToDelete = selectedIds.filter(id => id !== masterId);
+    const deletedNames = allData.filter(i => instsToDelete.includes(i.id)).map(i => i.name);
+
+    if(!confirm(`確認合併？\n\n📌 保留主體：${masterInst.name}\n🗑️ 刪除對象：${deletedNames.join('、')}`)) return;
+
+    const btn = document.getElementById('btn-merge-submit');
+    btn.disabled = true; btn.innerHTML = '合併中...';
+    try {
+        const batch = writeBatch(db);
+        allRecords.forEach(record => {
+            if (instsToDelete.includes(record.inst_id) || (!record.inst_id && deletedNames.includes(record.inst_raw))) {
+                batch.update(doc(db, "internship_records", record.id), { 
+                    inst_raw: masterInst.name, inst_id: masterInst.id, updated_at: serverTimestamp() 
+                });
+                record.inst_raw = masterInst.name;
+                record.inst_id = masterInst.id;
+            }
+        });
+
+        instsToDelete.forEach(id => batch.delete(doc(db, "internship_institutions", id)));
+        await batch.commit();
+
+        allData = allData.filter(d => !instsToDelete.includes(d.id));
+        selectedIds = [];
+        updateBatchActionBar();
+        closeMergeModal();
+        renderTable();
+        alert("✅ 合併與紀錄連動更新成功！");
+    } catch(e) { alert("合併失敗"); }
+    finally { btn.disabled = false; btn.innerHTML = '確認執行合併作業'; }
+}
+
+async function batchDelete() {
+    if (!confirm(`警告：確定刪除這 ${selectedIds.length} 筆機構嗎？`)) return;
+    try {
+        const batch = writeBatch(db);
+        selectedIds.forEach(id => batch.delete(doc(db, "internship_institutions", id)));
+        await batch.commit();
+        allData = allData.filter(d => !selectedIds.includes(d.id));
+        selectedIds = [];
+        updateBatchActionBar();
+        renderTable();
+    } catch (e) { alert("刪除失敗"); }
 }
