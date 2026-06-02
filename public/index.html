@@ -256,7 +256,7 @@
 
                 try {
                     // 動態引入對應的 JS 檔案
-                    const module = await import(`./assets/js/pages/${hash}.js`);
+                    const module = await import(`/assets/js/pages/${hash}.js`);
                     
                     // 呼叫模組內導出的 render 函數
                     if(module.render) {
