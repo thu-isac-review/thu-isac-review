@@ -255,20 +255,25 @@
                 `;
 
                 try {
-                    // 動態引入對應的 JS 檔案
-                    const module = await import(`/assets/js/pages/${hash}.js`);
+                    // 💡 加入時間戳記 (?v=...)：強制打破瀏覽器死硬快取，保證載入最新代碼！
+                    const module = await import(`./assets/js/pages/${hash}.js?v=${new Date().getTime()}`);
                     
                     // 呼叫模組內導出的 render 函數
                     if(module.render) {
                         await module.render('content-view-container', { db: dbInstance });
                     }
                 } catch (error) {
-                    console.warn("路由加載失敗:", error);
+                    console.error("路由加載失敗，真實錯誤為:", error);
                     container.innerHTML = `
-                        <div class="flex flex-col items-center justify-center h-64 text-gray-500">
-                            <i class="ti ti-plug-x text-5xl text-gray-300 mb-3"></i>
-                            <h2 class="text-lg font-bold">該功能模組建置中</h2>
-                            <p class="text-xs mt-1 text-gray-400">找不到路徑：/assets/js/pages/${hash}.js</p>
+                        <div class="flex flex-col items-center justify-center h-full p-6 text-red-500 text-center">
+                            <i class="ti ti-alert-triangle text-6xl mb-3"></i>
+                            <h2 class="text-xl font-bold">模組載入失敗</h2>
+                            <p class="text-sm mt-2 text-gray-500">嘗試載入路徑：<br>./assets/js/pages/${hash}.js</p>
+                            
+                            <div class="mt-5 p-4 bg-red-50 rounded-xl text-sm font-mono text-red-600 max-w-2xl text-left border border-red-200 overflow-x-auto shadow-sm">
+                                <strong class="text-gray-900 font-sans">真實系統錯誤訊息：</strong><br><br>
+                                ${error.message || error}
+                            </div>
                         </div>
                     `;
                 }
