@@ -32,7 +32,7 @@ let currentHistory = [];
 
 const LIST_COUNTRIES = ["中華民國","大陸地區","日本","美國","越南","泰國","澳大利亞","香港","澳門","馬來西亞","菲律賓","印尼","印度","孟加拉","緬甸","柬埔寨","黎巴嫩","蒙古","巴西","巴拉圭","秘魯"];
 const LIST_CITIES = ["臺北市","新北市","基隆市","桃園市","新竹縣","新竹市","苗栗縣","臺中市","彰化縣","南投縣","雲林縣","嘉義縣","嘉義市","臺南市","高雄市","屏東縣","宜蘭縣","花蓮縣","臺東縣","澎湖縣","金門縣","連江縣"];
-const LIST_INDUSTRIES = ["農、林、漁、牧業","礦業及土石採取業","製造業","電力及燃氣供應業","用水供應及污染整治業","營建工程業","批發及零售業","運輸及儲存業","住宿及餐飲業","出版及影音等內容傳播業","電信及資訊服務業","金融及保險業","不動產業","專業、科學及技術服務業","支援服務業","公共行政及國防；強制性社會安全","教育業","醫療保健及社會工作服務業","藝術、運動及休閒服務業","其他服務業"];
+const LIST_INDUSTRIES = ["農、林、漁、牧業","礦業及土石採取業","製造業","電力及燃氣供應業","用水供應及污染整治業","營建工程業","批發及零售業","運輸及倉儲業","住宿及餐飲業","出版及影音等內容傳播業","電信及資訊服務業","金融及保險業","不動產業","專業、科學及技術服務業","支援服務業","公共行政及國防；強制性社會安全","教育業","醫療保健及社會工作服務業","藝術、運動及休閒服務業","其他服務業"];
 const LIST_VENUES = ["企業機構","其他機構","政府機構","就讀學校附屬機構"];
 
 // ==========================================
@@ -125,10 +125,11 @@ function injectUI(container) {
 
         .read-card { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; min-height: 38px; display: flex; align-items: center; font-size: 13px; color: var(--text-primary); }
 
-        /* 💡 修正：補上唯讀頁面漏掉的彈窗控制樣式，不讓它一載入就插在畫面最底下 */
+        /* 💡 修正防禦：補上唯讀頁面漏掉的彈窗控制與遮罩樣式，確保彈窗完美在最上層浮動 */
         .dialog-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; padding: 24px; }
         .dialog-overlay.open { display: flex; }
         .dialog-box { background: var(--surface); border-radius: var(--radius-xl); box-shadow: 0 20px 60px rgba(0,0,0,0.2); width: 100%; display: flex; flex-direction: column; overflow: hidden; animation: dialogIn 0.25s cubic-bezier(0.16,1,0.3,1); }
+        @keyframes dialogIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } }
         .dialog-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--surface); }
         .dialog-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; padding: 4px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); transition: all 0.15s; }
         .dialog-close:hover { color: var(--danger); background: var(--danger-bg); }
@@ -144,7 +145,7 @@ function injectUI(container) {
         <div class="toolbar-view">
             <div class="search-wrap">
                 <i class="ti ti-search"></i>
-                <input type="text" id="search-input" placeholder="快速搜尋機構名稱、統編或地址..." class="search-input">
+                <input type="text" id="search-input" placeholder="搜尋機構名稱、統編或地址..." class="search-input">
             </div>
             <div class="flex-spacer" style="flex:1;"></div>
             <button id="btn-export-csv" class="btn btn-success-solid"><i class="ti ti-file-export"></i> 匯出清單</button>
@@ -158,6 +159,9 @@ function injectUI(container) {
                     <div class="filter-dropdown" id="drop-country">
                         <div class="filter-dropdown-search">
                             <input type="text" id="search-country-input" placeholder="搜尋國別...">
+                            <div style="display:flex; justify-content:flex-end; margin-top:8px; padding:0 4px;">
+                                <button type="button" style="font-size:12px; color:var(--brand); background:none; border:none; cursor:pointer;" class="btn-filter-toggle" data-type="country" data-state="none">全選 / 全不選</button>
+                            </div>
                         </div>
                         <div class="filter-dropdown-list" id="country-options-container"></div>
                     </div>
@@ -168,6 +172,9 @@ function injectUI(container) {
                     <div class="filter-dropdown" id="drop-city">
                         <div class="filter-dropdown-search">
                             <input type="text" id="search-city-input" placeholder="搜尋縣市...">
+                            <div style="display:flex; justify-content:flex-end; margin-top:8px; padding:0 4px;">
+                                <button type="button" style="font-size:12px; color:var(--brand); background:none; border:none; cursor:pointer;" class="btn-filter-toggle" data-type="city" data-state="none">全選 / 全不選</button>
+                            </div>
                         </div>
                         <div class="filter-dropdown-list" id="city-options-container"></div>
                     </div>
@@ -178,6 +185,9 @@ function injectUI(container) {
                     <div class="filter-dropdown" id="drop-industry">
                         <div class="filter-dropdown-search">
                             <input type="text" id="search-industry-input" placeholder="搜尋行業別...">
+                            <div style="display:flex; justify-content:flex-end; margin-top:8px; padding:0 4px;">
+                                <button type="button" style="font-size:12px; color:var(--brand); background:none; border:none; cursor:pointer;" class="btn-filter-toggle" data-type="industry" data-state="none">全選 / 全不選</button>
+                            </div>
                         </div>
                         <div class="filter-dropdown-list" id="industry-options-container"></div>
                     </div>
@@ -188,6 +198,9 @@ function injectUI(container) {
                     <div class="filter-dropdown" id="drop-venue">
                         <div class="filter-dropdown-search">
                             <input type="text" id="search-venue-input" placeholder="搜尋場所...">
+                            <div style="display:flex; justify-content:flex-end; margin-top:8px; padding:0 4px;">
+                                <button type="button" style="font-size:12px; color:var(--brand); background:none; border:none; cursor:pointer;" class="btn-filter-toggle" data-type="venue" data-state="none">全選 / 全不選</button>
+                            </div>
                         </div>
                         <div class="filter-dropdown-list" id="venue-options-container"></div>
                     </div>
@@ -209,7 +222,7 @@ function injectUI(container) {
                     <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="venue_type" checked> 實習場所</label>
                     <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="country" checked> 國別</label>
                     <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="city" checked> 縣市別</label>
-                    <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="address" checked> 實習場所地址</label>
+                    <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="address" checked> 實際實習地址</label>
                 </div>
             </div>
         </div>
@@ -226,7 +239,7 @@ function injectUI(container) {
                             <th data-sort="venue_type" class="col-venue_type">實習場所 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="country" class="col-country">國別 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="city" class="col-city">縣市別 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="address" class="col-address" style="text-align: center;">實習場所地址 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="address" class="col-address" style="text-align: center;">實際實習地址 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th class="col-actions">操作</th>
                         </tr>
                     </thead>
@@ -263,13 +276,13 @@ function injectUI(container) {
                     <div id="modal-tabs" style="width: 100%; border-bottom: 1px solid var(--border); padding: 0 20px; display: flex;">
                         <nav style="display: flex; gap: 24px; margin-bottom: -1px;">
                             <button type="button" id="tab-btn-main" style="padding: 12px 4px; border: none; border-bottom: 2px solid var(--brand); background: none; color: var(--brand); font-size: 14px; font-weight: 600; cursor: pointer;">機構詳細資料</button>
-                            <button type="button" id="tab-btn-history" style="padding: 12px 4px; border: none; border-bottom: 2px solid transparent; background: none; color: var(--text-muted); font-size: 14px; font-weight: 600; cursor: pointer;">歷史更迭軌跡</button>
+                            <button type="button" id="tab-btn-history" style="padding: 12px 4px; border: none; border-bottom: 2px solid transparent; background: none; color: var(--text-muted); font-size: 14px; font-weight: 600; cursor: pointer;">歷史變更軌跡</button>
                         </nav>
                     </div>
                 </div>
 
                 <div class="dialog-body-container" style="height: 480px;">
-                    <!-- 基本資料唯讀分頁 -->
+                    <!-- 基本資料唯讀分頁 (與管理表單欄位名稱、圖示等完美對齊) -->
                     <div id="tab-main-view" class="custom-scroll" style="display: flex; gap: 24px; width: 100%; padding: 24px; overflow-y: auto;">
                         <div style="flex: 1; display: flex; flex-direction: column; gap: 14px;">
                             <div class="form-section-title" style="font-weight:700;"><i class="ti ti-building-skyscraper text-brand"></i> 基本組織歸屬</div>
@@ -280,27 +293,27 @@ function injectUI(container) {
                             </div>
                             
                             <div class="grid grid-cols-2 gap-4">
-                                <div class="field"><label class="field-label">國家/地區</label><div class="read-card" id="view-country">-</div></div>
-                                <div class="field"><label class="field-label">統一編號 / 海外稅號</label><div class="read-card" id="view-tax-id">-</div></div>
+                                <div class="field"><label class="field-label">實習場所國別</label><div class="read-card" id="view-country">-</div></div>
+                                <div class="field"><label class="field-label" id="label-tax-view">統一編號</label><div class="read-card" id="view-tax-id">-</div></div>
                             </div>
                             
-                            <div class="field"><label class="field-label">機構官方名稱</label><div class="read-card font-bold text-gray-900" id="view-name">-</div></div>
+                            <div class="field"><label class="field-label">機構主名稱</label><div class="read-card font-bold text-gray-900" id="view-name">-</div></div>
                             <div class="field" id="wrap-translated-view" style="display:none;"><label class="field-label">中文譯名</label><div class="read-card" id="view-name-translated">-</div></div>
-                            <div class="field"><label class="field-label">實際工作與地址</label><div class="read-card" id="view-address">-</div></div>
+                            <div class="field"><label class="field-label">實際實習地址</label><div class="read-card" id="view-address">-</div></div>
                         </div>
                         <div style="width: 1px; background: var(--border); margin: 0;"></div>
                         <div style="flex: 1; display: flex; flex-direction: column; gap: 14px;">
-                            <div class="form-section-title" style="font-weight:700;"><i class="ti ti-tags text-indigo-500"></i> 行業分類與備註說明</div>
-                            <div class="field"><label class="field-label">行業分類</label><div class="read-card" id="view-industry">-</div></div>
-                            <div class="field"><label class="field-label">實習場所類型</label><div class="read-card" id="view-venue-type">-</div></div>
+                            <div class="form-section-title" style="font-weight:700;"><i class="ti ti-tags text-indigo-500"></i> 分類與備註</div>
+                            <div class="field"><label class="field-label">行業別</label><div class="read-card" id="view-industry">-</div></div>
+                            <div class="field"><label class="field-label">實習場所</label><div class="read-card" id="view-venue-type">-</div></div>
                             <div class="field" style="flex: 1; display: flex; flex-direction: column;">
-                                <label class="field-label">機構備註說明</label>
+                                <label class="field-label">機構備註</label>
                                 <div class="read-card custom-scroll" id="view-remarks" style="flex: 1; align-items: flex-start; overflow-y: auto; padding: 10px 12px; line-height: 1.5; min-height: 120px;">-</div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 歷史軌跡唯讀分頁 -->
+                    <!-- 歷史軌跡唯讀分頁 (與管理表單完美對齊) -->
                     <div id="tab-history-view" class="custom-scroll" style="display: none; width: 100%; padding: 24px; overflow-y: auto;">
                         <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px;">以下為該實習機構過去封存之舊名稱、舊地址與結束適用日期。可用於對照過往實習紀錄。</p>
                         <div id="history-list-container-view" style="display:flex; flex-direction:column; gap:12px;"></div>
@@ -341,7 +354,7 @@ function bindEvents(container) {
     // 匯出 CSV 檔案
     container.querySelector('#btn-export-csv')?.addEventListener('click', () => {
         if (filteredInstitutions.length === 0) { alert("沒有資料可供匯出！"); return; }
-        let csv = '\uFEFF實習機構主名稱,隸屬主機構,統一編號,海外稅號,行業別,實習場所,實習場所國別,縣市別,實習場所地址,備註\n';
+        let csv = '\uFEFF實習機構主名稱,隸屬主機構,統一編號,海外稅號,行業別,實習場所,實習場所國別,縣市別,實際實習地址,備註\n';
         
         if (isTreeMode) {
             filteredInstitutions.forEach(p => {
@@ -389,6 +402,25 @@ function bindEvents(container) {
                 document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
                 currentPage = 1; updatePillActive(type); renderTable();
             }
+        });
+    });
+
+    // 💡【高階 UX 補強】：實作與管理端完全同步的篩選器「全選/全不選」功能
+    container.querySelectorAll('.btn-filter-toggle').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const type = btn.dataset.type;
+            const isSelectAll = btn.dataset.state !== 'all';
+            btn.dataset.state = isSelectAll ? 'all' : 'none';
+            
+            let set = type === 'country' ? filterCountrySet : (type === 'city' ? filterCitySet : (type === 'industry' ? filterIndustrySet : filterVenueSet));
+            container.querySelectorAll(`.filter-chk-${type}`).forEach(c => {
+                if(c.closest('.filter-option').style.display !== 'none') { 
+                    c.checked = isSelectAll; 
+                    if(isSelectAll) set.add(c.value); else set.delete(c.value); 
+                }
+            });
+            currentPage = 1; updatePillActive(type); renderTable();
         });
     });
 
@@ -718,8 +750,9 @@ function openDetailModal(id) {
     
     document.getElementById('view-country').textContent = docData.country || '-';
     
-    // 海外/國內稅號判斷
+    // 海外/國內稅號判斷，同步管理頁的文字標籤邏輯
     const isDomestic = docData.country === '中華民國';
+    document.getElementById('label-tax-view').textContent = isDomestic ? '統一編號' : '海外稅號 / 立案號碼';
     document.getElementById('view-tax-id').textContent = isDomestic ? (docData.tax_id || '-') : (docData.overseas_tax_id || '-');
     
     document.getElementById('view-name').textContent = docData.name || '-';
