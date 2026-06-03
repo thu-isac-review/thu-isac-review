@@ -20,12 +20,12 @@ let filterVenueSet = new Set();
 let sortCol = ''; 
 let sortDir = '';
 
-// ✨ 狀態記憶
+// 狀態記憶
 let isTreeMode = true; 
 let expandedParents = new Set();
 let isSearchAutoExpand = false; 
 
-// ✨ 狀態記憶：欄位顯示控制 (動態 CSS)
+// 狀態記憶：欄位顯示控制 (動態 CSS)
 let colVis = { tax_id: true, industry: true, venue_type: true, country: true, city: true, address: true };
 
 const LIST_COUNTRIES = ["中華民國","大陸地區","日本","美國","越南","泰國","澳大利亞","香港","澳門","馬來西亞","菲律賓","印尼","印度","孟加拉","緬甸","柬埔寨","黎巴嫩","蒙古","巴西","巴拉圭","秘魯"];
@@ -71,6 +71,9 @@ function injectUI(container) {
             .tree-toggle:hover { color: var(--brand); background: var(--brand-light); }
             .tree-toggle.expanded i { transform: rotate(90deg); color: var(--brand); }
             
+            .child-row { background-color: #fbfdff; }
+            .child-row td { border-bottom: 1px dashed var(--border); }
+            .child-row:hover td { background-color: #f0f7ff; }
             .child-name-wrap { display: flex; align-items: flex-start; padding-left: 24px; gap: 6px; }
             .child-name-wrap i { font-size: 16px; opacity: 0.5; color: var(--text-secondary); margin-top: 1px; flex-shrink: 0; }
 
@@ -109,9 +112,13 @@ function injectUI(container) {
             .btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
             .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-            .filter-row { padding: 10px 24px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; position: relative; }
+            /* ✨ 修正 3：篩選列分區，支援手機水平拖曳 */
+            .filter-row { padding: 10px 24px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; position: relative; }
+            
+            .filters-scroll-area { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
             .filter-pill-wrap { position: relative; }
-            .filter-pill { display: inline-flex; align-items: center; gap: 5px; padding: 0 10px; height: 28px; border: 1px solid var(--border); border-radius: 99px; background: var(--surface); font-size: 12px; font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: all var(--transition); white-space: nowrap; }
+            
+            .filter-pill { display: inline-flex; align-items: center; gap: 5px; padding: 0 10px; height: 28px; border: 1px solid var(--border); border-radius: 99px; background: var(--surface); font-size: 12px; font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: all var(--transition); white-space: nowrap; flex-shrink: 0; }
             .filter-pill:hover { border-color: var(--border-strong); color: var(--text-primary); }
             .filter-pill.active { border-color: var(--brand); background: var(--brand-light); color: var(--brand); }
             .filter-pill .pill-count { background: var(--brand); color: white; border-radius: 99px; font-size: 10px; font-weight: 700; padding: 0 5px; min-width: 16px; text-align: center; }
@@ -125,75 +132,41 @@ function injectUI(container) {
             .filter-option:hover { background: var(--bg); color: var(--text-primary); }
             .filter-option input[type=checkbox] { accent-color: var(--brand); flex-shrink: 0; }
             
+            #display-settings-wrap { flex-shrink: 0; border-left: 1px solid var(--border); padding-left: 12px; margin-left: 4px; }
+
             #batch-bar { display: none; align-items: center; gap: 12px; padding: 8px 24px; background: var(--brand-light); border-bottom: 1px solid var(--brand-border); flex-shrink: 0; position: absolute; top: 0; left: 0; right: 0; height: 100%; z-index: 20; }
             #batch-bar.visible { display: flex; animation: slideDown 0.2s ease-out; }
             @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
             .batch-info { font-size: 13px; font-weight: 600; color: var(--brand); display: flex; align-items: center; gap: 8px; }
 
-            /* ✨ 表格重構：放棄強制變形，回歸原生的自適應佈局 */
-            .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; }
-            .table-scroll { flex: 1; overflow: auto; }
+            /* ✨ 修正 2 & 1：iOS防回彈、全面解除左右凍結限制 */
+            .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; border-left: none; border-right: none; }
+            .table-scroll { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: none; }
             
-            /* 使用 auto 排版，搭配 min-width 絕對不會擠壓文字 */
-            table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: auto; min-width: 1000px; }
+            /* 解除 fixed，回歸原生寬度排版 */
+            table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1050px; }
             th { padding: 12px 16px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; position: sticky; top: 0; z-index: 10; background: var(--surface); border-bottom: 1px solid var(--border); }
             td { padding: 12px 16px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); background-color: inherit; }
             
-            tr { background-color: var(--surface); transition: background-color 0.15s; }
+            tr { background-color: var(--surface); transition: background-color 0.1s; }
             tr.child-row { background-color: #fbfdff; }
             tr.child-row td { border-bottom: 1px dashed var(--border); }
-            tr:hover { background-color: #f3f6ff; }
-            tr.child-row:hover { background-color: #edf3ff; }
-            tr.selected { background-color: #eef2ff !important; }
+            tr:hover { background-color: #fafbff; }
+            tr.child-row:hover { background-color: #f0f7ff; }
+            tr.selected { background-color: #f0f4ff !important; }
 
-            /* 左側凍結區：勾選與名稱 */
-            .col-checkbox { position: sticky; left: 0; width: 48px; min-width: 48px; z-index: 5; background-color: inherit; }
-            th.col-checkbox { z-index: 15; background-color: var(--surface); }
+            /* ✨ 取消 sticky 設定，純粹限制必要欄位的固定寬度 */
+            .col-checkbox { width: 48px; min-width: 48px; max-width: 48px; text-align: center; }
+            th.col-checkbox { z-index: 15; }
 
-            .col-name { position: sticky; left: 48px; width: 320px; min-width: 320px; z-index: 5; background-color: inherit; }
-            th.col-name { z-index: 15; text-align: center; background-color: var(--surface); } 
+            .col-name { min-width: 320px; }
+            th.col-name { text-align: center; z-index: 15; } 
+
+            .col-actions { width: 100px; min-width: 100px; max-width: 100px; text-align: center; }
+            th.col-actions { z-index: 15; }
             
-            /* 完美 1px 實線分隔 (代替不穩定的陰影) */
-            .col-name::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 1px; background-color: var(--border); z-index: 6; }
-
-            /* 右側凍結區：操作按鈕 */
-            .col-actions { position: sticky; right: 0; width: 100px; min-width: 100px; z-index: 5; background-color: inherit; }
-            th.col-actions { z-index: 15; background-color: var(--surface); }
-            .col-actions::before { content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 1px; background-color: var(--border); z-index: 6; }
-
-            /* 隱形緩衝區：吸收所有剩餘空間，保護名稱與操作區不被拉扯 */
+            /* 隱形緩衝區：吸收隱藏欄位後的剩餘寬度，保護整體排版 */
             .col-spacer { width: 100%; padding: 0 !important; border-bottom: 1px solid var(--border); }
-
-            /* ✨ 究極修復：手機版徹底解放凍結，還給使用者水平滑動的權利 */
-            @media (max-width: 768px) {
-                .col-checkbox { position: static !important; min-width: 48px !important; }
-                .col-name { position: static !important; min-width: 250px !important; width: auto !important; }
-                .col-actions { position: static !important; min-width: 100px !important; }
-                
-                th.col-checkbox, th.col-name, th.col-actions { 
-                    position: sticky !important; /* 保留上下捲動置頂 */
-                    top: 0 !important; 
-                    left: auto !important; /* 解除左右鎖定 */
-                    right: auto !important; 
-                    z-index: 10 !important; 
-                }
-                .col-name::after, .col-actions::before { display: none !important; } /* 隱藏框線 */
-                
-                #batch-bar { display: none !important; }
-                .toolbar { padding: 12px 16px; justify-content: flex-end; }
-                .search-wrap { flex: 0 0 100%; order: 1; margin-bottom: 8px; }
-                .flex-spacer { display: none; }
-                .toolbar-actions { order: 2; width: 100%; justify-content: space-between; display: flex; gap: 8px; }
-                .toolbar-actions .btn { flex: 1; padding: 0 4px; font-size: 11px; margin: 0; }
-                .v-divider { display: none; }
-                .filter-row { padding: 10px 16px; }
-                .pagination-bar { flex-direction: column; align-items: flex-start; padding: 12px 16px; gap: 12px; }
-                .pagination-bar-right { width: 100%; justify-content: space-between; }
-                .dialog-overlay { padding: 12px; }
-                #data-form { flex-direction: column !important; gap: 16px !important; }
-                #data-form > div { width: 100% !important; margin: 0 !important; }
-                .v-divider-modal { display: block !important; width: 100% !important; height: 1px !important; min-height: 1px !important; background-color: var(--border) !important; margin: 8px 0 !important; flex-shrink: 0 !important; }
-            }
 
             th[data-sort] { cursor: pointer; user-select: none; transition: color var(--transition); }
             th[data-sort]:hover { color: var(--text-secondary); }
@@ -221,6 +194,7 @@ function injectUI(container) {
             @keyframes dialogIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } }
             .dialog-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--surface); }
             .dialog-header h3 { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: var(--text-primary); }
+            .dialog-header h3 i { font-size: 20px; color: var(--brand); }
             .dialog-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; padding: 4px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); transition: all var(--transition); }
             .dialog-close:hover { color: var(--danger); background: var(--danger-bg); }
             .dialog-body { padding: 24px; overflow-y: auto; max-height: calc(85vh - 130px); }
@@ -240,6 +214,34 @@ function injectUI(container) {
             .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
             .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
             .empty-text { font-size: 13px; font-weight: 600; }
+
+            /* ✨ 手機版專屬：開放過多的篩選列橫向滑動，並解除凍結 */
+            @media (max-width: 768px) {
+                .filter-row { padding: 10px 16px; flex-wrap: nowrap; }
+                .filters-scroll-area { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: none; padding-bottom: 2px; scrollbar-width: none; }
+                .filters-scroll-area::-webkit-scrollbar { display: none; }
+                
+                /* 下拉選單改為針對全區絕對定位，防止被 scroll-area 切掉 */
+                .filter-pill-wrap { position: static; }
+                .filter-dropdown { top: 100%; left: 16px; right: 16px; min-width: 0; width: auto; margin-top: 4px; }
+                
+                #display-settings-wrap { border-left: none; padding-left: 8px; margin-left: 0; }
+                #batch-bar { display: none !important; }
+                
+                .toolbar { padding: 12px 16px; justify-content: flex-end; }
+                .search-wrap { flex: 0 0 100%; order: 1; margin-bottom: 8px; }
+                .flex-spacer { display: none; }
+                .toolbar-actions { order: 2; width: 100%; justify-content: space-between; display: flex; gap: 8px; }
+                .toolbar-actions .btn { flex: 1; padding: 0 4px; font-size: 11px; margin: 0; }
+                .v-divider { display: none; }
+                
+                .pagination-bar { flex-direction: column; align-items: flex-start; padding: 12px 16px; gap: 12px; }
+                .pagination-bar-right { width: 100%; justify-content: space-between; }
+                .dialog-overlay { padding: 12px; }
+                #data-form { flex-direction: column !important; gap: 16px !important; }
+                #data-form > div { width: 100% !important; margin: 0 !important; }
+                .v-divider-modal { display: block !important; width: 100% !important; height: 1px !important; min-height: 1px !important; background-color: var(--border) !important; margin: 8px 0 !important; flex-shrink: 0 !important; }
+            }
         </style>
 
         <div class="toolbar">
@@ -258,59 +260,59 @@ function injectUI(container) {
         </div>
 
         <div class="filter-row">
-            <div class="filter-pill-wrap" id="pill-wrap-country">
-                <button class="filter-pill" id="pill-country">全部國別 <i class="ti ti-chevron-down"></i></button>
-                <div class="filter-dropdown" id="drop-country">
-                    <div class="filter-dropdown-search">
-                        <input type="text" id="search-country-input" placeholder="搜尋國別...">
-                        <div class="flex justify-end mt-2 px-1">
-                            <button type="button" class="text-xs text-brand hover:underline btn-filter-toggle" data-type="country" data-state="none">全選 / 全不選</button>
+            <div class="filters-scroll-area custom-scroll">
+                <div class="filter-pill-wrap" id="pill-wrap-country">
+                    <button class="filter-pill" id="pill-country">全部國別 <i class="ti ti-chevron-down"></i></button>
+                    <div class="filter-dropdown" id="drop-country">
+                        <div class="filter-dropdown-search">
+                            <input type="text" id="search-country-input" placeholder="搜尋國別...">
+                            <div class="flex justify-end mt-2 px-1">
+                                <button type="button" class="text-xs text-brand hover:underline btn-filter-toggle" data-type="country" data-state="none">全選 / 全不選</button>
+                            </div>
                         </div>
+                        <div class="filter-dropdown-list" id="country-options-container"></div>
                     </div>
-                    <div class="filter-dropdown-list" id="country-options-container"></div>
                 </div>
-            </div>
-            
-            <div class="filter-pill-wrap" id="pill-wrap-city">
-                <button class="filter-pill" id="pill-city">全部縣市 <i class="ti ti-chevron-down"></i></button>
-                <div class="filter-dropdown" id="drop-city">
-                    <div class="filter-dropdown-search">
-                        <input type="text" id="search-city-input" placeholder="搜尋縣市...">
-                        <div class="flex justify-end mt-2 px-1">
-                            <button type="button" class="text-xs text-brand hover:underline btn-filter-toggle" data-type="city" data-state="none">全選 / 全不選</button>
+                
+                <div class="filter-pill-wrap" id="pill-wrap-city">
+                    <button class="filter-pill" id="pill-city">全部縣市 <i class="ti ti-chevron-down"></i></button>
+                    <div class="filter-dropdown" id="drop-city">
+                        <div class="filter-dropdown-search">
+                            <input type="text" id="search-city-input" placeholder="搜尋縣市...">
+                            <div class="flex justify-end mt-2 px-1">
+                                <button type="button" class="text-xs text-brand hover:underline btn-filter-toggle" data-type="city" data-state="none">全選 / 全不選</button>
+                            </div>
                         </div>
+                        <div class="filter-dropdown-list" id="city-options-container"></div>
                     </div>
-                    <div class="filter-dropdown-list" id="city-options-container"></div>
                 </div>
-            </div>
 
-            <div class="filter-pill-wrap" id="pill-wrap-industry">
-                <button class="filter-pill" id="pill-industry">全部行業別 <i class="ti ti-chevron-down"></i></button>
-                <div class="filter-dropdown" id="drop-industry">
-                    <div class="filter-dropdown-search">
-                        <input type="text" id="search-industry-input" placeholder="搜尋行業別...">
-                        <div class="flex justify-end mt-2 px-1">
-                            <button type="button" class="text-xs text-brand hover:underline btn-filter-toggle" data-type="industry" data-state="none">全選 / 全不選</button>
+                <div class="filter-pill-wrap" id="pill-wrap-industry">
+                    <button class="filter-pill" id="pill-industry">全部行業別 <i class="ti ti-chevron-down"></i></button>
+                    <div class="filter-dropdown" id="drop-industry">
+                        <div class="filter-dropdown-search">
+                            <input type="text" id="search-industry-input" placeholder="搜尋行業別...">
+                            <div class="flex justify-end mt-2 px-1">
+                                <button type="button" class="text-xs text-brand hover:underline btn-filter-toggle" data-type="industry" data-state="none">全選 / 全不選</button>
+                            </div>
                         </div>
+                        <div class="filter-dropdown-list" id="industry-options-container"></div>
                     </div>
-                    <div class="filter-dropdown-list" id="industry-options-container"></div>
+                </div>
+
+                <div class="filter-pill-wrap" id="pill-wrap-venue">
+                    <button class="filter-pill" id="pill-venue">全部場所 <i class="ti ti-chevron-down"></i></button>
+                    <div class="filter-dropdown" id="drop-venue">
+                        <div class="filter-dropdown-search">
+                            <input type="text" id="search-venue-input" placeholder="搜尋場所...">
+                            <div class="flex justify-end mt-2 px-1">
+                                <button type="button" class="text-xs text-brand hover:underline btn-filter-toggle" data-type="venue" data-state="none">全選 / 全不選</button>
+                            </div>
+                        </div>
+                        <div class="filter-dropdown-list" id="venue-options-container"></div>
+                    </div>
                 </div>
             </div>
-
-            <div class="filter-pill-wrap" id="pill-wrap-venue">
-                <button class="filter-pill" id="pill-venue">全部場所 <i class="ti ti-chevron-down"></i></button>
-                <div class="filter-dropdown" id="drop-venue">
-                    <div class="filter-dropdown-search">
-                        <input type="text" id="search-venue-input" placeholder="搜尋場所...">
-                        <div class="flex justify-end mt-2 px-1">
-                            <button type="button" class="text-xs text-brand hover:underline btn-filter-toggle" data-type="venue" data-state="none">全選 / 全不選</button>
-                        </div>
-                    </div>
-                    <div class="filter-dropdown-list" id="venue-options-container"></div>
-                </div>
-            </div>
-
-            <div class="flex-spacer"></div>
 
             <div class="relative inline-block text-left" id="display-settings-wrap">
                 <button id="btn-display-settings" class="btn btn-secondary btn-sm" style="font-weight: 500;"><i class="ti ti-settings"></i> 顯示設定</button>
@@ -365,7 +367,6 @@ function injectUI(container) {
                             </th>
                             <th class="col-name" data-sort="name">實習機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             
-                            <!-- 加上 min-width 保護流動欄位，絕不被擠扁 -->
                             <th data-sort="tax_id" class="col-tax_id" style="min-width: 110px;">統一編號 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="industry" class="col-industry" style="min-width: 130px;">行業別 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="venue_type" class="col-venue_type" style="min-width: 130px;">實習場所 <i class="ti ti-arrows-sort sort-icon"></i></th>
@@ -373,7 +374,6 @@ function injectUI(container) {
                             <th data-sort="city" class="col-city" style="min-width: 90px;">縣市別 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="address" class="col-address" style="min-width: 220px; text-align: center;">實習場所地址 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             
-                            <!-- ✨ 隱形緩衝區 -->
                             <th class="col-spacer"></th>
                             
                             <th class="col-actions">操作</th>
@@ -1095,8 +1095,8 @@ function renderTable() {
 
         const hName = highlightKeyword(data.name, searchTerm);
         const nameHtml = isChild 
-            ? `<div class="child-name-wrap"><i class="ti ti-corner-down-right"></i> <span class="cell-primary" style="word-break: break-word; min-width: 150px;">${hName}</span></div>` 
-            : `<div style="display:flex; align-items:center;">${toggleHtml} <span class="cell-primary bold" style="word-break: break-word; min-width: 150px;">${hName}</span>${childCountHtml}</div>`;
+            ? `<div class="child-name-wrap"><i class="ti ti-corner-down-right"></i> <span class="cell-primary">${hName}</span></div>` 
+            : `<div style="display:flex; align-items:center;">${toggleHtml} <span class="cell-primary bold">${hName}</span>${childCountHtml}</div>`;
 
         const hAddress = highlightKeyword(data.address, searchTerm);
 
