@@ -575,7 +575,7 @@ function initSelectOptions() {
     
     const batchPlaceholder = '<option value="NO_CHANGE">-- 不修改 --</option><option value="">[清空此欄位]</option>';
     document.getElementById('batch-input-industry').innerHTML = batchPlaceholder + renderOptions(LIST_INDUSTRIES);
-    document.getElementById('batch-input-venue').getElementById('batch-input-venue').innerHTML = batchPlaceholder + renderOptions(LIST_VENUES);
+    document.getElementById('batch-input-venue').innerHTML = batchPlaceholder + renderOptions(LIST_VENUES);
 }
 
 function populateParentDropdown(excludeId = null) {
