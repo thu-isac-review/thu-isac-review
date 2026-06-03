@@ -71,7 +71,7 @@ function injectUI(container) {
             .child-row { background-color: #fbfdff; }
             .child-row td { border-bottom: 1px dashed var(--border); }
             .child-row:hover td { background-color: #f0f7ff; }
-            .child-name-wrap { display: flex; align-items: flex-start; padding-left: 24px; gap: 6px; }
+            .child-name-wrap { display: flex; align-items: flex-start; padding-left: 3px; gap: 11px; }
             .child-name-wrap i { font-size: 16px; opacity: 0.5; color: var(--text-secondary); margin-top: 1px; flex-shrink: 0; }
 
             .searchable-select-wrap { position: relative; }
@@ -128,7 +128,7 @@ function injectUI(container) {
             .filter-option input[type=checkbox] { accent-color: var(--brand); flex-shrink: 0; }
             
             #display-settings-wrap { flex-shrink: 0; border-left: 1px solid var(--border); padding-left: 12px; margin-left: 4px; }
-            #batch-bar { display: none; align-items: center; gap: 12px; padding: 8px 24px; background: var(--brand-light); border-bottom: 1px solid var(--brand-border); flex-shrink: 0; position: absolute; top: 0; left: 0; right: 0; height: 100%; z-index: 20; }
+            #batch-bar { display: none; align-items: center; gap: 12px; padding: 8px 24px; background: var(--brand-light); border-bottom: 1px solid var(--brand-border); flex-shrink: 0; position: absolute; top: 0; left: 0; right: 0; height: 100%; z-index: 5; }
             #batch-bar.visible { display: flex; animation: slideDown 0.2s ease-out; }
             @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
             .batch-info { font-size: 13px; font-weight: 600; color: var(--brand); display: flex; align-items: center; gap: 8px; }
@@ -137,7 +137,7 @@ function injectUI(container) {
             .table-scroll { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: none; }
             
             table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: auto; min-width: 1000px; }
-            th { padding: 12px 16px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; position: sticky; top: 0; z-index: 10; background: var(--surface); border-bottom: 1px solid var(--border); }
+            th { padding: 12px 16px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; position: sticky; top: 0; z-index: 2; background: var(--surface); border-bottom: 1px solid var(--border); }
             td { padding: 12px 16px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); background-color: inherit; }
             
             tr { background-color: var(--surface); transition: background-color 0.15s; }
@@ -147,19 +147,24 @@ function injectUI(container) {
             tr.child-row:hover { background-color: #edf3ff; }
             tr.selected { background-color: #eef2ff !important; }
 
-            .col-checkbox { width: 48px; min-width: 48px; max-width: 48px; text-align: center; }
-            th.col-checkbox { z-index: 15; }
-            .col-name { min-width: 320px; }
-            th.col-name { text-align: center; z-index: 15; } 
+            .col-checkbox { position: sticky; left: 0; width: 48px; min-width: 48px; max-width: 48px; text-align: center; z-index: 3; background-color: inherit; }
+            th.col-checkbox { z-index: 4; background-color: var(--surface); }
+
+            /* 2. 機構名稱寬度縮減為 250px，確保右側按鈕有空間顯示 */
+            .col-name { min-width: 250px; }
+            th.col-name { text-align: center; z-index: 2; } 
+
             .col-actions { width: 100px; min-width: 100px; max-width: 100px; text-align: center; }
-            th.col-actions { z-index: 15; }
+            th.col-actions { z-index: 2; }
+            
             .col-spacer { width: 100%; padding: 0 !important; border-bottom: 1px solid var(--border); }
 
             @media (max-width: 768px) {
                 .col-checkbox { position: static !important; min-width: 48px !important; }
                 .col-name { position: static !important; min-width: 250px !important; width: auto !important; }
                 .col-actions { position: static !important; min-width: 100px !important; }
-                th.col-checkbox, th.col-name, th.col-actions { position: sticky !important; top: 0 !important; left: auto !important; right: auto !important; z-index: 10 !important; }
+                /* 手機版 z-index 同步調降，避免蓋住選單 */
+                th.col-checkbox, th.col-name, th.col-actions { position: sticky !important; top: 0 !important; left: auto !important; right: auto !important; z-index: 2 !important; }
                 .col-name::after, .col-actions::before { display: none !important; } 
                 
                 .filter-row { padding: 10px 16px; flex-wrap: nowrap; }
