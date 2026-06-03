@@ -1256,18 +1256,26 @@ async function fetchInitialDataOnce() {
         renderTable();
         await handleInitialLoadEngine();
     } catch (error) {
-        document.getElementById('table-body').innerHTML = `<tr><td colspan="9" class="empty-state"><i class="ti ti-lock empty-icon" style="color:var(--danger); opacity:1;"></i><div class="empty-text">雲端資料同步中斷。</div></td></tr>`;
+        console.error("🔥 雲端資料同步或渲染失敗:", error);
+        
+        document.getElementById('table-body').innerHTML = `
+            <tr>
+                <td colspan="9" class="empty-state">
+                    <i class="ti ti-lock empty-icon" style="color:var(--danger); opacity:1;"></i>
+                    <div class="empty-text text-red-500">雲端資料同步中斷。</div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">請按 F12 開啟開發者工具 (Console) 查看詳細錯誤原因。</div>
+                </td>
+            </tr>`;
     }
 }
-
 function renderTable() {
     const tbody = document.getElementById('table-body');
     const searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
 
     const checkMatch = (d) => {
-        const matchSearch = (d.name || '').toLowerCase().includes(searchTerm) || 
-                            (d.tax_id || '').toLowerCase().includes(searchTerm) ||
-                            (d.address || '').toLowerCase().includes(searchTerm);
+        const matchSearch = String(d.name || '').toLowerCase().includes(searchTerm) || 
+                            String(d.tax_id || '').toLowerCase().includes(searchTerm) ||
+                            String(d.address || '').toLowerCase().includes(searchTerm);
         const matchCountry = filterCountrySet.size === 0 || filterCountrySet.has(d.country);
         const matchCity = filterCitySet.size === 0 || filterCitySet.has(d.city);
         const matchIndustry = filterIndustrySet.size === 0 || filterIndustrySet.has(d.industry);
