@@ -1148,20 +1148,28 @@ function handleCountryChange() {
     
     const wrapTax = document.getElementById('wrap-tax-id');
     const wrapCity = document.getElementById('wrap-city');
+    const wrapNameTrans = document.getElementById('wrap-name-translated'); // ✨ 這行補回來了
     const wrapOverseasTax = document.getElementById('wrap-overseas-tax');
 
     const taxInput = document.getElementById('input-tax-id');
     const cityInput = document.getElementById('input-city');
 
     if (isDomestic) {
-        wrapTax.style.display = 'flex'; wrapCity.style.display = 'flex';
+        wrapTax.style.display = 'flex'; 
+        wrapCity.style.display = 'flex';
+        wrapNameTrans.style.display = 'none'; // 國內時隱藏譯名
         wrapOverseasTax.style.display = 'none';
-        taxInput.required = true; cityInput.required = true;
+        taxInput.required = true; 
+        cityInput.required = true;
     } else {
-        wrapTax.style.display = 'none'; wrapCity.style.display = 'none';
+        wrapTax.style.display = 'none'; 
+        wrapCity.style.display = 'none';
+        wrapNameTrans.style.display = 'flex'; // 海外時顯示譯名
         wrapOverseasTax.style.display = 'flex';
-        taxInput.required = false; cityInput.required = false;
-        taxInput.value = ''; cityInput.value = '';
+        taxInput.required = false; 
+        cityInput.required = false;
+        taxInput.value = ''; 
+        cityInput.value = '';
     }
 }
 
@@ -1641,6 +1649,7 @@ function editData(id) {
     
     document.getElementById('input-country').value = docData.country || '中華民國';
     document.getElementById('input-name').value = docData.name || '';
+    document.getElementById('input-name-translated').value = docData.name_translated || '';
     document.getElementById('input-tax-id').value = docData.tax_id || '';
     document.getElementById('input-overseas-tax-id').value = docData.overseas_tax_id || '';
     document.getElementById('input-city').value = docData.city || '';
