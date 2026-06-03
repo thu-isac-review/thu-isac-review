@@ -20,12 +20,12 @@ let filterVenueSet = new Set();
 let sortCol = ''; 
 let sortDir = '';
 
-// ✨ 狀態記憶
+// 狀態記憶
 let isTreeMode = true; 
 let expandedParents = new Set();
 let isSearchAutoExpand = false; 
 
-// ✨ 狀態記憶：欄位顯示控制 (動態 CSS)
+// 狀態記憶：欄位顯示控制
 let colVis = { tax_id: true, industry: true, venue_type: true, country: true, city: true, address: true };
 
 const LIST_COUNTRIES = ["中華民國","大陸地區","日本","美國","越南","泰國","澳大利亞","香港","澳門","馬來西亞","菲律賓","印尼","印度","孟加拉","緬甸","柬埔寨","黎巴嫩","蒙古","巴西","巴拉圭","秘魯"];
@@ -71,6 +71,9 @@ function injectUI(container) {
             .tree-toggle:hover { color: var(--brand); background: var(--brand-light); }
             .tree-toggle.expanded i { transform: rotate(90deg); color: var(--brand); }
             
+            .child-row { background-color: #fbfdff; }
+            .child-row td { border-bottom: 1px dashed var(--border); }
+            .child-row:hover td { background-color: #f0f7ff; }
             .child-name-wrap { display: flex; align-items: flex-start; padding-left: 24px; gap: 6px; }
             .child-name-wrap i { font-size: 16px; opacity: 0.5; color: var(--text-secondary); margin-top: 1px; flex-shrink: 0; }
 
@@ -130,38 +133,29 @@ function injectUI(container) {
             @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
             .batch-info { font-size: 13px; font-weight: 600; color: var(--brand); display: flex; align-items: center; gap: 8px; }
 
-            /* ✨ 跑位與框線完美修復：利用 separate 搭配偽元素實線 */
-            .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; }
+            .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; border-left: none; border-right: none; }
             .table-scroll { flex: 1; overflow: auto; }
-            table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1050px; }
+            table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; min-width: 1050px; }
             th { padding: 12px 16px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; position: sticky; top: 0; z-index: 10; background: var(--surface); border-bottom: 1px solid var(--border); }
             td { padding: 12px 16px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); background-color: inherit; }
             
-            /* 背景色統一綁定在 tr 上，td 用 inherit 來無縫套用 */
             tr { background-color: var(--surface); transition: background-color 0.1s; }
-            tr.child-row { background-color: #fbfdff; }
-            tr.child-row td { border-bottom: 1px dashed var(--border); }
             tr:hover { background-color: #fafbff; }
             tr.child-row:hover { background-color: #f0f7ff; }
             tr.selected { background-color: #f0f4ff !important; }
 
-            /* 左側凍結區 (勾選) */
+            /* ✨ 修正 1 & 3：拔除醜陋框線、鎖定寬度不隨隱藏變形 */
             .col-checkbox { position: sticky; left: 0; width: 48px; min-width: 48px; max-width: 48px; z-index: 5; }
             th.col-checkbox { z-index: 15; }
 
-            /* 左側凍結區 (機構名稱) */
             .col-name { position: sticky; left: 48px; width: 340px; min-width: 340px; max-width: 340px; z-index: 5; }
-            th.col-name { z-index: 15; text-align: center; } /* ✨ 表頭置中 */
-            
-            /* ✨ 完美 1px 垂直右框線：不受滾動與縮放影響 */
-            .col-name::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 1px; background-color: var(--border); z-index: 6; }
+            th.col-name { z-index: 15; text-align: center; } 
 
-            /* 右側凍結區 (操作按鈕) */
             .col-actions { position: sticky; right: 0; width: 100px; min-width: 100px; max-width: 100px; z-index: 5; }
             th.col-actions { z-index: 15; }
             
-            /* ✨ 完美 1px 垂直左框線：不受滾動與縮放影響 */
-            .col-actions::before { content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 1px; background-color: var(--border); z-index: 6; }
+            /* ✨ 防止其餘欄位隱藏時凍結欄位被拉寬的隱形填充區 */
+            .col-spacer { width: auto; min-width: 0; padding: 0 !important; }
 
             th[data-sort] { cursor: pointer; user-select: none; transition: color var(--transition); }
             th[data-sort]:hover { color: var(--text-secondary); }
@@ -208,6 +202,27 @@ function injectUI(container) {
             .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
             .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
             .empty-text { font-size: 13px; font-weight: 600; }
+
+            /* ✨ 修正 2：手機版自動解除凍結，保證可水平滑動 */
+            @media (max-width: 768px) {
+                .col-checkbox, .col-name, .col-actions { position: static !important; min-width: 0 !important; max-width: none !important; width: auto !important; }
+                .col-name { min-width: 200px !important; }
+                
+                #batch-bar { display: none !important; }
+                .toolbar { padding: 12px 16px; justify-content: flex-end; }
+                .search-wrap { flex: 0 0 100%; order: 1; margin-bottom: 8px; }
+                .flex-spacer { display: none; }
+                .toolbar-actions { order: 2; width: 100%; justify-content: space-between; display: flex; gap: 8px; }
+                .toolbar-actions .btn { flex: 1; padding: 0 4px; font-size: 11px; margin: 0; }
+                .v-divider { display: none; }
+                .filter-row { padding: 10px 16px; }
+                .pagination-bar { flex-direction: column; align-items: flex-start; padding: 12px 16px; gap: 12px; }
+                .pagination-bar-right { width: 100%; justify-content: space-between; }
+                .dialog-overlay { padding: 12px; }
+                #data-form { flex-direction: column !important; gap: 16px !important; }
+                #data-form > div { width: 100% !important; margin: 0 !important; }
+                .v-divider-modal { display: block !important; width: 100% !important; height: 1px !important; min-height: 1px !important; background-color: var(--border) !important; margin: 8px 0 !important; flex-shrink: 0 !important; }
+            }
         </style>
 
         <div class="toolbar">
@@ -331,22 +346,22 @@ function injectUI(container) {
                                     <input type="checkbox" id="selectAll" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                                 </div>
                             </th>
-                            <!-- ✨ 標題拔掉寬度限制，純靠 CSS 的 min-width 鎖死 -->
                             <th class="col-name" data-sort="name">實習機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             
-                            <!-- 流動寬度欄位 -->
                             <th data-sort="tax_id" class="col-tax_id" style="width: 12%;">統一編號 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="industry" class="col-industry" style="width: 12%;">行業別 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="venue_type" class="col-venue_type" style="width: 12%;">實習場所 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="country" class="col-country" style="width: 8%;">國別 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="city" class="col-city" style="width: 8%;">縣市別 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="address" class="col-address" style="width: auto;">實習場所地址 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="address" class="col-address" style="width: 16%; text-align: center;">實習場所地址 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            
+                            <th class="col-spacer"></th>
                             
                             <th class="col-actions">操作</th>
                         </tr>
                     </thead>
                     <tbody id="table-body">
-                        <tr><td colspan="9" class="empty-state"><i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i><div class="empty-text">資料載入中...</div></td></tr>
+                        <tr><td colspan="10" class="empty-state"><i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i><div class="empty-text">資料載入中...</div></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -1080,6 +1095,9 @@ function renderTable() {
             <td class="col-country" style="text-align: center;"><div class="cell-primary">${data.country}</div></td>
             <td class="col-city" style="text-align: center;"><div class="cell-primary">${isDomestic && data.city ? data.city : '-'}</div></td>
             <td class="col-address" style="text-align: left;"><div class="cell-primary" title="${data.address}">${hAddress}</div></td>
+            
+            <td class="col-spacer"></td>
+            
             <td class="col-actions" style="text-align: center;">
                 <div class="row-actions">
                     <button data-id="${data.id}" class="btn btn-secondary btn-icon sm btn-row-edit" title="編輯"><i class="ti ti-edit"></i></button>
