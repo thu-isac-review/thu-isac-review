@@ -199,53 +199,49 @@ th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand
     .pagination-bar { flex-direction: column; align-items: flex-start; padding: 12px 16px; gap: 12px; }
     .pagination-bar-right { width: 100%; justify-content: space-between; }
     .dialog-overlay { padding: 12px; }
-    .dialog-body-container { flex-direction: column !important; gap: 16px !important; height: auto !important; min-height: 0 !important; }
-    .dialog-body-container > div { width: 100% !important; margin: 0 !important; padding: 0 !important; }
+    
+    /* 讓彈窗內部可以順暢滑動 */
+    .dialog-box { max-height: 100% !important; display: flex !important; flex-direction: column !important; }
+    .dialog-body-container, .dialog-body { flex: 1 !important; min-height: 0 !important; overflow-y: auto !important; height: auto !important; flex-direction: column !important; }
     .v-divider-modal { display: block !important; width: 100% !important; height: 1px !important; min-height: 1px !important; background-color: var(--border) !important; margin: 8px 0 !important; flex-shrink: 0 !important; }
 
     /* =========================================
-       1. 機構詳細資料 Modal (#data-form) 手機版單欄化
+       1. 統一頁籤大小：確保詳細資料與歷史軌跡邊距與寬高完全一致
        ========================================= */
-    #data-form { flex-direction: column !important; padding: 16px !important; gap: 16px !important; }
-    #data-form > div { width: 100% !important; flex: none !important; }
-
-    /* =========================================
-       2. 歷史軌跡頁面 (#tab-history) 手機版優化
-       ========================================= */
-    #tab-history { padding: 16px !important; }
-    .history-header { flex-direction: column !important; align-items: flex-start !important; gap: 12px !important; }
-    .history-header p { padding-right: 0 !important; line-height: 1.5 !important; }
-    #btn-show-add-history { width: 100% !important; justify-content: center !important; }
-
-    /* =========================================
-       3. 統一縮小其他單欄小彈窗
-       ========================================= */
-    .dialog-body { padding: 16px !important; }
-
-    /* =========================================
-       4. 解決手機版彈窗鎖死、強制內部可滑動
-       ========================================= */
-    .dialog-box {
-        max-height: 100% !important; /* 確保彈窗本體高度絕對不超過螢幕 (已扣除留白) */
-        display: flex !important;
-        flex-direction: column !important;
-    }
-
-    /* 把主要彈窗與其他小彈窗的身體都改為「彈性填滿剩餘空間並開啟滾動」 */
-    .dialog-body-container,
-    .dialog-body {
-        flex: 1 !important; 
-        min-height: 0 !important; /* 關鍵：讓 flex 容器可以向內縮小並觸發捲軸 */
-        overflow-y: auto !important; /* 開啟內部垂直捲動 */
-        height: auto !important;
-        flex-direction: column !important;
-    }
-
-    /* 原本表單自帶的滾動取消，統一由外層的 dialog-body-container 處理滾動 */
-    #data-form, 
-    #tab-history {
+    #data-form, #tab-history {
+        width: 100% !important;
+        padding: 16px !important;
+        box-sizing: border-box !important;
         overflow-y: visible !important;
         height: auto !important;
         flex: none !important;
+    }
+
+    /* 詳細資料單欄化 */
+    #data-form { flex-direction: column !important; gap: 16px !important; }
+    #data-form > div { width: 100% !important; flex: none !important; }
+
+    /* =========================================
+       2. 歷史軌跡頁面 - 按鈕移至說明文字右側並加高
+       ========================================= */
+    .history-header { 
+        flex-direction: row !important; /* 確保左右並排 */
+        align-items: flex-start !important; /* 向上對齊 */
+        gap: 12px !important; 
+        flex-wrap: nowrap !important;
+    }
+    .history-header p { 
+        flex: 1 1 auto !important; /* 文字佔滿剩餘寬度並自動換行 */
+        padding-right: 0 !important; 
+        line-height: 1.5 !important; 
+        font-size: 11px !important; /* 稍微縮小文字，挪出舒適的空間給按鈕 */
+        margin: 0 !important;
+    }
+    #btn-show-add-history { 
+        width: auto !important; /* 拔除原本的全寬設定 */
+        flex-shrink: 0 !important; /* 確保按鈕不會被過長的文字擠壓變形 */
+        height: 38px !important; /* 稍微加高按鈕，讓大拇指更好點擊 */
+        padding: 0 14px !important; 
+        white-space: nowrap !important; /* 按鈕文字不換行 */
     }
 }
