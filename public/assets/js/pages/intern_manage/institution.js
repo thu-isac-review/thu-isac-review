@@ -342,7 +342,10 @@ function injectUI(container) {
             <div class="relative inline-block text-left" id="display-settings-wrap">
                 <button id="btn-display-settings" class="btn btn-secondary btn-sm" style="font-weight: 500;"><i class="ti ti-settings"></i> 顯示設定</button>
                 <div id="display-settings-menu" style="position:absolute; right:16px; top:calc(100% + 4px); width:200px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); padding:8px; z-index:100; display:none;" class="menu-popup">
-                    <button class="btn btn-secondary btn-sm" style="width:100%; justify-content:flex-start; border:none; margin-bottom:4px;" id="btn-toggle-expand"><i class="ti ti-arrows-maximize" style="color:var(--brand);"></i> <span>展開所有分支</span></button>
+                    <button class="btn btn-secondary btn-sm" style="width:100%; justify-content:flex-start; border:none; margin-bottom:4px;" id="btn-toggle-tree"><i class="ti ti-list-tree" style="color:var(--brand); margin-right:4px;"></i> <span>切換為扁平列表</span></button>
+                    <div style="height:1px; background:var(--border); margin:4px 0;"></div>
+                    <button class="btn btn-secondary btn-sm" style="width:100%; justify-content:flex-start; border:none; margin-bottom:4px;" id="btn-toggle-expand"><i class="ti ti-arrows-maximize" style="color:var(--brand); margin-right:4px;"></i> <span>展開所有分支</span></button>
+                    
                     <div style="height:1px; background:var(--border); margin:4px 0;"></div>
                     <div style="font-size:11px; font-weight:700; color:var(--text-muted); padding:4px 8px;">顯示欄位設定</div>
                     <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="tax_id" checked> 統一編號</label>
@@ -756,17 +759,28 @@ function bindEvents(container) {
     
     displayMenu.addEventListener('click', (e) => { e.stopPropagation(); });
 
-    // ✨ 修正 7：簡化單一切換按鈕
+    // 1. 樹狀/扁平模式切換
+    container.querySelector('#btn-toggle-tree').addEventListener('click', (e) => {
+        e.stopPropagation();
+        isTreeMode = !isTreeMode;
+        const btn = container.querySelector('#btn-toggle-tree');
+        btn.innerHTML = isTreeMode 
+            ? `<i class="ti ti-list-tree" style="color:var(--brand); margin-right:4px;"></i> <span>切換為扁平列表</span>` 
+            : `<i class="ti ti-list" style="color:var(--brand); margin-right:4px;"></i> <span>切換為樹狀檢視</span>`;
+        renderTable();
+    });
+
+    // 2. 展開/收合全部分支切換
     container.querySelector('#btn-toggle-expand').addEventListener('click', (e) => {
         e.stopPropagation();
         isAllExpanded = !isAllExpanded;
         const btn = container.querySelector('#btn-toggle-expand');
         if (isAllExpanded) {
             allData.forEach(d => { if (!d.parent_id) expandedParents.add(d.id); });
-            btn.innerHTML = `<i class="ti ti-arrows-minimize" style="color:var(--brand);"></i> <span>收合所有分支</span>`;
+            btn.innerHTML = `<i class="ti ti-arrows-minimize" style="color:var(--brand); margin-right:4px;"></i> <span>收合所有分支</span>`;
         } else {
             expandedParents.clear();
-            btn.innerHTML = `<i class="ti ti-arrows-maximize" style="color:var(--brand);"></i> <span>展開所有分支</span>`;
+            btn.innerHTML = `<i class="ti ti-arrows-maximize" style="color:var(--brand); margin-right:4px;"></i> <span>展開所有分支</span>`;
         }
         renderTable();
     });
