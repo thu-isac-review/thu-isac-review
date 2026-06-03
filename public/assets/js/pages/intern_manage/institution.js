@@ -5,8 +5,8 @@ let db;
 let allData = []; 
 let allRecords = []; 
 let editingId = null; 
-let editingOldData = null; // ✨ 儲存編輯前的完整快照
-let pendingPayload = null; // ✨ 暫存準備送出的資料
+let editingOldData = null; 
+let pendingPayload = null; 
 
 let currentPage = 1; 
 let itemsPerPage = 15;
@@ -42,7 +42,7 @@ export async function render(containerId, context) {
 }
 
 // ==========================================
-// 1. UI 注入模組 (新增變更意圖確認視窗)
+// 1. UI 注入模組
 // ==========================================
 function injectUI(container) {
     container.innerHTML = `
@@ -62,6 +62,9 @@ function injectUI(container) {
             .tree-toggle:hover { color: var(--brand); background: var(--brand-light); }
             .tree-toggle.expanded i { transform: rotate(90deg); color: var(--brand); }
             
+            .child-row { background-color: #fbfdff; }
+            .child-row td { border-bottom: 1px dashed var(--border); }
+            .child-row:hover td { background-color: #f0f7ff; }
             .child-name-wrap { display: flex; align-items: flex-start; padding-left: 24px; gap: 6px; }
             .child-name-wrap i { font-size: 16px; opacity: 0.5; color: var(--text-secondary); margin-top: 1px; flex-shrink: 0; }
 
@@ -171,7 +174,7 @@ function injectUI(container) {
                 .pagination-bar { flex-direction: column; align-items: flex-start; padding: 12px 16px; gap: 12px; }
                 .pagination-bar-right { width: 100%; justify-content: space-between; }
                 .dialog-overlay { padding: 12px; }
-                #data-form { flex-direction: column !important; gap: 16px !important; }
+                #data-form, #tab-history { flex-direction: column !important; gap: 16px !important; min-height: 0 !important; }
                 #data-form > div { width: 100% !important; margin: 0 !important; }
                 .v-divider-modal { display: block !important; width: 100% !important; height: 1px !important; min-height: 1px !important; background-color: var(--border) !important; margin: 8px 0 !important; flex-shrink: 0 !important; }
             }
@@ -214,13 +217,16 @@ function injectUI(container) {
             .field-input, .field-select { width: 100%; height: 36px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); padding: 0 12px; font-size: 13px; font-family: inherit; color: var(--text-primary); outline: none; transition: all var(--transition); }
             .field-input:focus, .field-select:focus, textarea.field-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); background: var(--surface); }
 
-            .merge-option { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border: 2px solid var(--border); border-radius: var(--radius-lg); cursor: pointer; transition: all var(--transition); background: var(--surface); margin-bottom: 10px; }
-            .merge-option:hover { border-color: var(--indigo-border); background: var(--bg); }
-            .merge-option:has(input:radio:checked) { border-color: var(--indigo); background: var(--indigo-bg); }
-
             .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
             .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
             .empty-text { font-size: 13px; font-weight: 600; }
+
+            /* ✨ UI 優化：卡片式意圖選擇單選框 */
+            .intent-radio-card { display: block; cursor: pointer; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 12px; transition: all 0.2s; background: white; }
+            .intent-radio-card:hover { border-color: var(--brand-light); background: #fafbff; }
+            .intent-radio-card:has(input:checked) { border-color: var(--brand); background: #f0f4ff; box-shadow: 0 0 0 1px var(--brand); }
+            .intent-radio-input { appearance: none; width: 16px; height: 16px; border: 2px solid #cbd5e1; border-radius: 50%; margin-right: 12px; position: relative; top: 2px; outline: none; cursor: pointer; transition: all 0.2s; background: white; }
+            .intent-radio-input:checked { border-color: var(--brand); background-color: var(--brand); box-shadow: inset 0 0 0 3px #f0f4ff; }
         </style>
 
         <div class="toolbar">
@@ -394,7 +400,7 @@ function injectUI(container) {
                     </div>
                 </div>
 
-                <form id="data-form" class="dialog-body custom-scroll" style="display: flex; gap: 24px;">
+                <form id="data-form" class="dialog-body custom-scroll" style="display: flex; gap: 24px; min-height: 420px;">
                     <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
                         <div class="form-section-title" style="margin-bottom: 0;"><i class="ti ti-building-skyscraper"></i> 機構基本資料</div>
                         
@@ -438,24 +444,24 @@ function injectUI(container) {
                     </div>
                 </form>
 
-                <div id="tab-history" class="dialog-body custom-scroll" style="display: none; background: var(--bg);">
+                <div id="tab-history" class="dialog-body custom-scroll" style="display: none; background: var(--bg); min-height: 420px;">
                     <div class="flex items-center justify-between mb-4">
                         <p class="text-xs text-gray-500 pr-4">將機構過去的舊名稱與地址封存於此，系統在建立未來的實習紀錄時，便可調用相應年份的正確資料。</p>
-                        <button type="button" id="btn-show-add-history" class="btn btn-sm btn-indigo-solid flex-shrink-0"><i class="ti ti-plus"></i> 新增歷史快照</button>
+                        <button type="button" id="btn-show-add-history" class="btn btn-sm btn-indigo-solid flex-shrink-0 shadow-sm"><i class="ti ti-plus"></i> 新增歷史快照</button>
                     </div>
 
-                    <div id="history-form-wrap" class="bg-white border border-indigo-200 rounded-lg p-4 mb-5 hidden shadow-sm">
-                        <div class="text-sm font-bold text-indigo-700 mb-3"><i class="ti ti-history"></i> 封存一筆歷史快照</div>
-                        <div class="grid grid-cols-2 gap-4 mb-4">
-                            <div class="field" style="margin-bottom: 0;"><label class="field-label">適用結束日期 <span class="req">*</span></label><input type="date" id="hist-end-date" class="field-input"></div>
-                            <div class="field" style="margin-bottom: 0;"><label class="field-label">舊統一編號 (選填)</label><input type="text" id="hist-tax-id" class="field-input" placeholder="留空則代表沿用現況"></div>
-                            <div class="field col-span-2" style="margin-bottom: 0;"><label class="field-label">歷史機構名稱 <span class="req">*</span></label><input type="text" id="hist-name" class="field-input" placeholder="當時的機構名稱"></div>
-                            <div class="field col-span-2" style="margin-bottom: 0;"><label class="field-label">歷史實習地址 <span class="req">*</span></label><input type="text" id="hist-address" class="field-input" placeholder="當時的詳細地址"></div>
-                            <div class="field col-span-2" style="margin-bottom: 0;"><label class="field-label">變更事由 (選填)</label><input type="text" id="hist-reason" class="field-input" placeholder="例如：配合政府組織改造升格"></div>
+                    <div id="history-form-wrap" class="bg-white border border-indigo-200 rounded-xl p-5 mb-6 hidden shadow-sm relative">
+                        <div class="flex items-center gap-2 text-sm font-bold text-indigo-700 mb-4"><i class="ti ti-history text-lg"></i> 封存一筆歷史快照</div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+                            <div class="field mb-0"><label class="field-label text-gray-600">適用結束日期 <span class="req text-red-500">*</span></label><input type="date" id="hist-end-date" class="field-input w-full bg-gray-50 focus:bg-white transition-colors"></div>
+                            <div class="field mb-0"><label class="field-label text-gray-600">舊統一編號 <span class="font-normal text-gray-400">(選填)</span></label><input type="text" id="hist-tax-id" class="field-input w-full bg-gray-50 focus:bg-white transition-colors" placeholder="留空則代表沿用現況"></div>
+                            <div class="field col-span-1 md:col-span-2 mb-0"><label class="field-label text-gray-600">歷史機構名稱 <span class="req text-red-500">*</span></label><input type="text" id="hist-name" class="field-input w-full bg-gray-50 focus:bg-white transition-colors" placeholder="當時的機構名稱"></div>
+                            <div class="field col-span-1 md:col-span-2 mb-0"><label class="field-label text-gray-600">歷史實習地址 <span class="req text-red-500">*</span></label><input type="text" id="hist-address" class="field-input w-full bg-gray-50 focus:bg-white transition-colors" placeholder="當時的詳細地址"></div>
+                            <div class="field col-span-1 md:col-span-2 mb-0"><label class="field-label text-gray-600">變更事由 <span class="font-normal text-gray-400">(選填)</span></label><input type="text" id="hist-reason" class="field-input w-full bg-gray-50 focus:bg-white transition-colors" placeholder="例如：配合政府組織改造升格"></div>
                         </div>
-                        <div class="flex justify-end gap-2 pt-3 border-t border-gray-100">
-                            <button type="button" id="btn-cancel-history" class="btn btn-sm btn-secondary">取消</button>
-                            <button type="button" id="btn-save-history" class="btn btn-sm btn-indigo-solid">確認封存快照</button>
+                        <div class="flex justify-end gap-2 pt-4 border-t border-gray-100">
+                            <button type="button" id="btn-cancel-history" class="btn btn-sm btn-secondary bg-white">取消</button>
+                            <button type="button" id="btn-save-history" class="btn btn-sm btn-indigo-solid shadow-sm">確認封存快照</button>
                         </div>
                     </div>
 
@@ -471,40 +477,47 @@ function injectUI(container) {
 
         <div id="change-intent-modal" class="dialog-overlay">
             <div class="dialog-box" style="max-width: 550px;">
-                <div class="dialog-header">
-                    <h3 style="color: var(--brand)"><i class="ti ti-alert-circle"></i> 偵測到機構名稱變更</h3>
-                    <button type="button" class="dialog-close" id="btn-close-intent-x"><i class="ti ti-x"></i></button>
+                <div class="dialog-header flex-col items-start p-0 border-none">
+                    <div class="w-full flex items-center justify-between p-5 pb-4 border-b border-gray-100 bg-gray-50 rounded-t-xl">
+                        <h3 class="flex items-center gap-2 text-base font-bold text-gray-800"><i class="ti ti-info-circle text-blue-500 text-xl"></i> 偵測到機構資料變更</h3>
+                        <button type="button" class="dialog-close" id="btn-close-intent-x"><i class="ti ti-x"></i></button>
+                    </div>
                 </div>
-                <div class="dialog-body custom-scroll" style="background: var(--bg);">
-                    <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-3 rounded-lg text-sm mb-4">
-                        系統偵測到機構名稱已從 <span class="font-bold text-red-500 mx-1" id="intent-old-name"></span> 變更為 <span class="font-bold text-green-600 mx-1" id="intent-new-name"></span>。<br>為了確保資料庫關聯正確，請選擇此次變更的性質：
+                <div class="dialog-body bg-gray-50/50 p-6 custom-scroll">
+                    <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg text-[13px] leading-relaxed mb-5 shadow-sm">
+                        系統偵測到此機構的 <span class="font-bold text-red-500">核心資料（名稱、統編或地址等）</span> 已被修改。<br>為了確保資料庫關聯正確，請選擇此次變更的性質：
                     </div>
                     
-                    <label class="merge-option">
-                        <input type="radio" name="change_intent" value="typo" checked>
-                        <div class="merge-option-content">
-                            <div class="merge-option-title">這是單純改錯字 / 修正補漏</div>
-                            <div class="merge-option-desc">系統將同步更新過去所有學生的實習紀錄，全部修正為最新名稱。</div>
+                    <label class="intent-radio-card">
+                        <div class="flex items-start">
+                            <input type="radio" name="change_intent" value="typo" checked class="intent-radio-input flex-shrink-0">
+                            <div>
+                                <div class="text-[14px] font-bold text-gray-800 mb-1">這是單純改錯字 / 修正補漏</div>
+                                <div class="text-[12px] text-gray-500 leading-relaxed">系統將同步更新過去所有學生的實習紀錄，全部修正為最新資料。</div>
+                            </div>
                         </div>
                     </label>
 
-                    <label class="merge-option mb-2">
-                        <input type="radio" name="change_intent" value="history">
-                        <div class="merge-option-content">
-                            <div class="merge-option-title">這是機構歷史改名 (如升格、改組、搬遷)</div>
-                            <div class="merge-option-desc">系統將保留過去學生的舊名稱紀錄，並自動將舊資料封存為歷史快照。</div>
+                    <label class="intent-radio-card mb-0">
+                        <div class="flex items-start">
+                            <input type="radio" name="change_intent" value="history" class="intent-radio-input flex-shrink-0">
+                            <div>
+                                <div class="text-[14px] font-bold text-gray-800 mb-1">這是機構歷史改名 (如升格、改組、搬遷)</div>
+                                <div class="text-[12px] text-gray-500 leading-relaxed">系統將保留過去學生的舊紀錄，並自動將舊資料封存為歷史快照。</div>
+                            </div>
                         </div>
                     </label>
 
-                    <div id="intent-history-fields" class="hidden bg-white p-4 rounded-lg border border-gray-200 shadow-sm ml-8 mb-4">
-                        <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">請補充歷史快照資訊</div>
-                        <div class="field mb-3"><label class="field-label">舊資料適用結束日期 <span class="req">*</span></label><input type="date" id="intent-end-date" class="field-input"></div>
-                        <div class="field mb-0"><label class="field-label">變更事由 (選填)</label><input type="text" id="intent-reason" class="field-input" placeholder="例如：配合政府組織改造升格"></div>
+                    <div id="intent-history-fields" class="hidden mt-3 ml-[30px] p-4 bg-white border border-gray-200 rounded-lg shadow-sm relative">
+                        <div class="absolute -top-2 left-6 w-3 h-3 bg-white border-t border-l border-gray-200 transform rotate-45"></div>
+                        <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">請補充歷史快照資訊</div>
+                        <div class="field mb-3"><label class="field-label text-gray-600">舊資料適用結束日期 <span class="req text-red-500">*</span></label><input type="date" id="intent-end-date" class="field-input bg-gray-50 focus:bg-white h-9"></div>
+                        <div class="field mb-0"><label class="field-label text-gray-600">變更事由 <span class="font-normal text-gray-400">(選填)</span></label><input type="text" id="intent-reason" class="field-input bg-gray-50 focus:bg-white h-9" placeholder="例如：配合政府組織改造升格"></div>
                     </div>
                 </div>
-                <div class="dialog-footer">
-                    <button type="button" class="btn btn-secondary" id="btn-cancel-intent">返回修改</button>
-                    <button type="button" id="btn-confirm-intent" class="btn btn-primary"><i class="ti ti-check"></i> 確認執行儲存</button>
+                <div class="dialog-footer bg-gray-50 border-t border-gray-200 p-4 rounded-b-xl flex justify-end gap-2">
+                    <button type="button" class="btn btn-secondary bg-white" id="btn-cancel-intent">返回修改</button>
+                    <button type="button" id="btn-confirm-intent" class="btn btn-primary shadow-sm"><i class="ti ti-check"></i> 確認執行儲存</button>
                 </div>
             </div>
         </div>
@@ -737,7 +750,7 @@ function bindEvents(container) {
     container.querySelector('#btn-close-modal-x').addEventListener('click', closeModal);
     container.querySelector('#btn-cancel-modal').addEventListener('click', closeModal);
     
-    // ✨ 修改點擊儲存，攔截變更意圖
+    // 綁定儲存按鈕
     container.querySelector('#btn-submit').addEventListener('click', submitForm);
 
     const parentSearchInput = container.querySelector('#parent-search-input');
@@ -856,7 +869,7 @@ function bindEvents(container) {
         renderHistoryList();
     });
 
-    // ✨ 歷史紀錄表單控制 (手動新增用)
+    // 歷史紀錄表單控制
     container.querySelector('#btn-show-add-history').addEventListener('click', () => {
         document.getElementById('history-form-wrap').classList.remove('hidden');
         document.getElementById('hist-end-date').value = '';
@@ -916,20 +929,19 @@ function bindEvents(container) {
             const reason = document.getElementById('intent-reason').value.trim();
             if(!endDate) { alert('請填寫舊資料適用結束日期！'); return; }
             
-            // 自動生成歷史快照並推入
             pendingPayload.history = pendingPayload.history || [];
             pendingPayload.history.push({
                 end_date: endDate,
                 name: editingOldData.name,
                 address: editingOldData.address || '',
-                tax_id: editingOldData.tax_id || '',
+                tax_id: editingOldData.tax_id || editingOldData.overseas_tax_id || '',
                 reason: reason,
                 created_at: new Date().toISOString()
             });
         }
         
         document.getElementById('change-intent-modal').classList.remove('open');
-        await executeSave(pendingPayload, isTypo); // 執行真正的儲存
+        await executeSave(pendingPayload, isTypo); 
     });
 }
 
@@ -1409,7 +1421,7 @@ function openCreateModal() {
 
 function closeModal() { document.getElementById('data-modal').classList.remove('open'); editingId = null; pendingPayload = null; }
 
-// ✨ 核心升級：攔截按鈕儲存，判斷是否跳出變更意圖詢問
+// ✨ 核心升級：攔截按鈕儲存，擴大偵測欄位 (名稱、地址、統編、海外稅號、縣市)
 async function submitForm() {
     const isDomestic = document.getElementById('input-country').value === '中華民國';
     
@@ -1426,17 +1438,26 @@ async function submitForm() {
         venue_type: document.getElementById('input-venue-type').value,
         address: document.getElementById('input-address').value.trim(),
         remarks: document.getElementById('input-remarks').value.trim(),
-        history: currentHistory
+        history: currentHistory 
     };
 
     if(!payload.country || !payload.name || !payload.address) { alert("請填寫所有必填欄位！"); return; }
     if (isDomestic && (!payload.tax_id || !payload.city)) { alert("中華民國機構必須填寫「統一編號」與「縣市別」！"); return; }
 
-    // ✨ 如果是編輯狀態，且「主名稱」被修改了，攔截儲存並跳出意圖詢問
-    if (editingId && editingOldData && editingOldData.name !== payload.name) {
+    let hasSignificantChange = false;
+    if (editingId && editingOldData) {
+        if (editingOldData.name !== payload.name) hasSignificantChange = true;
+        if (editingOldData.address !== payload.address) hasSignificantChange = true;
+        if (isDomestic) {
+            if (editingOldData.tax_id !== payload.tax_id) hasSignificantChange = true;
+            if (editingOldData.city !== payload.city) hasSignificantChange = true;
+        } else {
+            if (editingOldData.overseas_tax_id !== payload.overseas_tax_id) hasSignificantChange = true;
+        }
+    }
+
+    if (hasSignificantChange) {
         pendingPayload = payload;
-        document.getElementById('intent-old-name').innerText = editingOldData.name;
-        document.getElementById('intent-new-name').innerText = payload.name;
         document.getElementById('intent-end-date').value = new Date().toISOString().split('T')[0]; 
         document.getElementById('intent-reason').value = '';
         document.getElementById('intent-history-fields').classList.add('hidden');
@@ -1445,11 +1466,9 @@ async function submitForm() {
         return; 
     }
 
-    // 若無名稱變更，直接執行正常儲存 (視為改錯字/現況維護，isTypo = true)
     await executeSave(payload, true);
 }
 
-// ✨ 實際負責寫入 DB 的引擎
 async function executeSave(payload, isTypo = true) {
     const btn = document.getElementById('btn-submit');
     const intentBtn = document.getElementById('btn-confirm-intent');
@@ -1461,7 +1480,6 @@ async function executeSave(payload, isTypo = true) {
             const batch = writeBatch(db);
             batch.update(doc(db, "internship_institutions", editingId), { ...payload, updated_at: serverTimestamp() });
             
-            // ✨ 唯有在「單純改錯字 (isTypo)」的情境下，才去覆蓋學生紀錄的 inst_raw
             if (isTypo && editingOldData && editingOldData.name !== payload.name) {
                 allRecords.forEach(record => {
                     if (record.inst_id === editingId || (!record.inst_id && record.inst_raw === editingOldData.name)) {
@@ -1485,7 +1503,7 @@ async function executeSave(payload, isTypo = true) {
 function editData(id) {
     const docData = allData.find(d => d.id === id); if (!docData) return;
     editingId = id; 
-    editingOldData = { ...docData }; // ✨ 紀錄完整舊資料快照
+    editingOldData = { ...docData }; 
     currentHistory = docData.history || [];
     
     document.getElementById('modal-tabs').classList.remove('hidden');
