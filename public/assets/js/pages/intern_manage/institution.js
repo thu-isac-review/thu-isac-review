@@ -1703,3 +1703,17 @@ async function executeMerge() {
         closeMergeModal(); fetchInitialDataOnce();
     } catch(e) { alert("合併失敗"); }
 }
+
+async function batchDelete() {
+    const hasChildren = selectedIds.some(id => allData.some(d => d.parent_id === id && !selectedIds.includes(d.id)));
+    if (hasChildren) {
+        alert("⚠️ 批次刪除失敗！\n您選取的項目中包含「尚有綁定分公司的主機構」。\n請取消勾選主機構，或連同其分公司一併勾選刪除。");
+        return;
+    }
+    if (!confirm(`確定刪除這 ${selectedIds.length} 筆機構嗎？`)) return;
+    try {
+        const batch = writeBatch(db);
+        selectedIds.forEach(id => batch.delete(doc(db, "internship_institutions", id)));
+        await batch.commit(); fetchInitialDataOnce();
+    } catch (e) { alert("刪除失敗"); }
+}
