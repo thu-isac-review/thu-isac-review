@@ -133,11 +133,12 @@ function injectUI(container) {
             @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
             .batch-info { font-size: 13px; font-weight: 600; color: var(--brand); display: flex; align-items: center; gap: 8px; }
 
-            .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; border-left: none; border-right: none; }
+            .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; border-left: none; border-right: none; isolation: isolate; z-index: 0; }
             .table-scroll { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: none; }
             
             table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: auto; min-width: 1000px; }
-            th { padding: 12px 16px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; position: sticky; top: 0; z-index: 2; background: var(--surface); border-bottom: 1px solid var(--border); }
+            /* ✨ z-index 降級為 1 */
+            th { padding: 12px 16px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; position: sticky; top: 0; z-index: 1; background: var(--surface); border-bottom: 1px solid var(--border); }
             td { padding: 12px 16px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); background-color: inherit; }
             
             tr { background-color: var(--surface); transition: background-color 0.15s; }
@@ -147,15 +148,15 @@ function injectUI(container) {
             tr.child-row:hover { background-color: #edf3ff; }
             tr.selected { background-color: #eef2ff !important; }
 
-            .col-checkbox { position: sticky; left: 0; width: 48px; min-width: 48px; max-width: 48px; text-align: center; z-index: 3; background-color: inherit; }
-            th.col-checkbox { z-index: 4; background-color: var(--surface); }
+            /* ✨ 左側凍結區：z-index 降級為 1 與 2 */
+            .col-checkbox { position: sticky; left: 0; width: 48px; min-width: 48px; max-width: 48px; text-align: center; z-index: 1; background-color: inherit; }
+            th.col-checkbox { z-index: 2; background-color: var(--surface); }
 
-            /* 2. 機構名稱寬度縮減為 250px，確保右側按鈕有空間顯示 */
             .col-name { min-width: 250px; }
-            th.col-name { text-align: center; z-index: 2; } 
+            th.col-name { text-align: center; z-index: 1; } 
 
             .col-actions { width: 100px; min-width: 100px; max-width: 100px; text-align: center; }
-            th.col-actions { z-index: 2; }
+            th.col-actions { z-index: 1; }
             
             .col-spacer { width: 100%; padding: 0 !important; border-bottom: 1px solid var(--border); }
 
@@ -163,7 +164,7 @@ function injectUI(container) {
                 .col-checkbox { position: static !important; min-width: 48px !important; }
                 .col-name { position: static !important; min-width: 250px !important; width: auto !important; }
                 .col-actions { position: static !important; min-width: 100px !important; }
-                /* 手機版 z-index 同步調降，避免蓋住選單 */
+                /* ✨ 手機版 z-index 同步調降為 2 */
                 th.col-checkbox, th.col-name, th.col-actions { position: sticky !important; top: 0 !important; left: auto !important; right: auto !important; z-index: 2 !important; }
                 .col-name::after, .col-actions::before { display: none !important; } 
                 
@@ -189,7 +190,7 @@ function injectUI(container) {
                 #data-form > div { width: 100% !important; margin: 0 !important; }
                 .v-divider-modal { display: block !important; width: 100% !important; height: 1px !important; min-height: 1px !important; background-color: var(--border) !important; margin: 8px 0 !important; flex-shrink: 0 !important; }
             }
-
+            
             th[data-sort] { cursor: pointer; user-select: none; transition: color var(--transition); }
             th[data-sort]:hover { color: var(--text-secondary); }
             th .sort-icon { margin-left: 4px; font-size: 14px; opacity: 0.4; vertical-align: middle; }
