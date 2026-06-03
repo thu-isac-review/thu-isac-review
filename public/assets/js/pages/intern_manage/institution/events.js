@@ -180,7 +180,7 @@ export function bindEvents(container) {
         state.isGlobalListenerBound = true;
     }
 
-    // ---------------- 4. 批次操作列事件 ----------------
+    // ---------------- 4. 批次操作列事件 (修正確認視窗與重載) ----------------
     container.querySelector('#selectAll').addEventListener('change', (e) => {
         const isChecked = e.target.checked;
         const visibleIds = [];
@@ -212,8 +212,28 @@ export function bindEvents(container) {
     });
 
     container.querySelector('#btn-batch-delete').addEventListener('click', async () => {
-        await Data.batchDelete();
-        UI.updateBatchActionBar(); UI.buildBaseTree(); Render.renderTable();
+        const hasChildren = state.selectedIds.some(id => state.allData.some(d => d.parent_id === id && !state.selectedIds.includes(d.id)));
+        if (hasChildren) {
+            alert("⚠️ 批次刪除失敗！\n您選取的項目中包含「尚有綁定分公司的主機構」。\n請取消勾選主機構，或連同其分公司一併勾選刪除。");
+            return;
+        }
+        if (!confirm(`確定刪除這 ${state.selectedIds.length} 筆機構嗎？`)) return;
+        
+        const btn = document.getElementById('btn-batch-delete');
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 刪除中...';
+        btn.disabled = true;
+
+        try {
+            await Data.batchDelete();
+            await Data.fetchInitialDataOnce(); // 刪除後重抓資料
+            UI.updateBatchActionBar(); UI.buildBaseTree(); Render.renderTable(); // 重繪畫面
+        } catch (e) {
+            alert("刪除失敗");
+        } finally {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        }
     });
 
     container.querySelector('#btn-batch-edit').addEventListener('click', () => {
@@ -319,7 +339,7 @@ export function bindEvents(container) {
         }
     });
 
-    // ---------------- 7. 表單送出與儲存判斷 ----------------
+    // ---------------- 7. 表單送出與儲存判斷 (修正重載邏輯) ----------------
     container.querySelector('#btn-submit').addEventListener('click', async () => {
         const isDomestic = document.getElementById('input-country').value === '中華民國';
         const payload = { 
@@ -365,19 +385,51 @@ export function bindEvents(container) {
     });
 
     const executeSaveAction = async (payload, isTypo) => {
-        await Data.executeSave(payload, isTypo);
-        UI.updateBatchActionBar(); UI.buildBaseTree(); Render.renderTable();
+        const btn = document.getElementById('btn-submit');
+        const intentBtn = document.getElementById('btn-confirm-intent');
+        btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 儲存中...';
+        intentBtn.disabled = true; intentBtn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 儲存中...';
+
+        try {
+            await Data.executeSave(payload, isTypo);
+            UI.closeModal(); // 關閉主表單
+            await Data.fetchInitialDataOnce(); // 重新拉取新資料
+            UI.updateBatchActionBar(); UI.buildBaseTree(); Render.renderTable(); // 重新渲染畫面
+        } catch (err) {
+            alert("儲存失敗");
+            console.error(err);
+        } finally {
+            btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> 確認儲存變更';
+            intentBtn.disabled = false; intentBtn.innerHTML = '<i class="ti ti-check"></i> 確認執行儲存';
+        }
     };
 
-    // ---------------- 8. 批次編輯與合併 Modal ----------------
+    // ---------------- 8. 批次編輯與合併 Modal (修正關閉與重載邏輯) ----------------
     const closeBatchEdit = () => document.getElementById('batch-edit-modal').classList.remove('open');
     container.querySelector('#btn-close-batch-x').addEventListener('click', closeBatchEdit);
     container.querySelector('#btn-cancel-batch').addEventListener('click', closeBatchEdit);
+    
     container.querySelector('#btn-batch-edit-submit').addEventListener('click', async () => {
         const indVal = document.getElementById('batch-input-industry').value;
         const venVal = document.getElementById('batch-input-venue').value;
-        await Data.executeBatchEdit(indVal, venVal);
-        UI.updateBatchActionBar(); UI.buildBaseTree(); Render.renderTable();
+        if (!confirm(`確定要批次修改這 ${state.selectedIds.length} 筆機構嗎？`)) return;
+
+        const btn = document.getElementById('btn-batch-edit-submit');
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 更新中...';
+        btn.disabled = true;
+
+        try {
+            await Data.executeBatchEdit(indVal, venVal);
+            closeBatchEdit();
+            await Data.fetchInitialDataOnce(); // 更新後重載資料
+            UI.updateBatchActionBar(); UI.buildBaseTree(); Render.renderTable();
+        } catch(e) {
+            alert("更新失敗");
+        } finally {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        }
     });
 
     const closeMerge = () => document.getElementById('merge-modal').classList.remove('open');
@@ -386,12 +438,34 @@ export function bindEvents(container) {
     container.querySelector('#merge-options-container').addEventListener('change', (e) => {
         if(e.target.name === 'master_inst') document.getElementById('btn-merge-submit').disabled = false;
     });
+    
     container.querySelector('#btn-merge-submit').addEventListener('click', async () => {
-        await Data.executeMerge();
-        UI.updateBatchActionBar(); UI.buildBaseTree(); Render.renderTable();
+        const masterId = document.querySelector('input[name="master_inst"]:checked')?.value; if(!masterId) return;
+        const masterInst = state.allData.find(i => i.id === masterId);
+        const instsToDelete = state.selectedIds.filter(id => id !== masterId);
+        const deletedNames = state.allData.filter(i => instsToDelete.includes(i.id)).map(i => i.name);
+        
+        if(!confirm(`確認合併？\n\n📌 保留主體：${masterInst.name}\n🗑️ 刪除對象：${deletedNames.join('、')}`)) return;
+
+        const btn = document.getElementById('btn-merge-submit');
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 合併中...';
+        btn.disabled = true;
+
+        try {
+            await Data.executeMerge(masterId, masterInst.name, instsToDelete, deletedNames);
+            closeMerge();
+            await Data.fetchInitialDataOnce(); // 合併後重載資料
+            UI.updateBatchActionBar(); UI.buildBaseTree(); Render.renderTable();
+        } catch(e) {
+            alert("合併失敗");
+        } finally {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        }
     });
 
-    // ---------------- 9. 表格內行操作 (編輯、刪除、樹狀展開) ----------------
+    // ---------------- 9. 表格內行操作 (修正單筆刪除與對話框) ----------------
     container.querySelector('#table-body').addEventListener('click', async (e) => {
         const rowChk = e.target.closest('.row-select-chk');
         const btnEdit = e.target.closest('.btn-row-edit');
@@ -453,11 +527,31 @@ export function bindEvents(container) {
             document.getElementById('data-modal').classList.add('open');
         }
         else if (btnDel) { 
-            await Data.deleteData(btnDel.dataset.id, btnDel.dataset.name);
+            const id = btnDel.dataset.id;
+            const name = btnDel.dataset.name;
+            const hasChildren = state.allData.some(d => d.parent_id === id);
+            
+            if (hasChildren) {
+                alert(`⚠️ 無法刪除！\n\n「${name}」底下還有綁定分公司 / 分部。\n請先解除分公司的隸屬綁定，或先刪除分公司，才能刪除該主機構。`);
+                return;
+            }
+            
+            if (confirm(`確定要刪除機構「${name}」嗎？`)) {
+                const originalHtml = btnDel.innerHTML;
+                btnDel.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i>';
+                try {
+                    await Data.deleteData(id);
+                    await Data.fetchInitialDataOnce(); // 刪除後重抓資料
+                    UI.updateBatchActionBar(); UI.buildBaseTree(); Render.renderTable();
+                } catch(e) {
+                    alert("刪除失敗");
+                    btnDel.innerHTML = originalHtml;
+                }
+            }
         }
     });
 
-    // ---------------- 10. 歷史快照相關 Modal ----------------
+    // ---------------- 10. 歷史快照相關 Modal (修正意圖儲存邏輯) ----------------
     const tabBtnMain = container.querySelector('#tab-btn-main');
     const tabBtnHistory = container.querySelector('#tab-btn-history');
     const tabMain = container.querySelector('#data-form');
