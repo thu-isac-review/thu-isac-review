@@ -1,0 +1,340 @@
+<link rel="stylesheet" href="./assets/css/institution.css">
+<style id="dynamic-col-styles"></style>
+
+<div id="institution-page-wrapper" style="height: 100%; display: flex; flex-direction: column;">
+    <div class="toolbar">
+        <div class="search-wrap">
+            <i class="ti ti-search"></i>
+            <input type="text" id="search-input" placeholder="搜尋機構名稱、統編或地址..." class="search-input">
+        </div>
+        <div class="flex-spacer"></div>
+        <div class="toolbar-actions">
+            <button id="btn-export-csv" class="btn btn-success-solid"><i class="ti ti-file-export"></i> <span class="btn-text">匯出清單</span></button>
+            <button id="btn-import-trigger" class="btn btn-indigo-solid"><i class="ti ti-file-import"></i> <span class="btn-text">批次匯入</span></button>
+            <div class="v-divider"></div>
+            <button id="btn-create-inst" class="btn btn-primary"><i class="ti ti-plus"></i> <span class="btn-text">新增機構</span></button>
+        </div>
+        <input type="file" id="import-file" accept=".csv" style="display:none;">
+    </div>
+
+    <div class="filter-row">
+        <div class="filters-scroll-area custom-scroll">
+            <div class="filter-pill-wrap" id="pill-wrap-country">
+                <button class="filter-pill" id="pill-country">全部國別 <i class="ti ti-chevron-down"></i></button>
+                <div class="filter-dropdown" id="drop-country">
+                    <div class="filter-dropdown-search">
+                        <input type="text" id="search-country-input" placeholder="搜尋國別...">
+                        <div style="display:flex; justify-content:flex-end; margin-top:8px; padding:0 4px;">
+                            <button type="button" style="font-size:12px; color:var(--brand); background:none; border:none; cursor:pointer;" class="btn-filter-toggle" data-type="country" data-state="none">全選 / 全不選</button>
+                        </div>
+                    </div>
+                    <div class="filter-dropdown-list" id="country-options-container"></div>
+                </div>
+            </div>
+            
+            <div class="filter-pill-wrap" id="pill-wrap-city">
+                <button class="filter-pill" id="pill-city">全部縣市 <i class="ti ti-chevron-down"></i></button>
+                <div class="filter-dropdown" id="drop-city">
+                    <div class="filter-dropdown-search">
+                        <input type="text" id="search-city-input" placeholder="搜尋縣市...">
+                        <div style="display:flex; justify-content:flex-end; margin-top:8px; padding:0 4px;">
+                            <button type="button" style="font-size:12px; color:var(--brand); background:none; border:none; cursor:pointer;" class="btn-filter-toggle" data-type="city" data-state="none">全選 / 全不選</button>
+                        </div>
+                    </div>
+                    <div class="filter-dropdown-list" id="city-options-container"></div>
+                </div>
+            </div>
+
+            <div class="filter-pill-wrap" id="pill-wrap-industry">
+                <button class="filter-pill" id="pill-industry">全部行業別 <i class="ti ti-chevron-down"></i></button>
+                <div class="filter-dropdown" id="drop-industry">
+                    <div class="filter-dropdown-search">
+                        <input type="text" id="search-industry-input" placeholder="搜尋行業別...">
+                        <div style="display:flex; justify-content:flex-end; margin-top:8px; padding:0 4px;">
+                            <button type="button" style="font-size:12px; color:var(--brand); background:none; border:none; cursor:pointer;" class="btn-filter-toggle" data-type="industry" data-state="none">全選 / 全不選</button>
+                        </div>
+                    </div>
+                    <div class="filter-dropdown-list" id="industry-options-container"></div>
+                </div>
+            </div>
+
+            <div class="filter-pill-wrap" id="pill-wrap-venue">
+                <button class="filter-pill" id="pill-venue">全部場所 <i class="ti ti-chevron-down"></i></button>
+                <div class="filter-dropdown" id="drop-venue">
+                    <div class="filter-dropdown-search">
+                        <input type="text" id="search-venue-input" placeholder="搜尋場所...">
+                        <div style="display:flex; justify-content:flex-end; margin-top:8px; padding:0 4px;">
+                            <button type="button" style="font-size:12px; color:var(--brand); background:none; border:none; cursor:pointer;" class="btn-filter-toggle" data-type="venue" data-state="none">全選 / 全不選</button>
+                        </div>
+                    </div>
+                    <div class="filter-dropdown-list" id="venue-options-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="relative inline-block text-left" id="display-settings-wrap">
+            <button id="btn-display-settings" class="btn btn-secondary btn-sm" style="font-weight: 500;"><i class="ti ti-settings"></i> 顯示設定</button>
+            <div id="display-settings-menu" style="position:absolute; right:0; top:calc(100% + 4px); width:200px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); padding:8px; z-index:100; display:none;" class="menu-popup">
+                <button class="btn btn-secondary btn-sm" style="width:100%; justify-content:flex-start; border:none; margin-bottom:4px;" id="btn-toggle-tree"><i class="ti ti-list-tree" style="color:var(--brand); margin-right:4px;"></i> <span>切換為扁平列表</span></button>
+                <div style="height:1px; background:var(--border); margin:4px 0;"></div>
+                <button class="btn btn-secondary btn-sm" style="width:100%; justify-content:flex-start; border:none; margin-bottom:4px;" id="btn-toggle-expand"><i class="ti ti-arrows-maximize" style="color:var(--brand); margin-right:4px;"></i> <span>展開所有分支</span></button>
+                
+                <div style="height:1px; background:var(--border); margin:4px 0;"></div>
+                <div style="font-size:11px; font-weight:700; color:var(--text-muted); padding:4px 8px;">顯示欄位設定</div>
+                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="tax_id" checked> 統一編號</label>
+                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="industry" checked> 行業別</label>
+                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="venue_type" checked> 實習場所</label>
+                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="country" checked> 國別</label>
+                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="city" checked> 縣市別</label>
+                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="address" checked> 實習場所地址</label>
+            </div>
+        </div>
+
+        <div id="batch-bar">
+            <div class="batch-info"><i class="ti ti-checks" style="font-size:18px;"></i> 已選 <span id="selected-count">0</span> 筆機構</div>
+            <button id="btn-select-all-filtered" class="btn btn-sm btn-secondary">選取全部符合條件</button>
+            <button id="btn-clear-selection" class="btn btn-sm btn-secondary">取消選取</button>
+            <div class="flex-spacer"></div>
+            <button id="btn-batch-edit" class="btn btn-sm btn-primary"><i class="ti ti-edit"></i> 批次修改屬性</button>
+            <button id="btn-batch-merge" class="btn btn-sm btn-indigo-solid"><i class="ti ti-link"></i> 合併勾選</button>
+            <button id="btn-batch-delete" class="btn btn-sm btn-danger"><i class="ti ti-trash"></i> 批次刪除</button>
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        <div class="table-scroll custom-scroll">
+            <table>
+                <thead>
+                    <tr id="inst-table-head">
+                        <th class="col-checkbox">
+                            <div class="flex-center">
+                                <input type="checkbox" id="selectAll" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
+                            </div>
+                        </th>
+                        <th class="col-name" data-sort="name">實習機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="tax_id" class="col-tax_id">統一編號 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="industry" class="col-industry">行業別 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="venue_type" class="col-venue_type">實習場所 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="country" class="col-country">國別 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="city" class="col-city">縣市別 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="address" class="col-address" style="text-align: center;">實習場所地址 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th class="col-actions">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <tr><td colspan="9" class="empty-state"><i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i><div class="empty-text">資料載入中...</div></td></tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="pagination-bar">
+            <div class="pagination-info" id="pagination-info">共 0 間實習機構</div>
+            <div class="pagination-bar-right">
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="font-size:12px; color:var(--text-muted)">每頁顯示</span>
+                    <select class="per-page-select" id="per-page-select">
+                        <option value="15">15 筆</option>
+                        <option value="25">25 筆</option>
+                        <option value="50">50 筆</option>
+                    </select>
+                </div>
+                <div class="pagination-controls" id="pagination-controls"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 彈窗系統 -->
+    <div id="data-modal" class="dialog-overlay">
+        <div class="dialog-box" style="max-width: 800px;">
+            <div class="dialog-header flex-col items-start p-0 border-none" style="flex-direction: column; align-items: flex-start; padding: 0; border: none;">
+                <div style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 20px 20px 16px;">
+                    <h3 id="modal-title" style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700;"><i class="ti ti-building-skyscraper text-brand" style="font-size: 20px;"></i> 新增實習機構</h3>
+                    <button type="button" class="dialog-close" id="btn-close-modal-x"><i class="ti ti-x"></i></button>
+                </div>
+                <div id="modal-tabs" style="width: 100%; border-bottom: 1px solid var(--border); padding: 0 20px; display: none;">
+                    <nav style="display: flex; gap: 24px; margin-bottom: -1px;">
+                        <button type="button" id="tab-btn-main" style="padding: 12px 4px; border: none; border-bottom: 2px solid var(--brand); background: none; color: var(--brand); font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s;">機構詳細資料</button>
+                        <button type="button" id="tab-btn-history" style="padding: 12px 4px; border: none; border-bottom: 2px solid transparent; background: none; color: var(--text-muted); font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s;">歷史變更軌跡</button>
+                    </nav>
+                </div>
+            </div>
+
+            <div class="dialog-body-container">
+                <form id="data-form" class="custom-scroll" style="display: flex; gap: 24px; width: 100%; padding: 24px; overflow-y: auto;">
+                    <div style="flex: 1; display: flex; flex-direction: column;">
+                        <div class="form-section-title"><i class="ti ti-building-skyscraper"></i> 機構基本資料</div>
+                        
+                        <div class="field">
+                            <label class="field-label">隸屬主機構 (若為分公司請搜尋並選擇)</label>
+                            <div class="searchable-select-wrap relative">
+                                <div style="position: absolute; left: 12px; top: 0; bottom: 0; display: flex; align-items: center; pointer-events: none;">
+                                    <i class="ti ti-building" style="color: var(--text-muted); font-size: 16px;"></i>
+                                </div>
+                                <input type="text" id="parent-search-input" class="field-input" style="padding-left: 36px; padding-right: 32px;" placeholder="輸入關鍵字搜尋... (留空代表獨立機構)" autocomplete="off">
+                                <button type="button" id="btn-clear-parent" style="position: absolute; right: 10px; top: 0; bottom: 0; background: none; border: none; cursor: pointer; display: none; align-items: center; color: var(--text-muted); transition: 0.2s;">
+                                    <i class="ti ti-x" style="font-size: 16px;"></i>
+                                </button>
+                                <input type="hidden" id="input-parent-id">
+                                <div id="parent-dropdown-list" class="searchable-dropdown custom-scroll"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="field"><label class="field-label">實習場所國別 <span class="req">*</span></label><select id="input-country" required class="field-select"></select></div>
+                        <div class="field"><label class="field-label">機構主名稱 <span class="req">*</span></label><input type="text" id="input-name" required placeholder="請輸入完整機構名稱" class="field-input"></div>
+                        
+                        <div class="field" id="wrap-name-translated" style="display:none;"><label class="field-label">中文譯名</label><input type="text" id="input-name-translated" placeholder="例如：蘋果公司 (選填)" class="field-input"></div>
+                        <div class="field" id="wrap-overseas-tax" style="display:none;"><label class="field-label">海外稅號 / 立案號碼</label><input type="text" id="input-overseas-tax-id" placeholder="當地稅務或機構登記號碼 (選填)" class="field-input"></div>
+                        
+                        <div class="field" id="wrap-tax-id"><label class="field-label">統一編號 <span class="req">*</span></label><input type="text" id="input-tax-id" required placeholder="如: 12345678" class="field-input" style="text-transform:uppercase;"></div>
+                        <div class="field" id="wrap-city"><label class="field-label">縣市別 <span id="req-city" class="req">*</span></label><select id="input-city" required class="field-select"><option value="">請選擇</option></select></div>
+                        
+                        <div class="field" style="margin-bottom:0;"><label class="field-label">實際實習地址 <span class="req">*</span></label><input type="text" id="input-address" required placeholder="請輸入完整實習地址" class="field-input"></div>
+                    </div>
+                    <div class="v-divider-modal" style="width: 1px; background: var(--border); margin: 0;"></div>
+                    <div style="flex: 1; display: flex; flex-direction: column;">
+                        <div class="form-section-title"><i class="ti ti-tags"></i> 分類與備註</div>
+                        <div class="field"><label class="field-label">行業別</label><select id="input-industry" class="field-select"><option value="">請選擇</option></select></div>
+                        <div class="field"><label class="field-label">實習場所</label><select id="input-venue-type" class="field-select"><option value="">請選擇</option></select></div>
+                        
+                        <div class="field" style="flex: 1; display: flex; flex-direction: column; margin-bottom: 0;">
+                            <label class="field-label">機構備註</label>
+                            <textarea id="input-remarks" class="field-input custom-scroll" placeholder="可輸入與該機構相關之備註說明..." style="flex: 1; resize: none; padding: 10px 12px; line-height: 1.5; min-height: 120px;"></textarea>
+                        </div>
+                    </div>
+                </form>
+
+                <div id="tab-history" class="custom-scroll" style="display: none; width: 100%; padding: 24px; overflow-y: auto;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+                        <p style="font-size:12px; color:var(--text-muted); padding-right:16px;">將機構過去的舊名稱與地址封存於此，系統在建立未來的實習紀錄時，便可調用相應年份的正確資料。</p>
+                        <button type="button" id="btn-show-add-history" class="btn btn-sm btn-indigo-solid" style="flex-shrink:0; box-shadow:var(--shadow-sm);"><i class="ti ti-plus"></i> 新增歷史快照</button>
+                    </div>
+                    <div id="history-list-container" style="display:flex; flex-direction:column; gap:12px;"></div>
+                </div>
+            </div>
+
+            <div class="dialog-footer">
+                <button type="button" class="btn btn-secondary" id="btn-cancel-modal">取消</button>
+                <button type="button" id="btn-submit" class="btn btn-primary"><i class="ti ti-check"></i> 確認儲存變更</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="add-history-modal" class="dialog-overlay">
+        <div class="dialog-box" style="max-width: 550px;">
+            <div class="dialog-header flex-col items-start p-0 border-none">
+                <div style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:20px 24px 16px; border-bottom:1px solid var(--border); background:#f8fafc;">
+                    <h3 style="display:flex; align-items:center; gap:8px; font-size:16px; font-weight:700; color:var(--text-primary);"><i class="ti ti-history" style="color:var(--indigo); font-size:20px;"></i> 封存一筆歷史快照</h3>
+                    <button type="button" class="dialog-close" id="btn-close-add-hist-x"><i class="ti ti-x"></i></button>
+                </div>
+            </div>
+            <div class="dialog-body bg-white p-6 custom-scroll">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="field" style="margin-bottom:0;"><label class="field-label text-gray-600">適用結束日期 <span class="req text-red-500">*</span></label><input type="text" id="hist-end-date" class="field-input bg-gray-50 focus:bg-white transition-colors" placeholder="例如：115/06/04"></div>
+                    <div class="field" style="margin-bottom:0;"><label class="field-label text-gray-600">舊統一編號 <span class="font-normal text-gray-400">(選填)</span></label><input type="text" id="hist-tax-id" class="field-input bg-gray-50 focus:bg-white transition-colors" placeholder="留空則沿用現況"></div>
+                    <div class="field col-span-1 md:col-span-2" style="margin-bottom:0;"><label class="field-label text-gray-600">歷史機構名稱 <span class="req text-red-500">*</span></label><input type="text" id="hist-name" class="field-input bg-gray-50 focus:bg-white transition-colors" placeholder="當時的機構名稱"></div>
+                    <div class="field col-span-1 md:col-span-2" style="margin-bottom:0;"><label class="field-label text-gray-600">歷史實習地址 <span class="req text-red-500">*</span></label><input type="text" id="hist-address" class="field-input bg-gray-50 focus:bg-white transition-colors" placeholder="當時的詳細地址"></div>
+                    <div class="field col-span-1 md:col-span-2" style="margin-bottom:0;"><label class="field-label text-gray-600">變更事由 <span class="font-normal text-gray-400">(選填)</span></label><input type="text" id="hist-reason" class="field-input bg-gray-50 focus:bg-white transition-colors" placeholder="例如：配合政府組織改造升格"></div>
+                </div>
+            </div>
+            <div class="dialog-footer" style="background:#f8fafc; border-top:1px solid var(--border); padding:16px 24px; border-radius: 0 0 12px 12px; display:flex; justify-content:flex-end; gap:8px;">
+                <button type="button" class="btn btn-secondary" style="background:white;" id="btn-cancel-add-hist">取消</button>
+                <button type="button" id="btn-save-history" class="btn btn-indigo-solid shadow-sm"><i class="ti ti-check"></i> 確認封存快照</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="change-intent-modal" class="dialog-overlay">
+        <div class="dialog-box" style="max-width: 550px;">
+            <div class="dialog-header flex-col items-start p-0 border-none">
+                <div style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:20px 24px 16px; border-bottom:1px solid var(--border); background:#f8fafc;">
+                    <h3 style="display:flex; align-items:center; gap:8px; font-size:16px; font-weight:700; color:var(--text-primary);"><i class="ti ti-info-circle" style="color:#3b82f6; font-size:20px;"></i> 偵測到機構資料變更</h3>
+                    <button type="button" class="dialog-close" id="btn-close-intent-x"><i class="ti ti-x"></i></button>
+                </div>
+            </div>
+            <div class="dialog-body custom-scroll" style="background:#f8fafc; padding:24px;">
+                <div style="background:#fefce8; border:1px solid #fef08a; color:#854d0e; padding:12px 16px; border-radius:8px; font-size:13px; line-height:1.6; margin-bottom:20px; box-shadow:var(--shadow-sm);">
+                    系統偵測到此機構的 <span style="font-weight:700; color:#ef4444;">核心資料（名稱、統編或地址等）</span> 已被修改。<br>為了確保資料庫關聯正確，請選擇此次變更的性質：
+                </div>
+                
+                <label class="intent-radio-card" style="margin-bottom:12px;">
+                    <div style="display:flex; align-items:flex-start;">
+                        <input type="radio" name="change_intent" value="typo" checked class="intent-radio-input">
+                        <div>
+                            <div style="font-size:14px; font-weight:700; color:var(--text-primary); margin-bottom:4px;">這是單純改錯字 / 修正補漏</div>
+                            <div style="font-size:12px; color:var(--text-secondary); line-height:1.5;">系統將同步更新過去所有學生的實習紀錄，全部修正為最新資料。</div>
+                        </div>
+                    </div>
+                </label>
+
+                <label class="intent-radio-card" style="margin-bottom:0;">
+                    <div style="display:flex; align-items:flex-start;">
+                        <input type="radio" name="change_intent" value="history" class="intent-radio-input">
+                        <div>
+                            <div style="font-size:14px; font-weight:700; color:var(--text-primary); margin-bottom:4px;">這是機構歷史改名 (如升格、改組、搬遷)</div>
+                            <div style="font-size:12px; color:var(--text-secondary); line-height:1.5;">系統將保留過去學生的舊紀錄，並自動將舊資料封存為歷史快照。</div>
+                        </div>
+                    </div>
+                </label>
+
+                <div id="intent-history-fields" class="hidden" style="margin-top:12px; margin-left:30px; padding:16px; background:white; border:1px solid var(--border); border-radius:8px; box-shadow:var(--shadow-sm); position:relative;">
+                    <div style="position:absolute; top:-6px; left:24px; width:10px; height:10px; background:white; border-top:1px solid var(--border); border-left:1px solid var(--border); transform:rotate(45deg);"></div>
+                    <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:12px;">請補充歷史快照資訊</div>
+                    
+                    <div class="field" style="margin-bottom:12px;"><label class="field-label" style="color:var(--text-secondary);">舊資料適用結束日期 <span style="color:var(--danger);">*</span></label><input type="text" id="intent-end-date" class="field-input" style="background:#f8fafc; height:34px;" placeholder="例如：115/06/04"></div>
+                    <div class="field" style="margin-bottom:0;"><label class="field-label" style="color:var(--text-secondary);">變更事由 <span style="font-weight:400; color:var(--text-muted);">(選填)</span></label><input type="text" id="intent-reason" class="field-input" style="background:#f8fafc; height:34px;" placeholder="例如：配合政府組織改造升格"></div>
+                </div>
+            </div>
+            <div class="dialog-footer" style="background:#f8fafc; border-top:1px solid var(--border); padding:16px 24px; border-radius: 0 0 12px 12px; display:flex; justify-content:flex-end; gap:8px;">
+                <button type="button" class="btn btn-secondary" style="background:white;" id="btn-cancel-intent">返回修改</button>
+                <button type="button" id="btn-confirm-intent" class="btn btn-primary" style="box-shadow:var(--shadow-sm);"><i class="ti ti-check"></i> 確認執行儲存</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="merge-modal" class="dialog-overlay">
+        <div class="dialog-box" style="max-width: 650px;">
+            <div class="dialog-header flex-col items-start p-0 border-none">
+                <div style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:20px 24px 16px; border-bottom:1px solid var(--border); background:#f8fafc;">
+                    <h3 style="display:flex; align-items:center; gap:8px; font-size:16px; font-weight:700; color:var(--text-primary);"><i class="ti ti-link" style="color:var(--indigo); font-size:20px;"></i> 合併重複主機構</h3>
+                    <button type="button" class="dialog-close" id="btn-close-merge-x"><i class="ti ti-x"></i></button>
+                </div>
+            </div>
+            <div class="dialog-body custom-scroll" style="background:#f8fafc; padding:24px;">
+                <div style="background:#e0e7ff; border:1px solid #c7d2fe; color:#4338ca; padding:12px 16px; border-radius:8px; font-size:13px; line-height:1.6; margin-bottom:20px; box-shadow:var(--shadow-sm);">
+                    您已選取 <span id="merge-count" style="font-size: 16px; font-weight: 700; margin: 0 4px;">0</span> 個機構準備進行合併。<br>
+                    請在下方選擇<strong style="color: var(--danger); margin: 0 4px;">「唯一要保留的主體機構」</strong>。合併後，其餘被勾選的機構將被刪除，<br>且其底下的「分公司」及「學生實習紀錄」都會自動移轉到新的主體下。
+                </div>
+                <div id="merge-options-container" style="display: flex; flex-direction: column;"></div>
+            </div>
+            <div class="dialog-footer" style="background:#f8fafc; border-top:1px solid var(--border); padding:16px 24px; border-radius: 0 0 12px 12px; display:flex; justify-content:flex-end; gap:8px;">
+                <button type="button" class="btn btn-secondary" style="background:white;" id="btn-cancel-merge">取消</button>
+                <button type="button" id="btn-merge-submit" class="btn btn-indigo-solid" disabled><i class="ti ti-link"></i> 確認執行深度合併</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="batch-edit-modal" class="dialog-overlay">
+        <div class="dialog-box" style="max-width: 450px;">
+            <div class="dialog-header flex-col items-start p-0 border-none">
+                <div style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:20px 24px 16px; border-bottom:1px solid var(--border); background:#f8fafc;">
+                    <h3 style="display:flex; align-items:center; gap:8px; font-size:16px; font-weight:700; color:var(--text-primary);"><i class="ti ti-edit" style="color:var(--brand); font-size:20px;"></i> 批次修改機構屬性</h3>
+                    <button type="button" class="dialog-close" id="btn-close-batch-x"><i class="ti ti-x"></i></button>
+                </div>
+            </div>
+            <div class="dialog-body custom-scroll" style="background:#f8fafc; padding:24px;">
+                <div style="background:white; border:1px solid var(--border); border-radius:8px; padding:16px; box-shadow:var(--shadow-sm); margin-bottom:16px;">
+                    <p style="font-size: 13px; color: var(--text-primary); line-height: 1.5; margin:0;">
+                        將針對已選取的 <span id="batch-edit-count" style="font-size: 16px; font-weight: 700; color: var(--brand); margin: 0 2px;">0</span> 筆機構進行統一修改。<br>
+                        <span style="color: var(--text-muted); font-size: 12px;">若保持「-- 不修改 --」，則該欄位維持原資料不變。</span>
+                    </p>
+                </div>
+                <div class="field"><label class="field-label">批次套用：行業別</label><select id="batch-input-industry" class="field-select"></select></div>
+                <div class="field"><label class="field-label">批次套用：實習場所</label><select id="batch-input-venue" class="field-select"></select></div>
+            </div>
+            <div class="dialog-footer" style="background:#f8fafc; border-top:1px solid var(--border); padding:16px 24px; border-radius: 0 0 12px 12px; display:flex; justify-content:flex-end; gap:8px;">
+                <button type="button" class="btn btn-secondary" style="background:white;" id="btn-cancel-batch">取消</button>
+                <button type="button" id="btn-batch-edit-submit" class="btn btn-primary" style="box-shadow:var(--shadow-sm);"><i class="ti ti-check"></i> 確認批次更新</button>
+            </div>
+        </div>
+    </div>
+</div>
