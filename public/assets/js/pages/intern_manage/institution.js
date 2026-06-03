@@ -20,10 +20,13 @@ let filterVenueSet = new Set();
 let sortCol = ''; 
 let sortDir = '';
 
-// 狀態記憶
+// ✨ 狀態記憶：樹狀模式切換與展開記錄
 let isTreeMode = true; 
 let expandedParents = new Set();
 let isSearchAutoExpand = false; 
+
+// ✨ 狀態記憶：欄位顯示控制 (動態 CSS)
+let colVis = { tax_id: true, industry: true, venue_type: true, country: true, city: true, address: true };
 
 const LIST_COUNTRIES = ["中華民國","大陸地區","日本","美國","越南","泰國","澳大利亞","香港","澳門","馬來西亞","菲律賓","印尼","印度","孟加拉","緬甸","柬埔寨","黎巴嫩","蒙古","巴西","巴拉圭","秘魯"];
 const LIST_CITIES = ["臺北市","新北市","基隆市","桃園市","新竹縣","新竹市","苗栗縣","臺中市","彰化縣","南投縣","雲林縣","嘉義縣","嘉義市","臺南市","高雄市","屏東縣","宜蘭縣","花蓮縣","臺東縣","澎湖縣","金門縣","連江縣"];
@@ -42,6 +45,7 @@ export async function render(containerId, context) {
     injectUI(container);
     initSelectOptions();
     bindEvents(container);
+    updateColStyles(); // 初始化欄位隱藏狀態
     await fetchInitialDataOnce();
 }
 
@@ -50,6 +54,8 @@ export async function render(containerId, context) {
 // ==========================================
 function injectUI(container) {
     container.innerHTML = `
+    <style id="dynamic-col-styles"></style>
+
     <div id="institution-page-wrapper" style="height: 100%; display: flex; flex-direction: column;">
         <style>
             #institution-page-wrapper { font-family: 'Noto Sans TC', sans-serif; font-size: 14px; color: var(--text-primary); background: var(--bg); -webkit-font-smoothing: antialiased; flex: 1; display: flex; flex-direction: column; min-height: 0; }
@@ -60,16 +66,16 @@ function injectUI(container) {
             @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
             .ti-spin { animation: spin 1s linear infinite; display: inline-block; }
 
-            /* ✨ 修正 2：展開按鈕固定背景色與邊框 */
-            .tree-toggle { width: 24px; height: 24px; background: var(--bg); border: 1px solid var(--border-strong); cursor: pointer; padding: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: all 0.2s; outline: none; margin-right: 8px; border-radius: 6px; flex-shrink: 0; }
-            .tree-toggle:hover { color: var(--brand); border-color: var(--brand); background: var(--brand-light); }
-            .tree-toggle.expanded { transform: rotate(90deg); color: var(--brand); border-color: var(--brand); background: var(--brand-light); }
+            /* ✨ 修正 5：精簡優化的樹狀開合按鈕，拔除邊框，僅 Hover 顯示底色 */
+            .tree-toggle { width: 22px; height: 22px; background: transparent; border: none; border-radius: 4px; cursor: pointer; padding: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--text-muted); transition: all 0.2s; outline: none; margin-right: 8px; flex-shrink: 0; }
+            .tree-toggle i { font-size: 16px; transition: transform 0.2s; }
+            .tree-toggle:hover { color: var(--brand); background: var(--brand-light); }
+            .tree-toggle.expanded i { transform: rotate(90deg); color: var(--brand); }
             
-            .child-row { background-color: #fbfdff; }
-            .child-row td { border-bottom: 1px dashed var(--border); }
-            .child-row:hover td { background-color: #f0f7ff; }
+            /* ✨ 修正 6：子機構名稱排版，使用 flex + gap 保證箭頭不被壓縮 */
+            .child-name-wrap { display: flex; align-items: flex-start; padding-left: 24px; gap: 6px; }
+            .child-name-wrap i { font-size: 16px; opacity: 0.5; color: var(--text-secondary); margin-top: 1px; flex-shrink: 0; }
 
-            /* ✨ 修正 6：原生搜尋選單美化 */
             .searchable-select-wrap { position: relative; }
             .searchable-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-md); max-height: 200px; overflow-y: auto; z-index: 150; display: none; }
             .searchable-dropdown.show { display: block; }
@@ -100,8 +106,6 @@ function injectUI(container) {
             .btn-success-solid:hover { background: #047857; }
             .btn-indigo-solid { background: var(--indigo); color: white; border: 1px solid var(--indigo); }
             .btn-indigo-solid:hover { background: #4338ca; }
-            
-            /* ✨ 修正 4：操作按鈕強制鎖定正方圓角 */
             .btn-icon { width: 34px; padding: 0; justify-content: center; }
             .btn-icon.sm { min-width: 28px; width: 28px; height: 28px; border-radius: 6px; padding: 0; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
             .btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
@@ -122,26 +126,37 @@ function injectUI(container) {
             .filter-option { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: var(--radius-sm); cursor: pointer; font-size: 12px; color: var(--text-secondary); transition: background var(--transition); }
             .filter-option:hover { background: var(--bg); color: var(--text-primary); }
             .filter-option input[type=checkbox] { accent-color: var(--brand); flex-shrink: 0; }
-            .filter-dropdown-footer { padding: 6px 8px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; }
-            .filter-dropdown-footer button { font-size: 11px; font-weight: 600; color: var(--danger); background: none; border: none; cursor: pointer; padding: 2px 4px; border-radius: var(--radius-sm); }
-            .filter-dropdown-footer button:hover { background: var(--danger-bg); }
-
+            
             #batch-bar { display: none; align-items: center; gap: 12px; padding: 8px 24px; background: var(--brand-light); border-bottom: 1px solid var(--brand-border); flex-shrink: 0; position: absolute; top: 0; left: 0; right: 0; height: 100%; z-index: 20; }
             #batch-bar.visible { display: flex; animation: slideDown 0.2s ease-out; }
             @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
             .batch-info { font-size: 13px; font-weight: 600; color: var(--brand); display: flex; align-items: center; gap: 8px; }
 
+            /* ✨ 修正 1：操作按鈕凍結 (Sticky) 與表格框線修正 */
             .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; border-left: none; border-right: none; }
             .table-scroll { flex: 1; overflow: auto; }
-            table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 1050px; }
-            th { padding: 12px 16px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; position: sticky; top: 0; z-index: 10; background: var(--surface); box-shadow: inset 0 -2px 0 var(--border); }
+            /* 為了支援 sticky border 不受阻，改用 separate */
+            table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; min-width: 1050px; }
+            th { padding: 12px 16px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; position: sticky; top: 0; z-index: 10; background: var(--surface); box-shadow: inset 0 -1px 0 var(--border), inset 0 1px 0 var(--border); border-bottom: none; }
             th[data-sort] { cursor: pointer; user-select: none; transition: color var(--transition); }
             th[data-sort]:hover { color: var(--text-secondary); }
             th .sort-icon { margin-left: 4px; font-size: 14px; opacity: 0.4; vertical-align: middle; }
             th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand); }
+            
             td { padding: 12px 16px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); }
-            tr:hover td { background: #fafbff; }
-            tr.selected td { background: #f0f4ff; }
+            
+            /* 背景色繼承設計，確保 sticky td Hover 時正確變色 */
+            tr { background-color: var(--surface); }
+            tr.child-row { background-color: #fbfdff; }
+            tr.child-row td { border-bottom: 1px dashed var(--border); }
+            tr:hover { background-color: #fafbff; }
+            tr.child-row:hover { background-color: #f0f7ff; }
+            tr.selected { background-color: #f0f4ff !important; }
+
+            /* 操作欄凍結效果 */
+            .col-actions { position: sticky; right: 0; box-shadow: inset 1px 0 0 var(--border); }
+            th.col-actions { z-index: 20; box-shadow: inset 1px -1px 0 var(--border), inset 0 1px 0 var(--border); }
+            td.col-actions { z-index: 5; background-color: inherit; } /* 完美繼承 tr 的 hover 顏色 */
 
             .cell-primary { font-size: 13px; color: var(--text-primary); line-height: 1.4; }
             .cell-primary.bold { font-weight: 700; color: #000000; }
@@ -203,33 +218,56 @@ function injectUI(container) {
             <div class="filter-pill-wrap" id="pill-wrap-country">
                 <button class="filter-pill" id="pill-country">全部國別 <i class="ti ti-chevron-down"></i></button>
                 <div class="filter-dropdown" id="drop-country">
-                    <div class="filter-dropdown-search"><input type="text" id="search-country-input" placeholder="搜尋國別..."></div>
+                    <div class="filter-dropdown-search">
+                        <input type="text" id="search-country-input" placeholder="搜尋國別...">
+                        <div class="flex justify-between mt-2 px-1">
+                            <button type="button" class="text-xs text-brand hover:underline btn-filter-all" data-type="country">全選</button>
+                            <button type="button" class="text-xs text-gray-500 hover:underline btn-filter-clear" data-type="country">全不選</button>
+                        </div>
+                    </div>
                     <div class="filter-dropdown-list" id="country-options-container"></div>
-                    <div class="filter-dropdown-footer"><button id="btn-clear-country">清除此篩選</button></div>
                 </div>
             </div>
+            
             <div class="filter-pill-wrap" id="pill-wrap-city">
                 <button class="filter-pill" id="pill-city">全部縣市 <i class="ti ti-chevron-down"></i></button>
                 <div class="filter-dropdown" id="drop-city">
-                    <div class="filter-dropdown-search"><input type="text" id="search-city-input" placeholder="搜尋縣市..."></div>
+                    <div class="filter-dropdown-search">
+                        <input type="text" id="search-city-input" placeholder="搜尋縣市...">
+                        <div class="flex justify-between mt-2 px-1">
+                            <button type="button" class="text-xs text-brand hover:underline btn-filter-all" data-type="city">全選</button>
+                            <button type="button" class="text-xs text-gray-500 hover:underline btn-filter-clear" data-type="city">全不選</button>
+                        </div>
+                    </div>
                     <div class="filter-dropdown-list" id="city-options-container"></div>
-                    <div class="filter-dropdown-footer"><button id="btn-clear-city">清除此篩選</button></div>
                 </div>
             </div>
+
             <div class="filter-pill-wrap" id="pill-wrap-industry">
                 <button class="filter-pill" id="pill-industry">全部行業別 <i class="ti ti-chevron-down"></i></button>
                 <div class="filter-dropdown" id="drop-industry">
-                    <div class="filter-dropdown-search"><input type="text" id="search-industry-input" placeholder="搜尋行業別..."></div>
+                    <div class="filter-dropdown-search">
+                        <input type="text" id="search-industry-input" placeholder="搜尋行業別...">
+                        <div class="flex justify-between mt-2 px-1">
+                            <button type="button" class="text-xs text-brand hover:underline btn-filter-all" data-type="industry">全選</button>
+                            <button type="button" class="text-xs text-gray-500 hover:underline btn-filter-clear" data-type="industry">全不選</button>
+                        </div>
+                    </div>
                     <div class="filter-dropdown-list" id="industry-options-container"></div>
-                    <div class="filter-dropdown-footer"><button id="btn-clear-industry">清除此篩選</button></div>
                 </div>
             </div>
+
             <div class="filter-pill-wrap" id="pill-wrap-venue">
                 <button class="filter-pill" id="pill-venue">全部場所 <i class="ti ti-chevron-down"></i></button>
                 <div class="filter-dropdown" id="drop-venue">
-                    <div class="filter-dropdown-search"><input type="text" id="search-venue-input" placeholder="搜尋場所..."></div>
+                    <div class="filter-dropdown-search">
+                        <input type="text" id="search-venue-input" placeholder="搜尋場所...">
+                        <div class="flex justify-between mt-2 px-1">
+                            <button type="button" class="text-xs text-brand hover:underline btn-filter-all" data-type="venue">全選</button>
+                            <button type="button" class="text-xs text-gray-500 hover:underline btn-filter-clear" data-type="venue">全不選</button>
+                        </div>
+                    </div>
                     <div class="filter-dropdown-list" id="venue-options-container"></div>
-                    <div class="filter-dropdown-footer"><button id="btn-clear-venue">清除此篩選</button></div>
                 </div>
             </div>
 
@@ -237,11 +275,31 @@ function injectUI(container) {
 
             <div class="relative inline-block text-left" id="display-settings-wrap">
                 <button id="btn-display-settings" class="btn btn-secondary btn-sm" style="font-weight: 500;"><i class="ti ti-settings"></i> 顯示設定</button>
-                <div id="display-settings-menu" class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg hidden z-50" style="padding: 4px;">
+                <div id="display-settings-menu" class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg hidden z-50" style="padding: 6px;">
                     <button class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center gap-2 transition" id="btn-toggle-tree"><i class="ti ti-list-tree text-brand"></i> 切換為扁平列表</button>
                     <div class="h-px bg-gray-200 my-1 mx-2"></div>
                     <button class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center gap-2 transition" id="btn-expand-all"><i class="ti ti-fold-down text-gray-400"></i> 展開所有分支</button>
                     <button class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center gap-2 transition" id="btn-collapse-all"><i class="ti ti-fold-up text-gray-400"></i> 收合所有分支</button>
+                    <div class="h-px bg-gray-200 my-2 mx-2"></div>
+                    <div class="px-3 py-1 text-xs font-bold text-gray-400 tracking-wider">顯示欄位設定</div>
+                    <label class="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 cursor-pointer rounded">
+                        <input type="checkbox" class="col-toggle-chk" value="tax_id" checked> 統一編號
+                    </label>
+                    <label class="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 cursor-pointer rounded">
+                        <input type="checkbox" class="col-toggle-chk" value="industry" checked> 行業別
+                    </label>
+                    <label class="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 cursor-pointer rounded">
+                        <input type="checkbox" class="col-toggle-chk" value="venue_type" checked> 實習場所
+                    </label>
+                    <label class="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 cursor-pointer rounded">
+                        <input type="checkbox" class="col-toggle-chk" value="country" checked> 國別
+                    </label>
+                    <label class="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 cursor-pointer rounded">
+                        <input type="checkbox" class="col-toggle-chk" value="city" checked> 縣市別
+                    </label>
+                    <label class="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 cursor-pointer rounded">
+                        <input type="checkbox" class="col-toggle-chk" value="address" checked> 實習場所地址
+                    </label>
                 </div>
             </div>
 
@@ -266,18 +324,18 @@ function injectUI(container) {
                                     <input type="checkbox" id="selectAll" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                                 </div>
                             </th>
-                            <th data-sort="name" style="width: 28%; text-align: center;">實習機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="tax_id" style="width: 12%;">統一編號 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="industry" style="width: 12%;">行業別 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="venue_type" style="width: 12%;">實習場所 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="country" style="width: 8%;">國別 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="city" style="width: 8%;">縣市別 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="address" style="width: 16%; text-align: left;">實習場所地址 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th style="width: 8%;">操作</th>
+                            <th data-sort="name" style="width: 28%; text-align: left; padding-left: 40px;">實習機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="tax_id" class="col-tax_id" style="width: 12%;">統一編號 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="industry" class="col-industry" style="width: 12%;">行業別 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="venue_type" class="col-venue_type" style="width: 12%;">實習場所 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="country" class="col-country" style="width: 8%;">國別 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="city" class="col-city" style="width: 8%;">縣市別 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="address" class="col-address" style="width: 16%; text-align: center;">實習場所地址 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th class="col-actions" style="width: 8%;">操作</th>
                         </tr>
                     </thead>
                     <tbody id="table-body">
-                        <tr><td colspan="9" class="empty-state"><i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i><div class="empty-text">資料載入中...</div></td></tr>
+                        <tr><td colspan="10" class="empty-state"><i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i><div class="empty-text">資料載入中...</div></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -310,16 +368,16 @@ function injectUI(container) {
                         
                         <div class="field">
                             <label class="field-label">隸屬主機構 (若為分公司請搜尋並選擇)</label>
-                            <div class="searchable-select-wrap">
-                                <div style="position: absolute; left: 12px; top: 0; bottom: 0; display: flex; align-items: center; pointer-events: none;">
-                                    <i class="ti ti-building" style="color: var(--text-muted); font-size: 16px;"></i>
+                            <div class="searchable-select-wrap relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="ti ti-building text-gray-400"></i>
                                 </div>
-                                <input type="text" id="parent-search-input" class="field-input" style="padding-left: 36px; padding-right: 32px;" placeholder="輸入關鍵字搜尋... (留空代表獨立機構)" autocomplete="off">
-                                <button type="button" id="btn-clear-parent" style="position: absolute; right: 10px; top: 0; bottom: 0; background: none; border: none; cursor: pointer; display: none; align-items: center; color: var(--text-muted); transition: 0.2s;">
-                                    <i class="ti ti-x" style="font-size: 16px;"></i>
+                                <input type="text" id="parent-search-input" class="w-full pl-9 pr-8 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none bg-gray-50 focus:bg-white" placeholder="輸入關鍵字搜尋... (留空代表獨立機構)" autocomplete="off">
+                                <button type="button" id="btn-clear-parent" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-red-500 cursor-pointer" style="display:none;">
+                                    <i class="ti ti-x text-base"></i>
                                 </button>
                                 <input type="hidden" id="input-parent-id">
-                                <div id="parent-dropdown-list" class="searchable-dropdown custom-scroll"></div>
+                                <div id="parent-dropdown-list" class="searchable-dropdown absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-52 overflow-y-auto"></div>
                             </div>
                         </div>
                         
@@ -460,8 +518,19 @@ function populateParentDropdown(excludeId = null) {
 }
 
 // ==========================================
-// 3. 事件代理綁定
+// 3. 事件代理與動態樣式邏輯
 // ==========================================
+function updateColStyles() {
+    let css = '';
+    if (!colVis.tax_id) css += '.col-tax_id { display: none !important; }\n';
+    if (!colVis.industry) css += '.col-industry { display: none !important; }\n';
+    if (!colVis.venue_type) css += '.col-venue_type { display: none !important; }\n';
+    if (!colVis.country) css += '.col-country { display: none !important; }\n';
+    if (!colVis.city) css += '.col-city { display: none !important; }\n';
+    if (!colVis.address) css += '.col-address { display: none !important; }\n';
+    document.getElementById('dynamic-col-styles').textContent = css;
+}
+
 function bindEvents(container) {
     container.querySelector('#btn-export-csv').addEventListener('click', exportToCSV);
     container.querySelector('#btn-import-trigger').addEventListener('click', () => container.querySelector('#import-file').click());
@@ -484,6 +553,31 @@ function bindEvents(container) {
     container.querySelector('#search-industry-input').addEventListener('keyup', (e) => filterDropdownItems(e.target, 'industry-options-container'));
     container.querySelector('#search-venue-input').addEventListener('keyup', (e) => filterDropdownItems(e.target, 'venue-options-container'));
 
+    // 全選 / 全不選事件代理
+    container.querySelectorAll('.btn-filter-all').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const type = btn.dataset.type;
+            let set = type === 'country' ? filterCountrySet : (type === 'city' ? filterCitySet : (type === 'industry' ? filterIndustrySet : filterVenueSet));
+            container.querySelectorAll(`.filter-chk-${type}`).forEach(c => {
+                if(c.closest('.filter-option').style.display !== 'none') { c.checked = true; set.add(c.value); }
+            });
+            currentPage = 1; updatePillActive(type); renderTable();
+        });
+    });
+    
+    container.querySelectorAll('.btn-filter-clear').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const type = btn.dataset.type;
+            let set = type === 'country' ? filterCountrySet : (type === 'city' ? filterCitySet : (type === 'industry' ? filterIndustrySet : filterVenueSet));
+            container.querySelectorAll(`.filter-chk-${type}`).forEach(c => {
+                if(c.closest('.filter-option').style.display !== 'none') { c.checked = false; set.delete(c.value); }
+            });
+            currentPage = 1; updatePillActive(type); renderTable();
+        });
+    });
+
     container.querySelector('#country-options-container').addEventListener('change', (e) => { if(e.target.type==='checkbox') toggleFilterCheck('country', e.target.value); });
     container.querySelector('#city-options-container').addEventListener('change', (e) => { if(e.target.type==='checkbox') toggleFilterCheck('city', e.target.value); });
     container.querySelector('#industry-options-container').addEventListener('change', (e) => { if(e.target.type==='checkbox') toggleFilterCheck('industry', e.target.value); });
@@ -500,21 +594,32 @@ function bindEvents(container) {
         e.stopPropagation();
         displayMenu.classList.toggle('hidden');
     });
-    container.querySelector('#btn-toggle-tree').addEventListener('click', (e) => {
+    
+    // 點擊顯示選單內部不要自動關閉
+    displayMenu.addEventListener('click', (e) => {
         e.stopPropagation();
+    });
+
+    container.querySelector('#btn-toggle-tree').addEventListener('click', (e) => {
         isTreeMode = !isTreeMode;
         container.querySelector('#btn-toggle-tree').innerHTML = isTreeMode ? `<i class="ti ti-list-tree text-brand mr-2"></i> 切換為扁平列表` : `<i class="ti ti-list text-brand mr-2"></i> 切換為樹狀檢視`;
         renderTable();
     });
     container.querySelector('#btn-expand-all').addEventListener('click', (e) => {
-        e.stopPropagation();
         allData.forEach(d => { if (!d.parent_id) expandedParents.add(d.id); });
         renderTable();
     });
     container.querySelector('#btn-collapse-all').addEventListener('click', (e) => {
-        e.stopPropagation();
         expandedParents.clear();
         renderTable();
+    });
+
+    // 欄位顯示開關
+    container.querySelectorAll('.col-toggle-chk').forEach(chk => {
+        chk.addEventListener('change', (e) => {
+            colVis[e.target.value] = e.target.checked;
+            updateColStyles();
+        });
     });
 
     container.querySelector('#selectAll').addEventListener('change', toggleSelectPage);
@@ -580,9 +685,14 @@ function bindEvents(container) {
     });
     parentDropdown.addEventListener('click', (e) => {
         const opt = e.target.closest('.searchable-option');
-        if (opt) {
+        if (opt && !opt.classList.contains('empty-opt')) {
             parentIdHidden.value = opt.dataset.id || '';
             parentSearchInput.value = opt.dataset.name || '';
+            updateParentClearBtn();
+            parentDropdown.classList.remove('show');
+        } else if (opt && opt.classList.contains('empty-opt')) {
+            parentIdHidden.value = '';
+            parentSearchInput.value = '';
             updateParentClearBtn();
             parentDropdown.classList.remove('show');
         }
@@ -633,7 +743,6 @@ function bindEvents(container) {
 // ==========================================
 // 4. 輔助函式與狀態操作
 // ==========================================
-// ✨ 修正 1：純淨反黃標記 (移除 padding，貼齊 Chrome 原生)
 function highlightKeyword(text, keyword) {
     if (!keyword || !text) return text || '';
     const regex = new RegExp(`(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
@@ -802,7 +911,7 @@ async function fetchInitialDataOnce() {
         renderTable();
         await handleInitialLoadEngine();
     } catch (error) {
-        document.getElementById('table-body').innerHTML = `<tr><td colspan="9" class="empty-state"><i class="ti ti-lock empty-icon" style="color:var(--danger); opacity:1;"></i><div class="empty-text">雲端資料同步中斷。</div></td></tr>`;
+        document.getElementById('table-body').innerHTML = `<tr><td colspan="10" class="empty-state"><i class="ti ti-lock empty-icon" style="color:var(--danger); opacity:1;"></i><div class="empty-text">雲端資料同步中斷。</div></td></tr>`;
     }
 }
 
@@ -838,7 +947,6 @@ function renderTable() {
     const searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
 
     const checkMatch = (d) => {
-        // ✨ 修正 1：地址納入搜尋範圍
         const matchSearch = (d.name || '').toLowerCase().includes(searchTerm) || 
                             (d.tax_id || '').toLowerCase().includes(searchTerm) ||
                             (d.address || '').toLowerCase().includes(searchTerm);
@@ -908,7 +1016,6 @@ function renderTable() {
     const start = (currentPage - 1) * itemsPerPage;
     const paginatedItems = filteredInstitutions.slice(start, start + itemsPerPage);
 
-    // ✨ 修正 9：左下角精確統計數據顯示
     let totalAllMatched = 0;
     let totalChildrenMatched = 0;
     if (isTreeMode) {
@@ -916,7 +1023,7 @@ function renderTable() {
             totalAllMatched++; 
             p.children.forEach(c => { totalAllMatched++; totalChildrenMatched++; }); 
         });
-        document.getElementById('pagination-info').innerHTML = totalMainItems > 0 ? `共 <strong>${totalAllMatched}</strong> 間實習機構（包含 ${totalChildrenMatched} 間分支機構），顯示第 ${start + 1}–${Math.min(start + itemsPerPage, totalMainItems)} 間` : `共 <strong>0</strong> 間實習機構`;
+        document.getElementById('pagination-info').innerHTML = totalMainItems > 0 ? `共 <strong>${totalAllMatched}</strong> 間實習機構（包含 ${totalChildrenMatched} 間分支機構），顯示第 ${start + 1}–${Math.min(start + itemsPerPage, totalMainItems)} 間主機構` : `共 <strong>0</strong> 間實習機構`;
     } else {
         document.getElementById('pagination-info').innerHTML = totalMainItems > 0 ? `共 <strong>${totalMainItems}</strong> 間實習機構，顯示第 ${start + 1}–${Math.min(start + itemsPerPage, totalMainItems)} 間` : `共 <strong>0</strong> 間實習機構`;
     }
@@ -938,7 +1045,7 @@ function renderTable() {
     document.getElementById('selectAll').checked = currentPaginatedIds.length > 0 && currentPaginatedIds.every(id => selectedIds.includes(id));
 
     if (totalMainItems === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">找不到符合條件的機構資料。</div></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">找不到符合條件的機構資料。</div></td></tr>`;
         return;
     }
 
@@ -949,18 +1056,16 @@ function renderTable() {
         let dispTax = '-';
         if (isDomestic && data.tax_id) dispTax = highlightKeyword(data.tax_id, searchTerm);
         
-        const toggleHtml = hasChildren ? `<button class="tree-toggle ${isExpanded ? 'expanded' : ''}"><i class="ti ti-chevron-right"></i></button>` : `<span style="display:inline-block; width:24px; height:24px; margin-right:8px; flex-shrink:0;"></span>`;
+        const toggleHtml = hasChildren ? `<button class="tree-toggle ${isExpanded ? 'expanded' : ''}"><i class="ti ti-chevron-right"></i></button>` : `<span style="display:inline-block; width:22px; margin-right:8px; flex-shrink:0;"></span>`;
         
-        // ✨ 修正 2：子機構無邊框藍色數字標籤
         let childCountHtml = '';
         if (hasChildren && !isExpanded && data.children) {
-            childCountHtml = `<span style="background: var(--brand-light); color: var(--brand); padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-left: 8px;">${data.children.length}</span>`;
+            childCountHtml = `<span style="background: var(--brand-light); color: var(--brand); padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-left: 8px;">${data.children.length}</span>`;
         }
 
         const hName = highlightKeyword(data.name, searchTerm);
-        // ✨ 修正 8：子機構不顯示粗體
         const nameHtml = isChild 
-            ? `<div class="child-name-wrap" style="padding-left: 32px;"><i class="ti ti-corner-down-right"></i> <span class="cell-primary">${hName}</span></div>` 
+            ? `<div class="child-name-wrap"><i class="ti ti-corner-down-right"></i> <span class="cell-primary">${hName}</span></div>` 
             : `<div style="display:flex; align-items:center;">${toggleHtml} <span class="cell-primary bold">${hName}</span>${childCountHtml}</div>`;
 
         const hAddress = highlightKeyword(data.address, searchTerm);
@@ -972,14 +1077,14 @@ function renderTable() {
                     <input type="checkbox" value="${data.id}" class="row-select-chk" ${isChecked} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                 </div>
             </td>
-            <td style="text-align: left; padding-left: 24px;">${nameHtml}</td>
-            <td style="text-align: center;"><div class="cell-primary" style="color: var(--text-muted); font-family: inherit;">${dispTax}</div></td>
-            <td style="text-align: center;"><div class="cell-primary">${data.industry || '-'}</div></td>
-            <td style="text-align: center;"><div class="cell-primary">${data.venue_type || '-'}</div></td>
-            <td style="text-align: center;"><div class="cell-primary">${data.country}</div></td>
-            <td style="text-align: center;"><div class="cell-primary">${isDomestic && data.city ? data.city : '-'}</div></td>
-            <td style="text-align: left;"><div class="cell-primary" title="${data.address}">${hAddress}</div></td>
-            <td style="text-align: center;">
+            <td style="text-align: left; padding-left: 16px;">${nameHtml}</td>
+            <td class="col-tax_id" style="text-align: center;"><div class="cell-primary" style="color: var(--text-muted); font-family: inherit;">${dispTax}</div></td>
+            <td class="col-industry" style="text-align: center;"><div class="cell-primary">${data.industry || '-'}</div></td>
+            <td class="col-venue_type" style="text-align: center;"><div class="cell-primary">${data.venue_type || '-'}</div></td>
+            <td class="col-country" style="text-align: center;"><div class="cell-primary">${data.country}</div></td>
+            <td class="col-city" style="text-align: center;"><div class="cell-primary">${isDomestic && data.city ? data.city : '-'}</div></td>
+            <td class="col-address" style="text-align: left;"><div class="cell-primary" title="${data.address}">${hAddress}</div></td>
+            <td class="col-actions" style="text-align: center;">
                 <div class="row-actions">
                     <button data-id="${data.id}" class="btn btn-secondary btn-icon sm btn-row-edit" title="編輯"><i class="ti ti-edit"></i></button>
                     <button data-id="${data.id}" data-name="${data.name}" class="btn btn-danger btn-icon sm btn-row-delete" title="刪除"><i class="ti ti-trash"></i></button>
