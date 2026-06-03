@@ -182,8 +182,8 @@ function injectUI(container) {
             .col-city { width: 8%; min-width: 90px; }
             .col-address { width: auto; min-width: 220px; }
 
-            .col-actions { position: sticky; right: 0; width: 100px; min-width: 100px; max-width: 100px; text-align: center; z-index: 2; background-color: inherit; box-shadow: inset 1px 0 0 var(--border); }
-            th.col-actions { z-index: 3; background-color: var(--surface); box-shadow: inset 1px -1px 0 var(--border), inset 0 1px 0 var(--border); }
+            .col-actions { position: sticky; right: 0; width: 100px; min-width: 100px; max-width: 100px; text-align: center; z-index: 2; background-color: inherit; }
+            th.col-actions { z-index: 3; background-color: var(--surface); }
             .col-actions::before { content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 1px; background-color: var(--border); z-index: 6; }
 
             @media (max-width: 768px) {
@@ -445,7 +445,7 @@ function injectUI(container) {
                             </div>
                             
                             <div class="field"><label class="field-label">實習場所國別 <span class="req">*</span></label><select id="input-country" required class="field-select"></select></div>
-                            <div class="field"><label class="field-label">機構主名稱 <span class="req">*</span></label><input type="text" id="input-name" required placeholder="國內/外機構主要識別名稱" class="field-input"></div>
+                            <div class="field"><label class="field-label">機構主名稱 <span class="req">*</span></label><input type="text" id="input-name" required placeholder="請輸入完整機構名稱" class="field-input"></div>
                             
                             <div class="field" id="wrap-name-translated" style="display:none;"><label class="field-label">當地名稱 / 英文譯名</label><input type="text" id="input-name-translated" placeholder="例如：Apple Inc. (選填)" class="field-input"></div>
                             <div class="field" id="wrap-overseas-tax" style="display:none;"><label class="field-label">海外稅號 / 立案號碼</label><input type="text" id="input-overseas-tax-id" placeholder="當地稅務或機構登記號碼 (選填)" class="field-input"></div>
@@ -453,7 +453,7 @@ function injectUI(container) {
                             <div class="field" id="wrap-tax-id"><label class="field-label">統一編號 <span class="req">*</span></label><input type="text" id="input-tax-id" required placeholder="如: 12345678" class="field-input" style="text-transform:uppercase;"></div>
                             <div class="field" id="wrap-city"><label class="field-label">縣市別 <span id="req-city" class="req">*</span></label><select id="input-city" required class="field-select"><option value="">請選擇</option></select></div>
                             
-                            <div class="field" style="margin-bottom:0;"><label class="field-label">完整實習地址 <span class="req">*</span></label><input type="text" id="input-address" required placeholder="詳細地址" class="field-input"></div>
+                            <div class="field" style="margin-bottom:0;"><label class="field-label">實際實習地址 <span class="req">*</span></label><input type="text" id="input-address" required placeholder="請輸入完整實習地址" class="field-input"></div>
                         </div>
                         <div class="v-divider-modal" style="width: 1px; background: var(--border); margin: 0;"></div>
                         <div style="flex: 1; display: flex; flex-direction: column;">
@@ -486,26 +486,27 @@ function injectUI(container) {
         </div>
 
         <div id="add-history-modal" class="dialog-overlay">
-            <div class="dialog-box" style="max-width: 480px; border-radius: 16px;">
-                <div class="dialog-header flex flex-col items-center justify-center p-6 border-none relative bg-white">
-                    <button type="button" class="dialog-close absolute top-4 right-4" id="btn-close-add-hist-x"><i class="ti ti-x text-xl"></i></button>
-                    <div class="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center mb-3">
-                        <i class="ti ti-history text-indigo-600 text-2xl"></i>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 m-0 text-center">封存一筆歷史快照</h3>
-                </div>
-                <div class="dialog-body bg-white px-6 pb-6 pt-0 custom-scroll border-none">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="field" style="margin-bottom:0;"><label class="field-label text-gray-500 font-bold mb-1">適用結束日期 <span class="req text-red-500">*</span></label><input type="text" id="hist-end-date" class="field-input border-gray-200" placeholder="例如：113/06/04"></div>
-                        <div class="field" style="margin-bottom:0;"><label class="field-label text-gray-500 font-bold mb-1">舊統一編號 <span class="font-normal text-gray-400">(選填)</span></label><input type="text" id="hist-tax-id" class="field-input border-gray-200" placeholder="留空則沿用現況"></div>
-                        <div class="field col-span-2" style="margin-bottom:0;"><label class="field-label text-gray-500 font-bold mb-1">歷史機構名稱 <span class="req text-red-500">*</span></label><input type="text" id="hist-name" class="field-input border-gray-200" placeholder="當時的機構名稱"></div>
-                        <div class="field col-span-2" style="margin-bottom:0;"><label class="field-label text-gray-500 font-bold mb-1">歷史實習地址 <span class="req text-red-500">*</span></label><input type="text" id="hist-address" class="field-input border-gray-200" placeholder="當時的詳細地址"></div>
-                        <div class="field col-span-2" style="margin-bottom:0;"><label class="field-label text-gray-500 font-bold mb-1">變更事由 <span class="font-normal text-gray-400">(選填)</span></label><input type="text" id="hist-reason" class="field-input border-gray-200" placeholder="例如：配合政府組織改造升格"></div>
+            <div class="dialog-box" style="max-width: 550px;">
+                <div class="dialog-header flex-col items-start p-0 border-none">
+                    <div style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:20px 24px 16px; border-bottom:1px solid var(--border); background:#f8fafc;">
+                        <h3 style="display:flex; align-items:center; gap:8px; font-size:16px; font-weight:700; color:var(--text-primary);"><i class="ti ti-history" style="color:var(--indigo); font-size:20px;"></i> 封存一筆歷史快照</h3>
+                        <button type="button" class="dialog-close" id="btn-close-add-hist-x"><i class="ti ti-x"></i></button>
                     </div>
                 </div>
-                <div class="dialog-footer bg-white border-t border-gray-100 flex justify-end gap-3 px-6 py-4 rounded-b-[16px]">
-                    <button type="button" class="btn btn-secondary bg-white border-gray-200 text-gray-600 hover:bg-gray-50 px-5" id="btn-cancel-add-hist">取消</button>
-                    <button type="button" id="btn-save-history" class="btn btn-indigo-solid px-5 rounded-lg shadow-sm">確認封存快照</button>
+                <div class="dialog-body custom-scroll" style="background:#f8fafc; padding:24px;">
+                    <div style="background:white; border:1px solid var(--border); border-radius:8px; padding:16px; box-shadow:var(--shadow-sm);">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="field" style="margin-bottom:0;"><label class="field-label text-gray-600">適用結束日期 <span class="req text-red-500">*</span></label><input type="text" id="hist-end-date" class="field-input bg-gray-50 focus:bg-white transition-colors" placeholder="例如：113/06/04"></div>
+                            <div class="field" style="margin-bottom:0;"><label class="field-label text-gray-600">舊統一編號 <span class="font-normal text-gray-400">(選填)</span></label><input type="text" id="hist-tax-id" class="field-input bg-gray-50 focus:bg-white transition-colors" placeholder="留空則沿用現況"></div>
+                            <div class="field col-span-1 md:col-span-2" style="margin-bottom:0;"><label class="field-label text-gray-600">歷史機構名稱 <span class="req text-red-500">*</span></label><input type="text" id="hist-name" class="field-input bg-gray-50 focus:bg-white transition-colors" placeholder="當時的機構名稱"></div>
+                            <div class="field col-span-1 md:col-span-2" style="margin-bottom:0;"><label class="field-label text-gray-600">歷史實習地址 <span class="req text-red-500">*</span></label><input type="text" id="hist-address" class="field-input bg-gray-50 focus:bg-white transition-colors" placeholder="當時的詳細地址"></div>
+                            <div class="field col-span-1 md:col-span-2" style="margin-bottom:0;"><label class="field-label text-gray-600">變更事由 <span class="font-normal text-gray-400">(選填)</span></label><input type="text" id="hist-reason" class="field-input bg-gray-50 focus:bg-white transition-colors" placeholder="例如：配合政府組織改造升格"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="dialog-footer" style="background:#f8fafc; border-top:1px solid var(--border); padding:16px 24px; border-radius: 0 0 12px 12px; display:flex; justify-content:flex-end; gap:8px;">
+                    <button type="button" class="btn btn-secondary" style="background:white;" id="btn-cancel-add-hist">取消</button>
+                    <button type="button" id="btn-save-history" class="btn btn-indigo-solid shadow-sm"><i class="ti ti-check"></i> 確認封存快照</button>
                 </div>
             </div>
         </div>
@@ -560,21 +561,21 @@ function injectUI(container) {
 
         <div id="merge-modal" class="dialog-overlay">
             <div class="dialog-box" style="max-width: 650px;">
-                <div class="dialog-header">
-                    <h3 style="color: var(--indigo)"><i class="ti ti-link" style="color: var(--indigo)"></i> 合併重複主機構</h3>
-                    <button type="button" class="dialog-close" id="btn-close-merge-x"><i class="ti ti-x"></i></button>
+                <div class="dialog-header flex-col items-start p-0 border-none">
+                    <div style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:20px 24px 16px; border-bottom:1px solid var(--border); background:#f8fafc;">
+                        <h3 style="display:flex; align-items:center; gap:8px; font-size:16px; font-weight:700; color:var(--text-primary);"><i class="ti ti-link" style="color:var(--indigo); font-size:20px;"></i> 合併重複主機構</h3>
+                        <button type="button" class="dialog-close" id="btn-close-merge-x"><i class="ti ti-x"></i></button>
+                    </div>
                 </div>
-                <div class="dialog-body custom-scroll" style="background: var(--bg);">
-                    <div style="background: var(--indigo-light); border: 1px solid var(--indigo-border); padding: 12px; border-radius: var(--radius); margin-bottom: 16px;">
-                        <p style="font-size: 13px; color: var(--indigo); font-weight: 600; line-height: 1.5;">
-                            您已選取 <span id="merge-count" style="font-size: 16px; font-weight: 700; margin: 0 4px;">0</span> 個機構準備進行合併。<br>
-                            請在下方選擇<strong style="color: var(--danger); margin: 0 4px;">「唯一要保留的主體機構」</strong>。合併後，其餘被勾選的機構將被刪除，<br>且其底下的「分公司」及「學生實習紀錄」都會自動移轉到新的主體下。
-                        </p>
+                <div class="dialog-body custom-scroll" style="background:#f8fafc; padding:24px;">
+                    <div style="background:#e0e7ff; border:1px solid #c7d2fe; color:#4338ca; padding:12px 16px; border-radius:8px; font-size:13px; line-height:1.6; margin-bottom:20px; box-shadow:var(--shadow-sm);">
+                        您已選取 <span id="merge-count" style="font-size: 16px; font-weight: 700; margin: 0 4px;">0</span> 個機構準備進行合併。<br>
+                        請在下方選擇<strong style="color: var(--danger); margin: 0 4px;">「唯一要保留的主體機構」</strong>。合併後，其餘被勾選的機構將被刪除，<br>且其底下的「分公司」及「學生實習紀錄」都會自動移轉到新的主體下。
                     </div>
                     <div id="merge-options-container" style="display: flex; flex-direction: column;"></div>
                 </div>
-                <div class="dialog-footer">
-                    <button type="button" class="btn btn-secondary" id="btn-cancel-merge">取消</button>
+                <div class="dialog-footer" style="background:#f8fafc; border-top:1px solid var(--border); padding:16px 24px; border-radius: 0 0 12px 12px; display:flex; justify-content:flex-end; gap:8px;">
+                    <button type="button" class="btn btn-secondary" style="background:white;" id="btn-cancel-merge">取消</button>
                     <button type="button" id="btn-merge-submit" class="btn btn-indigo-solid" disabled><i class="ti ti-link"></i> 確認執行深度合併</button>
                 </div>
             </div>
