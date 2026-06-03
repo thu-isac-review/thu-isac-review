@@ -221,4 +221,31 @@ th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand
        3. 統一縮小其他單欄小彈窗
        ========================================= */
     .dialog-body { padding: 16px !important; }
+
+    /* =========================================
+       4. 解決手機版彈窗鎖死、強制內部可滑動
+       ========================================= */
+    .dialog-box {
+        max-height: 100% !important; /* 確保彈窗本體高度絕對不超過螢幕 (已扣除留白) */
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    /* 把主要彈窗與其他小彈窗的身體都改為「彈性填滿剩餘空間並開啟滾動」 */
+    .dialog-body-container,
+    .dialog-body {
+        flex: 1 !important; 
+        min-height: 0 !important; /* 關鍵：讓 flex 容器可以向內縮小並觸發捲軸 */
+        overflow-y: auto !important; /* 開啟內部垂直捲動 */
+        height: auto !important;
+        flex-direction: column !important;
+    }
+
+    /* 原本表單自帶的滾動取消，統一由外層的 dialog-body-container 處理滾動 */
+    #data-form, 
+    #tab-history {
+        overflow-y: visible !important;
+        height: auto !important;
+        flex: none !important;
+    }
 }
