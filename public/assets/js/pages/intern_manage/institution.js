@@ -25,6 +25,9 @@ let isTreeMode = true;
 let expandedParents = new Set();
 let isSearchAutoExpand = false; 
 
+// 歷史快照狀態
+let currentHistory = [];
+
 // 狀態記憶：欄位顯示控制 (動態 CSS)
 let colVis = { tax_id: true, industry: true, venue_type: true, country: true, city: true, address: true };
 
@@ -112,9 +115,7 @@ function injectUI(container) {
             .btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
             .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-            /* ✨ 修正 3：篩選列分區，支援手機水平拖曳 */
             .filter-row { padding: 10px 24px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; position: relative; }
-            
             .filters-scroll-area { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
             .filter-pill-wrap { position: relative; }
             
@@ -139,34 +140,58 @@ function injectUI(container) {
             @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
             .batch-info { font-size: 13px; font-weight: 600; color: var(--brand); display: flex; align-items: center; gap: 8px; }
 
-            /* ✨ 修正 2 & 1：iOS防回彈、全面解除左右凍結限制 */
             .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; border-left: none; border-right: none; }
             .table-scroll { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: none; }
             
-            /* 解除 fixed，回歸原生寬度排版 */
-            table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1050px; }
+            table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: auto; min-width: 1000px; }
             th { padding: 12px 16px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; position: sticky; top: 0; z-index: 10; background: var(--surface); border-bottom: 1px solid var(--border); }
             td { padding: 12px 16px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); background-color: inherit; }
             
-            tr { background-color: var(--surface); transition: background-color 0.1s; }
+            tr { background-color: var(--surface); transition: background-color 0.15s; }
             tr.child-row { background-color: #fbfdff; }
             tr.child-row td { border-bottom: 1px dashed var(--border); }
-            tr:hover { background-color: #fafbff; }
-            tr.child-row:hover { background-color: #f0f7ff; }
-            tr.selected { background-color: #f0f4ff !important; }
+            tr:hover { background-color: #f3f6ff; }
+            tr.child-row:hover { background-color: #edf3ff; }
+            tr.selected { background-color: #eef2ff !important; }
 
-            /* ✨ 取消 sticky 設定，純粹限制必要欄位的固定寬度 */
             .col-checkbox { width: 48px; min-width: 48px; max-width: 48px; text-align: center; }
             th.col-checkbox { z-index: 15; }
-
             .col-name { min-width: 320px; }
             th.col-name { text-align: center; z-index: 15; } 
-
             .col-actions { width: 100px; min-width: 100px; max-width: 100px; text-align: center; }
             th.col-actions { z-index: 15; }
-            
-            /* 隱形緩衝區：吸收隱藏欄位後的剩餘寬度，保護整體排版 */
             .col-spacer { width: 100%; padding: 0 !important; border-bottom: 1px solid var(--border); }
+
+            @media (max-width: 768px) {
+                .col-checkbox { position: static !important; min-width: 48px !important; }
+                .col-name { position: static !important; min-width: 250px !important; width: auto !important; }
+                .col-actions { position: static !important; min-width: 100px !important; }
+                
+                th.col-checkbox, th.col-name, th.col-actions { position: sticky !important; top: 0 !important; left: auto !important; right: auto !important; z-index: 10 !important; }
+                .col-name::after, .col-actions::before { display: none !important; } 
+                
+                .filter-row { padding: 10px 16px; flex-wrap: nowrap; }
+                .filters-scroll-area { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: none; padding-bottom: 2px; scrollbar-width: none; }
+                .filters-scroll-area::-webkit-scrollbar { display: none; }
+                .filter-pill-wrap { position: static; }
+                .filter-dropdown { top: 100%; left: 16px; right: 16px; min-width: 0; width: auto; margin-top: 4px; }
+                #display-settings-wrap { border-left: none; padding-left: 8px; margin-left: 0; }
+
+                #batch-bar { display: none !important; }
+                .toolbar { padding: 12px 16px; justify-content: flex-end; }
+                .search-wrap { flex: 0 0 100%; order: 1; margin-bottom: 8px; }
+                .flex-spacer { display: none; }
+                .toolbar-actions { order: 2; width: 100%; justify-content: space-between; display: flex; gap: 8px; }
+                .toolbar-actions .btn { flex: 1; padding: 0 4px; font-size: 11px; margin: 0; }
+                .v-divider { display: none; }
+                
+                .pagination-bar { flex-direction: column; align-items: flex-start; padding: 12px 16px; gap: 12px; }
+                .pagination-bar-right { width: 100%; justify-content: space-between; }
+                .dialog-overlay { padding: 12px; }
+                #data-form { flex-direction: column !important; gap: 16px !important; }
+                #data-form > div { width: 100% !important; margin: 0 !important; }
+                .v-divider-modal { display: block !important; width: 100% !important; height: 1px !important; min-height: 1px !important; background-color: var(--border) !important; margin: 8px 0 !important; flex-shrink: 0 !important; }
+            }
 
             th[data-sort] { cursor: pointer; user-select: none; transition: color var(--transition); }
             th[data-sort]:hover { color: var(--text-secondary); }
@@ -192,12 +217,12 @@ function injectUI(container) {
             .dialog-overlay.open { display: flex; }
             .dialog-box { background: var(--surface); border-radius: var(--radius-xl); box-shadow: 0 20px 60px rgba(0,0,0,0.2); width: 100%; display: flex; flex-direction: column; overflow: hidden; animation: dialogIn 0.25s cubic-bezier(0.16,1,0.3,1); }
             @keyframes dialogIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } }
-            .dialog-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--surface); }
-            .dialog-header h3 { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: var(--text-primary); }
-            .dialog-header h3 i { font-size: 20px; color: var(--brand); }
+            
+            /* ✨ 修正：雙 Tab 結構專用 CSS */
+            .dialog-header { background: var(--surface); }
             .dialog-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; padding: 4px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); transition: all var(--transition); }
             .dialog-close:hover { color: var(--danger); background: var(--danger-bg); }
-            .dialog-body { padding: 24px; overflow-y: auto; max-height: calc(85vh - 130px); }
+            .dialog-body { padding: 24px; overflow-y: auto; max-height: calc(85vh - 150px); }
             .dialog-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg); }
 
             .form-section-title { font-size: 13px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px; margin-bottom: 16px; }
@@ -207,41 +232,9 @@ function injectUI(container) {
             .field-input, .field-select { width: 100%; height: 36px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); padding: 0 12px; font-size: 13px; font-family: inherit; color: var(--text-primary); outline: none; transition: all var(--transition); }
             .field-input:focus, .field-select:focus, textarea.field-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); background: var(--surface); }
 
-            .merge-option { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border: 2px solid var(--border); border-radius: var(--radius-lg); cursor: pointer; transition: all var(--transition); background: var(--surface); margin-bottom: 10px; }
-            .merge-option:hover { border-color: var(--indigo-border); background: var(--bg); }
-            .merge-option:has(input:radio:checked) { border-color: var(--indigo); background: var(--indigo-bg); }
-
             .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
             .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
             .empty-text { font-size: 13px; font-weight: 600; }
-
-            /* ✨ 手機版專屬：開放過多的篩選列橫向滑動，並解除凍結 */
-            @media (max-width: 768px) {
-                .filter-row { padding: 10px 16px; flex-wrap: nowrap; }
-                .filters-scroll-area { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: none; padding-bottom: 2px; scrollbar-width: none; }
-                .filters-scroll-area::-webkit-scrollbar { display: none; }
-                
-                /* 下拉選單改為針對全區絕對定位，防止被 scroll-area 切掉 */
-                .filter-pill-wrap { position: static; }
-                .filter-dropdown { top: 100%; left: 16px; right: 16px; min-width: 0; width: auto; margin-top: 4px; }
-                
-                #display-settings-wrap { border-left: none; padding-left: 8px; margin-left: 0; }
-                #batch-bar { display: none !important; }
-                
-                .toolbar { padding: 12px 16px; justify-content: flex-end; }
-                .search-wrap { flex: 0 0 100%; order: 1; margin-bottom: 8px; }
-                .flex-spacer { display: none; }
-                .toolbar-actions { order: 2; width: 100%; justify-content: space-between; display: flex; gap: 8px; }
-                .toolbar-actions .btn { flex: 1; padding: 0 4px; font-size: 11px; margin: 0; }
-                .v-divider { display: none; }
-                
-                .pagination-bar { flex-direction: column; align-items: flex-start; padding: 12px 16px; gap: 12px; }
-                .pagination-bar-right { width: 100%; justify-content: space-between; }
-                .dialog-overlay { padding: 12px; }
-                #data-form { flex-direction: column !important; gap: 16px !important; }
-                #data-form > div { width: 100% !important; margin: 0 !important; }
-                .v-divider-modal { display: block !important; width: 100% !important; height: 1px !important; min-height: 1px !important; background-color: var(--border) !important; margin: 8px 0 !important; flex-shrink: 0 !important; }
-            }
         </style>
 
         <div class="toolbar">
@@ -403,21 +396,31 @@ function injectUI(container) {
 
         <div id="data-modal" class="dialog-overlay">
             <div class="dialog-box" style="max-width: 800px;">
-                <div class="dialog-header">
-                    <h3 id="modal-title"><i class="ti ti-building-skyscraper"></i> 新增實習機構</h3>
-                    <button type="button" class="dialog-close" id="btn-close-modal-x"><i class="ti ti-x"></i></button>
+                
+                <div class="dialog-header flex-col items-start p-0 border-none">
+                    <div class="w-full flex items-center justify-between p-5 pb-4">
+                        <h3 id="modal-title" class="flex items-center gap-2 text-base font-bold text-gray-800"><i class="ti ti-building-skyscraper text-brand text-xl"></i> 新增實習機構</h3>
+                        <button type="button" class="dialog-close" id="btn-close-modal-x"><i class="ti ti-x"></i></button>
+                    </div>
+                    <div id="modal-tabs" class="w-full border-b border-gray-200 px-5 hidden">
+                        <nav class="-mb-px flex space-x-6">
+                            <button type="button" id="tab-btn-main" class="border-brand text-brand whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-colors">機構詳細資料</button>
+                            <button type="button" id="tab-btn-history" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-colors">歷史變更軌跡</button>
+                        </nav>
+                    </div>
                 </div>
+
                 <form id="data-form" class="dialog-body custom-scroll" style="display: flex; gap: 24px;">
                     <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
                         <div class="form-section-title" style="margin-bottom: 0;"><i class="ti ti-building-skyscraper"></i> 機構基本資料</div>
                         
-                        <div class="field">
+                        <div class="field" style="margin-bottom: 0;">
                             <label class="field-label">隸屬主機構 (若為分公司請搜尋並選擇)</label>
                             <div class="searchable-select-wrap relative">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <i class="ti ti-building text-gray-400"></i>
                                 </div>
-                                <input type="text" id="parent-search-input" class="w-full pl-9 pr-8 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none bg-gray-50 focus:bg-white" placeholder="輸入關鍵字搜尋... (留空代表獨立機構)" autocomplete="off">
+                                <input type="text" id="parent-search-input" class="w-full pl-9 pr-8 border border-gray-300 rounded focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none bg-gray-50 focus:bg-white" style="height: 36px; font-size: 13px; font-family: inherit; color: var(--text-primary);" placeholder="輸入關鍵字搜尋... (留空代表獨立機構)" autocomplete="off">
                                 <button type="button" id="btn-clear-parent" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-red-500 cursor-pointer" style="display:none;">
                                     <i class="ti ti-x text-base"></i>
                                 </button>
@@ -426,29 +429,58 @@ function injectUI(container) {
                             </div>
                         </div>
                         
-                        <div class="field"><label class="field-label">實習場所國別 <span class="req">*</span></label><select id="input-country" required class="field-select"></select></div>
-                        <div class="field"><label class="field-label">機構主名稱 <span class="req">*</span></label><input type="text" id="input-name" required placeholder="國內/外機構主要識別名稱" class="field-input"></div>
+                        <div class="field" style="margin-bottom: 0;"><label class="field-label">實習場所國別 <span class="req">*</span></label><select id="input-country" required class="field-select"></select></div>
+                        <div class="field" style="margin-bottom: 0;"><label class="field-label">機構主名稱 <span class="req">*</span></label><input type="text" id="input-name" required placeholder="國內/外機構主要識別名稱" class="field-input"></div>
                         
-                        <div class="field" id="wrap-name-translated" style="display:none;"><label class="field-label">中文譯名</label><input type="text" id="input-name-translated" placeholder="例如：蘋果公司 (選填)" class="field-input"></div>
-                        <div class="field" id="wrap-name-local" style="display:none;"><label class="field-label">當地語言名稱</label><input type="text" id="input-name-local" placeholder="例如：Apple Inc. (選填)" class="field-input"></div>
-                        <div class="field" id="wrap-overseas-tax" style="display:none;"><label class="field-label">海外稅號 / 立案號碼</label><input type="text" id="input-overseas-tax-id" placeholder="當地稅務或機構登記號碼 (選填)" class="field-input"></div>
+                        <div class="field" id="wrap-name-translated" style="display:none; margin-bottom: 0;"><label class="field-label">中文譯名</label><input type="text" id="input-name-translated" placeholder="例如：蘋果公司 (選填)" class="field-input"></div>
+                        <div class="field" id="wrap-name-local" style="display:none; margin-bottom: 0;"><label class="field-label">當地語言名稱</label><input type="text" id="input-name-local" placeholder="例如：Apple Inc. (選填)" class="field-input"></div>
+                        <div class="field" id="wrap-overseas-tax" style="display:none; margin-bottom: 0;"><label class="field-label">海外稅號 / 立案號碼</label><input type="text" id="input-overseas-tax-id" placeholder="當地稅務或機構登記號碼 (選填)" class="field-input"></div>
                         
-                        <div class="field" id="wrap-tax-id"><label class="field-label">統一編號 <span class="req">*</span></label><input type="text" id="input-tax-id" required placeholder="如: 12345678" class="field-input" style="text-transform:uppercase;"></div>
-                        <div class="field" id="wrap-city"><label class="field-label">縣市別 <span id="req-city" class="req">*</span></label><select id="input-city" required class="field-select"><option value="">請選擇</option></select></div>
+                        <div class="field" id="wrap-tax-id" style="margin-bottom: 0;"><label class="field-label">統一編號 <span class="req">*</span></label><input type="text" id="input-tax-id" required placeholder="如: 12345678" class="field-input" style="text-transform:uppercase;"></div>
+                        <div class="field" id="wrap-city" style="margin-bottom: 0;"><label class="field-label">縣市別 <span id="req-city" class="req">*</span></label><select id="input-city" required class="field-select"><option value="">請選擇</option></select></div>
                         
-                        <div class="field"><label class="field-label">完整實習地址 <span class="req">*</span></label><input type="text" id="input-address" required placeholder="詳細地址" class="field-input"></div>
+                        <div class="field" style="margin-bottom: 0;"><label class="field-label">完整實習地址 <span class="req">*</span></label><input type="text" id="input-address" required placeholder="詳細地址" class="field-input"></div>
                     </div>
                     <div class="v-divider-modal" style="width: 1px; background: var(--border); margin: 0;"></div>
                     <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
                         <div class="form-section-title" style="margin-bottom: 0;"><i class="ti ti-tags"></i> 分類與備註</div>
-                        <div class="field"><label class="field-label">行業別</label><select id="input-industry" class="field-select"><option value="">請選擇</option></select></div>
-                        <div class="field"><label class="field-label">實習場所</label><select id="input-venue-type" class="field-select"><option value="">請選擇</option></select></div>
-                        <div class="field" style="flex: 1;"><label class="field-label">機構備註</label><textarea id="input-remarks" class="field-input" placeholder="可輸入與該機構相關之備註說明..." style="height: 100%; min-height: 120px; resize: none; padding: 10px 12px; line-height: 1.5;"></textarea></div>
+                        <div class="field" style="margin-bottom: 0;"><label class="field-label">行業別</label><select id="input-industry" class="field-select"><option value="">請選擇</option></select></div>
+                        <div class="field" style="margin-bottom: 0;"><label class="field-label">實習場所</label><select id="input-venue-type" class="field-select"><option value="">請選擇</option></select></div>
+                        
+                        <div class="field" style="flex: 1; display: flex; flex-direction: column; margin-bottom: 0;">
+                            <label class="field-label">機構備註</label>
+                            <textarea id="input-remarks" class="field-input custom-scroll" placeholder="可輸入與該機構相關之備註說明..." style="flex: 1; resize: none; padding: 10px 12px; line-height: 1.5;"></textarea>
+                        </div>
                     </div>
                 </form>
+
+                <div id="tab-history" class="dialog-body custom-scroll" style="display: none; background: var(--bg);">
+                    <div class="flex items-center justify-between mb-4">
+                        <p class="text-xs text-gray-500 pr-4">將機構過去的舊名稱與地址封存於此，系統在建立未來的實習紀錄時，便可調用相應年份的正確資料。</p>
+                        <button type="button" id="btn-show-add-history" class="btn btn-sm btn-indigo-solid flex-shrink-0"><i class="ti ti-plus"></i> 新增歷史快照</button>
+                    </div>
+
+                    <div id="history-form-wrap" class="bg-white border border-indigo-200 rounded-lg p-4 mb-5 hidden shadow-sm">
+                        <div class="text-sm font-bold text-indigo-700 mb-3"><i class="ti ti-history"></i> 封存一筆歷史快照</div>
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div class="field" style="margin-bottom: 0;"><label class="field-label">適用結束日期 <span class="req">*</span></label><input type="date" id="hist-end-date" class="field-input"></div>
+                            <div class="field" style="margin-bottom: 0;"><label class="field-label">舊統一編號 (選填)</label><input type="text" id="hist-tax-id" class="field-input" placeholder="留空則代表沿用現況"></div>
+                            <div class="field col-span-2" style="margin-bottom: 0;"><label class="field-label">歷史機構名稱 <span class="req">*</span></label><input type="text" id="hist-name" class="field-input" placeholder="當時的機構名稱"></div>
+                            <div class="field col-span-2" style="margin-bottom: 0;"><label class="field-label">歷史實習地址 <span class="req">*</span></label><input type="text" id="hist-address" class="field-input" placeholder="當時的詳細地址"></div>
+                            <div class="field col-span-2" style="margin-bottom: 0;"><label class="field-label">變更事由 (選填)</label><input type="text" id="hist-reason" class="field-input" placeholder="例如：配合政府組織改造升格"></div>
+                        </div>
+                        <div class="flex justify-end gap-2 pt-3 border-t border-gray-100">
+                            <button type="button" id="btn-cancel-history" class="btn btn-sm btn-secondary">取消</button>
+                            <button type="button" id="btn-save-history" class="btn btn-sm btn-indigo-solid">確認封存快照</button>
+                        </div>
+                    </div>
+
+                    <div id="history-list-container" class="flex flex-col gap-3"></div>
+                </div>
+
                 <div class="dialog-footer">
                     <button type="button" class="btn btn-secondary" id="btn-cancel-modal">取消</button>
-                    <button type="button" id="btn-submit" class="btn btn-primary"><i class="ti ti-check"></i> 確認儲存</button>
+                    <button type="button" id="btn-submit" class="btn btn-primary"><i class="ti ti-check"></i> 確認儲存變更</button>
                 </div>
             </div>
         </div>
@@ -772,6 +804,68 @@ function bindEvents(container) {
         else if (btnEdit) { editData(btnEdit.dataset.id); }
         else if (btnDel) { deleteData(btnDel.dataset.id, btnDel.dataset.name); }
     });
+
+    // ✨ Tab 切換控制
+    const tabBtnMain = container.querySelector('#tab-btn-main');
+    const tabBtnHistory = container.querySelector('#tab-btn-history');
+    const tabMain = container.querySelector('#data-form');
+    const tabHistory = container.querySelector('#tab-history');
+
+    tabBtnMain.addEventListener('click', () => {
+        tabBtnMain.classList.add('border-brand', 'text-brand');
+        tabBtnMain.classList.remove('border-transparent', 'text-gray-500');
+        tabBtnHistory.classList.remove('border-brand', 'text-brand');
+        tabBtnHistory.classList.add('border-transparent', 'text-gray-500');
+        tabMain.style.display = 'flex';
+        tabHistory.style.display = 'none';
+    });
+
+    tabBtnHistory.addEventListener('click', () => {
+        tabBtnHistory.classList.add('border-brand', 'text-brand');
+        tabBtnHistory.classList.remove('border-transparent', 'text-gray-500');
+        tabBtnMain.classList.remove('border-brand', 'text-brand');
+        tabBtnMain.classList.add('border-transparent', 'text-gray-500');
+        tabHistory.style.display = 'block';
+        tabMain.style.display = 'none';
+        renderHistoryList();
+    });
+
+    // ✨ 歷史紀錄表單控制
+    container.querySelector('#btn-show-add-history').addEventListener('click', () => {
+        document.getElementById('history-form-wrap').classList.remove('hidden');
+        document.getElementById('hist-end-date').value = '';
+        document.getElementById('hist-name').value = document.getElementById('input-name').value;
+        document.getElementById('hist-address').value = document.getElementById('input-address').value;
+        document.getElementById('hist-tax-id').value = document.getElementById('input-tax-id').value;
+        document.getElementById('hist-reason').value = '';
+    });
+
+    container.querySelector('#btn-cancel-history').addEventListener('click', () => {
+        document.getElementById('history-form-wrap').classList.add('hidden');
+    });
+
+    container.querySelector('#btn-save-history').addEventListener('click', () => {
+        const endDate = document.getElementById('hist-end-date').value;
+        const name = document.getElementById('hist-name').value.trim();
+        const address = document.getElementById('hist-address').value.trim();
+        const taxId = document.getElementById('hist-tax-id').value.trim();
+        const reason = document.getElementById('hist-reason').value.trim();
+
+        if(!endDate || !name || !address) { alert('請填寫結束日期、歷史機構名稱與地址！'); return; }
+
+        currentHistory.push({ end_date: endDate, name: name, address: address, tax_id: taxId, reason: reason, created_at: new Date().toISOString() });
+        document.getElementById('history-form-wrap').classList.add('hidden');
+        renderHistoryList();
+    });
+
+    container.querySelector('#tab-history').addEventListener('click', (e) => {
+        const btnDel = e.target.closest('.btn-del-history');
+        if(btnDel && confirm('確定要刪除這筆歷史快照嗎？')) {
+            const idx = Number(btnDel.dataset.idx);
+            currentHistory.splice(idx, 1);
+            renderHistoryList();
+        }
+    });
 }
 
 // ==========================================
@@ -919,6 +1013,33 @@ function clearSelection() {
     selectedIds = []; 
     updateBatchActionBar(); 
     renderTable();
+}
+
+// ✨ 渲染歷史紀錄的時間軸 UI
+function renderHistoryList() {
+    const container = document.getElementById('history-list-container');
+    if(!currentHistory || currentHistory.length === 0) {
+        container.innerHTML = `<div class="text-center py-10 text-gray-400 text-sm border-2 border-dashed border-gray-100 rounded-lg">尚無歷史快照紀錄</div>`;
+        return;
+    }
+    
+    const sorted = [...currentHistory].map((h, i) => ({...h, originalIndex: i})).sort((a,b) => new Date(b.end_date) - new Date(a.end_date));
+    
+    container.innerHTML = sorted.map(h => `
+        <div class="relative pl-6 pb-4 border-l-2 border-indigo-100 last:border-0 last:pb-0">
+            <div class="absolute w-3 h-3 bg-indigo-500 rounded-full -left-[7px] top-1 border-2 border-white shadow-sm"></div>
+            <div class="bg-white border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow transition-shadow">
+                <div class="flex justify-between items-start mb-1">
+                    <span class="text-[11px] font-bold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded tracking-wide">~ ${h.end_date} 前適用</span>
+                    <button type="button" class="text-gray-400 hover:text-red-500 btn-del-history transition-colors" data-idx="${h.originalIndex}"><i class="ti ti-trash"></i></button>
+                </div>
+                <div class="font-bold text-gray-800 text-sm mt-1.5">${h.name}</div>
+                <div class="text-xs text-gray-500 mt-1"><i class="ti ti-map-pin"></i> ${h.address}</div>
+                ${h.tax_id ? `<div class="text-xs text-gray-500 mt-0.5"><i class="ti ti-receipt"></i> 舊統編：${h.tax_id}</div>` : ''}
+                ${h.reason ? `<div class="text-[13px] text-indigo-700 mt-2 pt-2 border-t border-gray-100"><i class="ti ti-info-circle"></i> 事由：${h.reason}</div>` : ''}
+            </div>
+        </div>
+    `).join('');
 }
 
 // ==========================================
@@ -1095,8 +1216,8 @@ function renderTable() {
 
         const hName = highlightKeyword(data.name, searchTerm);
         const nameHtml = isChild 
-            ? `<div class="child-name-wrap"><i class="ti ti-corner-down-right"></i> <span class="cell-primary">${hName}</span></div>` 
-            : `<div style="display:flex; align-items:center;">${toggleHtml} <span class="cell-primary bold">${hName}</span>${childCountHtml}</div>`;
+            ? `<div class="child-name-wrap"><i class="ti ti-corner-down-right"></i> <span class="cell-primary" style="word-break: break-word; min-width: 150px;">${hName}</span></div>` 
+            : `<div style="display:flex; align-items:center;">${toggleHtml} <span class="cell-primary bold" style="word-break: break-word; min-width: 150px;">${hName}</span>${childCountHtml}</div>`;
 
         const hAddress = highlightKeyword(data.address, searchTerm);
 
@@ -1114,9 +1235,7 @@ function renderTable() {
             <td class="col-country" style="text-align: center;"><div class="cell-primary">${data.country}</div></td>
             <td class="col-city" style="text-align: center;"><div class="cell-primary">${isDomestic && data.city ? data.city : '-'}</div></td>
             <td class="col-address" style="text-align: left;"><div class="cell-primary" title="${data.address}">${hAddress}</div></td>
-            
             <td class="col-spacer"></td>
-            
             <td class="col-actions" style="text-align: center;">
                 <div class="row-actions">
                     <button data-id="${data.id}" class="btn btn-secondary btn-icon sm btn-row-edit" title="編輯"><i class="ti ti-edit"></i></button>
@@ -1190,7 +1309,7 @@ async function handleImport(e) {
                         name: cols[0], name_translated: cols[1] || '', name_local: cols[2] || '', 
                         tax_id: cols[3] || '', overseas_tax_id: cols[4] || '', industry: cols[5] || '', venue_type: cols[6] || '',
                         country: cols[7] || '中華民國', city: cols[8] || '', address: cols[9] || '', remarks: cols[10] || '',
-                        parent_id: '' 
+                        parent_id: '', history: [] 
                     };
                     if (!payload.name) continue;
                     parsedRows.push(payload);
@@ -1209,15 +1328,19 @@ async function handleImport(e) {
 
 function openCreateModal() {
     editingId = null; editingOldName = null;
+    currentHistory = [];
     document.getElementById('data-form').reset();
     
     document.getElementById('input-parent-id').value = '';
     document.getElementById('parent-search-input').value = '';
     document.getElementById('btn-clear-parent').style.display = 'none';
     
+    document.getElementById('modal-tabs').classList.add('hidden');
+    document.getElementById('tab-btn-main').click();
+
     populateParentDropdown();
     handleCountryChange();
-    document.getElementById('modal-title').innerHTML = '<i class="ti ti-building-skyscraper"></i> 新增實習機構';
+    document.getElementById('modal-title').innerHTML = '<i class="ti ti-building-skyscraper text-brand"></i> 新增實習機構';
     document.getElementById('data-modal').classList.add('open');
 }
 
@@ -1239,7 +1362,8 @@ async function submitForm() {
         industry: document.getElementById('input-industry').value,
         venue_type: document.getElementById('input-venue-type').value,
         address: document.getElementById('input-address').value.trim(),
-        remarks: document.getElementById('input-remarks').value.trim()
+        remarks: document.getElementById('input-remarks').value.trim(),
+        history: currentHistory // ✨ 存入歷史快照
     };
 
     if(!payload.country || !payload.name || !payload.address) { alert("請填寫所有必填欄位！"); return; }
@@ -1251,25 +1375,26 @@ async function submitForm() {
             const batch = writeBatch(db);
             batch.update(doc(db, "internship_institutions", editingId), { ...payload, updated_at: serverTimestamp() });
             
-            if (editingOldName && editingOldName !== payload.name) {
-                allRecords.forEach(record => {
-                    if (record.inst_id === editingId || (!record.inst_id && record.inst_raw === editingOldName)) {
-                        batch.update(doc(db, "internship_records", record.id), { inst_raw: payload.name, updated_at: serverTimestamp() });
-                    }
-                });
-            }
+            // ✨ 移除自動覆蓋過去實習生紀錄的危險邏輯，完美保留真實的 inst_raw 快照
+            
             await batch.commit();
         } else {
             await addDoc(collection(db, "internship_institutions"), { ...payload, created_at: serverTimestamp() });
         }
         closeModal(); fetchInitialDataOnce();
-    } catch (err) { alert("儲存失敗"); } finally { btn.disabled = false; btn.innerHTML = '確認儲存'; }
+    } catch (err) { alert("儲存失敗"); } finally { btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> 確認儲存'; }
 }
 
 function editData(id) {
     const docData = allData.find(d => d.id === id); if (!docData) return;
     editingId = id; editingOldName = docData.name || '';
     
+    // ✨ 載入歷史快照陣列
+    currentHistory = docData.history || [];
+    
+    document.getElementById('modal-tabs').classList.remove('hidden');
+    document.getElementById('tab-btn-main').click();
+
     populateParentDropdown(id); 
     document.getElementById('input-parent-id').value = docData.parent_id || '';
     if (docData.parent_id) {
@@ -1294,7 +1419,7 @@ function editData(id) {
     document.getElementById('input-remarks').value = docData.remarks || '';
     
     handleCountryChange(); 
-    document.getElementById('modal-title').innerHTML = '<i class="ti ti-edit"></i> 編輯實習機構';
+    document.getElementById('modal-title').innerHTML = '<i class="ti ti-edit text-brand"></i> 編輯機構與歷史軌跡';
     document.getElementById('data-modal').classList.add('open');
 }
 
@@ -1370,7 +1495,8 @@ async function executeMerge() {
         const batch = writeBatch(db);
         allRecords.forEach(record => {
             if (instsToDelete.includes(record.inst_id) || (!record.inst_id && deletedNames.includes(record.inst_raw))) {
-                batch.update(doc(db, "internship_records", record.id), { inst_raw: masterInst.name, inst_id: masterInst.id, updated_at: serverTimestamp() });
+                // ✨ 僅變更 ID，不再覆蓋 inst_raw 以保全當初的真實名字
+                batch.update(doc(db, "internship_records", record.id), { inst_id: masterInst.id, updated_at: serverTimestamp() });
             }
         });
         allData.forEach(d => {
