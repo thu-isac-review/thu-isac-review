@@ -26,6 +26,7 @@ let sortDir = '';
 let isTreeMode = true; 
 let expandedParents = new Set();
 let isSearchAutoExpand = false; 
+let isAllExpanded = false; // ✨ 展開收合狀態追蹤
 
 let currentHistory = [];
 let colVis = { tax_id: true, industry: true, venue_type: true, country: true, city: true, address: true };
@@ -41,7 +42,7 @@ const LIST_VENUES = ["企業機構","其他機構","政府機構","就讀學校�
 export async function render(containerId, context) {
     db = context.db;
     const container = document.getElementById(containerId);
-    selectedIds = []; currentPage = 1; expandedParents.clear(); 
+    selectedIds = []; currentPage = 1; expandedParents.clear(); isAllExpanded = false;
     injectUI(container); initSelectOptions(); bindEvents(container); updateColStyles(); 
     await fetchInitialDataOnce();
 }
@@ -53,6 +54,17 @@ function getROCDateString() {
     const mm = String(today.getMonth() + 1).padStart(2, '0');
     const dd = String(today.getDate()).padStart(2, '0');
     return `${rocYear}/${mm}/${dd}`;
+}
+
+// ✨ 修正 3：民國日期自動格式化與驗證
+function formatROCDate(val) {
+    let s = val.replace(/\D/g, '');
+    if (s.length === 6) s = '0' + s; 
+    if (s.length === 7) return `${s.substring(0,3)}/${s.substring(3,5)}/${s.substring(5,7)}`;
+    return val; 
+}
+function isValidROCDate(val) {
+    return /^\d{2,3}\/\d{2}\/\d{2}$/.test(val);
 }
 
 // ==========================================
@@ -141,7 +153,7 @@ function injectUI(container) {
             @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
             .batch-info { font-size: 13px; font-weight: 600; color: var(--brand); display: flex; align-items: center; gap: 8px; }
 
-            /* ✨ 修正 5: 拔除 .col-spacer，採用百分比自適應寬度 */
+            /* ✨ 修正 6：拔除 spacer，使用 auto 讓欄位自由延展填充空間 */
             .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; border-left: none; border-right: none; isolation: isolate; z-index: 0; }
             .table-scroll { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: none; }
             
@@ -159,8 +171,8 @@ function injectUI(container) {
             .col-checkbox { position: sticky; left: 0; width: 48px; min-width: 48px; max-width: 48px; text-align: center; z-index: 2; background-color: inherit; }
             th.col-checkbox { z-index: 3; background-color: var(--surface); }
 
-            /* ✨ 修正 5: 賦予流動欄位百分比寬度，保證選單收合時能延展 */
-            .col-name { width: 25%; min-width: 250px; }
+            /* 名稱欄位拔除 max-width 讓它自由伸展 */
+            .col-name { min-width: 250px; }
             th.col-name { text-align: center; z-index: 1; } 
             
             .col-tax_id { width: 12%; min-width: 110px; }
@@ -168,16 +180,18 @@ function injectUI(container) {
             .col-venue_type { width: 12%; min-width: 130px; }
             .col-country { width: 8%; min-width: 90px; }
             .col-city { width: 8%; min-width: 90px; }
-            .col-address { width: 23%; min-width: 220px; }
+            .col-address { width: auto; min-width: 220px; }
 
-            .col-actions { width: 100px; min-width: 100px; max-width: 100px; text-align: center; }
-            th.col-actions { z-index: 1; }
+            .col-actions { position: sticky; right: 0; width: 100px; min-width: 100px; max-width: 100px; text-align: center; z-index: 2; background-color: inherit; box-shadow: inset 1px 0 0 var(--border); }
+            th.col-actions { z-index: 3; background-color: var(--surface); box-shadow: inset 1px -1px 0 var(--border), inset 0 1px 0 var(--border); }
+            .col-actions::before { content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 1px; background-color: var(--border); z-index: 6; }
 
             @media (max-width: 768px) {
                 .col-checkbox { position: static !important; min-width: 48px !important; }
                 .col-name { position: static !important; min-width: 250px !important; width: auto !important; }
-                .col-actions { position: static !important; min-width: 100px !important; }
-                th.col-checkbox, th.col-name, th.col-actions { position: sticky !important; top: 0 !important; left: auto !important; right: auto !important; z-index: 2 !important; }
+                .col-actions { position: static !important; min-width: 100px !important; box-shadow: none !important;}
+                th.col-checkbox, th.col-name, th.col-actions { position: sticky !important; top: 0 !important; left: auto !important; right: auto !important; z-index: 2 !important; box-shadow: none !important; border-bottom: 1px solid var(--border) !important;}
+                .col-actions::before { display: none !important; } 
                 
                 .filter-row { padding: 10px 16px; flex-wrap: nowrap; }
                 .filters-scroll-area { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: none; padding-bottom: 2px; scrollbar-width: none; }
@@ -198,7 +212,7 @@ function injectUI(container) {
                 .pagination-bar-right { width: 100%; justify-content: space-between; }
                 .dialog-overlay { padding: 12px; }
                 .dialog-body-container { flex-direction: column !important; gap: 16px !important; height: auto !important; min-height: 0 !important; }
-                .dialog-body-container > div { width: 100% !important; margin: 0 !important; }
+                .dialog-body-container > div { width: 100% !important; margin: 0 !important; padding: 0 !important; }
                 .v-divider-modal { display: block !important; width: 100% !important; height: 1px !important; min-height: 1px !important; background-color: var(--border) !important; margin: 8px 0 !important; flex-shrink: 0 !important; }
             }
 
@@ -231,16 +245,16 @@ function injectUI(container) {
             .dialog-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; padding: 4px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); transition: all var(--transition); }
             .dialog-close:hover { color: var(--danger); background: var(--danger-bg); }
             
-            /* ✨ 修正 2：共用的 500px 定高內容區 */
             .dialog-body-container { height: 500px; display: flex; overflow: hidden; background: var(--bg); }
-            .dialog-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg); }
+            .dialog-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg); flex-shrink: 0; }
 
             .form-section-title { font-size: 13px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px; margin-bottom: 16px; }
             .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
             .field-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
             .field-label .req { color: var(--danger); margin-left: 2px; }
-            .field-input, .field-select { width: 100%; height: 36px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); padding: 0 12px; font-size: 13px; font-family: inherit; color: var(--text-primary); outline: none; transition: all var(--transition); }
-            .field-input:focus, .field-select:focus, textarea.field-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); background: var(--surface); }
+            /* ✨ 修正 5: 輸入框一律白底 */
+            .field-input, .field-select { width: 100%; height: 36px; border: 1px solid var(--border); border-radius: var(--radius); background: #ffffff; padding: 0 12px; font-size: 13px; font-family: inherit; color: var(--text-primary); outline: none; transition: all var(--transition); }
+            .field-input:focus, .field-select:focus, textarea.field-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
 
             .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
             .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
@@ -325,13 +339,10 @@ function injectUI(container) {
                 </div>
             </div>
 
-            <div id="display-settings-wrap">
+            <div class="relative inline-block text-left" id="display-settings-wrap">
                 <button id="btn-display-settings" class="btn btn-secondary btn-sm" style="font-weight: 500;"><i class="ti ti-settings"></i> 顯示設定</button>
-                <div id="display-settings-menu" style="position:absolute; right:0; top:calc(100% + 4px); width:200px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); padding:8px; z-index:100; display:none;" class="menu-popup">
-                    <button class="btn btn-secondary btn-sm" style="width:100%; justify-content:flex-start; border:none; margin-bottom:4px;" id="btn-toggle-tree"><i class="ti ti-list-tree" style="color:var(--brand);"></i> 切換為扁平列表</button>
-                    <div style="height:1px; background:var(--border); margin:4px 0;"></div>
-                    <button class="btn btn-secondary btn-sm" style="width:100%; justify-content:flex-start; border:none; margin-bottom:4px;" id="btn-expand-all"><i class="ti ti-fold-down"></i> 展開所有分支</button>
-                    <button class="btn btn-secondary btn-sm" style="width:100%; justify-content:flex-start; border:none; margin-bottom:4px;" id="btn-collapse-all"><i class="ti ti-fold-up"></i> 收合所有分支</button>
+                <div id="display-settings-menu" style="position:absolute; right:16px; top:calc(100% + 4px); width:200px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); padding:8px; z-index:100; display:none;" class="menu-popup">
+                    <button class="btn btn-secondary btn-sm" style="width:100%; justify-content:flex-start; border:none; margin-bottom:4px;" id="btn-toggle-expand"><i class="ti ti-arrows-maximize" style="color:var(--brand);"></i> <span>展開所有分支</span></button>
                     <div style="height:1px; background:var(--border); margin:4px 0;"></div>
                     <div style="font-size:11px; font-weight:700; color:var(--text-muted); padding:4px 8px;">顯示欄位設定</div>
                     <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="tax_id" checked> 統一編號</label>
@@ -413,8 +424,7 @@ function injectUI(container) {
                     </div>
                 </div>
 
-                <div class="dialog-body-container" style="display: flex; width: 100%;">
-                    
+                <div class="dialog-body-container">
                     <form id="data-form" class="custom-scroll" style="display: flex; gap: 24px; width: 100%; padding: 24px; overflow-y: auto;">
                         <div style="flex: 1; display: flex; flex-direction: column;">
                             <div class="form-section-title"><i class="ti ti-building-skyscraper"></i> 機構基本資料</div>
@@ -437,14 +447,13 @@ function injectUI(container) {
                             <div class="field"><label class="field-label">實習場所國別 <span class="req">*</span></label><select id="input-country" required class="field-select"></select></div>
                             <div class="field"><label class="field-label">機構主名稱 <span class="req">*</span></label><input type="text" id="input-name" required placeholder="國內/外機構主要識別名稱" class="field-input"></div>
                             
-                            <div class="field" id="wrap-name-translated" style="display:none;"><label class="field-label">中文譯名</label><input type="text" id="input-name-translated" placeholder="例如：蘋果公司 (選填)" class="field-input"></div>
-                            <div class="field" id="wrap-name-local" style="display:none;"><label class="field-label">當地語言名稱</label><input type="text" id="input-name-local" placeholder="例如：Apple Inc. (選填)" class="field-input"></div>
+                            <div class="field" id="wrap-name-translated" style="display:none;"><label class="field-label">當地名稱 / 英文譯名</label><input type="text" id="input-name-translated" placeholder="例如：Apple Inc. (選填)" class="field-input"></div>
                             <div class="field" id="wrap-overseas-tax" style="display:none;"><label class="field-label">海外稅號 / 立案號碼</label><input type="text" id="input-overseas-tax-id" placeholder="當地稅務或機構登記號碼 (選填)" class="field-input"></div>
                             
                             <div class="field" id="wrap-tax-id"><label class="field-label">統一編號 <span class="req">*</span></label><input type="text" id="input-tax-id" required placeholder="如: 12345678" class="field-input" style="text-transform:uppercase;"></div>
                             <div class="field" id="wrap-city"><label class="field-label">縣市別 <span id="req-city" class="req">*</span></label><select id="input-city" required class="field-select"><option value="">請選擇</option></select></div>
                             
-                            <div class="field"><label class="field-label">完整實習地址 <span class="req">*</span></label><input type="text" id="input-address" required placeholder="詳細地址" class="field-input"></div>
+                            <div class="field" style="margin-bottom:0;"><label class="field-label">完整實習地址 <span class="req">*</span></label><input type="text" id="input-address" required placeholder="詳細地址" class="field-input"></div>
                         </div>
                         <div class="v-divider-modal" style="width: 1px; background: var(--border); margin: 0;"></div>
                         <div style="flex: 1; display: flex; flex-direction: column;">
@@ -477,23 +486,26 @@ function injectUI(container) {
         </div>
 
         <div id="add-history-modal" class="dialog-overlay">
-            <div class="dialog-box" style="max-width: 500px;">
-                <div class="dialog-header">
-                    <h3 style="color: var(--indigo)"><i class="ti ti-history" style="font-size: 20px;"></i> 封存一筆歷史快照</h3>
-                    <button type="button" class="dialog-close" id="btn-close-add-hist-x"><i class="ti ti-x"></i></button>
+            <div class="dialog-box" style="max-width: 480px; border-radius: 16px;">
+                <div class="dialog-header flex flex-col items-center justify-center p-6 border-none relative bg-white">
+                    <button type="button" class="dialog-close absolute top-4 right-4" id="btn-close-add-hist-x"><i class="ti ti-x text-xl"></i></button>
+                    <div class="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center mb-3">
+                        <i class="ti ti-history text-indigo-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 m-0 text-center">封存一筆歷史快照</h3>
                 </div>
-                <div class="dialog-body bg-gray-50 p-6 custom-scroll">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="field" style="margin-bottom:0;"><label class="field-label text-gray-600">適用結束日期 <span class="req text-red-500">*</span></label><input type="text" id="hist-end-date" class="field-input bg-white focus:bg-white transition-colors" placeholder="例如：115/06/04"></div>
-                        <div class="field" style="margin-bottom:0;"><label class="field-label text-gray-600">舊統一編號 <span class="font-normal text-gray-400">(選填)</span></label><input type="text" id="hist-tax-id" class="field-input bg-white focus:bg-white transition-colors" placeholder="留空則沿用現況"></div>
-                        <div class="field col-span-1 md:col-span-2" style="margin-bottom:0;"><label class="field-label text-gray-600">歷史機構名稱 <span class="req text-red-500">*</span></label><input type="text" id="hist-name" class="field-input bg-white focus:bg-white transition-colors" placeholder="當時的機構名稱"></div>
-                        <div class="field col-span-1 md:col-span-2" style="margin-bottom:0;"><label class="field-label text-gray-600">歷史實習地址 <span class="req text-red-500">*</span></label><input type="text" id="hist-address" class="field-input bg-white focus:bg-white transition-colors" placeholder="當時的詳細地址"></div>
-                        <div class="field col-span-1 md:col-span-2" style="margin-bottom:0;"><label class="field-label text-gray-600">變更事由 <span class="font-normal text-gray-400">(選填)</span></label><input type="text" id="hist-reason" class="field-input bg-white focus:bg-white transition-colors" placeholder="例如：配合政府組織改造升格"></div>
+                <div class="dialog-body bg-white px-6 pb-6 pt-0 custom-scroll border-none">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="field" style="margin-bottom:0;"><label class="field-label text-gray-500 font-bold mb-1">適用結束日期 <span class="req text-red-500">*</span></label><input type="text" id="hist-end-date" class="field-input border-gray-200" placeholder="例如：113/06/04"></div>
+                        <div class="field" style="margin-bottom:0;"><label class="field-label text-gray-500 font-bold mb-1">舊統一編號 <span class="font-normal text-gray-400">(選填)</span></label><input type="text" id="hist-tax-id" class="field-input border-gray-200" placeholder="留空則沿用現況"></div>
+                        <div class="field col-span-2" style="margin-bottom:0;"><label class="field-label text-gray-500 font-bold mb-1">歷史機構名稱 <span class="req text-red-500">*</span></label><input type="text" id="hist-name" class="field-input border-gray-200" placeholder="當時的機構名稱"></div>
+                        <div class="field col-span-2" style="margin-bottom:0;"><label class="field-label text-gray-500 font-bold mb-1">歷史實習地址 <span class="req text-red-500">*</span></label><input type="text" id="hist-address" class="field-input border-gray-200" placeholder="當時的詳細地址"></div>
+                        <div class="field col-span-2" style="margin-bottom:0;"><label class="field-label text-gray-500 font-bold mb-1">變更事由 <span class="font-normal text-gray-400">(選填)</span></label><input type="text" id="hist-reason" class="field-input border-gray-200" placeholder="例如：配合政府組織改造升格"></div>
                     </div>
                 </div>
-                <div class="dialog-footer">
-                    <button type="button" class="btn btn-secondary" id="btn-cancel-add-hist">取消</button>
-                    <button type="button" id="btn-save-history" class="btn btn-indigo-solid shadow-sm">確認封存快照</button>
+                <div class="dialog-footer bg-white border-t border-gray-100 flex justify-end gap-3 px-6 py-4 rounded-b-[16px]">
+                    <button type="button" class="btn btn-secondary bg-white border-gray-200 text-gray-600 hover:bg-gray-50 px-5" id="btn-cancel-add-hist">取消</button>
+                    <button type="button" id="btn-save-history" class="btn btn-indigo-solid px-5 rounded-lg shadow-sm">確認封存快照</button>
                 </div>
             </div>
         </div>
@@ -639,7 +651,6 @@ function initSelectOptions() {
     document.getElementById('batch-input-venue').innerHTML = batchVenueHtml;
 }
 
-// ✨ 修正 6: 下拉選單不再顯示統編
 function populateParentDropdown(excludeId = null) {
     const listContainer = document.getElementById('parent-dropdown-list');
     let html = '<div class="searchable-option empty-opt" data-id="" data-name="">-- 獨立機構 / 總公司 (無隸屬) --</div>';
@@ -656,7 +667,7 @@ function populateParentDropdown(excludeId = null) {
 }
 
 // ==========================================
-// 3. 事件與樣式綁定
+// 3. 事件代理與動態樣式邏輯
 // ==========================================
 function updateColStyles() {
     let css = '';
@@ -735,8 +746,6 @@ function bindEvents(container) {
     const displayMenu = container.querySelector('#display-settings-menu');
     btnDisplaySettings.addEventListener('click', (e) => {
         e.stopPropagation();
-        
-        // 確保點選其他按鈕時，選單狀態能正確切換
         if (displayMenu.style.display === 'block') {
             displayMenu.style.display = 'none';
         } else {
@@ -746,20 +755,18 @@ function bindEvents(container) {
     
     displayMenu.addEventListener('click', (e) => { e.stopPropagation(); });
 
-    container.querySelector('#btn-toggle-tree').addEventListener('click', (e) => {
+    // ✨ 修正 7：簡化單一切換按鈕
+    container.querySelector('#btn-toggle-expand').addEventListener('click', (e) => {
         e.stopPropagation();
-        isTreeMode = !isTreeMode;
-        container.querySelector('#btn-toggle-tree').innerHTML = isTreeMode ? `<i class="ti ti-list-tree text-brand" style="margin-right:8px;"></i> 切換為扁平列表` : `<i class="ti ti-list text-brand" style="margin-right:8px;"></i> 切換為樹狀檢視`;
-        renderTable();
-    });
-    container.querySelector('#btn-expand-all').addEventListener('click', (e) => {
-        e.stopPropagation();
-        allData.forEach(d => { if (!d.parent_id) expandedParents.add(d.id); });
-        renderTable();
-    });
-    container.querySelector('#btn-collapse-all').addEventListener('click', (e) => {
-        e.stopPropagation();
-        expandedParents.clear();
+        isAllExpanded = !isAllExpanded;
+        const btn = container.querySelector('#btn-toggle-expand');
+        if (isAllExpanded) {
+            allData.forEach(d => { if (!d.parent_id) expandedParents.add(d.id); });
+            btn.innerHTML = `<i class="ti ti-arrows-minimize" style="color:var(--brand);"></i> <span>收合所有分支</span>`;
+        } else {
+            expandedParents.clear();
+            btn.innerHTML = `<i class="ti ti-arrows-maximize" style="color:var(--brand);"></i> <span>展開所有分支</span>`;
+        }
         renderTable();
     });
 
@@ -900,7 +907,6 @@ function bindEvents(container) {
         else if (btnDel) { deleteData(btnDel.dataset.id, btnDel.dataset.name); }
     });
 
-    // ✨ Tab 切換控制
     const tabBtnMain = container.querySelector('#tab-btn-main');
     const tabBtnHistory = container.querySelector('#tab-btn-history');
     const tabMain = container.querySelector('#data-form');
@@ -925,7 +931,7 @@ function bindEvents(container) {
         renderHistoryList();
     });
 
-    // ✨ 獨立的新增歷史快照 Modal 綁定
+    // 歷史紀錄獨立 Modal 控制
     container.querySelector('#btn-show-add-history').addEventListener('click', () => {
         document.getElementById('add-history-modal').classList.add('open');
         document.getElementById('hist-end-date').value = getROCDateString();
@@ -938,22 +944,24 @@ function bindEvents(container) {
         document.getElementById('hist-reason').value = '';
     });
 
-    container.querySelector('#btn-close-add-hist-x').addEventListener('click', () => {
-        document.getElementById('add-history-modal').classList.remove('open');
-    });
-
-    container.querySelector('#btn-cancel-add-hist').addEventListener('click', () => {
-        document.getElementById('add-history-modal').classList.remove('open');
-    });
+    container.querySelector('#btn-close-add-hist-x').addEventListener('click', () => document.getElementById('add-history-modal').classList.remove('open'));
+    container.querySelector('#btn-cancel-add-hist').addEventListener('click', () => document.getElementById('add-history-modal').classList.remove('open'));
 
     container.querySelector('#btn-save-history').addEventListener('click', () => {
-        const endDate = document.getElementById('hist-end-date').value.trim();
+        let endDate = document.getElementById('hist-end-date').value.trim();
+        endDate = formatROCDate(endDate);
+        if(!isValidROCDate(endDate)) {
+            alert('適用結束日期格式錯誤！請輸入 YYY/MM/DD (例如: 113/01/01)');
+            return;
+        }
+        document.getElementById('hist-end-date').value = endDate;
+
         const name = document.getElementById('hist-name').value.trim();
         const address = document.getElementById('hist-address').value.trim();
         const taxId = document.getElementById('hist-tax-id').value.trim();
         const reason = document.getElementById('hist-reason').value.trim();
 
-        if(!endDate || !name || !address) { alert('請填寫結束日期、歷史機構名稱與地址！'); return; }
+        if(!name || !address) { alert('請填寫歷史機構名稱與地址！'); return; }
 
         currentHistory.push({ end_date: endDate, name: name, address: address, tax_id: taxId, reason: reason, created_at: new Date().toISOString() });
         document.getElementById('add-history-modal').classList.remove('open');
@@ -977,6 +985,7 @@ function bindEvents(container) {
         r.addEventListener('change', (e) => {
             if(e.target.value === 'history') {
                 document.getElementById('intent-history-fields').classList.remove('hidden');
+                document.getElementById('intent-end-date').value = getROCDateString(); 
             } else {
                 document.getElementById('intent-history-fields').classList.add('hidden');
             }
@@ -988,9 +997,15 @@ function bindEvents(container) {
         const isTypo = (intent === 'typo');
         
         if (!isTypo) {
-            const endDate = document.getElementById('intent-end-date').value.trim();
+            let endDate = document.getElementById('intent-end-date').value.trim();
+            endDate = formatROCDate(endDate);
+            if(!isValidROCDate(endDate)) {
+                alert('適用結束日期格式錯誤！請輸入 YYY/MM/DD (例如: 113/01/01)');
+                return;
+            }
+            document.getElementById('intent-end-date').value = endDate;
+
             const reason = document.getElementById('intent-reason').value.trim();
-            if(!endDate) { alert('請填寫舊資料適用結束日期！'); return; }
             
             pendingPayload.history = pendingPayload.history || [];
             pendingPayload.history.push({
@@ -1083,6 +1098,7 @@ function updatePillActive(type) {
     }
 }
 
+// ✨ 修正 4：已拔除當地語言名稱，兩邊欄位高度對稱
 function handleCountryChange() {
     const country = document.getElementById('input-country').value;
     const isDomestic = country === '中華民國';
@@ -1090,7 +1106,6 @@ function handleCountryChange() {
     const wrapTax = document.getElementById('wrap-tax-id');
     const wrapCity = document.getElementById('wrap-city');
     const wrapNameTrans = document.getElementById('wrap-name-translated');
-    const wrapNameLocal = document.getElementById('wrap-name-local');
     const wrapOverseasTax = document.getElementById('wrap-overseas-tax');
 
     const taxInput = document.getElementById('input-tax-id');
@@ -1098,11 +1113,11 @@ function handleCountryChange() {
 
     if (isDomestic) {
         wrapTax.style.display = 'flex'; wrapCity.style.display = 'flex';
-        wrapNameTrans.style.display = 'none'; wrapNameLocal.style.display = 'none'; wrapOverseasTax.style.display = 'none';
+        wrapNameTrans.style.display = 'none'; wrapOverseasTax.style.display = 'none';
         taxInput.required = true; cityInput.required = true;
     } else {
         wrapTax.style.display = 'none'; wrapCity.style.display = 'none';
-        wrapNameTrans.style.display = 'flex'; wrapNameLocal.style.display = 'flex'; wrapOverseasTax.style.display = 'flex';
+        wrapNameTrans.style.display = 'flex'; wrapOverseasTax.style.display = 'flex';
         taxInput.required = false; cityInput.required = false;
         taxInput.value = ''; cityInput.value = '';
     }
@@ -1162,7 +1177,6 @@ function renderHistoryList() {
         return;
     }
     
-    // ✨ 依照民國紀年字串正確排序
     const sorted = [...currentHistory].map((h, i) => ({...h, originalIndex: i})).sort((a,b) => b.end_date.localeCompare(a.end_date));
     
     container.innerHTML = sorted.map(h => `
@@ -1275,19 +1289,26 @@ function renderTable() {
     
     isSearchAutoExpand = false; 
 
+    // ✨ 修正 9：中文字精準筆畫排序，且包含子節點
     if (sortCol) {
-        filteredInstitutions.sort((a, b) => {
+        const sortFn = (a, b) => {
             let valA = a[sortCol] || ''; let valB = b[sortCol] || '';
             if (sortCol === 'country') {
                 const aIsDomestic = valA === '中華民國' ? 0 : 1;
                 const bIsDomestic = valB === '中華民國' ? 0 : 1;
                 if (aIsDomestic !== bIsDomestic) return sortDir === 'asc' ? aIsDomestic - bIsDomestic : bIsDomestic - aIsDomestic;
             }
-            valA = valA.toString().toLowerCase(); valB = valB.toString().toLowerCase();
-            if (valA < valB) return sortDir === 'asc' ? -1 : 1;
-            if (valA > valB) return sortDir === 'asc' ? 1 : -1;
-            return 0;
-        });
+            valA = valA.toString(); valB = valB.toString();
+            let cmp = valA.localeCompare(valB, 'zh-TW'); // 支援中文筆畫
+            return sortDir === 'asc' ? cmp : -cmp;
+        };
+
+        filteredInstitutions.sort(sortFn);
+        if (isTreeMode) {
+            filteredInstitutions.forEach(p => {
+                if (p.children && p.children.length > 0) p.children.sort(sortFn);
+            });
+        }
     }
 
     const totalMainItems = filteredInstitutions.length;
@@ -1334,8 +1355,8 @@ function renderTable() {
         const isDomestic = data.country === '中華民國';
         
         let dispTax = '-';
+        // ✨ 修正 8：海外機構列表直接顯示 - 不顯示稅號
         if (isDomestic && data.tax_id) dispTax = highlightKeyword(data.tax_id, searchTerm);
-        else if (!isDomestic && data.overseas_tax_id) dispTax = `<span style="color:#4338ca;">${highlightKeyword(data.overseas_tax_id, searchTerm)}</span>`;
         
         const toggleHtml = hasChildren ? `<button class="tree-toggle ${isExpanded ? 'expanded' : ''}"><i class="ti ti-chevron-right"></i></button>` : `<span style="display:inline-block; width:22px; margin-right:8px; flex-shrink:0;"></span>`;
         
@@ -1397,16 +1418,16 @@ function renderTable() {
 
 function exportToCSV() {
     if (filteredInstitutions.length === 0) { alert("沒有資料可供匯出！"); return; }
-    let csv = '\uFEFF實習機構主名稱,隸屬主機構,中文譯名,當地語言名稱,統一編號,海外稅號,行業別,實習場所,實習場所國別,縣市別,實習場所地址,備註\n';
+    let csv = '\uFEFF實習機構主名稱,隸屬主機構,當地名稱/英文譯名,統一編號,海外稅號,行業別,實習場所,實習場所國別,縣市別,實習場所地址,備註\n';
     
     if (isTreeMode) {
         filteredInstitutions.forEach(p => {
-            csv += [ p.name, '', p.name_translated || '', p.name_local || '', p.tax_id || '', p.overseas_tax_id || '', p.industry || '', p.venue_type || '', p.country, p.city || '', p.address, p.remarks || '' ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
-            p.children.forEach(c => { csv += [ c.name, p.name, c.name_translated || '', c.name_local || '', c.tax_id || '', c.overseas_tax_id || '', c.industry || '', c.venue_type || '', c.country, c.city || '', c.address, c.remarks || '' ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n'; });
+            csv += [ p.name, '', p.name_translated || '', p.tax_id || '', p.overseas_tax_id || '', p.industry || '', p.venue_type || '', p.country, p.city || '', p.address, p.remarks || '' ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+            p.children.forEach(c => { csv += [ c.name, p.name, c.name_translated || '', c.tax_id || '', c.overseas_tax_id || '', c.industry || '', c.venue_type || '', c.country, c.city || '', c.address, c.remarks || '' ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n'; });
         });
     } else {
         filteredInstitutions.forEach(d => {
-            csv += [ d.name, '', d.name_translated || '', d.name_local || '', d.tax_id || '', d.overseas_tax_id || '', d.industry || '', d.venue_type || '', d.country, d.city || '', d.address, d.remarks || '' ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+            csv += [ d.name, '', d.name_translated || '', d.tax_id || '', d.overseas_tax_id || '', d.industry || '', d.venue_type || '', d.country, d.city || '', d.address, d.remarks || '' ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
         });
     }
     const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
@@ -1435,9 +1456,9 @@ async function handleImport(e) {
                 cols.push(currentVal.trim());
                 if (cols.length >= 10) {
                     const payload = {
-                        name: cols[0], name_translated: cols[1] || '', name_local: cols[2] || '', 
-                        tax_id: cols[3] || '', overseas_tax_id: cols[4] || '', industry: cols[5] || '', venue_type: cols[6] || '',
-                        country: cols[7] || '中華民國', city: cols[8] || '', address: cols[9] || '', remarks: cols[10] || '',
+                        name: cols[0], name_translated: cols[1] || '',
+                        tax_id: cols[2] || '', overseas_tax_id: cols[3] || '', industry: cols[4] || '', venue_type: cols[5] || '',
+                        country: cols[6] || '中華民國', city: cols[7] || '', address: cols[8] || '', remarks: cols[9] || '',
                         parent_id: '', history: []
                     };
                     if (!payload.name) continue;
@@ -1474,7 +1495,7 @@ function openCreateModal() {
 
 function closeModal() { document.getElementById('data-modal').classList.remove('open'); editingId = null; pendingPayload = null; }
 
-// ✨ 修正 1：擴大攔截器偵測範圍
+// ✨ 擴大攔截器偵測範圍
 async function submitForm() {
     const isDomestic = document.getElementById('input-country').value === '中華民國';
     
@@ -1483,7 +1504,6 @@ async function submitForm() {
         country: document.getElementById('input-country').value,
         name: document.getElementById('input-name').value.trim(),
         name_translated: isDomestic ? '' : document.getElementById('input-name-translated').value.trim(),
-        name_local: isDomestic ? '' : document.getElementById('input-name-local').value.trim(),
         tax_id: isDomestic ? document.getElementById('input-tax-id').value.trim() : '',
         overseas_tax_id: isDomestic ? '' : document.getElementById('input-overseas-tax-id').value.trim(),
         city: isDomestic ? document.getElementById('input-city').value : '',
@@ -1576,7 +1596,6 @@ function editData(id) {
     document.getElementById('input-country').value = docData.country || '中華民國';
     document.getElementById('input-name').value = docData.name || '';
     document.getElementById('input-name-translated').value = docData.name_translated || '';
-    document.getElementById('input-name-local').value = docData.name_local || '';
     document.getElementById('input-tax-id').value = docData.tax_id || '';
     document.getElementById('input-overseas-tax-id').value = docData.overseas_tax_id || '';
     document.getElementById('input-city').value = docData.city || '';
