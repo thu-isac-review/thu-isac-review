@@ -4,6 +4,8 @@ import { collection, getDocs, doc, updateDoc, deleteDoc, addDoc, serverTimestamp
 let db;
 let allData = []; 
 let allRecords = []; 
+let baseTree = []; // ✨ 效能優化：預先計算並快取的樹狀結構
+
 let editingId = null; 
 let editingOldData = null; 
 let pendingPayload = null; 
@@ -28,6 +30,10 @@ let isSearchAutoExpand = false;
 let currentHistory = [];
 let colVis = { tax_id: true, industry: true, venue_type: true, country: true, city: true, address: true };
 
+// ✨ 記憶體防護：防止全域事件重複綁定
+let isGlobalListenerBound = false;
+let searchDebounceTimer = null; // ✨ 效能優化：搜尋防抖計時器
+
 const LIST_COUNTRIES = ["中華民國","大陸地區","日本","美國","越南","泰國","澳大利亞","香港","澳門","馬來西亞","菲律賓","印尼","印度","孟加拉","緬甸","柬埔寨","黎巴嫩","蒙古","巴西","巴拉圭","秘魯"];
 const LIST_CITIES = ["臺北市","新北市","基隆市","桃園市","新竹縣","新竹市","苗栗縣","臺中市","彰化縣","南投縣","雲林縣","嘉義縣","嘉義市","臺南市","高雄市","屏東縣","宜蘭縣","花蓮縣","臺東縣","澎湖縣","金門縣","連江縣"];
 const LIST_INDUSTRIES = ["農、林、漁、牧業","礦業及土石採取業","製造業","電力及燃氣供應業","用水供應及污染整治業","營建工程業","批發及零售業","運輸及倉儲業","住宿及餐飲業","出版及影音等內容傳播業","電信及資訊服務業","金融及保險業","不動產業","專業、科學及技術服務業","支援服務業","公共行政及國防；強制性社會安全","教育業","醫療保健及社會工作服務業","藝術、運動及休閒服務業","其他服務業"];
@@ -42,7 +48,7 @@ export async function render(containerId, context) {
 }
 
 // ==========================================
-// 1. UI 注入模組
+// 1. UI 注入模組 (CSS 統一優化清理)
 // ==========================================
 function injectUI(container) {
     container.innerHTML = `
@@ -221,12 +227,15 @@ function injectUI(container) {
             .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
             .empty-text { font-size: 13px; font-weight: 600; }
 
-            /* ✨ UI 優化：卡片式意圖選擇單選框 */
             .intent-radio-card { display: block; cursor: pointer; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 12px; transition: all 0.2s; background: white; }
             .intent-radio-card:hover { border-color: var(--brand-light); background: #fafbff; }
             .intent-radio-card:has(input:checked) { border-color: var(--brand); background: #f0f4ff; box-shadow: 0 0 0 1px var(--brand); }
-            .intent-radio-input { appearance: none; width: 16px; height: 16px; border: 2px solid #cbd5e1; border-radius: 50%; margin-right: 12px; position: relative; top: 2px; outline: none; cursor: pointer; transition: all 0.2s; background: white; }
+            .intent-radio-input { appearance: none; width: 16px; height: 16px; border: 2px solid #cbd5e1; border-radius: 50%; margin-right: 12px; position: relative; top: 2px; outline: none; cursor: pointer; transition: all 0.2s; background: white; flex-shrink: 0; }
             .intent-radio-input:checked { border-color: var(--brand); background-color: var(--brand); box-shadow: inset 0 0 0 3px #f0f4ff; }
+            
+            /* UI 統一修復類別 */
+            .flex-center { display: flex; align-items: center; justify-content: center; }
+            .hidden { display: none !important; }
         </style>
 
         <div class="toolbar">
@@ -251,8 +260,8 @@ function injectUI(container) {
                     <div class="filter-dropdown" id="drop-country">
                         <div class="filter-dropdown-search">
                             <input type="text" id="search-country-input" placeholder="搜尋國別...">
-                            <div class="flex justify-end mt-2 px-1">
-                                <button type="button" class="text-xs text-brand hover:underline btn-filter-toggle" data-type="country" data-state="none">全選 / 全不選</button>
+                            <div style="display:flex; justify-content:flex-end; margin-top:8px; padding:0 4px;">
+                                <button type="button" style="font-size:12px; color:var(--brand); background:none; border:none; cursor:pointer;" class="btn-filter-toggle" data-type="country" data-state="none">全選 / 全不選</button>
                             </div>
                         </div>
                         <div class="filter-dropdown-list" id="country-options-container"></div>
@@ -264,8 +273,8 @@ function injectUI(container) {
                     <div class="filter-dropdown" id="drop-city">
                         <div class="filter-dropdown-search">
                             <input type="text" id="search-city-input" placeholder="搜尋縣市...">
-                            <div class="flex justify-end mt-2 px-1">
-                                <button type="button" class="text-xs text-brand hover:underline btn-filter-toggle" data-type="city" data-state="none">全選 / 全不選</button>
+                            <div style="display:flex; justify-content:flex-end; margin-top:8px; padding:0 4px;">
+                                <button type="button" style="font-size:12px; color:var(--brand); background:none; border:none; cursor:pointer;" class="btn-filter-toggle" data-type="city" data-state="none">全選 / 全不選</button>
                             </div>
                         </div>
                         <div class="filter-dropdown-list" id="city-options-container"></div>
@@ -277,8 +286,8 @@ function injectUI(container) {
                     <div class="filter-dropdown" id="drop-industry">
                         <div class="filter-dropdown-search">
                             <input type="text" id="search-industry-input" placeholder="搜尋行業別...">
-                            <div class="flex justify-end mt-2 px-1">
-                                <button type="button" class="text-xs text-brand hover:underline btn-filter-toggle" data-type="industry" data-state="none">全選 / 全不選</button>
+                            <div style="display:flex; justify-content:flex-end; margin-top:8px; padding:0 4px;">
+                                <button type="button" style="font-size:12px; color:var(--brand); background:none; border:none; cursor:pointer;" class="btn-filter-toggle" data-type="industry" data-state="none">全選 / 全不選</button>
                             </div>
                         </div>
                         <div class="filter-dropdown-list" id="industry-options-container"></div>
@@ -290,8 +299,8 @@ function injectUI(container) {
                     <div class="filter-dropdown" id="drop-venue">
                         <div class="filter-dropdown-search">
                             <input type="text" id="search-venue-input" placeholder="搜尋場所...">
-                            <div class="flex justify-end mt-2 px-1">
-                                <button type="button" class="text-xs text-brand hover:underline btn-filter-toggle" data-type="venue" data-state="none">全選 / 全不選</button>
+                            <div style="display:flex; justify-content:flex-end; margin-top:8px; padding:0 4px;">
+                                <button type="button" style="font-size:12px; color:var(--brand); background:none; border:none; cursor:pointer;" class="btn-filter-toggle" data-type="venue" data-state="none">全選 / 全不選</button>
                             </div>
                         </div>
                         <div class="filter-dropdown-list" id="venue-options-container"></div>
@@ -299,33 +308,21 @@ function injectUI(container) {
                 </div>
             </div>
 
-            <div class="relative inline-block text-left" id="display-settings-wrap">
+            <div id="display-settings-wrap">
                 <button id="btn-display-settings" class="btn btn-secondary btn-sm" style="font-weight: 500;"><i class="ti ti-settings"></i> 顯示設定</button>
-                <div id="display-settings-menu" class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg hidden z-50" style="padding: 6px;">
-                    <button class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center gap-2 transition" id="btn-toggle-tree"><i class="ti ti-list-tree text-brand"></i> 切換為扁平列表</button>
-                    <div class="h-px bg-gray-200 my-1 mx-2"></div>
-                    <button class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center gap-2 transition" id="btn-expand-all"><i class="ti ti-fold-down text-gray-400"></i> 展開所有分支</button>
-                    <button class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center gap-2 transition" id="btn-collapse-all"><i class="ti ti-fold-up text-gray-400"></i> 收合所有分支</button>
-                    <div class="h-px bg-gray-200 my-2 mx-2"></div>
-                    <div class="px-3 py-1 text-xs font-bold text-gray-400 tracking-wider">顯示欄位設定</div>
-                    <label class="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 cursor-pointer rounded">
-                        <input type="checkbox" class="col-toggle-chk" value="tax_id" checked> 統一編號
-                    </label>
-                    <label class="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 cursor-pointer rounded">
-                        <input type="checkbox" class="col-toggle-chk" value="industry" checked> 行業別
-                    </label>
-                    <label class="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 cursor-pointer rounded">
-                        <input type="checkbox" class="col-toggle-chk" value="venue_type" checked> 實習場所
-                    </label>
-                    <label class="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 cursor-pointer rounded">
-                        <input type="checkbox" class="col-toggle-chk" value="country" checked> 國別
-                    </label>
-                    <label class="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 cursor-pointer rounded">
-                        <input type="checkbox" class="col-toggle-chk" value="city" checked> 縣市別
-                    </label>
-                    <label class="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 cursor-pointer rounded">
-                        <input type="checkbox" class="col-toggle-chk" value="address" checked> 實習場所地址
-                    </label>
+                <div id="display-settings-menu" style="position:absolute; right:0; top:calc(100% + 4px); width:200px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); padding:8px; z-index:100;" class="hidden">
+                    <button class="btn btn-secondary btn-sm" style="width:100%; justify-content:flex-start; border:none; margin-bottom:4px;" id="btn-toggle-tree"><i class="ti ti-list-tree" style="color:var(--brand);"></i> 切換為扁平列表</button>
+                    <div style="height:1px; background:var(--border); margin:4px 0;"></div>
+                    <button class="btn btn-secondary btn-sm" style="width:100%; justify-content:flex-start; border:none; margin-bottom:4px;" id="btn-expand-all"><i class="ti ti-fold-down"></i> 展開所有分支</button>
+                    <button class="btn btn-secondary btn-sm" style="width:100%; justify-content:flex-start; border:none; margin-bottom:4px;" id="btn-collapse-all"><i class="ti ti-fold-up"></i> 收合所有分支</button>
+                    <div style="height:1px; background:var(--border); margin:4px 0;"></div>
+                    <div style="font-size:11px; font-weight:700; color:var(--text-muted); padding:4px 8px;">顯示欄位設定</div>
+                    <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="tax_id" checked> 統一編號</label>
+                    <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="industry" checked> 行業別</label>
+                    <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="venue_type" checked> 實習場所</label>
+                    <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="country" checked> 國別</label>
+                    <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="city" checked> 縣市別</label>
+                    <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="address" checked> 實習場所地址</label>
                 </div>
             </div>
 
@@ -346,19 +343,17 @@ function injectUI(container) {
                     <thead>
                         <tr id="inst-table-head">
                             <th class="col-checkbox">
-                                <div style="display:flex; justify-content:center; align-items:center;">
+                                <div class="flex-center">
                                     <input type="checkbox" id="selectAll" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                                 </div>
                             </th>
                             <th class="col-name" data-sort="name">實習機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            
                             <th data-sort="tax_id" class="col-tax_id" style="min-width: 110px;">統一編號 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="industry" class="col-industry" style="min-width: 130px;">行業別 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="venue_type" class="col-venue_type" style="min-width: 130px;">實習場所 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="country" class="col-country" style="min-width: 90px;">國別 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="city" class="col-city" style="min-width: 90px;">縣市別 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="address" class="col-address" style="min-width: 220px; text-align: center;">實習場所地址 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            
                             <th class="col-spacer"></th>
                             <th class="col-actions">操作</th>
                         </tr>
@@ -387,15 +382,15 @@ function injectUI(container) {
 
         <div id="data-modal" class="dialog-overlay">
             <div class="dialog-box" style="max-width: 800px;">
-                <div class="dialog-header flex-col items-start p-0 border-none">
-                    <div class="w-full flex items-center justify-between p-5 pb-4">
-                        <h3 id="modal-title" class="flex items-center gap-2 text-base font-bold text-gray-800"><i class="ti ti-building-skyscraper text-brand text-xl"></i> 新增實習機構</h3>
+                <div class="dialog-header flex-col items-start p-0 border-none" style="flex-direction: column; align-items: flex-start; padding: 0; border: none;">
+                    <div style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 20px 20px 16px;">
+                        <h3 id="modal-title" style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700;"><i class="ti ti-building-skyscraper text-brand" style="font-size: 20px;"></i> 新增實習機構</h3>
                         <button type="button" class="dialog-close" id="btn-close-modal-x"><i class="ti ti-x"></i></button>
                     </div>
-                    <div id="modal-tabs" class="w-full border-b border-gray-200 px-5 hidden">
-                        <nav class="-mb-px flex space-x-6">
-                            <button type="button" id="tab-btn-main" class="border-brand text-brand whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-colors">機構詳細資料</button>
-                            <button type="button" id="tab-btn-history" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-colors">歷史變更軌跡</button>
+                    <div id="modal-tabs" class="hidden" style="width: 100%; border-bottom: 1px solid var(--border); padding: 0 20px;">
+                        <nav style="display: flex; gap: 24px; margin-bottom: -1px;">
+                            <button type="button" id="tab-btn-main" style="padding: 12px 4px; border: none; border-bottom: 2px solid var(--brand); background: none; color: var(--brand); font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s;">機構詳細資料</button>
+                            <button type="button" id="tab-btn-history" style="padding: 12px 4px; border: none; border-bottom: 2px solid transparent; background: none; color: var(--text-muted); font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s;">歷史變更軌跡</button>
                         </nav>
                     </div>
                 </div>
@@ -407,15 +402,15 @@ function injectUI(container) {
                         <div class="field" style="margin-bottom: 0;">
                             <label class="field-label">隸屬主機構 (若為分公司請搜尋並選擇)</label>
                             <div class="searchable-select-wrap relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="ti ti-building text-gray-400"></i>
+                                <div style="position: absolute; left: 12px; top: 0; bottom: 0; display: flex; align-items: center; pointer-events: none;">
+                                    <i class="ti ti-building" style="color: var(--text-muted); font-size: 16px;"></i>
                                 </div>
-                                <input type="text" id="parent-search-input" class="w-full pl-9 pr-8 border border-gray-300 rounded focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none bg-gray-50 focus:bg-white" style="height: 36px; font-size: 13px; font-family: inherit; color: var(--text-primary);" placeholder="輸入關鍵字搜尋... (留空代表獨立機構)" autocomplete="off">
-                                <button type="button" id="btn-clear-parent" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-red-500 cursor-pointer" style="display:none;">
-                                    <i class="ti ti-x text-base"></i>
+                                <input type="text" id="parent-search-input" class="field-input" style="padding-left: 36px; padding-right: 32px;" placeholder="輸入關鍵字搜尋... (留空代表獨立機構)" autocomplete="off">
+                                <button type="button" id="btn-clear-parent" style="position: absolute; right: 10px; top: 0; bottom: 0; background: none; border: none; cursor: pointer; display: none; align-items: center; color: var(--text-muted); transition: 0.2s;">
+                                    <i class="ti ti-x" style="font-size: 16px;"></i>
                                 </button>
                                 <input type="hidden" id="input-parent-id">
-                                <div id="parent-dropdown-list" class="searchable-dropdown absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-52 overflow-y-auto"></div>
+                                <div id="parent-dropdown-list" class="searchable-dropdown custom-scroll"></div>
                             </div>
                         </div>
                         
@@ -444,28 +439,28 @@ function injectUI(container) {
                     </div>
                 </form>
 
-                <div id="tab-history" class="dialog-body custom-scroll" style="display: none; background: var(--bg); min-height: 420px;">
-                    <div class="flex items-center justify-between mb-4">
-                        <p class="text-xs text-gray-500 pr-4">將機構過去的舊名稱與地址封存於此，系統在建立未來的實習紀錄時，便可調用相應年份的正確資料。</p>
-                        <button type="button" id="btn-show-add-history" class="btn btn-sm btn-indigo-solid flex-shrink-0 shadow-sm"><i class="ti ti-plus"></i> 新增歷史快照</button>
+                <div id="tab-history" class="dialog-body custom-scroll hidden" style="background: var(--bg); min-height: 420px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+                        <p style="font-size:12px; color:var(--text-muted); padding-right:16px;">將機構過去的舊名稱與地址封存於此，系統在建立未來的實習紀錄時，便可調用相應年份的正確資料。</p>
+                        <button type="button" id="btn-show-add-history" class="btn btn-sm btn-indigo-solid" style="flex-shrink:0; box-shadow:var(--shadow-sm);"><i class="ti ti-plus"></i> 新增歷史快照</button>
                     </div>
 
-                    <div id="history-form-wrap" class="bg-white border border-indigo-200 rounded-xl p-5 mb-6 hidden shadow-sm relative">
-                        <div class="flex items-center gap-2 text-sm font-bold text-indigo-700 mb-4"><i class="ti ti-history text-lg"></i> 封存一筆歷史快照</div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-                            <div class="field mb-0"><label class="field-label text-gray-600">適用結束日期 <span class="req text-red-500">*</span></label><input type="date" id="hist-end-date" class="field-input w-full bg-gray-50 focus:bg-white transition-colors"></div>
-                            <div class="field mb-0"><label class="field-label text-gray-600">舊統一編號 <span class="font-normal text-gray-400">(選填)</span></label><input type="text" id="hist-tax-id" class="field-input w-full bg-gray-50 focus:bg-white transition-colors" placeholder="留空則代表沿用現況"></div>
-                            <div class="field col-span-1 md:col-span-2 mb-0"><label class="field-label text-gray-600">歷史機構名稱 <span class="req text-red-500">*</span></label><input type="text" id="hist-name" class="field-input w-full bg-gray-50 focus:bg-white transition-colors" placeholder="當時的機構名稱"></div>
-                            <div class="field col-span-1 md:col-span-2 mb-0"><label class="field-label text-gray-600">歷史實習地址 <span class="req text-red-500">*</span></label><input type="text" id="hist-address" class="field-input w-full bg-gray-50 focus:bg-white transition-colors" placeholder="當時的詳細地址"></div>
-                            <div class="field col-span-1 md:col-span-2 mb-0"><label class="field-label text-gray-600">變更事由 <span class="font-normal text-gray-400">(選填)</span></label><input type="text" id="hist-reason" class="field-input w-full bg-gray-50 focus:bg-white transition-colors" placeholder="例如：配合政府組織改造升格"></div>
+                    <div id="history-form-wrap" class="hidden" style="background:white; border:1px solid #c7d2fe; border-radius:12px; padding:20px; margin-bottom:24px; box-shadow:var(--shadow-sm); position:relative;">
+                        <div style="display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700; color:var(--indigo); margin-bottom:16px;"><i class="ti ti-history" style="font-size:18px;"></i> 封存一筆歷史快照</div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:20px;">
+                            <div class="field" style="margin:0;"><label class="field-label" style="color:var(--text-secondary);">適用結束日期 <span style="color:var(--danger);">*</span></label><input type="date" id="hist-end-date" class="field-input" style="background:#f8fafc;"></div>
+                            <div class="field" style="margin:0;"><label class="field-label" style="color:var(--text-secondary);">舊統一編號 <span style="font-weight:400; color:var(--text-muted);">(選填)</span></label><input type="text" id="hist-tax-id" class="field-input" style="background:#f8fafc;" placeholder="留空則代表沿用現況"></div>
+                            <div class="field" style="grid-column: 1 / -1; margin:0;"><label class="field-label" style="color:var(--text-secondary);">歷史機構名稱 <span style="color:var(--danger);">*</span></label><input type="text" id="hist-name" class="field-input" style="background:#f8fafc;" placeholder="當時的機構名稱"></div>
+                            <div class="field" style="grid-column: 1 / -1; margin:0;"><label class="field-label" style="color:var(--text-secondary);">歷史實習地址 <span style="color:var(--danger);">*</span></label><input type="text" id="hist-address" class="field-input" style="background:#f8fafc;" placeholder="當時的詳細地址"></div>
+                            <div class="field" style="grid-column: 1 / -1; margin:0;"><label class="field-label" style="color:var(--text-secondary);">變更事由 <span style="font-weight:400; color:var(--text-muted);">(選填)</span></label><input type="text" id="hist-reason" class="field-input" style="background:#f8fafc;" placeholder="例如：配合政府組織改造升格"></div>
                         </div>
-                        <div class="flex justify-end gap-2 pt-4 border-t border-gray-100">
-                            <button type="button" id="btn-cancel-history" class="btn btn-sm btn-secondary bg-white">取消</button>
-                            <button type="button" id="btn-save-history" class="btn btn-sm btn-indigo-solid shadow-sm">確認封存快照</button>
+                        <div style="display:flex; justify-content:flex-end; gap:8px; padding-top:16px; border-top:1px solid var(--border);">
+                            <button type="button" id="btn-cancel-history" class="btn btn-sm btn-secondary" style="background:white;">取消</button>
+                            <button type="button" id="btn-save-history" class="btn btn-sm btn-indigo-solid" style="box-shadow:var(--shadow-sm);">確認封存快照</button>
                         </div>
                     </div>
 
-                    <div id="history-list-container" class="flex flex-col gap-3"></div>
+                    <div id="history-list-container" style="display:flex; flex-direction:column; gap:12px;"></div>
                 </div>
 
                 <div class="dialog-footer">
@@ -477,47 +472,47 @@ function injectUI(container) {
 
         <div id="change-intent-modal" class="dialog-overlay">
             <div class="dialog-box" style="max-width: 550px;">
-                <div class="dialog-header flex-col items-start p-0 border-none">
-                    <div class="w-full flex items-center justify-between p-5 pb-4 border-b border-gray-100 bg-gray-50 rounded-t-xl">
-                        <h3 class="flex items-center gap-2 text-base font-bold text-gray-800"><i class="ti ti-info-circle text-blue-500 text-xl"></i> 偵測到機構資料變更</h3>
+                <div class="dialog-header" style="flex-direction:column; align-items:flex-start; padding:0; border:none;">
+                    <div style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:20px 24px 16px; border-bottom:1px solid var(--border); background:#f8fafc;">
+                        <h3 style="display:flex; align-items:center; gap:8px; font-size:16px; font-weight:700; color:var(--text-primary);"><i class="ti ti-info-circle" style="color:#3b82f6; font-size:20px;"></i> 偵測到機構資料變更</h3>
                         <button type="button" class="dialog-close" id="btn-close-intent-x"><i class="ti ti-x"></i></button>
                     </div>
                 </div>
-                <div class="dialog-body bg-gray-50/50 p-6 custom-scroll">
-                    <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg text-[13px] leading-relaxed mb-5 shadow-sm">
-                        系統偵測到此機構的 <span class="font-bold text-red-500">核心資料（名稱、統編或地址等）</span> 已被修改。<br>為了確保資料庫關聯正確，請選擇此次變更的性質：
+                <div class="dialog-body custom-scroll" style="background:#f8fafc; padding:24px;">
+                    <div style="background:#fefce8; border:1px solid #fef08a; color:#854d0e; padding:12px 16px; border-radius:8px; font-size:13px; line-height:1.6; margin-bottom:20px; box-shadow:var(--shadow-sm);">
+                        系統偵測到此機構的 <span style="font-weight:700; color:#ef4444;">核心資料（名稱、統編或地址等）</span> 已被修改。<br>為了確保資料庫關聯正確，請選擇此次變更的性質：
                     </div>
                     
-                    <label class="intent-radio-card">
-                        <div class="flex items-start">
-                            <input type="radio" name="change_intent" value="typo" checked class="intent-radio-input flex-shrink-0">
+                    <label class="intent-radio-card" style="margin-bottom:12px;">
+                        <div style="display:flex; align-items:flex-start;">
+                            <input type="radio" name="change_intent" value="typo" checked class="intent-radio-input">
                             <div>
-                                <div class="text-[14px] font-bold text-gray-800 mb-1">這是單純改錯字 / 修正補漏</div>
-                                <div class="text-[12px] text-gray-500 leading-relaxed">系統將同步更新過去所有學生的實習紀錄，全部修正為最新資料。</div>
+                                <div style="font-size:14px; font-weight:700; color:var(--text-primary); margin-bottom:4px;">這是單純改錯字 / 修正補漏</div>
+                                <div style="font-size:12px; color:var(--text-secondary); line-height:1.5;">系統將同步更新過去所有學生的實習紀錄，全部修正為最新資料。</div>
                             </div>
                         </div>
                     </label>
 
-                    <label class="intent-radio-card mb-0">
-                        <div class="flex items-start">
-                            <input type="radio" name="change_intent" value="history" class="intent-radio-input flex-shrink-0">
+                    <label class="intent-radio-card" style="margin-bottom:0;">
+                        <div style="display:flex; align-items:flex-start;">
+                            <input type="radio" name="change_intent" value="history" class="intent-radio-input">
                             <div>
-                                <div class="text-[14px] font-bold text-gray-800 mb-1">這是機構歷史改名 (如升格、改組、搬遷)</div>
-                                <div class="text-[12px] text-gray-500 leading-relaxed">系統將保留過去學生的舊紀錄，並自動將舊資料封存為歷史快照。</div>
+                                <div style="font-size:14px; font-weight:700; color:var(--text-primary); margin-bottom:4px;">這是機構歷史改名 (如升格、改組、搬遷)</div>
+                                <div style="font-size:12px; color:var(--text-secondary); line-height:1.5;">系統將保留過去學生的舊紀錄，並自動將舊資料封存為歷史快照。</div>
                             </div>
                         </div>
                     </label>
 
-                    <div id="intent-history-fields" class="hidden mt-3 ml-[30px] p-4 bg-white border border-gray-200 rounded-lg shadow-sm relative">
-                        <div class="absolute -top-2 left-6 w-3 h-3 bg-white border-t border-l border-gray-200 transform rotate-45"></div>
-                        <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">請補充歷史快照資訊</div>
-                        <div class="field mb-3"><label class="field-label text-gray-600">舊資料適用結束日期 <span class="req text-red-500">*</span></label><input type="date" id="intent-end-date" class="field-input bg-gray-50 focus:bg-white h-9"></div>
-                        <div class="field mb-0"><label class="field-label text-gray-600">變更事由 <span class="font-normal text-gray-400">(選填)</span></label><input type="text" id="intent-reason" class="field-input bg-gray-50 focus:bg-white h-9" placeholder="例如：配合政府組織改造升格"></div>
+                    <div id="intent-history-fields" class="hidden" style="margin-top:12px; margin-left:30px; padding:16px; background:white; border:1px solid var(--border); border-radius:8px; box-shadow:var(--shadow-sm); position:relative;">
+                        <div style="position:absolute; top:-6px; left:24px; width:10px; height:10px; background:white; border-top:1px solid var(--border); border-left:1px solid var(--border); transform:rotate(45deg);"></div>
+                        <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:12px;">請補充歷史快照資訊</div>
+                        <div class="field" style="margin-bottom:12px;"><label class="field-label" style="color:var(--text-secondary);">舊資料適用結束日期 <span style="color:var(--danger);">*</span></label><input type="date" id="intent-end-date" class="field-input" style="background:#f8fafc; height:34px;"></div>
+                        <div class="field" style="margin-bottom:0;"><label class="field-label" style="color:var(--text-secondary);">變更事由 <span style="font-weight:400; color:var(--text-muted);">(選填)</span></label><input type="text" id="intent-reason" class="field-input" style="background:#f8fafc; height:34px;" placeholder="例如：配合政府組織改造升格"></div>
                     </div>
                 </div>
-                <div class="dialog-footer bg-gray-50 border-t border-gray-200 p-4 rounded-b-xl flex justify-end gap-2">
-                    <button type="button" class="btn btn-secondary bg-white" id="btn-cancel-intent">返回修改</button>
-                    <button type="button" id="btn-confirm-intent" class="btn btn-primary shadow-sm"><i class="ti ti-check"></i> 確認執行儲存</button>
+                <div class="dialog-footer" style="background:#f8fafc; border-top:1px solid var(--border); padding:16px 24px; border-radius: 0 0 12px 12px; display:flex; justify-content:flex-end; gap:8px;">
+                    <button type="button" class="btn btn-secondary" style="background:white;" id="btn-cancel-intent">返回修改</button>
+                    <button type="button" id="btn-confirm-intent" class="btn btn-primary" style="box-shadow:var(--shadow-sm);"><i class="ti ti-check"></i> 確認執行儲存</button>
                 </div>
             </div>
         </div>
@@ -571,7 +566,7 @@ function injectUI(container) {
 }
 
 // ==========================================
-// 2. 下拉選項與動態選單初始化
+// 2. 靜態資料與選項初始化
 // ==========================================
 function initSelectOptions() {
     let countryHtml = '';
@@ -632,7 +627,7 @@ function populateParentDropdown(excludeId = null) {
 }
 
 // ==========================================
-// 3. 事件代理與動態樣式邏輯
+// 3. 事件與樣式綁定
 // ==========================================
 function updateColStyles() {
     let css = '';
@@ -645,6 +640,20 @@ function updateColStyles() {
     document.getElementById('dynamic-col-styles').textContent = css;
 }
 
+function buildBaseTree() {
+    let grouped = {};
+    baseTree = [];
+    allData.forEach(d => {
+        if (!d.parent_id) { grouped[d.id] = { ...d, children: [] }; baseTree.push(grouped[d.id]); }
+    });
+    allData.forEach(d => {
+        if (d.parent_id) {
+            if (grouped[d.parent_id]) grouped[d.parent_id].children.push(d);
+            else baseTree.push({ ...d, children: [] });
+        }
+    });
+}
+
 function bindEvents(container) {
     container.querySelector('#btn-export-csv').addEventListener('click', exportToCSV);
     container.querySelector('#btn-import-trigger').addEventListener('click', () => container.querySelector('#import-file').click());
@@ -652,9 +661,12 @@ function bindEvents(container) {
     container.querySelector('#btn-create-inst').addEventListener('click', openCreateModal);
     
     container.querySelector('#search-input').addEventListener('input', () => { 
-        currentPage = 1; 
-        isSearchAutoExpand = true;
-        renderTable(); 
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = setTimeout(() => {
+            currentPage = 1; 
+            isSearchAutoExpand = true;
+            renderTable(); 
+        }, 250);
     });
 
     container.querySelector('#pill-country').addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('country'); });
@@ -697,14 +709,12 @@ function bindEvents(container) {
         displayMenu.classList.toggle('hidden');
     });
     
-    displayMenu.addEventListener('click', (e) => {
-        e.stopPropagation();
-    });
+    displayMenu.addEventListener('click', (e) => { e.stopPropagation(); });
 
     container.querySelector('#btn-toggle-tree').addEventListener('click', (e) => {
         e.stopPropagation();
         isTreeMode = !isTreeMode;
-        container.querySelector('#btn-toggle-tree').innerHTML = isTreeMode ? `<i class="ti ti-list-tree text-brand mr-2"></i> 切換為扁平列表` : `<i class="ti ti-list text-brand mr-2"></i> 切換為樹狀檢視`;
+        container.querySelector('#btn-toggle-tree').innerHTML = isTreeMode ? `<i class="ti ti-list-tree text-brand" style="margin-right:8px;"></i> 切換為扁平列表` : `<i class="ti ti-list text-brand" style="margin-right:8px;"></i> 切換為樹狀檢視`;
         renderTable();
     });
     container.querySelector('#btn-expand-all').addEventListener('click', (e) => {
@@ -724,6 +734,30 @@ function bindEvents(container) {
             updateColStyles();
         });
     });
+
+    // 全域點擊監聽 (僅綁定一次)
+    if (!isGlobalListenerBound) {
+        document.addEventListener('click', (e) => {
+            const parentDropdown = document.getElementById('parent-dropdown-list');
+            const parentIdHidden = document.getElementById('input-parent-id');
+            const parentSearchInput = document.getElementById('parent-search-input');
+            const btnClearParent = document.getElementById('btn-clear-parent');
+            
+            if (parentDropdown && !e.target.closest('.searchable-select-wrap')) {
+                parentDropdown.classList.remove('show');
+                if (parentIdHidden && !parentIdHidden.value && parentSearchInput) {
+                    parentSearchInput.value = '';
+                    if(btnClearParent) btnClearParent.style.display = 'none';
+                }
+            }
+            
+            const dpMenu = document.getElementById('display-settings-menu');
+            if (dpMenu && !e.target.closest('#display-settings-wrap')) {
+                dpMenu.classList.add('hidden');
+            }
+        });
+        isGlobalListenerBound = true;
+    }
 
     container.querySelector('#selectAll').addEventListener('change', toggleSelectPage);
     container.querySelector('#btn-select-all-filtered').addEventListener('click', selectAllFiltered);
@@ -749,8 +783,6 @@ function bindEvents(container) {
     container.querySelector('#input-country').addEventListener('change', handleCountryChange);
     container.querySelector('#btn-close-modal-x').addEventListener('click', closeModal);
     container.querySelector('#btn-cancel-modal').addEventListener('click', closeModal);
-    
-    // 綁定儲存按鈕
     container.querySelector('#btn-submit').addEventListener('click', submitForm);
 
     const parentSearchInput = container.querySelector('#parent-search-input');
@@ -803,16 +835,6 @@ function bindEvents(container) {
         }
     });
 
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.searchable-select-wrap')) {
-            parentDropdown.classList.remove('show');
-            if (!parentIdHidden.value) { parentSearchInput.value = ''; updateParentClearBtn(); }
-        }
-        if (!e.target.closest('#display-settings-wrap')) {
-            displayMenu.classList.add('hidden');
-        }
-    });
-
     container.querySelector('#btn-close-batch-x').addEventListener('click', closeBatchEditModal);
     container.querySelector('#btn-cancel-batch').addEventListener('click', closeBatchEditModal);
     container.querySelector('#btn-batch-edit-submit').addEventListener('click', executeBatchEdit);
@@ -844,32 +866,30 @@ function bindEvents(container) {
         else if (btnDel) { deleteData(btnDel.dataset.id, btnDel.dataset.name); }
     });
 
-    // ✨ Tab 切換控制
     const tabBtnMain = container.querySelector('#tab-btn-main');
     const tabBtnHistory = container.querySelector('#tab-btn-history');
     const tabMain = container.querySelector('#data-form');
     const tabHistory = container.querySelector('#tab-history');
 
     tabBtnMain.addEventListener('click', () => {
-        tabBtnMain.classList.add('border-brand', 'text-brand');
-        tabBtnMain.classList.remove('border-transparent', 'text-gray-500');
-        tabBtnHistory.classList.remove('border-brand', 'text-brand');
-        tabBtnHistory.classList.add('border-transparent', 'text-gray-500');
+        tabBtnMain.style.borderColor = 'var(--brand)';
+        tabBtnMain.style.color = 'var(--brand)';
+        tabBtnHistory.style.borderColor = 'transparent';
+        tabBtnHistory.style.color = 'var(--text-muted)';
         tabMain.style.display = 'flex';
-        tabHistory.style.display = 'none';
+        tabHistory.classList.add('hidden');
     });
 
     tabBtnHistory.addEventListener('click', () => {
-        tabBtnHistory.classList.add('border-brand', 'text-brand');
-        tabBtnHistory.classList.remove('border-transparent', 'text-gray-500');
-        tabBtnMain.classList.remove('border-brand', 'text-brand');
-        tabBtnMain.classList.add('border-transparent', 'text-gray-500');
-        tabHistory.style.display = 'block';
+        tabBtnHistory.style.borderColor = 'var(--brand)';
+        tabBtnHistory.style.color = 'var(--brand)';
+        tabBtnMain.style.borderColor = 'transparent';
+        tabBtnMain.style.color = 'var(--text-muted)';
+        tabHistory.classList.remove('hidden');
         tabMain.style.display = 'none';
         renderHistoryList();
     });
 
-    // 歷史紀錄表單控制
     container.querySelector('#btn-show-add-history').addEventListener('click', () => {
         document.getElementById('history-form-wrap').classList.remove('hidden');
         document.getElementById('hist-end-date').value = '';
@@ -906,7 +926,6 @@ function bindEvents(container) {
         }
     });
 
-    // ✨ 變更意圖 Modal 控制
     container.querySelector('#btn-close-intent-x').addEventListener('click', () => document.getElementById('change-intent-modal').classList.remove('open'));
     container.querySelector('#btn-cancel-intent').addEventListener('click', () => document.getElementById('change-intent-modal').classList.remove('open'));
     
@@ -1095,24 +1114,24 @@ function clearSelection() {
 function renderHistoryList() {
     const container = document.getElementById('history-list-container');
     if(!currentHistory || currentHistory.length === 0) {
-        container.innerHTML = `<div class="text-center py-10 text-gray-400 text-sm border-2 border-dashed border-gray-100 rounded-lg">尚無歷史快照紀錄</div>`;
+        container.innerHTML = `<div style="text-align:center; padding:40px 0; color:var(--text-muted); font-size:13px; border:2px dashed var(--border); border-radius:12px;">尚無歷史快照紀錄</div>`;
         return;
     }
     
     const sorted = [...currentHistory].map((h, i) => ({...h, originalIndex: i})).sort((a,b) => new Date(b.end_date) - new Date(a.end_date));
     
     container.innerHTML = sorted.map(h => `
-        <div class="relative pl-6 pb-4 border-l-2 border-indigo-100 last:border-0 last:pb-0">
-            <div class="absolute w-3 h-3 bg-indigo-500 rounded-full -left-[7px] top-1 border-2 border-white shadow-sm"></div>
-            <div class="bg-white border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow transition-shadow">
-                <div class="flex justify-between items-start mb-1">
-                    <span class="text-[11px] font-bold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded tracking-wide">~ ${h.end_date} 前適用</span>
-                    <button type="button" class="text-gray-400 hover:text-red-500 btn-del-history transition-colors" data-idx="${h.originalIndex}"><i class="ti ti-trash"></i></button>
+        <div style="position:relative; padding-left:24px; padding-bottom:16px; border-left:2px solid #e0e7ff;">
+            <div style="position:absolute; width:12px; height:12px; background:#6366f1; border-radius:50%; left:-7px; top:4px; border:2px solid white; box-shadow:var(--shadow-sm);"></div>
+            <div style="background:white; border:1px solid var(--border); border-radius:8px; padding:12px; box-shadow:var(--shadow-sm); transition:0.2s;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">
+                    <span style="font-size:11px; font-weight:700; background:#e0e7ff; color:#4338ca; padding:2px 8px; border-radius:4px; letter-spacing:0.05em;">~ ${h.end_date} 前適用</span>
+                    <button type="button" class="btn-del-history" style="background:none; border:none; color:var(--text-muted); cursor:pointer;" data-idx="${h.originalIndex}"><i class="ti ti-trash"></i></button>
                 </div>
-                <div class="font-bold text-gray-800 text-sm mt-1.5">${h.name}</div>
-                <div class="text-xs text-gray-500 mt-1"><i class="ti ti-map-pin"></i> ${h.address}</div>
-                ${h.tax_id ? `<div class="text-xs text-gray-500 mt-0.5"><i class="ti ti-receipt"></i> 舊統編：${h.tax_id}</div>` : ''}
-                ${h.reason ? `<div class="text-[13px] text-indigo-700 mt-2 pt-2 border-t border-gray-100"><i class="ti ti-info-circle"></i> 事由：${h.reason}</div>` : ''}
+                <div style="font-weight:700; color:var(--text-primary); font-size:14px; margin-top:6px;">${h.name}</div>
+                <div style="font-size:12px; color:var(--text-secondary); margin-top:4px;"><i class="ti ti-map-pin"></i> ${h.address}</div>
+                ${h.tax_id ? `<div style="font-size:12px; color:var(--text-secondary); margin-top:2px;"><i class="ti ti-receipt"></i> 舊統編：${h.tax_id}</div>` : ''}
+                ${h.reason ? `<div style="font-size:13px; color:#4338ca; margin-top:8px; padding-top:8px; border-top:1px solid var(--border);"><i class="ti ti-info-circle"></i> 事由：${h.reason}</div>` : ''}
             </div>
         </div>
     `).join('');
@@ -1135,6 +1154,7 @@ async function fetchInitialDataOnce() {
         allData = dataSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         selectedIds = [];
         updateBatchActionBar();
+        buildBaseTree(); // ✨ 初次載入後快取樹狀結構
         renderTable();
         await handleInitialLoadEngine();
     } catch (error) {
@@ -1186,20 +1206,9 @@ function renderTable() {
 
     filteredInstitutions = [];
     
+    // ✨ 效能優化：直接遍歷快取好的 baseTree
     if (isTreeMode) {
-        let grouped = {};
-        let independent = [];
-        allData.forEach(d => {
-            if (!d.parent_id) { grouped[d.id] = { ...d, children: [] }; independent.push(grouped[d.id]); }
-        });
-        allData.forEach(d => {
-            if (d.parent_id) {
-                if (grouped[d.parent_id]) grouped[d.parent_id].children.push(d);
-                else independent.push({ ...d, children: [] });
-            }
-        });
-
-        independent.forEach(parent => {
+        baseTree.forEach(parent => {
             const pMatch = checkMatch(parent);
             const matchedChildren = parent.children.filter(c => checkMatch(c));
             
@@ -1282,6 +1291,7 @@ function renderTable() {
         
         let dispTax = '-';
         if (isDomestic && data.tax_id) dispTax = highlightKeyword(data.tax_id, searchTerm);
+        else if (!isDomestic && data.overseas_tax_id) dispTax = `<span style="color:#4338ca;">${highlightKeyword(data.overseas_tax_id, searchTerm)}</span>`;
         
         const toggleHtml = hasChildren ? `<button class="tree-toggle ${isExpanded ? 'expanded' : ''}"><i class="ti ti-chevron-right"></i></button>` : `<span style="display:inline-block; width:22px; margin-right:8px; flex-shrink:0;"></span>`;
         
@@ -1421,7 +1431,6 @@ function openCreateModal() {
 
 function closeModal() { document.getElementById('data-modal').classList.remove('open'); editingId = null; pendingPayload = null; }
 
-// ✨ 核心升級：攔截按鈕儲存，擴大偵測欄位 (名稱、地址、統編、海外稅號、縣市)
 async function submitForm() {
     const isDomestic = document.getElementById('input-country').value === '中華民國';
     
@@ -1491,7 +1500,7 @@ async function executeSave(payload, isTypo = true) {
         } else {
             await addDoc(collection(db, "internship_institutions"), { ...payload, created_at: serverTimestamp() });
         }
-        closeModal(); fetchInitialDataOnce();
+        closeModal(); fetchInitialDataOnce(); // ✨ 會自動呼叫 buildBaseTree 重新快取
     } catch (err) { 
         alert("儲存失敗"); 
     } finally { 
@@ -1548,7 +1557,9 @@ async function deleteData(id, name) {
             await deleteDoc(doc(db, "internship_institutions", id));
             allData = allData.filter(d => d.id !== id);
             selectedIds = selectedIds.filter(sid => sid !== id);
-            updateBatchActionBar(); renderTable();
+            updateBatchActionBar(); 
+            buildBaseTree(); // ✨ 資料變更，重組快取樹
+            renderTable();
         } catch(e) { alert("刪除失敗"); }
     }
 }
