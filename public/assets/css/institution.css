@@ -240,7 +240,7 @@ th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand
     }
 
     /* 詳細資料單欄化 */
-    #data-form, #tab-main-view { display: flex !important; flex-direction: column !important; gap: 16px !important; }
+    #data-form, #tab-main-view { flex-direction: column !important; gap: 16px !important; }
     #data-form > div, #tab-main-view > div { width: 100% !important; flex: none !important; }
 
     /* =========================================
