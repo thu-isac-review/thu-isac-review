@@ -5,7 +5,8 @@ let db;
 let allData = []; 
 let allRecords = []; 
 let editingId = null; 
-let editingOldName = null; 
+let editingOldData = null; // ✨ 儲存編輯前的完整快照
+let pendingPayload = null; // ✨ 暫存準備送出的資料
 
 let currentPage = 1; 
 let itemsPerPage = 15;
@@ -20,15 +21,11 @@ let filterVenueSet = new Set();
 let sortCol = ''; 
 let sortDir = '';
 
-// 狀態記憶
 let isTreeMode = true; 
 let expandedParents = new Set();
 let isSearchAutoExpand = false; 
 
-// 歷史快照狀態
 let currentHistory = [];
-
-// 狀態記憶：欄位顯示控制 (動態 CSS)
 let colVis = { tax_id: true, industry: true, venue_type: true, country: true, city: true, address: true };
 
 const LIST_COUNTRIES = ["中華民國","大陸地區","日本","美國","越南","泰國","澳大利亞","香港","澳門","馬來西亞","菲律賓","印尼","印度","孟加拉","緬甸","柬埔寨","黎巴嫩","蒙古","巴西","巴拉圭","秘魯"];
@@ -36,24 +33,16 @@ const LIST_CITIES = ["臺北市","新北市","基隆市","桃園市","新竹縣"
 const LIST_INDUSTRIES = ["農、林、漁、牧業","礦業及土石採取業","製造業","電力及燃氣供應業","用水供應及污染整治業","營建工程業","批發及零售業","運輸及倉儲業","住宿及餐飲業","出版及影音等內容傳播業","電信及資訊服務業","金融及保險業","不動產業","專業、科學及技術服務業","支援服務業","公共行政及國防；強制性社會安全","教育業","醫療保健及社會工作服務業","藝術、運動及休閒服務業","其他服務業"];
 const LIST_VENUES = ["企業機構","其他機構","政府機構","就讀學校附屬機構"];
 
-// --- 主渲染入口 ---
 export async function render(containerId, context) {
     db = context.db;
     const container = document.getElementById(containerId);
-    
-    selectedIds = [];
-    currentPage = 1;
-    expandedParents.clear(); 
-
-    injectUI(container);
-    initSelectOptions();
-    bindEvents(container);
-    updateColStyles(); 
+    selectedIds = []; currentPage = 1; expandedParents.clear(); 
+    injectUI(container); initSelectOptions(); bindEvents(container); updateColStyles(); 
     await fetchInitialDataOnce();
 }
 
 // ==========================================
-// 1. UI 注入模組
+// 1. UI 注入模組 (新增變更意圖確認視窗)
 // ==========================================
 function injectUI(container) {
     container.innerHTML = `
@@ -63,7 +52,6 @@ function injectUI(container) {
         <style>
             #institution-page-wrapper { font-family: 'Noto Sans TC', sans-serif; font-size: 14px; color: var(--text-primary); background: var(--bg); -webkit-font-smoothing: antialiased; flex: 1; display: flex; flex-direction: column; min-height: 0; }
             #institution-page-wrapper * { box-sizing: border-box; }
-            
             .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
             .custom-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
             @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -74,9 +62,6 @@ function injectUI(container) {
             .tree-toggle:hover { color: var(--brand); background: var(--brand-light); }
             .tree-toggle.expanded i { transform: rotate(90deg); color: var(--brand); }
             
-            .child-row { background-color: #fbfdff; }
-            .child-row td { border-bottom: 1px dashed var(--border); }
-            .child-row:hover td { background-color: #f0f7ff; }
             .child-name-wrap { display: flex; align-items: flex-start; padding-left: 24px; gap: 6px; }
             .child-name-wrap i { font-size: 16px; opacity: 0.5; color: var(--text-secondary); margin-top: 1px; flex-shrink: 0; }
 
@@ -134,7 +119,6 @@ function injectUI(container) {
             .filter-option input[type=checkbox] { accent-color: var(--brand); flex-shrink: 0; }
             
             #display-settings-wrap { flex-shrink: 0; border-left: 1px solid var(--border); padding-left: 12px; margin-left: 4px; }
-
             #batch-bar { display: none; align-items: center; gap: 12px; padding: 8px 24px; background: var(--brand-light); border-bottom: 1px solid var(--brand-border); flex-shrink: 0; position: absolute; top: 0; left: 0; right: 0; height: 100%; z-index: 20; }
             #batch-bar.visible { display: flex; animation: slideDown 0.2s ease-out; }
             @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
@@ -166,7 +150,6 @@ function injectUI(container) {
                 .col-checkbox { position: static !important; min-width: 48px !important; }
                 .col-name { position: static !important; min-width: 250px !important; width: auto !important; }
                 .col-actions { position: static !important; min-width: 100px !important; }
-                
                 th.col-checkbox, th.col-name, th.col-actions { position: sticky !important; top: 0 !important; left: auto !important; right: auto !important; z-index: 10 !important; }
                 .col-name::after, .col-actions::before { display: none !important; } 
                 
@@ -218,7 +201,6 @@ function injectUI(container) {
             .dialog-box { background: var(--surface); border-radius: var(--radius-xl); box-shadow: 0 20px 60px rgba(0,0,0,0.2); width: 100%; display: flex; flex-direction: column; overflow: hidden; animation: dialogIn 0.25s cubic-bezier(0.16,1,0.3,1); }
             @keyframes dialogIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } }
             
-            /* ✨ 修正：雙 Tab 結構專用 CSS */
             .dialog-header { background: var(--surface); }
             .dialog-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; padding: 4px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); transition: all var(--transition); }
             .dialog-close:hover { color: var(--danger); background: var(--danger-bg); }
@@ -231,6 +213,10 @@ function injectUI(container) {
             .field-label .req { color: var(--danger); margin-left: 2px; }
             .field-input, .field-select { width: 100%; height: 36px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); padding: 0 12px; font-size: 13px; font-family: inherit; color: var(--text-primary); outline: none; transition: all var(--transition); }
             .field-input:focus, .field-select:focus, textarea.field-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); background: var(--surface); }
+
+            .merge-option { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border: 2px solid var(--border); border-radius: var(--radius-lg); cursor: pointer; transition: all var(--transition); background: var(--surface); margin-bottom: 10px; }
+            .merge-option:hover { border-color: var(--indigo-border); background: var(--bg); }
+            .merge-option:has(input:radio:checked) { border-color: var(--indigo); background: var(--indigo-bg); }
 
             .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
             .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
@@ -368,7 +354,6 @@ function injectUI(container) {
                             <th data-sort="address" class="col-address" style="min-width: 220px; text-align: center;">實習場所地址 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             
                             <th class="col-spacer"></th>
-                            
                             <th class="col-actions">操作</th>
                         </tr>
                     </thead>
@@ -396,7 +381,6 @@ function injectUI(container) {
 
         <div id="data-modal" class="dialog-overlay">
             <div class="dialog-box" style="max-width: 800px;">
-                
                 <div class="dialog-header flex-col items-start p-0 border-none">
                     <div class="w-full flex items-center justify-between p-5 pb-4">
                         <h3 id="modal-title" class="flex items-center gap-2 text-base font-bold text-gray-800"><i class="ti ti-building-skyscraper text-brand text-xl"></i> 新增實習機構</h3>
@@ -481,6 +465,46 @@ function injectUI(container) {
                 <div class="dialog-footer">
                     <button type="button" class="btn btn-secondary" id="btn-cancel-modal">取消</button>
                     <button type="button" id="btn-submit" class="btn btn-primary"><i class="ti ti-check"></i> 確認儲存變更</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="change-intent-modal" class="dialog-overlay">
+            <div class="dialog-box" style="max-width: 550px;">
+                <div class="dialog-header">
+                    <h3 style="color: var(--brand)"><i class="ti ti-alert-circle"></i> 偵測到機構名稱變更</h3>
+                    <button type="button" class="dialog-close" id="btn-close-intent-x"><i class="ti ti-x"></i></button>
+                </div>
+                <div class="dialog-body custom-scroll" style="background: var(--bg);">
+                    <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-3 rounded-lg text-sm mb-4">
+                        系統偵測到機構名稱已從 <span class="font-bold text-red-500 mx-1" id="intent-old-name"></span> 變更為 <span class="font-bold text-green-600 mx-1" id="intent-new-name"></span>。<br>為了確保資料庫關聯正確，請選擇此次變更的性質：
+                    </div>
+                    
+                    <label class="merge-option">
+                        <input type="radio" name="change_intent" value="typo" checked>
+                        <div class="merge-option-content">
+                            <div class="merge-option-title">這是單純改錯字 / 修正補漏</div>
+                            <div class="merge-option-desc">系統將同步更新過去所有學生的實習紀錄，全部修正為最新名稱。</div>
+                        </div>
+                    </label>
+
+                    <label class="merge-option mb-2">
+                        <input type="radio" name="change_intent" value="history">
+                        <div class="merge-option-content">
+                            <div class="merge-option-title">這是機構歷史改名 (如升格、改組、搬遷)</div>
+                            <div class="merge-option-desc">系統將保留過去學生的舊名稱紀錄，並自動將舊資料封存為歷史快照。</div>
+                        </div>
+                    </label>
+
+                    <div id="intent-history-fields" class="hidden bg-white p-4 rounded-lg border border-gray-200 shadow-sm ml-8 mb-4">
+                        <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">請補充歷史快照資訊</div>
+                        <div class="field mb-3"><label class="field-label">舊資料適用結束日期 <span class="req">*</span></label><input type="date" id="intent-end-date" class="field-input"></div>
+                        <div class="field mb-0"><label class="field-label">變更事由 (選填)</label><input type="text" id="intent-reason" class="field-input" placeholder="例如：配合政府組織改造升格"></div>
+                    </div>
+                </div>
+                <div class="dialog-footer">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-intent">返回修改</button>
+                    <button type="button" id="btn-confirm-intent" class="btn btn-primary"><i class="ti ti-check"></i> 確認執行儲存</button>
                 </div>
             </div>
         </div>
@@ -712,6 +736,8 @@ function bindEvents(container) {
     container.querySelector('#input-country').addEventListener('change', handleCountryChange);
     container.querySelector('#btn-close-modal-x').addEventListener('click', closeModal);
     container.querySelector('#btn-cancel-modal').addEventListener('click', closeModal);
+    
+    // ✨ 修改點擊儲存，攔截變更意圖
     container.querySelector('#btn-submit').addEventListener('click', submitForm);
 
     const parentSearchInput = container.querySelector('#parent-search-input');
@@ -830,7 +856,7 @@ function bindEvents(container) {
         renderHistoryList();
     });
 
-    // ✨ 歷史紀錄表單控制
+    // ✨ 歷史紀錄表單控制 (手動新增用)
     container.querySelector('#btn-show-add-history').addEventListener('click', () => {
         document.getElementById('history-form-wrap').classList.remove('hidden');
         document.getElementById('hist-end-date').value = '';
@@ -865,6 +891,45 @@ function bindEvents(container) {
             currentHistory.splice(idx, 1);
             renderHistoryList();
         }
+    });
+
+    // ✨ 變更意圖 Modal 控制
+    container.querySelector('#btn-close-intent-x').addEventListener('click', () => document.getElementById('change-intent-modal').classList.remove('open'));
+    container.querySelector('#btn-cancel-intent').addEventListener('click', () => document.getElementById('change-intent-modal').classList.remove('open'));
+    
+    container.querySelectorAll('input[name="change_intent"]').forEach(r => {
+        r.addEventListener('change', (e) => {
+            if(e.target.value === 'history') {
+                document.getElementById('intent-history-fields').classList.remove('hidden');
+            } else {
+                document.getElementById('intent-history-fields').classList.add('hidden');
+            }
+        });
+    });
+
+    container.querySelector('#btn-confirm-intent').addEventListener('click', async () => {
+        const intent = document.querySelector('input[name="change_intent"]:checked').value;
+        const isTypo = (intent === 'typo');
+        
+        if (!isTypo) {
+            const endDate = document.getElementById('intent-end-date').value;
+            const reason = document.getElementById('intent-reason').value.trim();
+            if(!endDate) { alert('請填寫舊資料適用結束日期！'); return; }
+            
+            // 自動生成歷史快照並推入
+            pendingPayload.history = pendingPayload.history || [];
+            pendingPayload.history.push({
+                end_date: endDate,
+                name: editingOldData.name,
+                address: editingOldData.address || '',
+                tax_id: editingOldData.tax_id || '',
+                reason: reason,
+                created_at: new Date().toISOString()
+            });
+        }
+        
+        document.getElementById('change-intent-modal').classList.remove('open');
+        await executeSave(pendingPayload, isTypo); // 執行真正的儲存
     });
 }
 
@@ -1015,7 +1080,6 @@ function clearSelection() {
     renderTable();
 }
 
-// ✨ 渲染歷史紀錄的時間軸 UI
 function renderHistoryList() {
     const container = document.getElementById('history-list-container');
     if(!currentHistory || currentHistory.length === 0) {
@@ -1309,7 +1373,7 @@ async function handleImport(e) {
                         name: cols[0], name_translated: cols[1] || '', name_local: cols[2] || '', 
                         tax_id: cols[3] || '', overseas_tax_id: cols[4] || '', industry: cols[5] || '', venue_type: cols[6] || '',
                         country: cols[7] || '中華民國', city: cols[8] || '', address: cols[9] || '', remarks: cols[10] || '',
-                        parent_id: '', history: [] 
+                        parent_id: '', history: []
                     };
                     if (!payload.name) continue;
                     parsedRows.push(payload);
@@ -1327,8 +1391,7 @@ async function handleImport(e) {
 }
 
 function openCreateModal() {
-    editingId = null; editingOldName = null;
-    currentHistory = [];
+    editingId = null; editingOldData = null; currentHistory = [];
     document.getElementById('data-form').reset();
     
     document.getElementById('input-parent-id').value = '';
@@ -1344,10 +1407,10 @@ function openCreateModal() {
     document.getElementById('data-modal').classList.add('open');
 }
 
-function closeModal() { document.getElementById('data-modal').classList.remove('open'); editingId = null; }
+function closeModal() { document.getElementById('data-modal').classList.remove('open'); editingId = null; pendingPayload = null; }
 
+// ✨ 核心升級：攔截按鈕儲存，判斷是否跳出變更意圖詢問
 async function submitForm() {
-    const btn = document.getElementById('btn-submit');
     const isDomestic = document.getElementById('input-country').value === '中華民國';
     
     const payload = { 
@@ -1363,33 +1426,66 @@ async function submitForm() {
         venue_type: document.getElementById('input-venue-type').value,
         address: document.getElementById('input-address').value.trim(),
         remarks: document.getElementById('input-remarks').value.trim(),
-        history: currentHistory // ✨ 存入歷史快照
+        history: currentHistory
     };
 
     if(!payload.country || !payload.name || !payload.address) { alert("請填寫所有必填欄位！"); return; }
     if (isDomestic && (!payload.tax_id || !payload.city)) { alert("中華民國機構必須填寫「統一編號」與「縣市別」！"); return; }
 
+    // ✨ 如果是編輯狀態，且「主名稱」被修改了，攔截儲存並跳出意圖詢問
+    if (editingId && editingOldData && editingOldData.name !== payload.name) {
+        pendingPayload = payload;
+        document.getElementById('intent-old-name').innerText = editingOldData.name;
+        document.getElementById('intent-new-name').innerText = payload.name;
+        document.getElementById('intent-end-date').value = new Date().toISOString().split('T')[0]; 
+        document.getElementById('intent-reason').value = '';
+        document.getElementById('intent-history-fields').classList.add('hidden');
+        document.querySelector('input[name="change_intent"][value="typo"]').checked = true;
+        document.getElementById('change-intent-modal').classList.add('open');
+        return; 
+    }
+
+    // 若無名稱變更，直接執行正常儲存 (視為改錯字/現況維護，isTypo = true)
+    await executeSave(payload, true);
+}
+
+// ✨ 實際負責寫入 DB 的引擎
+async function executeSave(payload, isTypo = true) {
+    const btn = document.getElementById('btn-submit');
+    const intentBtn = document.getElementById('btn-confirm-intent');
     btn.disabled = true; btn.innerHTML = '儲存中...';
+    intentBtn.disabled = true; intentBtn.innerHTML = '儲存中...';
+
     try {
         if (editingId) {
             const batch = writeBatch(db);
             batch.update(doc(db, "internship_institutions", editingId), { ...payload, updated_at: serverTimestamp() });
             
-            // ✨ 移除自動覆蓋過去實習生紀錄的危險邏輯，完美保留真實的 inst_raw 快照
-            
+            // ✨ 唯有在「單純改錯字 (isTypo)」的情境下，才去覆蓋學生紀錄的 inst_raw
+            if (isTypo && editingOldData && editingOldData.name !== payload.name) {
+                allRecords.forEach(record => {
+                    if (record.inst_id === editingId || (!record.inst_id && record.inst_raw === editingOldData.name)) {
+                        batch.update(doc(db, "internship_records", record.id), { inst_raw: payload.name, updated_at: serverTimestamp() });
+                    }
+                });
+            }
             await batch.commit();
         } else {
             await addDoc(collection(db, "internship_institutions"), { ...payload, created_at: serverTimestamp() });
         }
         closeModal(); fetchInitialDataOnce();
-    } catch (err) { alert("儲存失敗"); } finally { btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> 確認儲存'; }
+    } catch (err) { 
+        alert("儲存失敗"); 
+    } finally { 
+        btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> 確認儲存變更'; 
+        intentBtn.disabled = false; intentBtn.innerHTML = '<i class="ti ti-check"></i> 確認執行儲存'; 
+    }
 }
 
 function editData(id) {
     const docData = allData.find(d => d.id === id); if (!docData) return;
-    editingId = id; editingOldName = docData.name || '';
-    
-    // ✨ 載入歷史快照陣列
+    editingId = id; 
+    editingOldData = { ...docData }; // ✨ 紀錄完整舊資料快照
     currentHistory = docData.history || [];
     
     document.getElementById('modal-tabs').classList.remove('hidden');
@@ -1495,7 +1591,6 @@ async function executeMerge() {
         const batch = writeBatch(db);
         allRecords.forEach(record => {
             if (instsToDelete.includes(record.inst_id) || (!record.inst_id && deletedNames.includes(record.inst_raw))) {
-                // ✨ 僅變更 ID，不再覆蓋 inst_raw 以保全當初的真實名字
                 batch.update(doc(db, "internship_records", record.id), { inst_id: masterInst.id, updated_at: serverTimestamp() });
             }
         });
