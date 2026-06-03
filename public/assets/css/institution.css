@@ -200,15 +200,37 @@ th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand
     .pagination-bar-right { width: 100%; justify-content: space-between; }
     .dialog-overlay { padding: 12px; }
     
-    /* 讓彈窗內部可以順暢滑動 */
-    .dialog-box { max-height: 100% !important; display: flex !important; flex-direction: column !important; }
-    .dialog-body-container, .dialog-body { flex: 1 !important; min-height: 0 !important; overflow-y: auto !important; height: auto !important; flex-direction: column !important; }
+    /* =========================================
+       1. 彈窗容器：強制大彈窗固定高度，解決頁籤切換忽高忽低的問題
+       ========================================= */
+    #data-modal .dialog-box, 
+    #view-modal .dialog-box { 
+        height: 90vh !important; /* 直接鎖死佔用螢幕 90% 的高度 */
+        max-height: 100% !important; 
+        display: flex !important; 
+        flex-direction: column !important; 
+    }
+
+    .dialog-body-container { 
+        flex: 1 !important; /* 讓中間的內容區塊自動填滿 90vh 扣去頭尾的剩餘空間 */
+        min-height: 0 !important; 
+        overflow-y: auto !important; /* 產生內部滑動捲軸 */
+        height: auto !important; 
+        display: block !important; 
+    }
+
+    /* 確保小彈窗不會破版，自動適應內容，但最高 80vh */
+    .dialog-body {
+        max-height: 80vh !important;
+        overflow-y: auto !important;
+    }
+
     .v-divider-modal { display: block !important; width: 100% !important; height: 1px !important; min-height: 1px !important; background-color: var(--border) !important; margin: 8px 0 !important; flex-shrink: 0 !important; }
 
     /* =========================================
-       1. 統一頁籤大小：確保詳細資料與歷史軌跡邊距與寬高完全一致
+       2. 統一頁籤大小：確保詳細資料與歷史軌跡邊距完全一致
        ========================================= */
-    #data-form, #tab-history {
+    #data-form, #tab-history, #tab-main-view, #tab-history-view {
         width: 100% !important;
         padding: 16px !important;
         box-sizing: border-box !important;
@@ -218,14 +240,15 @@ th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand
     }
 
     /* 詳細資料單欄化 */
-    #data-form { flex-direction: column !important; gap: 16px !important; }
-    #data-form > div { width: 100% !important; flex: none !important; }
+    #data-form, #tab-main-view { display: flex !important; flex-direction: column !important; gap: 16px !important; }
+    #data-form > div, #tab-main-view > div { width: 100% !important; flex: none !important; }
 
     /* =========================================
-       2. 歷史軌跡頁面 - 按鈕移至說明文字右側並加高
+       3. 歷史軌跡頁面 - 按鈕靠右並加高
        ========================================= */
     .history-header { 
-        flex-direction: row !important; /* 確保左右並排 */
+        display: flex !important;
+        flex-direction: row !important; /* 強制左右並排 */
         align-items: flex-start !important; /* 向上對齊 */
         gap: 12px !important; 
         flex-wrap: nowrap !important;
@@ -234,14 +257,14 @@ th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand
         flex: 1 1 auto !important; /* 文字佔滿剩餘寬度並自動換行 */
         padding-right: 0 !important; 
         line-height: 1.5 !important; 
-        font-size: 11px !important; /* 稍微縮小文字，挪出舒適的空間給按鈕 */
+        font-size: 11px !important; 
         margin: 0 !important;
     }
     #btn-show-add-history { 
-        width: auto !important; /* 拔除原本的全寬設定 */
-        flex-shrink: 0 !important; /* 確保按鈕不會被過長的文字擠壓變形 */
-        height: 38px !important; /* 稍微加高按鈕，讓大拇指更好點擊 */
+        width: auto !important; 
+        flex-shrink: 0 !important; /* 確保按鈕不會被過長的文字擠壓 */
+        height: 38px !important; /* 稍微加高按鈕，讓手指更好點擊 */
         padding: 0 14px !important; 
-        white-space: nowrap !important; /* 按鈕文字不換行 */
+        white-space: nowrap !important; 
     }
 }
