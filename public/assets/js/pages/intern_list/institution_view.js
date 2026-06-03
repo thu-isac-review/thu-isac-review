@@ -1,7 +1,7 @@
 import { collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 // ==========================================
-// 1. 唯讀模組狀態管理
+// 1. 唯讀模組狀態管理 (清單瀏覽版專屬)
 // ==========================================
 let db;
 let allData = [];
@@ -32,7 +32,7 @@ let currentHistory = [];
 
 const LIST_COUNTRIES = ["中華民國","大陸地區","日本","美國","越南","泰國","澳大利亞","香港","澳門","馬來西亞","菲律賓","印尼","印度","孟加拉","緬甸","柬埔寨","黎巴嫩","蒙古","巴西","巴拉圭","秘魯"];
 const LIST_CITIES = ["臺北市","新北市","基隆市","桃園市","新竹縣","新竹市","苗栗縣","臺中市","彰化縣","南投縣","雲林縣","嘉義縣","嘉義市","臺南市","高雄市","屏東縣","宜蘭縣","花蓮縣","臺東縣","澎湖縣","金門縣","連江縣"];
-const LIST_INDUSTRIES = ["農、林、漁、牧業","礦業及土石採取業","製造業","電力及燃氣供應業","用水供應及污染整治業","營建工程業","批發及零售業","運輸及倉儲業","住宿及餐飲業","出版及影音等內容傳播業","電信及資訊服務業","金融及保險業","不動產業","專業、科學及技術服務業","支援服務業","公共行政及國防；強制性社會安全","教育業","醫療保健及社會工作服務業","藝術、運動及休閒服務業","其他服務業"];
+const LIST_INDUSTRIES = ["農、林、漁、牧業","礦業及土石採取業","製造業","電力及燃氣供應業","用水供應及污染整治業","營建工程業","批發及零售業","運輸及儲存業","住宿及餐飲業","出版及影音等內容傳播業","電信及資訊服務業","金融及保險業","不動產業","專業、科學及技術服務業","支援服務業","公共行政及國防；強制性社會安全","教育業","醫療保健及社會工作服務業","藝術、運動及休閒服務業","其他服務業"];
 const LIST_VENUES = ["企業機構","其他機構","政府機構","就讀學校附屬機構"];
 
 // ==========================================
@@ -124,6 +124,19 @@ function injectUI(container) {
         .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
         .read-card { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; min-height: 38px; display: flex; align-items: center; font-size: 13px; color: var(--text-primary); }
+
+        /* 💡 修正：補上唯讀頁面漏掉的彈窗控制樣式，不讓它一載入就插在畫面最底下 */
+        .dialog-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; padding: 24px; }
+        .dialog-overlay.open { display: flex; }
+        .dialog-box { background: var(--surface); border-radius: var(--radius-xl); box-shadow: 0 20px 60px rgba(0,0,0,0.2); width: 100%; display: flex; flex-direction: column; overflow: hidden; animation: dialogIn 0.25s cubic-bezier(0.16,1,0.3,1); }
+        .dialog-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--surface); }
+        .dialog-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; padding: 4px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); transition: all 0.15s; }
+        .dialog-close:hover { color: var(--danger); background: var(--danger-bg); }
+        .dialog-body-container { height: 500px; display: flex; overflow: hidden; background: var(--bg); }
+        .dialog-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg); flex-shrink: 0; }
+        .form-section-title { font-size: 13px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px; margin-bottom: 16px; }
+        .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
+        .field-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
     </style>
 
     <div id="inst-view-page-wrapper">
