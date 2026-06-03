@@ -20,7 +20,7 @@ let filterVenueSet = new Set();
 let sortCol = ''; 
 let sortDir = '';
 
-// ✨ 狀態記憶：樹狀模式切換與展開記錄
+// ✨ 狀態記憶
 let isTreeMode = true; 
 let expandedParents = new Set();
 let isSearchAutoExpand = false; 
@@ -45,7 +45,7 @@ export async function render(containerId, context) {
     injectUI(container);
     initSelectOptions();
     bindEvents(container);
-    updateColStyles(); // 初始化欄位隱藏狀態
+    updateColStyles(); 
     await fetchInitialDataOnce();
 }
 
@@ -66,13 +66,14 @@ function injectUI(container) {
             @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
             .ti-spin { animation: spin 1s linear infinite; display: inline-block; }
 
-            /* ✨ 修正 5：精簡優化的樹狀開合按鈕，拔除邊框，僅 Hover 顯示底色 */
             .tree-toggle { width: 22px; height: 22px; background: transparent; border: none; border-radius: 4px; cursor: pointer; padding: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--text-muted); transition: all 0.2s; outline: none; margin-right: 8px; flex-shrink: 0; }
             .tree-toggle i { font-size: 16px; transition: transform 0.2s; }
             .tree-toggle:hover { color: var(--brand); background: var(--brand-light); }
             .tree-toggle.expanded i { transform: rotate(90deg); color: var(--brand); }
             
-            /* ✨ 修正 6：子機構名稱排版，使用 flex + gap 保證箭頭不被壓縮 */
+            .child-row { background-color: #fbfdff; }
+            .child-row td { border-bottom: 1px dashed var(--border); }
+            .child-row:hover td { background-color: #f0f7ff; }
             .child-name-wrap { display: flex; align-items: flex-start; padding-left: 24px; gap: 6px; }
             .child-name-wrap i { font-size: 16px; opacity: 0.5; color: var(--text-secondary); margin-top: 1px; flex-shrink: 0; }
 
@@ -132,10 +133,8 @@ function injectUI(container) {
             @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
             .batch-info { font-size: 13px; font-weight: 600; color: var(--brand); display: flex; align-items: center; gap: 8px; }
 
-            /* ✨ 修正 1：操作按鈕凍結 (Sticky) 與表格框線修正 */
             .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; border-left: none; border-right: none; }
             .table-scroll { flex: 1; overflow: auto; }
-            /* 為了支援 sticky border 不受阻，改用 separate */
             table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; min-width: 1050px; }
             th { padding: 12px 16px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; position: sticky; top: 0; z-index: 10; background: var(--surface); box-shadow: inset 0 -1px 0 var(--border), inset 0 1px 0 var(--border); border-bottom: none; }
             th[data-sort] { cursor: pointer; user-select: none; transition: color var(--transition); }
@@ -145,7 +144,6 @@ function injectUI(container) {
             
             td { padding: 12px 16px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); }
             
-            /* 背景色繼承設計，確保 sticky td Hover 時正確變色 */
             tr { background-color: var(--surface); }
             tr.child-row { background-color: #fbfdff; }
             tr.child-row td { border-bottom: 1px dashed var(--border); }
@@ -153,10 +151,9 @@ function injectUI(container) {
             tr.child-row:hover { background-color: #f0f7ff; }
             tr.selected { background-color: #f0f4ff !important; }
 
-            /* 操作欄凍結效果 */
             .col-actions { position: sticky; right: 0; box-shadow: inset 1px 0 0 var(--border); }
             th.col-actions { z-index: 20; box-shadow: inset 1px -1px 0 var(--border), inset 0 1px 0 var(--border); }
-            td.col-actions { z-index: 5; background-color: inherit; } /* 完美繼承 tr 的 hover 顏色 */
+            td.col-actions { z-index: 5; background-color: inherit; } 
 
             .cell-primary { font-size: 13px; color: var(--text-primary); line-height: 1.4; }
             .cell-primary.bold { font-weight: 700; color: #000000; }
@@ -171,6 +168,7 @@ function injectUI(container) {
             .page-btn { min-width: 30px; height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 12px; font-weight: 500; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0 8px; transition: all var(--transition); }
             .page-btn:hover:not(:disabled) { background: var(--bg); border-color: var(--border-strong); }
             .page-btn.active { background: var(--brand); color: white; border-color: var(--brand); font-weight: 700; }
+            .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
             .dialog-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; padding: 24px; }
             .dialog-overlay.open { display: flex; }
@@ -553,7 +551,6 @@ function bindEvents(container) {
     container.querySelector('#search-industry-input').addEventListener('keyup', (e) => filterDropdownItems(e.target, 'industry-options-container'));
     container.querySelector('#search-venue-input').addEventListener('keyup', (e) => filterDropdownItems(e.target, 'venue-options-container'));
 
-    // 全選 / 全不選事件代理
     container.querySelectorAll('.btn-filter-all').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -583,11 +580,6 @@ function bindEvents(container) {
     container.querySelector('#industry-options-container').addEventListener('change', (e) => { if(e.target.type==='checkbox') toggleFilterCheck('industry', e.target.value); });
     container.querySelector('#venue-options-container').addEventListener('change', (e) => { if(e.target.type==='checkbox') toggleFilterCheck('venue', e.target.value); });
 
-    container.querySelector('#btn-clear-country').addEventListener('click', () => clearFilter('country'));
-    container.querySelector('#btn-clear-city').addEventListener('click', () => clearFilter('city'));
-    container.querySelector('#btn-clear-industry').addEventListener('click', () => clearFilter('industry'));
-    container.querySelector('#btn-clear-venue').addEventListener('click', () => clearFilter('venue'));
-
     const btnDisplaySettings = container.querySelector('#btn-display-settings');
     const displayMenu = container.querySelector('#display-settings-menu');
     btnDisplaySettings.addEventListener('click', (e) => {
@@ -595,26 +587,25 @@ function bindEvents(container) {
         displayMenu.classList.toggle('hidden');
     });
     
-    // 點擊顯示選單內部不要自動關閉
-    displayMenu.addEventListener('click', (e) => {
-        e.stopPropagation();
-    });
+    displayMenu.addEventListener('click', (e) => { e.stopPropagation(); });
 
     container.querySelector('#btn-toggle-tree').addEventListener('click', (e) => {
+        e.stopPropagation();
         isTreeMode = !isTreeMode;
         container.querySelector('#btn-toggle-tree').innerHTML = isTreeMode ? `<i class="ti ti-list-tree text-brand mr-2"></i> 切換為扁平列表` : `<i class="ti ti-list text-brand mr-2"></i> 切換為樹狀檢視`;
         renderTable();
     });
     container.querySelector('#btn-expand-all').addEventListener('click', (e) => {
+        e.stopPropagation();
         allData.forEach(d => { if (!d.parent_id) expandedParents.add(d.id); });
         renderTable();
     });
     container.querySelector('#btn-collapse-all').addEventListener('click', (e) => {
+        e.stopPropagation();
         expandedParents.clear();
         renderTable();
     });
 
-    // 欄位顯示開關
     container.querySelectorAll('.col-toggle-chk').forEach(chk => {
         chk.addEventListener('change', (e) => {
             colVis[e.target.value] = e.target.checked;
@@ -786,20 +777,7 @@ function toggleFilterCheck(type, val) {
     let set = type === 'country' ? filterCountrySet : (type === 'city' ? filterCitySet : (type === 'industry' ? filterIndustrySet : filterVenueSet));
     if (set.has(val)) set.delete(val); else set.add(val);
     document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
-    currentPage = 1; 
-    updatePillActive(type); 
-    renderTable();
-}
-
-function clearFilter(type) {
-    let set = type === 'country' ? filterCountrySet : (type === 'city' ? filterCitySet : (type === 'industry' ? filterIndustrySet : filterVenueSet));
-    set.clear();
-    document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = false);
-    const searchInput = document.getElementById(`search-${type}-input`);
-    if (searchInput) { searchInput.value = ''; filterDropdownItems(searchInput, `${type}-options-container`); }
-    currentPage = 1; 
-    updatePillActive(type); 
-    renderTable();
+    currentPage = 1; updatePillActive(type); renderTable();
 }
 
 function updatePillActive(type) {
@@ -1023,7 +1001,7 @@ function renderTable() {
             totalAllMatched++; 
             p.children.forEach(c => { totalAllMatched++; totalChildrenMatched++; }); 
         });
-        document.getElementById('pagination-info').innerHTML = totalMainItems > 0 ? `共 <strong>${totalAllMatched}</strong> 間實習機構（包含 ${totalChildrenMatched} 間分支機構），顯示第 ${start + 1}–${Math.min(start + itemsPerPage, totalMainItems)} 間主機構` : `共 <strong>0</strong> 間實習機構`;
+        document.getElementById('pagination-info').innerHTML = totalMainItems > 0 ? `共 <strong>${totalAllMatched}</strong> 間實習機構（包含 ${totalChildrenMatched} 間分支機構），顯示第 ${start + 1}–${Math.min(start + itemsPerPage, totalMainItems)} 間` : `共 <strong>0</strong> 間實習機構`;
     } else {
         document.getElementById('pagination-info').innerHTML = totalMainItems > 0 ? `共 <strong>${totalMainItems}</strong> 間實習機構，顯示第 ${start + 1}–${Math.min(start + itemsPerPage, totalMainItems)} 間` : `共 <strong>0</strong> 間實習機構`;
     }
