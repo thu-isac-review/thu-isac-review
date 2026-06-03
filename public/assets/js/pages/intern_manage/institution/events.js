@@ -8,7 +8,10 @@ export function bindEvents(container) {
 
     // ---------------- 1. 頂部工具列事件 ----------------
     container.querySelector('#btn-export-csv')?.addEventListener('click', () => {
-        if (state.filteredInstitutions.length === 0) { alert("沒有資料可供匯出！"); return; }
+        if (state.filteredInstitutions.length === 0) { 
+            showNotification("沒有資料可供匯出！", "error"); 
+            return; 
+        }
         let csv = '\uFEFF實習機構主名稱,隸屬主機構,統一編號,海外稅號,行業別,實習場所,實習場所國別,縣市別,實習場所地址,備註\n';
         
         if (state.isTreeMode) {
@@ -23,6 +26,7 @@ export function bindEvents(container) {
         }
         const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
         link.download = `實習機構清單_${new Date().toISOString().split('T')[0]}.csv`; link.click();
+        showNotification("實習機構清單匯出成功！", "success");
     });
     
     container.querySelector('#btn-import-trigger')?.addEventListener('click', () => container.querySelector('#import-file')?.click());
@@ -58,10 +62,12 @@ export function bindEvents(container) {
                 for (let payload of parsedRows) {
                     await Data.createInstitutionRaw(payload);
                 }
-                alert(`✅ 成功批次匯入完成！`);
+                showNotification("✅ 成功批次匯入完成！", "success");
                 await Data.fetchInitialDataOnce();
                 UI.updateBatchActionBar(); UI.buildBaseTree(); Render.renderTable();
-            } catch (error) { alert("格式錯誤\n" + error.message); } 
+            } catch (error) { 
+                showNotification("匯入失敗：" + error.message, "error"); 
+            } 
             finally { btn.innerHTML = originalHtml; btn.disabled = false; e.target.value = ''; }
         };
         reader.readAsText(file);
@@ -218,7 +224,7 @@ export function bindEvents(container) {
     container.querySelector('#btn-batch-delete')?.addEventListener('click', async () => {
         const hasChildren = state.selectedIds.some(id => state.allData.some(d => d.parent_id === id && !state.selectedIds.includes(d.id)));
         if (hasChildren) {
-            alert("⚠️ 批次刪除失敗！\n您選取的項目中包含「尚有綁定分公司的主機構」。\n請取消勾選主機構，或連同其分公司一併勾選刪除。");
+            showNotification("批次刪除失敗！您選取的項目中包含「尚有綁定分公司的主機構」", "error");
             return;
         }
         if (!confirm(`確定刪除這 ${state.selectedIds.length} 筆機構嗎？`)) return;
@@ -232,8 +238,9 @@ export function bindEvents(container) {
             await Data.batchDelete();
             await Data.fetchInitialDataOnce(); 
             UI.updateBatchActionBar(); UI.buildBaseTree(); Render.renderTable(); 
+            showNotification("已成功批次刪除所選機構！", "success");
         } catch (e) {
-            alert("刪除失敗");
+            showNotification("刪除失敗，請檢查資料庫連線", "error");
         } finally {
             if(btn) { btn.innerHTML = originalHtml; btn.disabled = false; }
         }
@@ -401,12 +408,14 @@ export function bindEvents(container) {
         if(intentBtn) { intentBtn.disabled = true; intentBtn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 儲存中...'; }
 
         try {
+            const isEdit = !!state.editingId;
             await Data.executeSave(payload, isTypo);
             UI.closeModal(); 
             await Data.fetchInitialDataOnce(); 
             UI.updateBatchActionBar(); UI.buildBaseTree(); Render.renderTable(); 
+            showNotification(isEdit ? "機構資料更新成功！" : "新實習機構建立成功！", "success");
         } catch (err) {
-            alert("儲存失敗");
+            showNotification("儲存失敗，請重試", "error");
             console.error(err);
         } finally {
             if(btn) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> 確認儲存變更'; }
@@ -434,8 +443,9 @@ export function bindEvents(container) {
             closeBatchEdit();
             await Data.fetchInitialDataOnce(); 
             UI.updateBatchActionBar(); UI.buildBaseTree(); Render.renderTable();
+            showNotification(`已成功批次更新 ${state.selectedIds.length} 筆機構屬性！`, "success");
         } catch(e) {
-            alert("更新失敗");
+            showNotification("批次更新失敗，請重試", "error");
         } finally {
             if(btn) { btn.innerHTML = originalHtml; btn.disabled = false; }
         }
@@ -469,8 +479,9 @@ export function bindEvents(container) {
             closeMerge();
             await Data.fetchInitialDataOnce(); 
             UI.updateBatchActionBar(); UI.buildBaseTree(); Render.renderTable();
+            showNotification("機構合併與關聯移轉完成！", "success");
         } catch(e) {
-            alert("合併失敗");
+            showNotification("合併失敗，請重試", "error");
         } finally {
             if(btn) { btn.innerHTML = originalHtml; btn.disabled = false; }
         }
@@ -544,7 +555,7 @@ export function bindEvents(container) {
             const hasChildren = state.allData.some(d => d.parent_id === id);
             
             if (hasChildren) {
-                alert(`⚠️ 無法刪除！\n\n「${name}」底下還有綁定分公司 / 分部。\n請先解除分公司的隸屬綁定，或先刪除分公司，才能刪除該主機構。`);
+                showNotification(`無法刪除！「${name}」底下還有綁定分公司 / 分部`, "error");
                 return;
             }
             
@@ -555,8 +566,9 @@ export function bindEvents(container) {
                     await Data.deleteData(id);
                     await Data.fetchInitialDataOnce(); 
                     UI.updateBatchActionBar(); UI.buildBaseTree(); Render.renderTable();
+                    showNotification(`機構「${name}」已刪除成功！`, "success");
                 } catch(e) {
-                    alert("刪除失敗");
+                    showNotification("刪除失敗", "error");
                     btnDel.innerHTML = originalHtml;
                 }
             }
@@ -579,8 +591,7 @@ export function bindEvents(container) {
     tabBtnHistory?.addEventListener('click', () => {
         if(tabBtnHistory) { tabBtnHistory.style.borderColor = 'var(--brand)'; tabBtnHistory.style.color = 'var(--brand)'; }
         if(tabBtnMain) { tabBtnMain.style.borderColor = 'transparent'; tabBtnMain.style.color = 'var(--text-muted)'; }
-        if(tabHistory) tabHistory.style.display = 'block'; 
-        if(tabMain) tabMain.style.display = 'none';
+        if(tabHistory) { tabHistory.style.display = 'block'; tabMain.style.display = 'none'; }
         Render.renderHistoryList();
     });
 
@@ -615,6 +626,7 @@ export function bindEvents(container) {
         state.currentHistory.push({ end_date: endDate, name: name, address: address, tax_id: taxId, reason: reason, created_at: new Date().toISOString() });
         document.getElementById('add-history-modal')?.classList.remove('open');
         Render.renderHistoryList();
+        showNotification("已加入一筆歷史快照（點選最下方確認儲存後生效）", "info");
     });
 
     container.querySelector('#tab-history')?.addEventListener('click', (e) => {
@@ -623,6 +635,7 @@ export function bindEvents(container) {
             const idx = Number(btnDel.dataset.idx);
             state.currentHistory.splice(idx, 1);
             Render.renderHistoryList();
+            showNotification("已移除該歷史快照（點選最下方確認儲存後生效）", "info");
         }
     });
 
@@ -667,4 +680,41 @@ export function bindEvents(container) {
         document.getElementById('change-intent-modal')?.classList.remove('open');
         await executeSaveAction(state.pendingPayload, isTypo); 
     });
+}
+
+// ---------------- 11. 共用動態 Toast 通知系統 ----------------
+function showNotification(message, type = 'success') {
+    // 建立通知容器
+    const toast = document.createElement('div');
+    
+    // 設定動畫外觀及 Tailwind 樣式，層級拉到最高的 z-[9999] 確保不會被 Modal 遮擋
+    toast.className = `fixed bottom-5 right-5 z-[9999] flex items-center gap-2.5 px-4 py-3.5 rounded-xl shadow-xl border transition-all duration-300 transform translate-y-5 opacity-0`;
+    
+    // 設定不同類型的樣式與對應圖示
+    if (type === 'success') {
+        toast.className += ' bg-emerald-50 text-emerald-800 border-emerald-200';
+        toast.innerHTML = `<i class="ti ti-circle-check text-emerald-500 text-lg"></i><span class="font-semibold text-sm">${message}</span>`;
+    } else if (type === 'error') {
+        toast.className += ' bg-rose-50 text-rose-800 border-rose-200';
+        toast.innerHTML = `<i class="ti ti-alert-circle text-rose-500 text-lg"></i><span class="font-semibold text-sm">${message}</span>`;
+    } else {
+        toast.className += ' bg-blue-50 text-blue-800 border-blue-200';
+        toast.innerHTML = `<i class="ti ti-info-circle text-blue-500 text-lg"></i><span class="font-semibold text-sm">${message}</span>`;
+    }
+    
+    // 塞入頁面中
+    document.body.appendChild(toast);
+    
+    // 稍微延遲讓動畫能平滑滑入
+    setTimeout(() => {
+        toast.classList.remove('translate-y-5', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+    }, 50);
+    
+    // 3 秒後自動退場並移出 DOM
+    setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-5', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }
