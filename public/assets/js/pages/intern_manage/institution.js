@@ -1,74 +1,75 @@
 import { collection, getDocs, doc, updateDoc, deleteDoc, addDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-// --- 模組區域變數 ---
+// ==========================================
+// 1. 核心模組變數與狀態控管
+// ==========================================
 let db;
 let allData = []; 
 let allRecords = []; 
-let baseTree = []; 
+let baseTree = []; // 快取樹狀結構，優化搜尋效能
 
+// 編輯與快照狀態
 let editingId = null; 
 let editingOldData = null; 
 let pendingPayload = null; 
+let currentHistory = [];
 
+// 表格與分頁狀態
 let currentPage = 1; 
 let itemsPerPage = 15;
 let selectedIds = [];
 let filteredInstitutions = []; 
+let sortCol = ''; 
+let sortDir = '';
 
+// 顯示設定狀態
+let isTreeMode = true; 
+let expandedParents = new Set();
+let isSearchAutoExpand = false; 
+let isAllExpanded = false; 
+let colVis = { tax_id: true, industry: true, venue_type: true, country: true, city: true, address: true };
+
+// 篩選器狀態
 let filterCountrySet = new Set();
 let filterCitySet = new Set();
 let filterIndustrySet = new Set();
 let filterVenueSet = new Set();
 
-let sortCol = ''; 
-let sortDir = '';
-
-let isTreeMode = true; 
-let expandedParents = new Set();
-let isSearchAutoExpand = false; 
-let isAllExpanded = false; // ✨ 展開收合狀態追蹤
-
-let currentHistory = [];
-let colVis = { tax_id: true, industry: true, venue_type: true, country: true, city: true, address: true };
-
+// 全域效能與記憶體防護
 let isGlobalListenerBound = false;
 let searchDebounceTimer = null; 
 
+// 靜態選項清單
 const LIST_COUNTRIES = ["中華民國","大陸地區","日本","美國","越南","泰國","澳大利亞","香港","澳門","馬來西亞","菲律賓","印尼","印度","孟加拉","緬甸","柬埔寨","黎巴嫩","蒙古","巴西","巴拉圭","秘魯"];
 const LIST_CITIES = ["臺北市","新北市","基隆市","桃園市","新竹縣","新竹市","苗栗縣","臺中市","彰化縣","南投縣","雲林縣","嘉義縣","嘉義市","臺南市","高雄市","屏東縣","宜蘭縣","花蓮縣","臺東縣","澎湖縣","金門縣","連江縣"];
 const LIST_INDUSTRIES = ["農、林、漁、牧業","礦業及土石採取業","製造業","電力及燃氣供應業","用水供應及污染整治業","營建工程業","批發及零售業","運輸及倉儲業","住宿及餐飲業","出版及影音等內容傳播業","電信及資訊服務業","金融及保險業","不動產業","專業、科學及技術服務業","支援服務業","公共行政及國防；強制性社會安全","教育業","醫療保健及社會工作服務業","藝術、運動及休閒服務業","其他服務業"];
 const LIST_VENUES = ["企業機構","其他機構","政府機構","就讀學校附屬機構"];
 
+// ==========================================
+// 2. 生命週期與初始化
+// ==========================================
 export async function render(containerId, context) {
     db = context.db;
     const container = document.getElementById(containerId);
-    selectedIds = []; currentPage = 1; expandedParents.clear(); isAllExpanded = false;
-    injectUI(container); initSelectOptions(); bindEvents(container); updateColStyles(); 
+    
+    // 重置基礎狀態
+    selectedIds = []; 
+    currentPage = 1; 
+    expandedParents.clear(); 
+    isAllExpanded = false;
+    
+    // 渲染 UI 與綁定事件
+    injectUI(container); 
+    initSelectOptions(); 
+    bindEvents(container); 
+    updateColStyles(); 
+    
+    // 讀取資料
     await fetchInitialDataOnce();
 }
 
-// 取得今日民國日期格式 (YYY/MM/DD)
-function getROCDateString() {
-    const today = new Date();
-    const rocYear = today.getFullYear() - 1911;
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    return `${rocYear}/${mm}/${dd}`;
-}
-
-// ✨ 修正 3：民國日期自動格式化與驗證
-function formatROCDate(val) {
-    let s = val.replace(/\D/g, '');
-    if (s.length === 6) s = '0' + s; 
-    if (s.length === 7) return `${s.substring(0,3)}/${s.substring(3,5)}/${s.substring(5,7)}`;
-    return val; 
-}
-function isValidROCDate(val) {
-    return /^\d{2,3}\/\d{2}\/\d{2}$/.test(val);
-}
-
 // ==========================================
-// 1. UI 注入模組
+// 3. UI 元件注入 (HTML & CSS)
 // ==========================================
 function injectUI(container) {
     container.innerHTML = `
@@ -78,22 +79,30 @@ function injectUI(container) {
         <style>
             #institution-page-wrapper { font-family: 'Noto Sans TC', sans-serif; font-size: 14px; color: var(--text-primary); background: var(--bg); -webkit-font-smoothing: antialiased; flex: 1; display: flex; flex-direction: column; min-height: 0; }
             #institution-page-wrapper * { box-sizing: border-box; }
+            
+            /* 滾動條美化 */
             .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
             .custom-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
+            
+            /* 動畫 */
             @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
             .ti-spin { animation: spin 1s linear infinite; display: inline-block; }
+            @keyframes dialogIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } }
 
+            /* 樹狀結構展開按鈕 */
             .tree-toggle { width: 22px; height: 22px; background: transparent; border: none; border-radius: 4px; cursor: pointer; padding: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--text-muted); transition: all 0.2s; outline: none; margin-right: 8px; flex-shrink: 0; }
             .tree-toggle i { font-size: 16px; transition: transform 0.2s; }
             .tree-toggle:hover { color: var(--brand); background: var(--brand-light); }
             .tree-toggle.expanded i { transform: rotate(90deg); color: var(--brand); }
             
+            /* 子機構列樣式 */
             .child-row { background-color: #fbfdff; }
             .child-row td { border-bottom: 1px dashed var(--border); }
             .child-row:hover td { background-color: #f0f7ff; }
             .child-name-wrap { display: flex; align-items: flex-start; padding-left: 3px; gap: 11px; }
             .child-name-wrap i { font-size: 16px; opacity: 0.5; color: var(--text-secondary); margin-top: 1px; flex-shrink: 0; }
 
+            /* 搜尋式下拉選單 */
             .searchable-select-wrap { position: relative; }
             .searchable-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-md); max-height: 200px; overflow-y: auto; z-index: 150; display: none; }
             .searchable-dropdown.show { display: block; }
@@ -103,6 +112,7 @@ function injectUI(container) {
             .searchable-option.empty-opt { color: var(--text-muted); font-style: italic; background: var(--bg); font-weight: 400; justify-content: center; }
             .searchable-option.empty-opt:hover { background: var(--bg); color: var(--text-muted); cursor: default; font-weight: 400; }
 
+            /* 頂部工具列 */
             .toolbar { padding: 12px 24px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; flex-wrap: wrap; }
             .search-wrap { position: relative; flex: 0 0 260px; }
             .search-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px; }
@@ -113,6 +123,7 @@ function injectUI(container) {
             .v-divider { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; margin: 0 4px; }
             .toolbar-actions { display: flex; align-items: center; gap: 8px; }
 
+            /* 共用按鈕樣式 */
             .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 14px; height: 34px; border-radius: var(--radius); font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; border: none; white-space: nowrap; transition: all var(--transition); text-decoration: none; }
             .btn-primary { background: var(--brand); color: white; border: 1px solid var(--brand); }
             .btn-primary:hover { background: var(--brand-hover); }
@@ -129,6 +140,7 @@ function injectUI(container) {
             .btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
             .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+            /* 篩選與顯示設定列 */
             .filter-row { padding: 10px 24px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; position: relative; }
             .filters-scroll-area { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
             .filter-pill-wrap { position: relative; }
@@ -137,6 +149,7 @@ function injectUI(container) {
             .filter-pill:hover { border-color: var(--border-strong); color: var(--text-primary); }
             .filter-pill.active { border-color: var(--brand); background: var(--brand-light); color: var(--brand); }
             .filter-pill .pill-count { background: var(--brand); color: white; border-radius: 99px; font-size: 10px; font-weight: 700; padding: 0 5px; min-width: 16px; text-align: center; }
+            
             .filter-dropdown { position: absolute; top: calc(100% + 6px); left: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); min-width: 220px; z-index: 100; display: none; flex-direction: column; overflow: hidden; }
             .filter-dropdown.show { display: flex; }
             .filter-dropdown-search { padding: 8px; border-bottom: 1px solid var(--border); }
@@ -148,12 +161,14 @@ function injectUI(container) {
             .filter-option input[type=checkbox] { accent-color: var(--brand); flex-shrink: 0; }
             
             #display-settings-wrap { flex-shrink: 0; border-left: 1px solid var(--border); padding-left: 12px; margin-left: 4px; }
+            
+            /* 批次操作工具列 */
             #batch-bar { display: none; align-items: center; gap: 12px; padding: 8px 24px; background: var(--brand-light); border-bottom: 1px solid var(--brand-border); flex-shrink: 0; position: absolute; top: 0; left: 0; right: 0; height: 100%; z-index: 5; }
             #batch-bar.visible { display: flex; animation: slideDown 0.2s ease-out; }
             @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
             .batch-info { font-size: 13px; font-weight: 600; color: var(--brand); display: flex; align-items: center; gap: 8px; }
 
-            /* ✨ 修正 6：拔除 spacer，使用 auto 讓欄位自由延展填充空間 */
+            /* 主資料表格結構 */
             .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; border-left: none; border-right: none; isolation: isolate; z-index: 0; }
             .table-scroll { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: none; }
             
@@ -162,34 +177,90 @@ function injectUI(container) {
             td { padding: 12px 16px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); background-color: inherit; }
             
             tr { background-color: var(--surface); transition: background-color 0.15s; }
-            tr.child-row { background-color: #fbfdff; }
-            tr.child-row td { border-bottom: 1px dashed var(--border); }
             tr:hover { background-color: #f3f6ff; }
-            tr.child-row:hover { background-color: #edf3ff; }
             tr.selected { background-color: #eef2ff !important; }
 
+            /* 凍結欄位設定 */
             .col-checkbox { position: sticky; left: 0; width: 48px; min-width: 48px; max-width: 48px; text-align: center; z-index: 2; background-color: inherit; }
             th.col-checkbox { z-index: 3; background-color: var(--surface); }
 
-            /* 名稱欄位拔除 max-width 讓它自由伸展 */
-            .col-name { min-width: 250px; }
+            /* 文字長欄位：使用百分比自適應分配空間 */
+            .col-name { width: 25%; min-width: 250px; }
             th.col-name { text-align: center; z-index: 1; } 
+            .col-address { width: 23%; min-width: 220px; }
             
+            /* 固定寬度欄位 */
             .col-tax_id { width: 12%; min-width: 110px; }
             .col-industry { width: 12%; min-width: 130px; }
             .col-venue_type { width: 12%; min-width: 130px; }
             .col-country { width: 8%; min-width: 90px; }
             .col-city { width: 8%; min-width: 90px; }
-            .col-address { width: auto; min-width: 220px; }
 
+            /* 右側操作欄凍結 */
             .col-actions { position: sticky; right: 0; width: 100px; min-width: 100px; max-width: 100px; text-align: center; z-index: 2; background-color: inherit; }
             th.col-actions { z-index: 3; background-color: var(--surface); }
 
+            th[data-sort] { cursor: pointer; user-select: none; transition: color var(--transition); }
+            th[data-sort]:hover { color: var(--text-secondary); }
+            th .sort-icon { margin-left: 4px; font-size: 14px; opacity: 0.4; vertical-align: middle; }
+            th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand); }
+
+            .cell-primary { font-size: 13px; color: var(--text-primary); line-height: 1.4; }
+            .cell-primary.bold { font-weight: 700; color: #000000; }
+            .row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; }
+
+            /* 分頁元件 */
+            .pagination-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; gap: 10px; border-radius: 0 !important; }
+            .pagination-info { font-size: 12px; color: var(--text-muted); }
+            .pagination-info strong { color: var(--text-primary); }
+            .pagination-bar-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+            .per-page-select { height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 12px; font-family: inherit; color: var(--text-secondary); padding: 0 6px; cursor: pointer; outline: none; }
+            .pagination-controls { display: flex; align-items: center; gap: 4px; }
+            .page-btn { min-width: 30px; height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 12px; font-weight: 500; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0 8px; transition: all var(--transition); }
+            .page-btn:hover:not(:disabled) { background: var(--bg); border-color: var(--border-strong); }
+            .page-btn.active { background: var(--brand); color: white; border-color: var(--brand); font-weight: 700; }
+            .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+            /* 彈窗系統 (Modals) */
+            .dialog-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; padding: 24px; }
+            .dialog-overlay.open { display: flex; }
+            .dialog-box { background: var(--surface); border-radius: var(--radius-xl); box-shadow: 0 20px 60px rgba(0,0,0,0.2); width: 100%; display: flex; flex-direction: column; overflow: hidden; animation: dialogIn 0.25s cubic-bezier(0.16,1,0.3,1); }
+            
+            .dialog-header { background: var(--surface); }
+            .dialog-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; padding: 4px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); transition: all var(--transition); }
+            .dialog-close:hover { color: var(--danger); background: var(--danger-bg); }
+            
+            .dialog-body-container { height: 500px; display: flex; overflow: hidden; background: var(--bg); }
+            .dialog-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg); flex-shrink: 0; }
+
+            /* 表單元件 */
+            .form-section-title { font-size: 13px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px; margin-bottom: 16px; }
+            .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
+            .field-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+            .field-label .req { color: var(--danger); margin-left: 2px; }
+            .field-input, .field-select { width: 100%; height: 36px; border: 1px solid var(--border); border-radius: var(--radius); background: #ffffff; padding: 0 12px; font-size: 13px; font-family: inherit; color: var(--text-primary); outline: none; transition: all var(--transition); }
+            .field-input:focus, .field-select:focus, textarea.field-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
+
+            /* 空狀態 */
+            .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
+            .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
+            .empty-text { font-size: 13px; font-weight: 600; }
+
+            /* 變更意圖與合併機構單選卡片 */
+            .intent-radio-card, .merge-option { display: block; cursor: pointer; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 12px; transition: all 0.2s; background: white; }
+            .intent-radio-card:hover, .merge-option:hover { border-color: var(--brand-light); background: #fafbff; }
+            .intent-radio-card:has(input:checked), .merge-option:has(input:checked) { border-color: var(--brand); background: #f0f4ff; box-shadow: 0 0 0 1px var(--brand); }
+            .intent-radio-input, .merge-option input[type=radio] { appearance: none; width: 16px; height: 16px; border: 2px solid #cbd5e1; border-radius: 50%; margin-right: 12px; position: relative; top: 2px; outline: none; cursor: pointer; transition: all 0.2s; background: white; flex-shrink: 0; }
+            .intent-radio-input:checked, .merge-option input[type=radio]:checked { border-color: var(--brand); background-color: var(--brand); box-shadow: inset 0 0 0 3px #f0f4ff; }
+            
+            .flex-center { display: flex; align-items: center; justify-content: center; }
+
+            /* 手機版響應式設定 */
             @media (max-width: 768px) {
                 .col-checkbox { position: static !important; min-width: 48px !important; }
                 .col-name { position: static !important; min-width: 250px !important; width: auto !important; }
-                .col-actions { position: static !important; min-width: 100px !important; box-shadow: none !important;}
-                th.col-checkbox, th.col-name, th.col-actions { position: sticky !important; top: 0 !important; left: auto !important; right: auto !important; z-index: 2 !important; box-shadow: none !important; border-bottom: 1px solid var(--border) !important;}
+                .col-actions { position: static !important; min-width: 100px !important; }
+                th.col-checkbox, th.col-name, th.col-actions { position: sticky !important; top: 0 !important; left: auto !important; right: auto !important; z-index: 2 !important; }
                 
                 .filter-row { padding: 10px 16px; flex-wrap: nowrap; }
                 .filters-scroll-area { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: none; padding-bottom: 2px; scrollbar-width: none; }
@@ -213,58 +284,6 @@ function injectUI(container) {
                 .dialog-body-container > div { width: 100% !important; margin: 0 !important; padding: 0 !important; }
                 .v-divider-modal { display: block !important; width: 100% !important; height: 1px !important; min-height: 1px !important; background-color: var(--border) !important; margin: 8px 0 !important; flex-shrink: 0 !important; }
             }
-
-            th[data-sort] { cursor: pointer; user-select: none; transition: color var(--transition); }
-            th[data-sort]:hover { color: var(--text-secondary); }
-            th .sort-icon { margin-left: 4px; font-size: 14px; opacity: 0.4; vertical-align: middle; }
-            th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand); }
-
-            .cell-primary { font-size: 13px; color: var(--text-primary); line-height: 1.4; }
-            .cell-primary.bold { font-weight: 700; color: #000000; }
-            .row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; }
-
-            .pagination-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; gap: 10px; border-radius: 0 !important; }
-            .pagination-info { font-size: 12px; color: var(--text-muted); }
-            .pagination-info strong { color: var(--text-primary); }
-            .pagination-bar-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-            .per-page-select { height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 12px; font-family: inherit; color: var(--text-secondary); padding: 0 6px; cursor: pointer; outline: none; }
-            .pagination-controls { display: flex; align-items: center; gap: 4px; }
-            .page-btn { min-width: 30px; height: 30px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 12px; font-weight: 500; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0 8px; transition: all var(--transition); }
-            .page-btn:hover:not(:disabled) { background: var(--bg); border-color: var(--border-strong); }
-            .page-btn.active { background: var(--brand); color: white; border-color: var(--brand); font-weight: 700; }
-            .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-            .dialog-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; padding: 24px; }
-            .dialog-overlay.open { display: flex; }
-            .dialog-box { background: var(--surface); border-radius: var(--radius-xl); box-shadow: 0 20px 60px rgba(0,0,0,0.2); width: 100%; display: flex; flex-direction: column; overflow: hidden; animation: dialogIn 0.25s cubic-bezier(0.16,1,0.3,1); }
-            @keyframes dialogIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } }
-            
-            .dialog-header { background: var(--surface); }
-            .dialog-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; padding: 4px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); transition: all var(--transition); }
-            .dialog-close:hover { color: var(--danger); background: var(--danger-bg); }
-            
-            .dialog-body-container { height: 500px; display: flex; overflow: hidden; background: var(--bg); }
-            .dialog-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg); flex-shrink: 0; }
-
-            .form-section-title { font-size: 13px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px; margin-bottom: 16px; }
-            .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
-            .field-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
-            .field-label .req { color: var(--danger); margin-left: 2px; }
-            /* ✨ 修正 5: 輸入框一律白底 */
-            .field-input, .field-select { width: 100%; height: 36px; border: 1px solid var(--border); border-radius: var(--radius); background: #ffffff; padding: 0 12px; font-size: 13px; font-family: inherit; color: var(--text-primary); outline: none; transition: all var(--transition); }
-            .field-input:focus, .field-select:focus, textarea.field-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
-
-            .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
-            .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
-            .empty-text { font-size: 13px; font-weight: 600; }
-
-            .intent-radio-card { display: block; cursor: pointer; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 12px; transition: all 0.2s; background: white; }
-            .intent-radio-card:hover { border-color: var(--brand-light); background: #fafbff; }
-            .intent-radio-card:has(input:checked) { border-color: var(--brand); background: #f0f4ff; box-shadow: 0 0 0 1px var(--brand); }
-            .intent-radio-input { appearance: none; width: 16px; height: 16px; border: 2px solid #cbd5e1; border-radius: 50%; margin-right: 12px; position: relative; top: 2px; outline: none; cursor: pointer; transition: all 0.2s; background: white; flex-shrink: 0; }
-            .intent-radio-input:checked { border-color: var(--brand); background-color: var(--brand); box-shadow: inset 0 0 0 3px #f0f4ff; }
-            
-            .flex-center { display: flex; align-items: center; justify-content: center; }
         </style>
 
         <div class="toolbar">
@@ -342,7 +361,7 @@ function injectUI(container) {
                 <div id="display-settings-menu" style="position:absolute; right:0; top:calc(100% + 4px); width:200px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); padding:8px; z-index:100; display:none;" class="menu-popup">
                     <button class="btn btn-secondary btn-sm" style="width:100%; justify-content:flex-start; border:none; margin-bottom:4px;" id="btn-toggle-tree"><i class="ti ti-list-tree" style="color:var(--brand); margin-right:4px;"></i> <span>切換為扁平列表</span></button>
                     <div style="height:1px; background:var(--border); margin:4px 0;"></div>
-                    <button class="btn btn-secondary btn-sm" style="width:100%; justify-content:flex-start; border:none; margin-bottom:4px;" id="btn-toggle-expand"><i class="ti ti-arrows-maximize" style="color:var(--brand); margin-right:4px;"></i> <span>展開所有分支</span></button>
+                    <button class="btn btn-secondary btn-sm" style="width:100%; justify-content:flex-start; border:none; margin-bottom:4px;" id="btn-toggle-expand"><i class="ti ti-arrows-maximize" style="color:var(--brand); margin-right:4px;"></i> <span>展開/收合所有分支</span></button>
                     
                     <div style="height:1px; background:var(--border); margin:4px 0;"></div>
                     <div style="font-size:11px; font-weight:700; color:var(--text-muted); padding:4px 8px;">顯示欄位設定</div>
@@ -448,13 +467,12 @@ function injectUI(container) {
                             <div class="field"><label class="field-label">實習場所國別 <span class="req">*</span></label><select id="input-country" required class="field-select"></select></div>
                             <div class="field"><label class="field-label">機構主名稱 <span class="req">*</span></label><input type="text" id="input-name" required placeholder="請輸入完整機構名稱" class="field-input"></div>
                             
-                            <div class="field" id="wrap-name-translated" style="display:none;"><label class="field-label">當地名稱 / 英文譯名</label><input type="text" id="input-name-translated" placeholder="例如：Apple Inc. (選填)" class="field-input"></div>
                             <div class="field" id="wrap-overseas-tax" style="display:none;"><label class="field-label">海外稅號 / 立案號碼</label><input type="text" id="input-overseas-tax-id" placeholder="當地稅務或機構登記號碼 (選填)" class="field-input"></div>
                             
                             <div class="field" id="wrap-tax-id"><label class="field-label">統一編號 <span class="req">*</span></label><input type="text" id="input-tax-id" required placeholder="如: 12345678" class="field-input" style="text-transform:uppercase;"></div>
                             <div class="field" id="wrap-city"><label class="field-label">縣市別 <span id="req-city" class="req">*</span></label><select id="input-city" required class="field-select"><option value="">請選擇</option></select></div>
                             
-                            <div class="field" style="margin-bottom:0;"><label class="field-label">實際實習地址 <span class="req">*</span></label><input type="text" id="input-address" required placeholder="請輸入完整實習地址" class="field-input"></div>
+                            <div class="field" style="margin-bottom:0;"><label class="field-label">實際實習地址 <span class="req">*</span></label><input type="text" id="input-address" required placeholder="詳細地址" class="field-input"></div>
                         </div>
                         <div class="v-divider-modal" style="width: 1px; background: var(--border); margin: 0;"></div>
                         <div style="flex: 1; display: flex; flex-direction: column;">
@@ -476,7 +494,6 @@ function injectUI(container) {
                         </div>
                         <div id="history-list-container" style="display:flex; flex-direction:column; gap:12px;"></div>
                     </div>
-
                 </div>
 
                 <div class="dialog-footer">
@@ -487,29 +504,30 @@ function injectUI(container) {
         </div>
 
         <div id="add-history-modal" class="dialog-overlay">
-            <div class="dialog-box" style="max-width: 550px;">
-                <div class="dialog-header flex-col items-start p-0 border-none">
-                    <div style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:20px 24px 16px; border-bottom:1px solid var(--border); background:#f8fafc;">
-                        <h3 style="display:flex; align-items:center; gap:8px; font-size:16px; font-weight:700; color:var(--text-primary);"><i class="ti ti-history" style="color:var(--indigo); font-size:20px;"></i> 封存一筆歷史快照</h3>
-                        <button type="button" class="dialog-close" id="btn-close-add-hist-x"><i class="ti ti-x"></i></button>
+            <div class="dialog-box" style="max-width: 500px; border-radius: 16px;">
+                <div class="dialog-header flex flex-col items-center justify-center p-6 border-none relative bg-white">
+                    <button type="button" class="dialog-close absolute top-4 right-4" style="position: absolute; right: 16px; top: 16px;" id="btn-close-add-hist-x"><i class="ti ti-x" style="font-size: 20px;"></i></button>
+                    <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--indigo-light); display: flex; align-items: center; justify-content: center; margin-bottom: 12px;">
+                        <i class="ti ti-history" style="color: var(--indigo); font-size: 24px;"></i>
+                    </div>
+                    <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0; text-align: center;">封存一筆歷史快照</h3>
+                </div>
+                <div class="dialog-body bg-white custom-scroll border-none" style="padding: 0 24px 24px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="field" style="margin-bottom:0;"><label class="field-label" style="color:var(--text-secondary); font-weight:700; margin-bottom:4px;">適用結束日期 <span style="color:var(--danger);">*</span></label><input type="text" id="hist-end-date" class="field-input" style="border-color:var(--border);" placeholder="例如：113/06/04"></div>
+                        <div class="field" style="margin-bottom:0;"><label class="field-label" style="color:var(--text-secondary); font-weight:700; margin-bottom:4px;">舊統一編號 <span style="font-weight:400; color:var(--text-muted);">(選填)</span></label><input type="text" id="hist-tax-id" class="field-input" style="border-color:var(--border);" placeholder="留空則沿用現況"></div>
+                        <div class="field" style="grid-column: 1 / -1; margin-bottom:0;"><label class="field-label" style="color:var(--text-secondary); font-weight:700; margin-bottom:4px;">歷史機構名稱 <span style="color:var(--danger);">*</span></label><input type="text" id="hist-name" class="field-input" style="border-color:var(--border);" placeholder="當時的機構名稱"></div>
+                        <div class="field" style="grid-column: 1 / -1; margin-bottom:0;"><label class="field-label" style="color:var(--text-secondary); font-weight:700; margin-bottom:4px;">歷史實習地址 <span style="color:var(--danger);">*</span></label><input type="text" id="hist-address" class="field-input" style="border-color:var(--border);" placeholder="當時的詳細地址"></div>
+                        <div class="field" style="grid-column: 1 / -1; margin-bottom:0;"><label class="field-label" style="color:var(--text-secondary); font-weight:700; margin-bottom:4px;">變更事由 <span style="font-weight:400; color:var(--text-muted);">(選填)</span></label><input type="text" id="hist-reason" class="field-input" style="border-color:var(--border);" placeholder="例如：配合政府組織改造升格"></div>
                     </div>
                 </div>
-                <div class="dialog-body bg-white p-6 custom-scroll">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="field" style="margin-bottom:0;"><label class="field-label text-gray-600">適用結束日期 <span class="req text-red-500">*</span></label><input type="text" id="hist-end-date" class="field-input bg-gray-50 focus:bg-white transition-colors" placeholder="例如：115/06/04"></div>
-                        <div class="field" style="margin-bottom:0;"><label class="field-label text-gray-600">舊統一編號 <span class="font-normal text-gray-400">(選填)</span></label><input type="text" id="hist-tax-id" class="field-input bg-gray-50 focus:bg-white transition-colors" placeholder="留空則沿用現況"></div>
-                        <div class="field col-span-1 md:col-span-2" style="margin-bottom:0;"><label class="field-label text-gray-600">歷史機構名稱 <span class="req text-red-500">*</span></label><input type="text" id="hist-name" class="field-input bg-gray-50 focus:bg-white transition-colors" placeholder="當時的機構名稱"></div>
-                        <div class="field col-span-1 md:col-span-2" style="margin-bottom:0;"><label class="field-label text-gray-600">歷史實習地址 <span class="req text-red-500">*</span></label><input type="text" id="hist-address" class="field-input bg-gray-50 focus:bg-white transition-colors" placeholder="當時的詳細地址"></div>
-                        <div class="field col-span-1 md:col-span-2" style="margin-bottom:0;"><label class="field-label text-gray-600">變更事由 <span class="font-normal text-gray-400">(選填)</span></label><input type="text" id="hist-reason" class="field-input bg-gray-50 focus:bg-white transition-colors" placeholder="例如：配合政府組織改造升格"></div>
-                    </div>
-                </div>
-                <div class="dialog-footer" style="background:#f8fafc; border-top:1px solid var(--border); padding:16px 24px; border-radius: 0 0 12px 12px; display:flex; justify-content:flex-end; gap:8px;">
-                    <button type="button" class="btn btn-secondary" style="background:white;" id="btn-cancel-add-hist">取消</button>
-                    <button type="button" id="btn-save-history" class="btn btn-indigo-solid shadow-sm"><i class="ti ti-check"></i> 確認封存快照</button>
+                <div class="dialog-footer" style="background: white; border-top: 1px solid var(--border); padding: 16px 24px; border-radius: 0 0 16px 16px; display: flex; justify-content: flex-end; gap: 12px;">
+                    <button type="button" class="btn btn-secondary" style="background: white; border-color: var(--border); padding: 0 20px;" id="btn-cancel-add-hist">取消</button>
+                    <button type="button" id="btn-save-history" class="btn btn-indigo-solid" style="padding: 0 20px; box-shadow: var(--shadow-sm);">確認封存快照</button>
                 </div>
             </div>
         </div>
-        
+
         <div id="change-intent-modal" class="dialog-overlay">
             <div class="dialog-box" style="max-width: 550px;">
                 <div class="dialog-header flex-col items-start p-0 border-none">
@@ -547,8 +565,8 @@ function injectUI(container) {
                         <div style="position:absolute; top:-6px; left:24px; width:10px; height:10px; background:white; border-top:1px solid var(--border); border-left:1px solid var(--border); transform:rotate(45deg);"></div>
                         <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:12px;">請補充歷史快照資訊</div>
                         
-                        <div class="field" style="margin-bottom:12px;"><label class="field-label" style="color:var(--text-secondary);">舊資料適用結束日期 <span style="color:var(--danger);">*</span></label><input type="text" id="intent-end-date" class="field-input" style="background:#f8fafc; height:34px;" placeholder="例如：115/06/04"></div>
-                        <div class="field" style="margin-bottom:0;"><label class="field-label" style="color:var(--text-secondary);">變更事由 <span style="font-weight:400; color:var(--text-muted);">(選填)</span></label><input type="text" id="intent-reason" class="field-input" style="background:#f8fafc; height:34px;" placeholder="例如：配合政府組織改造升格"></div>
+                        <div class="field" style="margin-bottom:12px;"><label class="field-label" style="color:var(--text-secondary);">舊資料適用結束日期 <span style="color:var(--danger);">*</span></label><input type="text" id="intent-end-date" class="field-input" style="height:34px;" placeholder="例如：115/06/04"></div>
+                        <div class="field" style="margin-bottom:0;"><label class="field-label" style="color:var(--text-secondary);">變更事由 <span style="font-weight:400; color:var(--text-muted);">(選填)</span></label><input type="text" id="intent-reason" class="field-input" style="height:34px;" placeholder="例如：配合政府組織改造升格"></div>
                     </div>
                 </div>
                 <div class="dialog-footer" style="background:#f8fafc; border-top:1px solid var(--border); padding:16px 24px; border-radius: 0 0 12px 12px; display:flex; justify-content:flex-end; gap:8px;">
@@ -567,7 +585,7 @@ function injectUI(container) {
                     </div>
                 </div>
                 <div class="dialog-body custom-scroll" style="background:white; padding:24px;">
-                    <div style="background:#fefce8; border:1px solid #fef08a; color:#854d0e; padding:12px 16px; border-radius:8px; font-size:13px; line-height:1.6; margin-bottom:20px; box-shadow:var(--shadow-sm);">
+                    <div style="background:#e0e7ff; border:1px solid #c7d2fe; color:#4338ca; padding:12px 16px; border-radius:8px; font-size:13px; line-height:1.6; margin-bottom:20px; box-shadow:var(--shadow-sm);">
                         您已選取 <span id="merge-count" style="font-size: 16px; font-weight: 700; margin: 0 4px;">0</span> 個機構準備進行合併。<br>
                         請在下方選擇<strong style="color: var(--danger); margin: 0 4px;">「唯一要保留的主體機構」</strong>。合併後，其餘被勾選的機構將被刪除，<br>且其底下的「分公司」及「學生實習紀錄」都會自動移轉到新的主體下。
                     </div>
@@ -579,7 +597,7 @@ function injectUI(container) {
                 </div>
             </div>
         </div>
-        
+
         <div id="batch-edit-modal" class="dialog-overlay">
             <div class="dialog-box" style="max-width: 450px;">
                 <div class="dialog-header">
@@ -607,7 +625,7 @@ function injectUI(container) {
 }
 
 // ==========================================
-// 2. 靜態資料與選項初始化
+// 4. 靜態資料與選項初始化
 // ==========================================
 function initSelectOptions() {
     let countryHtml = '';
@@ -667,7 +685,7 @@ function populateParentDropdown(excludeId = null) {
 }
 
 // ==========================================
-// 3. 事件代理與動態樣式邏輯
+// 5. 事件代理與動態樣式邏輯
 // ==========================================
 function updateColStyles() {
     let css = '';
@@ -695,11 +713,13 @@ function buildBaseTree() {
 }
 
 function bindEvents(container) {
+    // 工具列功能綁定
     container.querySelector('#btn-export-csv').addEventListener('click', exportToCSV);
     container.querySelector('#btn-import-trigger').addEventListener('click', () => container.querySelector('#import-file').click());
     container.querySelector('#import-file').addEventListener('change', handleImport);
     container.querySelector('#btn-create-inst').addEventListener('click', openCreateModal);
     
+    // 搜尋防抖處理
     container.querySelector('#search-input').addEventListener('input', () => { 
         clearTimeout(searchDebounceTimer);
         searchDebounceTimer = setTimeout(() => {
@@ -709,6 +729,7 @@ function bindEvents(container) {
         }, 250);
     });
 
+    // 篩選器開關綁定
     container.querySelector('#pill-country').addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('country'); });
     container.querySelector('#pill-city').addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('city'); });
     container.querySelector('#pill-industry').addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('industry'); });
@@ -742,6 +763,7 @@ function bindEvents(container) {
     container.querySelector('#industry-options-container').addEventListener('change', (e) => { if(e.target.type==='checkbox') toggleFilterCheck('industry', e.target.value); });
     container.querySelector('#venue-options-container').addEventListener('change', (e) => { if(e.target.type==='checkbox') toggleFilterCheck('venue', e.target.value); });
 
+    // 顯示設定選單
     const btnDisplaySettings = container.querySelector('#btn-display-settings');
     const displayMenu = container.querySelector('#display-settings-menu');
     btnDisplaySettings.addEventListener('click', (e) => {
@@ -752,10 +774,9 @@ function bindEvents(container) {
             displayMenu.style.display = 'block';
         }
     });
-    
     displayMenu.addEventListener('click', (e) => { e.stopPropagation(); });
 
-    // 1. 樹狀/扁平模式切換
+    // 扁平/樹狀 與 展開/收合
     container.querySelector('#btn-toggle-tree').addEventListener('click', (e) => {
         e.stopPropagation();
         isTreeMode = !isTreeMode;
@@ -766,7 +787,6 @@ function bindEvents(container) {
         renderTable();
     });
 
-    // 2. 展開/收合全部分支切換
     container.querySelector('#btn-toggle-expand').addEventListener('click', (e) => {
         e.stopPropagation();
         isAllExpanded = !isAllExpanded;
@@ -781,6 +801,7 @@ function bindEvents(container) {
         renderTable();
     });
 
+    // 隱藏/顯示欄位
     container.querySelectorAll('.col-toggle-chk').forEach(chk => {
         chk.addEventListener('change', (e) => {
             colVis[e.target.value] = e.target.checked;
@@ -788,6 +809,7 @@ function bindEvents(container) {
         });
     });
 
+    // 全域事件防抖綁定 (關閉彈窗)
     if (!isGlobalListenerBound) {
         document.addEventListener('click', (e) => {
             const parentDropdown = document.getElementById('parent-dropdown-list');
@@ -811,6 +833,7 @@ function bindEvents(container) {
         isGlobalListenerBound = true;
     }
 
+    // 批次操作與全選
     container.querySelector('#selectAll').addEventListener('change', toggleSelectPage);
     container.querySelector('#btn-select-all-filtered').addEventListener('click', selectAllFiltered);
     container.querySelector('#btn-clear-selection').addEventListener('click', clearSelection);
@@ -818,25 +841,26 @@ function bindEvents(container) {
     container.querySelector('#btn-batch-edit').addEventListener('click', openBatchEditModal);
     container.querySelector('#btn-batch-merge').addEventListener('click', openMergeModal);
 
+    // 表格操作
     container.querySelector('#per-page-select').addEventListener('change', (e) => { itemsPerPage = Number(e.target.value); currentPage = 1; renderTable(); });
-    
     container.querySelector('#pagination-controls').addEventListener('click', (e) => {
         const btn = e.target.closest('.page-btn');
         if (!btn || btn.disabled || btn.classList.contains('active')) return;
         const p = Number(btn.dataset.page);
         if (p) { currentPage = p; renderTable(); }
     });
-    
     container.querySelector('#institution-page-wrapper #inst-table-head').addEventListener('click', (e) => {
         const th = e.target.closest('th[data-sort]');
         if (th) handleSort(th);
     });
 
+    // 表單行為綁定
     container.querySelector('#input-country').addEventListener('change', handleCountryChange);
     container.querySelector('#btn-close-modal-x').addEventListener('click', closeModal);
     container.querySelector('#btn-cancel-modal').addEventListener('click', closeModal);
     container.querySelector('#btn-submit').addEventListener('click', submitForm);
 
+    // 隸屬機構搜尋框邏輯
     const parentSearchInput = container.querySelector('#parent-search-input');
     const parentDropdown = container.querySelector('#parent-dropdown-list');
     const parentIdHidden = container.querySelector('#input-parent-id');
@@ -887,6 +911,7 @@ function bindEvents(container) {
         }
     });
 
+    // Modal 關閉與按鈕綁定
     container.querySelector('#btn-close-batch-x').addEventListener('click', closeBatchEditModal);
     container.querySelector('#btn-cancel-batch').addEventListener('click', closeBatchEditModal);
     container.querySelector('#btn-batch-edit-submit').addEventListener('click', executeBatchEdit);
@@ -895,6 +920,7 @@ function bindEvents(container) {
     container.querySelector('#btn-cancel-merge').addEventListener('click', closeMergeModal);
     container.querySelector('#btn-merge-submit').addEventListener('click', executeMerge);
 
+    // 資料列表操作點擊事件代理
     container.querySelector('#table-body').addEventListener('click', (e) => {
         const rowChk = e.target.closest('.row-select-chk');
         const btnEdit = e.target.closest('.btn-row-edit');
@@ -918,6 +944,7 @@ function bindEvents(container) {
         else if (btnDel) { deleteData(btnDel.dataset.id, btnDel.dataset.name); }
     });
 
+    // 編輯 Modal 內的 Tab 切換
     const tabBtnMain = container.querySelector('#tab-btn-main');
     const tabBtnHistory = container.querySelector('#tab-btn-history');
     const tabMain = container.querySelector('#data-form');
@@ -942,10 +969,10 @@ function bindEvents(container) {
         renderHistoryList();
     });
 
-    // 歷史紀錄獨立 Modal 控制
+    // 獨立的新增歷史快照 Modal 綁定
     container.querySelector('#btn-show-add-history').addEventListener('click', () => {
         document.getElementById('add-history-modal').classList.add('open');
-        document.getElementById('hist-end-date').value = getROCDateString();
+        document.getElementById('hist-end-date').value = getROCDateString(); // ✨ 自動帶入民國日期
         document.getElementById('hist-name').value = document.getElementById('input-name').value;
         document.getElementById('hist-address').value = document.getElementById('input-address').value;
         const taxVal = document.getElementById('input-country').value === '中華民國' 
@@ -958,11 +985,12 @@ function bindEvents(container) {
     container.querySelector('#btn-close-add-hist-x').addEventListener('click', () => document.getElementById('add-history-modal').classList.remove('open'));
     container.querySelector('#btn-cancel-add-hist').addEventListener('click', () => document.getElementById('add-history-modal').classList.remove('open'));
 
+    // 新增歷史快照儲存 (包含日期驗證)
     container.querySelector('#btn-save-history').addEventListener('click', () => {
         let endDate = document.getElementById('hist-end-date').value.trim();
         endDate = formatROCDate(endDate);
         if(!isValidROCDate(endDate)) {
-            alert('適用結束日期格式錯誤！請輸入 YYY/MM/DD (例如: 113/01/01)');
+            alert('適用結束日期格式錯誤！請輸入 YYY/MM/DD (例如: 115/01/01)');
             return;
         }
         document.getElementById('hist-end-date').value = endDate;
@@ -979,6 +1007,7 @@ function bindEvents(container) {
         renderHistoryList();
     });
 
+    // 刪除歷史快照
     container.querySelector('#tab-history').addEventListener('click', (e) => {
         const btnDel = e.target.closest('.btn-del-history');
         if(btnDel && confirm('確定要刪除這筆歷史快照嗎？')) {
@@ -1009,9 +1038,9 @@ function bindEvents(container) {
         
         if (!isTypo) {
             let endDate = document.getElementById('intent-end-date').value.trim();
-            endDate = formatROCDate(endDate);
+            endDate = formatROCDate(endDate); // ✨ 自動補斜線
             if(!isValidROCDate(endDate)) {
-                alert('適用結束日期格式錯誤！請輸入 YYY/MM/DD (例如: 113/01/01)');
+                alert('適用結束日期格式錯誤！請輸入 YYY/MM/DD (例如: 115/01/01)');
                 return;
             }
             document.getElementById('intent-end-date').value = endDate;
@@ -1035,7 +1064,7 @@ function bindEvents(container) {
 }
 
 // ==========================================
-// 4. 輔助函式與狀態操作
+// 6. 資料與表格渲染引擎
 // ==========================================
 function highlightKeyword(text, keyword) {
     if (!keyword || !text) return text || '';
@@ -1109,14 +1138,12 @@ function updatePillActive(type) {
     }
 }
 
-// ✨ 修正 4：已拔除當地語言名稱，兩邊欄位高度對稱
 function handleCountryChange() {
     const country = document.getElementById('input-country').value;
     const isDomestic = country === '中華民國';
     
     const wrapTax = document.getElementById('wrap-tax-id');
     const wrapCity = document.getElementById('wrap-city');
-    const wrapNameTrans = document.getElementById('wrap-name-translated');
     const wrapOverseasTax = document.getElementById('wrap-overseas-tax');
 
     const taxInput = document.getElementById('input-tax-id');
@@ -1124,11 +1151,11 @@ function handleCountryChange() {
 
     if (isDomestic) {
         wrapTax.style.display = 'flex'; wrapCity.style.display = 'flex';
-        wrapNameTrans.style.display = 'none'; wrapOverseasTax.style.display = 'none';
+        wrapOverseasTax.style.display = 'none';
         taxInput.required = true; cityInput.required = true;
     } else {
         wrapTax.style.display = 'none'; wrapCity.style.display = 'none';
-        wrapNameTrans.style.display = 'flex'; wrapOverseasTax.style.display = 'flex';
+        wrapOverseasTax.style.display = 'flex';
         taxInput.required = false; cityInput.required = false;
         taxInput.value = ''; cityInput.value = '';
     }
@@ -1188,7 +1215,8 @@ function renderHistoryList() {
         return;
     }
     
-    const sorted = [...currentHistory].map((h, i) => ({...h, originalIndex: i})).sort((a,b) => b.end_date.localeCompare(a.end_date));
+    // ✨ 修正 9：歷史紀錄時間排序
+    const sorted = [...currentHistory].map((h, i) => ({...h, originalIndex: i})).sort((a,b) => b.end_date.localeCompare(a.end_date, 'zh-TW'));
     
     container.innerHTML = sorted.map(h => `
         <div style="position:relative; padding-left:24px; padding-bottom:16px; border-left:2px solid #e0e7ff;">
@@ -1208,7 +1236,7 @@ function renderHistoryList() {
 }
 
 // ==========================================
-// 5. 資料維護核心與 API 讀取
+// 7. API 與資料庫操作 (CRUD)
 // ==========================================
 async function handleInitialLoadEngine() {
     try {
@@ -1229,33 +1257,6 @@ async function fetchInitialDataOnce() {
         await handleInitialLoadEngine();
     } catch (error) {
         document.getElementById('table-body').innerHTML = `<tr><td colspan="9" class="empty-state"><i class="ti ti-lock empty-icon" style="color:var(--danger); opacity:1;"></i><div class="empty-text">雲端資料同步中斷。</div></td></tr>`;
-    }
-}
-
-function updateBatchActionBar() {
-    const bar = document.getElementById('batch-bar');
-    const count = document.getElementById('selected-count');
-    const btnSelectAll = document.getElementById('btn-select-all-filtered');
-    
-    if (selectedIds.length > 0) {
-        bar.classList.add('visible');
-        count.innerText = selectedIds.length;
-        
-        let totalMatched = 0;
-        if(isTreeMode) {
-            filteredInstitutions.forEach(p => { totalMatched += 1 + p.children.length; });
-        } else {
-            totalMatched = filteredInstitutions.length;
-        }
-
-        if (selectedIds.length < totalMatched) {
-            btnSelectAll.style.display = 'inline-flex';
-            btnSelectAll.innerText = `選取全部符合條件 (${totalMatched})`;
-        } else {
-            btnSelectAll.style.display = 'none';
-        }
-    } else {
-        bar.classList.remove('visible');
     }
 }
 
@@ -1300,7 +1301,7 @@ function renderTable() {
     
     isSearchAutoExpand = false; 
 
-    // ✨ 修正 9：中文字精準筆畫排序，且包含子節點
+    // ✨ 修正 9：中文字精準筆畫排序
     if (sortCol) {
         const sortFn = (a, b) => {
             let valA = a[sortCol] || ''; let valB = b[sortCol] || '';
@@ -1310,7 +1311,7 @@ function renderTable() {
                 if (aIsDomestic !== bIsDomestic) return sortDir === 'asc' ? aIsDomestic - bIsDomestic : bIsDomestic - aIsDomestic;
             }
             valA = valA.toString(); valB = valB.toString();
-            let cmp = valA.localeCompare(valB, 'zh-TW'); // 支援中文筆畫
+            let cmp = valA.localeCompare(valB, 'zh-TW');
             return sortDir === 'asc' ? cmp : -cmp;
         };
 
@@ -1365,8 +1366,8 @@ function renderTable() {
         const isChecked = selectedIds.includes(data.id) ? 'checked' : '';
         const isDomestic = data.country === '中華民國';
         
-        let dispTax = '-';
         // ✨ 修正 8：海外機構列表直接顯示 - 不顯示稅號
+        let dispTax = '-';
         if (isDomestic && data.tax_id) dispTax = highlightKeyword(data.tax_id, searchTerm);
         
         const toggleHtml = hasChildren ? `<button class="tree-toggle ${isExpanded ? 'expanded' : ''}"><i class="ti ti-chevron-right"></i></button>` : `<span style="display:inline-block; width:22px; margin-right:8px; flex-shrink:0;"></span>`;
@@ -1429,16 +1430,16 @@ function renderTable() {
 
 function exportToCSV() {
     if (filteredInstitutions.length === 0) { alert("沒有資料可供匯出！"); return; }
-    let csv = '\uFEFF實習機構主名稱,隸屬主機構,當地名稱/英文譯名,統一編號,海外稅號,行業別,實習場所,實習場所國別,縣市別,實習場所地址,備註\n';
+    let csv = '\uFEFF實習機構主名稱,隸屬主機構,統一編號,海外稅號,行業別,實習場所,實習場所國別,縣市別,實習場所地址,備註\n';
     
     if (isTreeMode) {
         filteredInstitutions.forEach(p => {
-            csv += [ p.name, '', p.name_translated || '', p.tax_id || '', p.overseas_tax_id || '', p.industry || '', p.venue_type || '', p.country, p.city || '', p.address, p.remarks || '' ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
-            p.children.forEach(c => { csv += [ c.name, p.name, c.name_translated || '', c.tax_id || '', c.overseas_tax_id || '', c.industry || '', c.venue_type || '', c.country, c.city || '', c.address, c.remarks || '' ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n'; });
+            csv += [ p.name, '', p.tax_id || '', p.overseas_tax_id || '', p.industry || '', p.venue_type || '', p.country, p.city || '', p.address, p.remarks || '' ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+            p.children.forEach(c => { csv += [ c.name, p.name, c.tax_id || '', c.overseas_tax_id || '', c.industry || '', c.venue_type || '', c.country, c.city || '', c.address, c.remarks || '' ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n'; });
         });
     } else {
         filteredInstitutions.forEach(d => {
-            csv += [ d.name, '', d.name_translated || '', d.tax_id || '', d.overseas_tax_id || '', d.industry || '', d.venue_type || '', d.country, d.city || '', d.address, d.remarks || '' ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+            csv += [ d.name, '', d.tax_id || '', d.overseas_tax_id || '', d.industry || '', d.venue_type || '', d.country, d.city || '', d.address, d.remarks || '' ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
         });
     }
     const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
@@ -1465,11 +1466,11 @@ async function handleImport(e) {
                     else currentVal += char;
                 }
                 cols.push(currentVal.trim());
-                if (cols.length >= 10) {
+                if (cols.length >= 9) {
                     const payload = {
-                        name: cols[0], name_translated: cols[1] || '',
-                        tax_id: cols[2] || '', overseas_tax_id: cols[3] || '', industry: cols[4] || '', venue_type: cols[5] || '',
-                        country: cols[6] || '中華民國', city: cols[7] || '', address: cols[8] || '', remarks: cols[9] || '',
+                        name: cols[0], 
+                        tax_id: cols[1] || '', overseas_tax_id: cols[2] || '', industry: cols[3] || '', venue_type: cols[4] || '',
+                        country: cols[5] || '中華民國', city: cols[6] || '', address: cols[7] || '', remarks: cols[8] || '',
                         parent_id: '', history: []
                     };
                     if (!payload.name) continue;
@@ -1506,7 +1507,6 @@ function openCreateModal() {
 
 function closeModal() { document.getElementById('data-modal').classList.remove('open'); editingId = null; pendingPayload = null; }
 
-// ✨ 擴大攔截器偵測範圍
 async function submitForm() {
     const isDomestic = document.getElementById('input-country').value === '中華民國';
     
@@ -1514,7 +1514,6 @@ async function submitForm() {
         parent_id: document.getElementById('input-parent-id').value || '',
         country: document.getElementById('input-country').value,
         name: document.getElementById('input-name').value.trim(),
-        name_translated: isDomestic ? '' : document.getElementById('input-name-translated').value.trim(),
         tax_id: isDomestic ? document.getElementById('input-tax-id').value.trim() : '',
         overseas_tax_id: isDomestic ? '' : document.getElementById('input-overseas-tax-id').value.trim(),
         city: isDomestic ? document.getElementById('input-city').value : '',
@@ -1606,7 +1605,6 @@ function editData(id) {
     
     document.getElementById('input-country').value = docData.country || '中華民國';
     document.getElementById('input-name').value = docData.name || '';
-    document.getElementById('input-name-translated').value = docData.name_translated || '';
     document.getElementById('input-tax-id').value = docData.tax_id || '';
     document.getElementById('input-overseas-tax-id').value = docData.overseas_tax_id || '';
     document.getElementById('input-city').value = docData.city || '';
@@ -1704,18 +1702,4 @@ async function executeMerge() {
         await batch.commit();
         closeMergeModal(); fetchInitialDataOnce();
     } catch(e) { alert("合併失敗"); }
-}
-
-async function batchDelete() {
-    const hasChildren = selectedIds.some(id => allData.some(d => d.parent_id === id && !selectedIds.includes(d.id)));
-    if (hasChildren) {
-        alert("⚠️ 批次刪除失敗！\n您選取的項目中包含「尚有綁定分公司的主機構」。\n請取消勾選主機構，或連同其分公司一併勾選刪除。");
-        return;
-    }
-    if (!confirm(`確定刪除這 ${selectedIds.length} 筆機構嗎？`)) return;
-    try {
-        const batch = writeBatch(db);
-        selectedIds.forEach(id => batch.delete(doc(db, "internship_institutions", id)));
-        await batch.commit(); fetchInitialDataOnce();
-    } catch (e) { alert("刪除失敗"); }
 }
