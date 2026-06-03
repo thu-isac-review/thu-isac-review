@@ -1725,3 +1725,30 @@ async function batchDelete() {
         await batch.commit(); fetchInitialDataOnce();
     } catch (e) { alert("刪除失敗"); }
 }
+
+function updateBatchActionBar() {
+    const bar = document.getElementById('batch-bar');
+    const count = document.getElementById('selected-count');
+    const btnSelectAll = document.getElementById('btn-select-all-filtered');
+    
+    if (selectedIds.length > 0) {
+        bar.classList.add('visible');
+        count.innerText = selectedIds.length;
+        
+        let totalMatched = 0;
+        if(isTreeMode) {
+            filteredInstitutions.forEach(p => { totalMatched += 1 + p.children.length; });
+        } else {
+            totalMatched = filteredInstitutions.length;
+        }
+
+        if (selectedIds.length < totalMatched) {
+            btnSelectAll.style.display = 'inline-flex';
+            btnSelectAll.innerText = `選取全部符合條件 (${totalMatched})`;
+        } else {
+            btnSelectAll.style.display = 'none';
+        }
+    } else {
+        bar.classList.remove('visible');
+    }
+}
