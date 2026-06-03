@@ -151,7 +151,16 @@ function injectUI(container) {
             tr.child-row:hover { background-color: #f0f7ff; }
             tr.selected { background-color: #f0f4ff !important; }
 
-            .col-actions { position: sticky; right: 0; box-shadow: inset 1px 0 0 var(--border); }
+            /* ✨ 修正 3：凍結左側(勾選與名稱)與右側(操作)，並給予絕對固定寬度避免擠壓 */
+            .col-checkbox { position: sticky; left: 0; width: 48px; min-width: 48px; max-width: 48px; box-shadow: inset -1px 0 0 var(--border); }
+            th.col-checkbox { z-index: 20; box-shadow: inset -1px -1px 0 var(--border), inset 0 1px 0 var(--border); }
+            td.col-checkbox { z-index: 5; background-color: inherit; }
+
+            .col-name { position: sticky; left: 48px; width: 320px; min-width: 320px; max-width: 320px; box-shadow: inset -1px 0 0 var(--border); }
+            th.col-name { z-index: 20; text-align: center !important; box-shadow: inset -1px -1px 0 var(--border), inset 0 1px 0 var(--border); }
+            td.col-name { z-index: 5; background-color: inherit; text-align: left !important; }
+
+            .col-actions { position: sticky; right: 0; width: 100px; min-width: 100px; max-width: 100px; box-shadow: inset 1px 0 0 var(--border); }
             th.col-actions { z-index: 20; box-shadow: inset 1px -1px 0 var(--border), inset 0 1px 0 var(--border); }
             td.col-actions { z-index: 5; background-color: inherit; } 
 
@@ -176,6 +185,7 @@ function injectUI(container) {
             @keyframes dialogIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } }
             .dialog-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--surface); }
             .dialog-header h3 { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: var(--text-primary); }
+            .dialog-header h3 i { font-size: 20px; color: var(--brand); }
             .dialog-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; padding: 4px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); transition: all var(--transition); }
             .dialog-close:hover { color: var(--danger); background: var(--danger-bg); }
             .dialog-body { padding: 24px; overflow-y: auto; max-height: calc(85vh - 130px); }
@@ -218,9 +228,8 @@ function injectUI(container) {
                 <div class="filter-dropdown" id="drop-country">
                     <div class="filter-dropdown-search">
                         <input type="text" id="search-country-input" placeholder="搜尋國別...">
-                        <div class="flex justify-between mt-2 px-1">
-                            <button type="button" class="text-xs text-brand hover:underline btn-filter-all" data-type="country">全選</button>
-                            <button type="button" class="text-xs text-gray-500 hover:underline btn-filter-clear" data-type="country">全不選</button>
+                        <div class="flex justify-end mt-2 px-1">
+                            <button type="button" class="text-xs text-brand hover:underline btn-filter-toggle" data-type="country" data-state="none">全選 / 全不選</button>
                         </div>
                     </div>
                     <div class="filter-dropdown-list" id="country-options-container"></div>
@@ -232,9 +241,8 @@ function injectUI(container) {
                 <div class="filter-dropdown" id="drop-city">
                     <div class="filter-dropdown-search">
                         <input type="text" id="search-city-input" placeholder="搜尋縣市...">
-                        <div class="flex justify-between mt-2 px-1">
-                            <button type="button" class="text-xs text-brand hover:underline btn-filter-all" data-type="city">全選</button>
-                            <button type="button" class="text-xs text-gray-500 hover:underline btn-filter-clear" data-type="city">全不選</button>
+                        <div class="flex justify-end mt-2 px-1">
+                            <button type="button" class="text-xs text-brand hover:underline btn-filter-toggle" data-type="city" data-state="none">全選 / 全不選</button>
                         </div>
                     </div>
                     <div class="filter-dropdown-list" id="city-options-container"></div>
@@ -246,9 +254,8 @@ function injectUI(container) {
                 <div class="filter-dropdown" id="drop-industry">
                     <div class="filter-dropdown-search">
                         <input type="text" id="search-industry-input" placeholder="搜尋行業別...">
-                        <div class="flex justify-between mt-2 px-1">
-                            <button type="button" class="text-xs text-brand hover:underline btn-filter-all" data-type="industry">全選</button>
-                            <button type="button" class="text-xs text-gray-500 hover:underline btn-filter-clear" data-type="industry">全不選</button>
+                        <div class="flex justify-end mt-2 px-1">
+                            <button type="button" class="text-xs text-brand hover:underline btn-filter-toggle" data-type="industry" data-state="none">全選 / 全不選</button>
                         </div>
                     </div>
                     <div class="filter-dropdown-list" id="industry-options-container"></div>
@@ -260,9 +267,8 @@ function injectUI(container) {
                 <div class="filter-dropdown" id="drop-venue">
                     <div class="filter-dropdown-search">
                         <input type="text" id="search-venue-input" placeholder="搜尋場所...">
-                        <div class="flex justify-between mt-2 px-1">
-                            <button type="button" class="text-xs text-brand hover:underline btn-filter-all" data-type="venue">全選</button>
-                            <button type="button" class="text-xs text-gray-500 hover:underline btn-filter-clear" data-type="venue">全不選</button>
+                        <div class="flex justify-end mt-2 px-1">
+                            <button type="button" class="text-xs text-brand hover:underline btn-filter-toggle" data-type="venue" data-state="none">全選 / 全不選</button>
                         </div>
                     </div>
                     <div class="filter-dropdown-list" id="venue-options-container"></div>
@@ -317,23 +323,23 @@ function injectUI(container) {
                 <table>
                     <thead>
                         <tr id="inst-table-head">
-                            <th class="col-checkbox" style="width: 4%;">
+                            <th class="col-checkbox">
                                 <div style="display:flex; justify-content:center; align-items:center;">
                                     <input type="checkbox" id="selectAll" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                                 </div>
                             </th>
-                            <th data-sort="name" style="width: 28%; text-align: left; padding-left: 40px;">實習機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th class="col-name" data-sort="name">實習機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="tax_id" class="col-tax_id" style="width: 12%;">統一編號 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="industry" class="col-industry" style="width: 12%;">行業別 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="venue_type" class="col-venue_type" style="width: 12%;">實習場所 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="country" class="col-country" style="width: 8%;">國別 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="city" class="col-city" style="width: 8%;">縣市別 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="address" class="col-address" style="width: 16%; text-align: center;">實習場所地址 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th class="col-actions" style="width: 8%;">操作</th>
+                            <th class="col-actions">操作</th>
                         </tr>
                     </thead>
                     <tbody id="table-body">
-                        <tr><td colspan="10" class="empty-state"><i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i><div class="empty-text">資料載入中...</div></td></tr>
+                        <tr><td colspan="9" class="empty-state"><i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i><div class="empty-text">資料載入中...</div></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -551,25 +557,20 @@ function bindEvents(container) {
     container.querySelector('#search-industry-input').addEventListener('keyup', (e) => filterDropdownItems(e.target, 'industry-options-container'));
     container.querySelector('#search-venue-input').addEventListener('keyup', (e) => filterDropdownItems(e.target, 'venue-options-container'));
 
-    container.querySelectorAll('.btn-filter-all').forEach(btn => {
+    // ✨ 修正 1：單一按鈕 切換全選/全不選
+    container.querySelectorAll('.btn-filter-toggle').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
             const type = btn.dataset.type;
+            const isSelectAll = btn.dataset.state !== 'all';
+            btn.dataset.state = isSelectAll ? 'all' : 'none';
+            
             let set = type === 'country' ? filterCountrySet : (type === 'city' ? filterCitySet : (type === 'industry' ? filterIndustrySet : filterVenueSet));
             container.querySelectorAll(`.filter-chk-${type}`).forEach(c => {
-                if(c.closest('.filter-option').style.display !== 'none') { c.checked = true; set.add(c.value); }
-            });
-            currentPage = 1; updatePillActive(type); renderTable();
-        });
-    });
-    
-    container.querySelectorAll('.btn-filter-clear').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const type = btn.dataset.type;
-            let set = type === 'country' ? filterCountrySet : (type === 'city' ? filterCitySet : (type === 'industry' ? filterIndustrySet : filterVenueSet));
-            container.querySelectorAll(`.filter-chk-${type}`).forEach(c => {
-                if(c.closest('.filter-option').style.display !== 'none') { c.checked = false; set.delete(c.value); }
+                if(c.closest('.filter-option').style.display !== 'none') { 
+                    c.checked = isSelectAll; 
+                    if(isSelectAll) set.add(c.value); else set.delete(c.value); 
+                }
             });
             currentPage = 1; updatePillActive(type); renderTable();
         });
@@ -587,7 +588,9 @@ function bindEvents(container) {
         displayMenu.classList.toggle('hidden');
     });
     
-    displayMenu.addEventListener('click', (e) => { e.stopPropagation(); });
+    displayMenu.addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
 
     container.querySelector('#btn-toggle-tree').addEventListener('click', (e) => {
         e.stopPropagation();
@@ -737,7 +740,7 @@ function bindEvents(container) {
 function highlightKeyword(text, keyword) {
     if (!keyword || !text) return text || '';
     const regex = new RegExp(`(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-    return text.toString().replace(regex, '<mark style="background-color: #ffeb3b; color: #000;">$1</mark>');
+    return text.toString().replace(regex, '<mark style="background-color: #ffeb3b; color: #000; padding: 0;">$1</mark>');
 }
 
 function handleSort(thElement) {
@@ -777,6 +780,15 @@ function toggleFilterCheck(type, val) {
     let set = type === 'country' ? filterCountrySet : (type === 'city' ? filterCitySet : (type === 'industry' ? filterIndustrySet : filterVenueSet));
     if (set.has(val)) set.delete(val); else set.add(val);
     document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
+    currentPage = 1; updatePillActive(type); renderTable();
+}
+
+function clearFilter(type) {
+    let set = type === 'country' ? filterCountrySet : (type === 'city' ? filterCitySet : (type === 'industry' ? filterIndustrySet : filterVenueSet));
+    set.clear();
+    document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = false);
+    const searchInput = document.getElementById(`search-${type}-input`);
+    if (searchInput) { searchInput.value = ''; filterDropdownItems(searchInput, `${type}-options-container`); }
     currentPage = 1; updatePillActive(type); renderTable();
 }
 
@@ -1001,7 +1013,7 @@ function renderTable() {
             totalAllMatched++; 
             p.children.forEach(c => { totalAllMatched++; totalChildrenMatched++; }); 
         });
-        document.getElementById('pagination-info').innerHTML = totalMainItems > 0 ? `共 <strong>${totalAllMatched}</strong> 間實習機構（包含 ${totalChildrenMatched} 間分支機構），顯示第 ${start + 1}–${Math.min(start + itemsPerPage, totalMainItems)} 間` : `共 <strong>0</strong> 間實習機構`;
+        document.getElementById('pagination-info').innerHTML = totalMainItems > 0 ? `共 <strong>${totalAllMatched}</strong> 間實習機構（包含 ${totalChildrenMatched} 間分支機構），顯示第 ${start + 1}–${Math.min(start + itemsPerPage, totalMainItems)} 間主機構` : `共 <strong>0</strong> 間實習機構`;
     } else {
         document.getElementById('pagination-info').innerHTML = totalMainItems > 0 ? `共 <strong>${totalMainItems}</strong> 間實習機構，顯示第 ${start + 1}–${Math.min(start + itemsPerPage, totalMainItems)} 間` : `共 <strong>0</strong> 間實習機構`;
     }
@@ -1034,7 +1046,10 @@ function renderTable() {
         let dispTax = '-';
         if (isDomestic && data.tax_id) dispTax = highlightKeyword(data.tax_id, searchTerm);
         
-        const toggleHtml = hasChildren ? `<button class="tree-toggle ${isExpanded ? 'expanded' : ''}"><i class="ti ti-chevron-right"></i></button>` : `<span style="display:inline-block; width:22px; margin-right:8px; flex-shrink:0;"></span>`;
+        // 確保沒有子機構的母機構依然有 22px 佔位，對齊文字
+        const toggleHtml = hasChildren 
+            ? `<button class="tree-toggle ${isExpanded ? 'expanded' : ''}"><i class="ti ti-chevron-right"></i></button>` 
+            : `<span style="display:inline-block; width:22px; margin-right:8px; flex-shrink:0;"></span>`;
         
         let childCountHtml = '';
         if (hasChildren && !isExpanded && data.children) {
@@ -1055,7 +1070,7 @@ function renderTable() {
                     <input type="checkbox" value="${data.id}" class="row-select-chk" ${isChecked} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                 </div>
             </td>
-            <td style="text-align: left; padding-left: 16px;">${nameHtml}</td>
+            <td class="col-name">${nameHtml}</td>
             <td class="col-tax_id" style="text-align: center;"><div class="cell-primary" style="color: var(--text-muted); font-family: inherit;">${dispTax}</div></td>
             <td class="col-industry" style="text-align: center;"><div class="cell-primary">${data.industry || '-'}</div></td>
             <td class="col-venue_type" style="text-align: center;"><div class="cell-primary">${data.venue_type || '-'}</div></td>
