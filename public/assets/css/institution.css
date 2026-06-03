@@ -162,7 +162,7 @@ th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand
 .intent-radio-input { appearance: none; width: 16px; height: 16px; border: 2px solid #cbd5e1; border-radius: 50%; margin-right: 12px; position: relative; top: 2px; outline: none; cursor: pointer; transition: all 0.2s; background: white; flex-shrink: 0; }
 .intent-radio-input:checked { border-color: var(--brand); background-color: var(--brand); box-shadow: inset 0 0 0 3px #f0f4ff; }
 
-/* ✨ 修正：合併選項無邊框圓點風格 */
+/* 合併選項無邊框圓點風格 */
 .merge-option { display: flex; align-items: flex-start; margin-bottom: 16px; cursor: pointer; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: white; transition: 0.2s; }
 .merge-option:hover { border-color: var(--brand); background: #f8fafc; }
 .merge-option:has(input:radio:checked) { border-color: var(--brand); background: #f0f4ff; box-shadow: 0 0 0 1px var(--brand); }
@@ -202,4 +202,23 @@ th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand
     .dialog-body-container { flex-direction: column !important; gap: 16px !important; height: auto !important; min-height: 0 !important; }
     .dialog-body-container > div { width: 100% !important; margin: 0 !important; padding: 0 !important; }
     .v-divider-modal { display: block !important; width: 100% !important; height: 1px !important; min-height: 1px !important; background-color: var(--border) !important; margin: 8px 0 !important; flex-shrink: 0 !important; }
+
+    /* =========================================
+       1. 機構詳細資料 Modal (#data-form) 手機版單欄化
+       ========================================= */
+    #data-form { flex-direction: column !important; padding: 16px !important; gap: 16px !important; }
+    #data-form > div { width: 100% !important; flex: none !important; }
+
+    /* =========================================
+       2. 歷史軌跡頁面 (#tab-history) 手機版優化
+       ========================================= */
+    #tab-history { padding: 16px !important; }
+    .history-header { flex-direction: column !important; align-items: flex-start !important; gap: 12px !important; }
+    .history-header p { padding-right: 0 !important; line-height: 1.5 !important; }
+    #btn-show-add-history { width: 100% !important; justify-content: center !important; }
+
+    /* =========================================
+       3. 統一縮小其他單欄小彈窗
+       ========================================= */
+    .dialog-body { padding: 16px !important; }
 }
