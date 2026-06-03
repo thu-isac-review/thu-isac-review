@@ -149,12 +149,12 @@ function injectUI(container) {
             tr.selected { background-color: #eef2ff !important; }
 
             /* ✨ 左側凍結區：z-index 降級為 1 與 2 */
-            .col-checkbox { position: sticky; left: 0; width: 48px; min-width: 48px; max-width: 48px; text-align: center; z-index: 1; background-color: inherit; }
-            th.col-checkbox { z-index: 2; background-color: var(--surface); }
-
-            .col-name { min-width: 250px; }
-            th.col-name { text-align: center; z-index: 1; } 
-
+            .col-checkbox { position: sticky; left: 0; width: 48px; min-width: 48px; max-width: 48px; text-align: center; z-index: 3; background-color: inherit; }
+            th.col-checkbox { z-index: 4; background-color: var(--surface); }
+            
+            .col-name { min-width: 250px; } /* 縮減寬度以釋放空間給操作按鈕 */
+            th.col-name { text-align: center; z-index: 15; }
+            
             .col-actions { width: 100px; min-width: 100px; max-width: 100px; text-align: center; }
             th.col-actions { z-index: 1; }
             
@@ -241,7 +241,6 @@ function injectUI(container) {
             
             /* UI 統一修復類別 */
             .flex-center { display: flex; align-items: center; justify-content: center; }
-            .hidden { display: none !important; }
         </style>
 
         <div class="toolbar">
