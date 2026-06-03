@@ -4,8 +4,10 @@ import * as Render from './render.js';
 import * as Data from './data.js';
 
 export function bindEvents(container) {
+    if (!container) return;
+
     // ---------------- 1. 頂部工具列事件 ----------------
-    container.querySelector('#btn-export-csv').addEventListener('click', () => {
+    container.querySelector('#btn-export-csv')?.addEventListener('click', () => {
         if (state.filteredInstitutions.length === 0) { alert("沒有資料可供匯出！"); return; }
         let csv = '\uFEFF實習機構主名稱,隸屬主機構,統一編號,海外稅號,行業別,實習場所,實習場所國別,縣市別,實習場所地址,備註\n';
         
@@ -23,9 +25,9 @@ export function bindEvents(container) {
         link.download = `實習機構清單_${new Date().toISOString().split('T')[0]}.csv`; link.click();
     });
     
-    container.querySelector('#btn-import-trigger').addEventListener('click', () => container.querySelector('#import-file').click());
+    container.querySelector('#btn-import-trigger')?.addEventListener('click', () => container.querySelector('#import-file')?.click());
     
-    container.querySelector('#import-file').addEventListener('change', async (e) => {
+    container.querySelector('#import-file')?.addEventListener('change', async (e) => {
         const file = e.target.files[0]; if (!file) return;
         const btn = document.getElementById('btn-import-trigger');
         const originalHtml = btn.innerHTML;
@@ -65,22 +67,23 @@ export function bindEvents(container) {
         reader.readAsText(file);
     });
 
-    container.querySelector('#btn-create-inst').addEventListener('click', () => {
+    container.querySelector('#btn-create-inst')?.addEventListener('click', () => {
         state.editingId = null; state.editingOldData = null; state.currentHistory = [];
-        document.getElementById('data-form').reset();
-        document.getElementById('input-parent-id').value = '';
-        document.getElementById('parent-search-input').value = '';
-        document.getElementById('btn-clear-parent').style.display = 'none';
-        document.getElementById('modal-tabs').style.display = 'none';
-        document.getElementById('tab-btn-main').click();
+        document.getElementById('data-form')?.reset();
+        if(document.getElementById('input-parent-id')) document.getElementById('input-parent-id').value = '';
+        if(document.getElementById('parent-search-input')) document.getElementById('parent-search-input').value = '';
+        if(document.getElementById('btn-clear-parent')) document.getElementById('btn-clear-parent').style.display = 'none';
+        if(document.getElementById('modal-tabs')) document.getElementById('modal-tabs').style.display = 'none';
+        document.getElementById('tab-btn-main')?.click();
         
         UI.populateParentDropdown();
         UI.handleCountryChange();
-        document.getElementById('modal-title').innerHTML = '<i class="ti ti-building-skyscraper text-brand" style="font-size: 20px;"></i> 新增實習機構';
-        document.getElementById('data-modal').classList.add('open');
+        const mt = document.getElementById('modal-title');
+        if(mt) mt.innerHTML = '<i class="ti ti-building-skyscraper text-brand" style="font-size: 20px;"></i> 新增實習機構';
+        document.getElementById('data-modal')?.classList.add('open');
     });
     
-    container.querySelector('#search-input').addEventListener('input', () => { 
+    container.querySelector('#search-input')?.addEventListener('input', () => { 
         clearTimeout(state.searchDebounceTimer);
         state.searchDebounceTimer = setTimeout(() => {
             state.currentPage = 1; state.isSearchAutoExpand = true; Render.renderTable(); 
@@ -89,9 +92,9 @@ export function bindEvents(container) {
 
     // ---------------- 2. 篩選器事件 ----------------
     ['country', 'city', 'industry', 'venue'].forEach(type => {
-        container.querySelector(`#pill-${type}`).addEventListener('click', (e) => { e.stopPropagation(); UI.toggleDropdown(type); });
-        container.querySelector(`#search-${type}-input`).addEventListener('keyup', (e) => UI.filterDropdownItems(e.target, `${type}-options-container`));
-        container.querySelector(`#${type}-options-container`).addEventListener('change', (e) => { 
+        container.querySelector(`#pill-${type}`)?.addEventListener('click', (e) => { e.stopPropagation(); UI.toggleDropdown(type); });
+        container.querySelector(`#search-${type}-input`)?.addEventListener('keyup', (e) => UI.filterDropdownItems(e.target, `${type}-options-container`));
+        container.querySelector(`#${type}-options-container`)?.addEventListener('change', (e) => { 
             if(e.target.type === 'checkbox') {
                 let set = type === 'country' ? state.filterCountrySet : (type === 'city' ? state.filterCitySet : (type === 'industry' ? state.filterIndustrySet : state.filterVenueSet));
                 if (set.has(e.target.value)) set.delete(e.target.value); else set.add(e.target.value);
@@ -122,32 +125,32 @@ export function bindEvents(container) {
     // ---------------- 3. 表格顯示設定與全域關閉 ----------------
     const btnDisplaySettings = container.querySelector('#btn-display-settings');
     const displayMenu = container.querySelector('#display-settings-menu');
-    btnDisplaySettings.addEventListener('click', (e) => {
+    btnDisplaySettings?.addEventListener('click', (e) => {
         e.stopPropagation();
-        displayMenu.style.display = displayMenu.style.display === 'block' ? 'none' : 'block';
+        if(displayMenu) displayMenu.style.display = displayMenu.style.display === 'block' ? 'none' : 'block';
     });
-    displayMenu.addEventListener('click', (e) => { e.stopPropagation(); });
+    displayMenu?.addEventListener('click', (e) => { e.stopPropagation(); });
 
-    container.querySelector('#btn-toggle-tree').addEventListener('click', (e) => {
+    container.querySelector('#btn-toggle-tree')?.addEventListener('click', (e) => {
         e.stopPropagation();
         state.isTreeMode = !state.isTreeMode;
         const btn = container.querySelector('#btn-toggle-tree');
-        btn.innerHTML = state.isTreeMode 
+        if(btn) btn.innerHTML = state.isTreeMode 
             ? `<i class="ti ti-list-tree" style="color:var(--brand); margin-right:4px;"></i> <span>切換為扁平列表</span>` 
             : `<i class="ti ti-list" style="color:var(--brand); margin-right:4px;"></i> <span>切換為樹狀檢視</span>`;
         Render.renderTable();
     });
 
-    container.querySelector('#btn-toggle-expand').addEventListener('click', (e) => {
+    container.querySelector('#btn-toggle-expand')?.addEventListener('click', (e) => {
         e.stopPropagation();
         state.isAllExpanded = !state.isAllExpanded;
         const btn = container.querySelector('#btn-toggle-expand');
         if (state.isAllExpanded) {
             state.allData.forEach(d => { if (!d.parent_id) state.expandedParents.add(d.id); });
-            btn.innerHTML = `<i class="ti ti-arrows-minimize" style="color:var(--brand); margin-right:4px;"></i> <span>收合所有分支</span>`;
+            if(btn) btn.innerHTML = `<i class="ti ti-arrows-minimize" style="color:var(--brand); margin-right:4px;"></i> <span>收合所有分支</span>`;
         } else {
             state.expandedParents.clear();
-            btn.innerHTML = `<i class="ti ti-arrows-maximize" style="color:var(--brand); margin-right:4px;"></i> <span>展開所有分支</span>`;
+            if(btn) btn.innerHTML = `<i class="ti ti-arrows-maximize" style="color:var(--brand); margin-right:4px;"></i> <span>展開所有分支</span>`;
         }
         Render.renderTable();
     });
@@ -173,15 +176,16 @@ export function bindEvents(container) {
                     if(btnClearParent) btnClearParent.style.display = 'none';
                 }
             }
-            if (displayMenu && !e.target.closest('#display-settings-wrap')) {
-                displayMenu.style.display = 'none';
+            const dm = document.getElementById('display-settings-menu');
+            if (dm && !e.target.closest('#display-settings-wrap')) {
+                dm.style.display = 'none';
             }
         });
         state.isGlobalListenerBound = true;
     }
 
-    // ---------------- 4. 批次操作列事件 (修正確認視窗與重載) ----------------
-    container.querySelector('#selectAll').addEventListener('change', (e) => {
+    // ---------------- 4. 批次操作列事件 ----------------
+    container.querySelector('#selectAll')?.addEventListener('change', (e) => {
         const isChecked = e.target.checked;
         const visibleIds = [];
         document.querySelectorAll('#table-body tr').forEach(tr => {
@@ -198,7 +202,7 @@ export function bindEvents(container) {
         UI.updateBatchActionBar(); Render.renderTable(); 
     });
 
-    container.querySelector('#btn-select-all-filtered').addEventListener('click', () => {
+    container.querySelector('#btn-select-all-filtered')?.addEventListener('click', () => {
         state.selectedIds = [];
         state.filteredInstitutions.forEach(p => {
             state.selectedIds.push(p.id);
@@ -207,11 +211,11 @@ export function bindEvents(container) {
         UI.updateBatchActionBar(); Render.renderTable();
     });
 
-    container.querySelector('#btn-clear-selection').addEventListener('click', () => {
+    container.querySelector('#btn-clear-selection')?.addEventListener('click', () => {
         state.selectedIds = []; UI.updateBatchActionBar(); Render.renderTable();
     });
 
-    container.querySelector('#btn-batch-delete').addEventListener('click', async () => {
+    container.querySelector('#btn-batch-delete')?.addEventListener('click', async () => {
         const hasChildren = state.selectedIds.some(id => state.allData.some(d => d.parent_id === id && !state.selectedIds.includes(d.id)));
         if (hasChildren) {
             alert("⚠️ 批次刪除失敗！\n您選取的項目中包含「尚有綁定分公司的主機構」。\n請取消勾選主機構，或連同其分公司一併勾選刪除。");
@@ -226,30 +230,29 @@ export function bindEvents(container) {
 
         try {
             await Data.batchDelete();
-            await Data.fetchInitialDataOnce(); // 刪除後重抓資料
-            UI.updateBatchActionBar(); UI.buildBaseTree(); Render.renderTable(); // 重繪畫面
+            await Data.fetchInitialDataOnce(); 
+            UI.updateBatchActionBar(); UI.buildBaseTree(); Render.renderTable(); 
         } catch (e) {
             alert("刪除失敗");
         } finally {
-            btn.innerHTML = originalHtml;
-            btn.disabled = false;
+            if(btn) { btn.innerHTML = originalHtml; btn.disabled = false; }
         }
     });
 
-    container.querySelector('#btn-batch-edit').addEventListener('click', () => {
+    container.querySelector('#btn-batch-edit')?.addEventListener('click', () => {
         if (state.selectedIds.length === 0) return;
         document.getElementById('batch-edit-count').innerText = state.selectedIds.length;
         document.getElementById('batch-input-industry').value = 'NO_CHANGE';
         document.getElementById('batch-input-venue').value = 'NO_CHANGE';
-        document.getElementById('batch-edit-modal').classList.add('open');
+        document.getElementById('batch-edit-modal')?.classList.add('open');
     });
 
-    container.querySelector('#btn-batch-merge').addEventListener('click', () => {
+    container.querySelector('#btn-batch-merge')?.addEventListener('click', () => {
         if(state.selectedIds.length < 2) { alert("請至少勾選 2 個機構進行合併！"); return; }
         document.getElementById('merge-count').innerText = state.selectedIds.length;
         const mc = document.getElementById('merge-options-container');
         const targetInsts = state.allData.filter(i => state.selectedIds.includes(i.id));
-        mc.innerHTML = targetInsts.map(inst => `
+        if(mc) mc.innerHTML = targetInsts.map(inst => `
             <label class="merge-option">
                 <input type="radio" name="master_inst" value="${inst.id}">
                 <div class="merge-option-content">
@@ -258,22 +261,22 @@ export function bindEvents(container) {
                 </div>
             </label>
         `).join('');
-        document.getElementById('merge-modal').classList.add('open');
+        document.getElementById('merge-modal')?.classList.add('open');
     });
 
     // ---------------- 5. 分頁與排序 ----------------
-    container.querySelector('#per-page-select').addEventListener('change', (e) => { 
+    container.querySelector('#per-page-select')?.addEventListener('change', (e) => { 
         state.itemsPerPage = Number(e.target.value); state.currentPage = 1; Render.renderTable(); 
     });
     
-    container.querySelector('#pagination-controls').addEventListener('click', (e) => {
+    container.querySelector('#pagination-controls')?.addEventListener('click', (e) => {
         const btn = e.target.closest('.page-btn');
         if (!btn || btn.disabled || btn.classList.contains('active')) return;
         const p = Number(btn.dataset.page);
         if (p) { state.currentPage = p; Render.renderTable(); }
     });
     
-    container.querySelector('#institution-page-wrapper #inst-table-head').addEventListener('click', (e) => {
+    container.querySelector('#institution-page-wrapper #inst-table-head')?.addEventListener('click', (e) => {
         const th = e.target.closest('th[data-sort]');
         if (th) {
             const col = th.dataset.sort;
@@ -282,19 +285,21 @@ export function bindEvents(container) {
             
             document.querySelectorAll('th[data-sort]').forEach(t => {
                 t.classList.remove('sort-asc', 'sort-desc');
-                t.querySelector('.sort-icon').className = 'ti ti-arrows-sort sort-icon';
+                const icon = t.querySelector('.sort-icon');
+                if(icon) icon.className = 'ti ti-arrows-sort sort-icon';
             });
             
             th.classList.add(state.sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
-            th.querySelector('.sort-icon').className = `ti ti-sort-${state.sortDir === 'asc' ? 'ascending' : 'descending'} sort-icon`;
+            const thIcon = th.querySelector('.sort-icon');
+            if(thIcon) thIcon.className = `ti ti-sort-${state.sortDir === 'asc' ? 'ascending' : 'descending'} sort-icon`;
             Render.renderTable();
         }
     });
 
     // ---------------- 6. 表單與隸屬機構下拉搜尋 ----------------
-    container.querySelector('#input-country').addEventListener('change', UI.handleCountryChange);
-    container.querySelector('#btn-close-modal-x').addEventListener('click', UI.closeModal);
-    container.querySelector('#btn-cancel-modal').addEventListener('click', UI.closeModal);
+    container.querySelector('#input-country')?.addEventListener('change', UI.handleCountryChange);
+    container.querySelector('#btn-close-modal-x')?.addEventListener('click', UI.closeModal);
+    container.querySelector('#btn-cancel-modal')?.addEventListener('click', UI.closeModal);
 
     const parentSearchInput = container.querySelector('#parent-search-input');
     const parentDropdown = container.querySelector('#parent-dropdown-list');
@@ -302,57 +307,61 @@ export function bindEvents(container) {
     const btnClearParent = container.querySelector('#btn-clear-parent');
 
     const updateParentClearBtn = () => {
-        if (parentSearchInput.value) {
+        if (parentSearchInput && parentSearchInput.value && btnClearParent) {
             btnClearParent.style.display = 'flex';
-            btnClearParent.addEventListener('mouseover', () => btnClearParent.style.color = 'var(--danger)');
-            btnClearParent.addEventListener('mouseout', () => btnClearParent.style.color = 'var(--text-muted)');
-        } else {
+        } else if(btnClearParent) {
             btnClearParent.style.display = 'none';
         }
     };
 
-    parentSearchInput.addEventListener('focus', () => {
-        parentDropdown.classList.add('show');
-        parentDropdown.querySelectorAll('.searchable-option').forEach(o => o.style.display = 'flex');
+    parentSearchInput?.addEventListener('focus', () => {
+        parentDropdown?.classList.add('show');
+        parentDropdown?.querySelectorAll('.searchable-option').forEach(o => o.style.display = 'flex');
     });
-    parentSearchInput.addEventListener('input', (e) => {
+    parentSearchInput?.addEventListener('input', (e) => {
         const term = e.target.value.toLowerCase();
-        parentIdHidden.value = ''; updateParentClearBtn();
-        parentDropdown.classList.add('show');
-        parentDropdown.querySelectorAll('.searchable-option:not(.empty-opt)').forEach(opt => {
+        if(parentIdHidden) parentIdHidden.value = ''; 
+        updateParentClearBtn();
+        parentDropdown?.classList.add('show');
+        parentDropdown?.querySelectorAll('.searchable-option:not(.empty-opt)').forEach(opt => {
             opt.style.display = opt.textContent.toLowerCase().includes(term) ? 'flex' : 'none';
         });
     });
-    btnClearParent.addEventListener('click', (e) => {
+    btnClearParent?.addEventListener('click', (e) => {
         e.stopPropagation();
-        parentSearchInput.value = ''; parentIdHidden.value = ''; updateParentClearBtn();
-        parentDropdown.classList.remove('show');
+        if(parentSearchInput) parentSearchInput.value = ''; 
+        if(parentIdHidden) parentIdHidden.value = ''; 
+        updateParentClearBtn();
+        parentDropdown?.classList.remove('show');
     });
-    parentDropdown.addEventListener('click', (e) => {
+    parentDropdown?.addEventListener('click', (e) => {
         const opt = e.target.closest('.searchable-option');
         if (opt && !opt.classList.contains('empty-opt')) {
-            parentIdHidden.value = opt.dataset.id || ''; parentSearchInput.value = opt.dataset.name || '';
+            if(parentIdHidden) parentIdHidden.value = opt.dataset.id || ''; 
+            if(parentSearchInput) parentSearchInput.value = opt.dataset.name || '';
             updateParentClearBtn(); parentDropdown.classList.remove('show');
         } else if (opt && opt.classList.contains('empty-opt')) {
-            parentIdHidden.value = ''; parentSearchInput.value = '';
+            if(parentIdHidden) parentIdHidden.value = ''; 
+            if(parentSearchInput) parentSearchInput.value = '';
             updateParentClearBtn(); parentDropdown.classList.remove('show');
         }
     });
 
-    // ---------------- 7. 表單送出與儲存判斷 (修正重載邏輯) ----------------
-    container.querySelector('#btn-submit').addEventListener('click', async () => {
+    // ---------------- 7. 表單送出與儲存判斷 ----------------
+    container.querySelector('#btn-submit')?.addEventListener('click', async () => {
         const isDomestic = document.getElementById('input-country').value === '中華民國';
         const payload = { 
-            parent_id: document.getElementById('input-parent-id').value || '',
-            country: document.getElementById('input-country').value,
-            name: document.getElementById('input-name').value.trim(),
-            tax_id: isDomestic ? document.getElementById('input-tax-id').value.trim() : '',
-            overseas_tax_id: isDomestic ? '' : document.getElementById('input-overseas-tax-id').value.trim(),
-            city: isDomestic ? document.getElementById('input-city').value : '',
-            industry: document.getElementById('input-industry').value,
-            venue_type: document.getElementById('input-venue-type').value,
-            address: document.getElementById('input-address').value.trim(),
-            remarks: document.getElementById('input-remarks').value.trim(),
+            parent_id: document.getElementById('input-parent-id')?.value || '',
+            country: document.getElementById('input-country')?.value || '',
+            name: document.getElementById('input-name')?.value.trim() || '',
+            name_translated: isDomestic ? '' : document.getElementById('input-name-translated')?.value.trim() || '',
+            tax_id: isDomestic ? document.getElementById('input-tax-id')?.value.trim() || '' : '',
+            overseas_tax_id: isDomestic ? '' : document.getElementById('input-overseas-tax-id')?.value.trim() || '',
+            city: isDomestic ? document.getElementById('input-city')?.value || '' : '',
+            industry: document.getElementById('input-industry')?.value || '',
+            venue_type: document.getElementById('input-venue-type')?.value || '',
+            address: document.getElementById('input-address')?.value.trim() || '',
+            remarks: document.getElementById('input-remarks')?.value.trim() || '',
             history: state.currentHistory 
         };
 
@@ -373,11 +382,12 @@ export function bindEvents(container) {
 
         if (hasSignificantChange) {
             state.pendingPayload = payload;
-            document.getElementById('intent-end-date').value = Utils.getROCDateString(); 
-            document.getElementById('intent-reason').value = '';
-            document.getElementById('intent-history-fields').classList.add('hidden');
-            document.querySelector('input[name="change_intent"][value="typo"]').checked = true;
-            document.getElementById('change-intent-modal').classList.add('open');
+            if(document.getElementById('intent-end-date')) document.getElementById('intent-end-date').value = Utils.getROCDateString(); 
+            if(document.getElementById('intent-reason')) document.getElementById('intent-reason').value = '';
+            document.getElementById('intent-history-fields')?.classList.add('hidden');
+            const typRadio = document.querySelector('input[name="change_intent"][value="typo"]');
+            if(typRadio) typRadio.checked = true;
+            document.getElementById('change-intent-modal')?.classList.add('open');
             return; 
         }
 
@@ -387,29 +397,29 @@ export function bindEvents(container) {
     const executeSaveAction = async (payload, isTypo) => {
         const btn = document.getElementById('btn-submit');
         const intentBtn = document.getElementById('btn-confirm-intent');
-        btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 儲存中...';
-        intentBtn.disabled = true; intentBtn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 儲存中...';
+        if(btn) { btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 儲存中...'; }
+        if(intentBtn) { intentBtn.disabled = true; intentBtn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 儲存中...'; }
 
         try {
             await Data.executeSave(payload, isTypo);
-            UI.closeModal(); // 關閉主表單
-            await Data.fetchInitialDataOnce(); // 重新拉取新資料
-            UI.updateBatchActionBar(); UI.buildBaseTree(); Render.renderTable(); // 重新渲染畫面
+            UI.closeModal(); 
+            await Data.fetchInitialDataOnce(); 
+            UI.updateBatchActionBar(); UI.buildBaseTree(); Render.renderTable(); 
         } catch (err) {
             alert("儲存失敗");
             console.error(err);
         } finally {
-            btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> 確認儲存變更';
-            intentBtn.disabled = false; intentBtn.innerHTML = '<i class="ti ti-check"></i> 確認執行儲存';
+            if(btn) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> 確認儲存變更'; }
+            if(intentBtn) { intentBtn.disabled = false; intentBtn.innerHTML = '<i class="ti ti-check"></i> 確認執行儲存'; }
         }
     };
 
-    // ---------------- 8. 批次編輯與合併 Modal (修正關閉與重載邏輯) ----------------
-    const closeBatchEdit = () => document.getElementById('batch-edit-modal').classList.remove('open');
-    container.querySelector('#btn-close-batch-x').addEventListener('click', closeBatchEdit);
-    container.querySelector('#btn-cancel-batch').addEventListener('click', closeBatchEdit);
+    // ---------------- 8. 批次編輯與合併 Modal ----------------
+    const closeBatchEdit = () => document.getElementById('batch-edit-modal')?.classList.remove('open');
+    container.querySelector('#btn-close-batch-x')?.addEventListener('click', closeBatchEdit);
+    container.querySelector('#btn-cancel-batch')?.addEventListener('click', closeBatchEdit);
     
-    container.querySelector('#btn-batch-edit-submit').addEventListener('click', async () => {
+    container.querySelector('#btn-batch-edit-submit')?.addEventListener('click', async () => {
         const indVal = document.getElementById('batch-input-industry').value;
         const venVal = document.getElementById('batch-input-venue').value;
         if (!confirm(`確定要批次修改這 ${state.selectedIds.length} 筆機構嗎？`)) return;
@@ -422,24 +432,26 @@ export function bindEvents(container) {
         try {
             await Data.executeBatchEdit(indVal, venVal);
             closeBatchEdit();
-            await Data.fetchInitialDataOnce(); // 更新後重載資料
+            await Data.fetchInitialDataOnce(); 
             UI.updateBatchActionBar(); UI.buildBaseTree(); Render.renderTable();
         } catch(e) {
             alert("更新失敗");
         } finally {
-            btn.innerHTML = originalHtml;
-            btn.disabled = false;
+            if(btn) { btn.innerHTML = originalHtml; btn.disabled = false; }
         }
     });
 
-    const closeMerge = () => document.getElementById('merge-modal').classList.remove('open');
-    container.querySelector('#btn-close-merge-x').addEventListener('click', closeMerge);
-    container.querySelector('#btn-cancel-merge').addEventListener('click', closeMerge);
-    container.querySelector('#merge-options-container').addEventListener('change', (e) => {
-        if(e.target.name === 'master_inst') document.getElementById('btn-merge-submit').disabled = false;
+    const closeMerge = () => document.getElementById('merge-modal')?.classList.remove('open');
+    container.querySelector('#btn-close-merge-x')?.addEventListener('click', closeMerge);
+    container.querySelector('#btn-cancel-merge')?.addEventListener('click', closeMerge);
+    container.querySelector('#merge-options-container')?.addEventListener('change', (e) => {
+        if(e.target.name === 'master_inst') {
+            const ms = document.getElementById('btn-merge-submit');
+            if(ms) ms.disabled = false;
+        }
     });
     
-    container.querySelector('#btn-merge-submit').addEventListener('click', async () => {
+    container.querySelector('#btn-merge-submit')?.addEventListener('click', async () => {
         const masterId = document.querySelector('input[name="master_inst"]:checked')?.value; if(!masterId) return;
         const masterInst = state.allData.find(i => i.id === masterId);
         const instsToDelete = state.selectedIds.filter(id => id !== masterId);
@@ -455,18 +467,17 @@ export function bindEvents(container) {
         try {
             await Data.executeMerge(masterId, masterInst.name, instsToDelete, deletedNames);
             closeMerge();
-            await Data.fetchInitialDataOnce(); // 合併後重載資料
+            await Data.fetchInitialDataOnce(); 
             UI.updateBatchActionBar(); UI.buildBaseTree(); Render.renderTable();
         } catch(e) {
             alert("合併失敗");
         } finally {
-            btn.innerHTML = originalHtml;
-            btn.disabled = false;
+            if(btn) { btn.innerHTML = originalHtml; btn.disabled = false; }
         }
     });
 
-    // ---------------- 9. 表格內行操作 (修正單筆刪除與對話框) ----------------
-    container.querySelector('#table-body').addEventListener('click', async (e) => {
+    // ---------------- 9. 表格內行操作 ----------------
+    container.querySelector('#table-body')?.addEventListener('click', async (e) => {
         const rowChk = e.target.closest('.row-select-chk');
         const btnEdit = e.target.closest('.btn-row-edit');
         const btnDel = e.target.closest('.btn-row-delete');
@@ -497,34 +508,35 @@ export function bindEvents(container) {
             state.editingOldData = { ...docData }; 
             state.currentHistory = docData.history || [];
             
-            document.getElementById('modal-tabs').style.display = 'block';
-            document.getElementById('tab-btn-main').click();
+            if(document.getElementById('modal-tabs')) document.getElementById('modal-tabs').style.display = 'block';
+            document.getElementById('tab-btn-main')?.click();
 
             UI.populateParentDropdown(id); 
-            document.getElementById('input-parent-id').value = docData.parent_id || '';
+            if(document.getElementById('input-parent-id')) document.getElementById('input-parent-id').value = docData.parent_id || '';
             if (docData.parent_id) {
                 const parentObj = state.allData.find(p => p.id === docData.parent_id);
-                document.getElementById('parent-search-input').value = parentObj ? parentObj.name : '';
-                document.getElementById('btn-clear-parent').style.display = 'flex';
+                if(document.getElementById('parent-search-input')) document.getElementById('parent-search-input').value = parentObj ? parentObj.name : '';
+                if(document.getElementById('btn-clear-parent')) document.getElementById('btn-clear-parent').style.display = 'flex';
             } else {
-                document.getElementById('parent-search-input').value = '';
-                document.getElementById('btn-clear-parent').style.display = 'none';
+                if(document.getElementById('parent-search-input')) document.getElementById('parent-search-input').value = '';
+                if(document.getElementById('btn-clear-parent')) document.getElementById('btn-clear-parent').style.display = 'none';
             }
             
-            document.getElementById('input-country').value = docData.country || '中華民國';
-            document.getElementById('input-name').value = docData.name || '';
-            document.getElementById('input-name-translated').value = docData.name_translated || '';
-            document.getElementById('input-tax-id').value = docData.tax_id || '';
-            document.getElementById('input-overseas-tax-id').value = docData.overseas_tax_id || '';
-            document.getElementById('input-city').value = docData.city || '';
-            document.getElementById('input-industry').value = docData.industry || '';
-            document.getElementById('input-venue-type').value = docData.venue_type || '';
-            document.getElementById('input-address').value = docData.address || '';
-            document.getElementById('input-remarks').value = docData.remarks || '';
+            if(document.getElementById('input-country')) document.getElementById('input-country').value = docData.country || '中華民國';
+            if(document.getElementById('input-name')) document.getElementById('input-name').value = docData.name || '';
+            if(document.getElementById('input-name-translated')) document.getElementById('input-name-translated').value = docData.name_translated || '';
+            if(document.getElementById('input-tax-id')) document.getElementById('input-tax-id').value = docData.tax_id || '';
+            if(document.getElementById('input-overseas-tax-id')) document.getElementById('input-overseas-tax-id').value = docData.overseas_tax_id || '';
+            if(document.getElementById('input-city')) document.getElementById('input-city').value = docData.city || '';
+            if(document.getElementById('input-industry')) document.getElementById('input-industry').value = docData.industry || '';
+            if(document.getElementById('input-venue-type')) document.getElementById('input-venue-type').value = docData.venue_type || '';
+            if(document.getElementById('input-address')) document.getElementById('input-address').value = docData.address || '';
+            if(document.getElementById('input-remarks')) document.getElementById('input-remarks').value = docData.remarks || '';
             
             UI.handleCountryChange(); 
-            document.getElementById('modal-title').innerHTML = '<i class="ti ti-edit text-brand" style="font-size: 20px;"></i> 編輯機構與歷史軌跡';
-            document.getElementById('data-modal').classList.add('open');
+            const mt = document.getElementById('modal-title');
+            if(mt) mt.innerHTML = '<i class="ti ti-edit text-brand" style="font-size: 20px;"></i> 編輯機構與歷史軌跡';
+            document.getElementById('data-modal')?.classList.add('open');
         }
         else if (btnDel) { 
             const id = btnDel.dataset.id;
@@ -541,7 +553,7 @@ export function bindEvents(container) {
                 btnDel.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i>';
                 try {
                     await Data.deleteData(id);
-                    await Data.fetchInitialDataOnce(); // 刪除後重抓資料
+                    await Data.fetchInitialDataOnce(); 
                     UI.updateBatchActionBar(); UI.buildBaseTree(); Render.renderTable();
                 } catch(e) {
                     alert("刪除失敗");
@@ -551,41 +563,43 @@ export function bindEvents(container) {
         }
     });
 
-    // ---------------- 10. 歷史快照相關 Modal (修正意圖儲存邏輯) ----------------
+    // ---------------- 10. 歷史快照相關 Modal ----------------
     const tabBtnMain = container.querySelector('#tab-btn-main');
     const tabBtnHistory = container.querySelector('#tab-btn-history');
     const tabMain = container.querySelector('#data-form');
     const tabHistory = container.querySelector('#tab-history');
 
-    tabBtnMain.addEventListener('click', () => {
-        tabBtnMain.style.borderColor = 'var(--brand)'; tabBtnMain.style.color = 'var(--brand)';
-        tabBtnHistory.style.borderColor = 'transparent'; tabBtnHistory.style.color = 'var(--text-muted)';
-        tabMain.style.display = 'flex'; tabHistory.style.display = 'none';
+    tabBtnMain?.addEventListener('click', () => {
+        if(tabBtnMain) { tabBtnMain.style.borderColor = 'var(--brand)'; tabBtnMain.style.color = 'var(--brand)'; }
+        if(tabBtnHistory) { tabBtnHistory.style.borderColor = 'transparent'; tabBtnHistory.style.color = 'var(--text-muted)'; }
+        if(tabMain) tabMain.style.display = 'flex'; 
+        if(tabHistory) tabHistory.style.display = 'none';
     });
 
-    tabBtnHistory.addEventListener('click', () => {
-        tabBtnHistory.style.borderColor = 'var(--brand)'; tabBtnHistory.style.color = 'var(--brand)';
-        tabBtnMain.style.borderColor = 'transparent'; tabBtnMain.style.color = 'var(--text-muted)';
-        tabHistory.style.display = 'block'; tabMain.style.display = 'none';
+    tabBtnHistory?.addEventListener('click', () => {
+        if(tabBtnHistory) { tabBtnHistory.style.borderColor = 'var(--brand)'; tabBtnHistory.style.color = 'var(--brand)'; }
+        if(tabBtnMain) { tabBtnMain.style.borderColor = 'transparent'; tabBtnMain.style.color = 'var(--text-muted)'; }
+        if(tabHistory) tabHistory.style.display = 'block'; 
+        if(tabMain) tabMain.style.display = 'none';
         Render.renderHistoryList();
     });
 
-    container.querySelector('#btn-show-add-history').addEventListener('click', () => {
-        document.getElementById('add-history-modal').classList.add('open');
-        document.getElementById('hist-end-date').value = Utils.getROCDateString(); 
-        document.getElementById('hist-name').value = document.getElementById('input-name').value;
-        document.getElementById('hist-address').value = document.getElementById('input-address').value;
-        const taxVal = document.getElementById('input-country').value === '中華民國' 
-            ? document.getElementById('input-tax-id').value 
-            : document.getElementById('input-overseas-tax-id').value;
-        document.getElementById('hist-tax-id').value = taxVal;
-        document.getElementById('hist-reason').value = '';
+    container.querySelector('#btn-show-add-history')?.addEventListener('click', () => {
+        document.getElementById('add-history-modal')?.classList.add('open');
+        if(document.getElementById('hist-end-date')) document.getElementById('hist-end-date').value = Utils.getROCDateString(); 
+        if(document.getElementById('hist-name')) document.getElementById('hist-name').value = document.getElementById('input-name')?.value || '';
+        if(document.getElementById('hist-address')) document.getElementById('hist-address').value = document.getElementById('input-address')?.value || '';
+        const taxVal = document.getElementById('input-country')?.value === '中華民國' 
+            ? document.getElementById('input-tax-id')?.value || ''
+            : document.getElementById('input-overseas-tax-id')?.value || '';
+        if(document.getElementById('hist-tax-id')) document.getElementById('hist-tax-id').value = taxVal;
+        if(document.getElementById('hist-reason')) document.getElementById('hist-reason').value = '';
     });
 
-    container.querySelector('#btn-close-add-hist-x').addEventListener('click', () => document.getElementById('add-history-modal').classList.remove('open'));
-    container.querySelector('#btn-cancel-add-hist').addEventListener('click', () => document.getElementById('add-history-modal').classList.remove('open'));
+    container.querySelector('#btn-close-add-hist-x')?.addEventListener('click', () => document.getElementById('add-history-modal')?.classList.remove('open'));
+    container.querySelector('#btn-cancel-add-hist')?.addEventListener('click', () => document.getElementById('add-history-modal')?.classList.remove('open'));
 
-    container.querySelector('#btn-save-history').addEventListener('click', () => {
+    container.querySelector('#btn-save-history')?.addEventListener('click', () => {
         let endDate = document.getElementById('hist-end-date').value.trim();
         endDate = Utils.formatROCDate(endDate);
         if(!Utils.isValidROCDate(endDate)) { alert('適用結束日期格式錯誤！請輸入 YYY/MM/DD (例如: 115/01/01)'); return; }
@@ -599,11 +613,11 @@ export function bindEvents(container) {
         if(!name || !address) { alert('請填寫歷史機構名稱與地址！'); return; }
 
         state.currentHistory.push({ end_date: endDate, name: name, address: address, tax_id: taxId, reason: reason, created_at: new Date().toISOString() });
-        document.getElementById('add-history-modal').classList.remove('open');
+        document.getElementById('add-history-modal')?.classList.remove('open');
         Render.renderHistoryList();
     });
 
-    container.querySelector('#tab-history').addEventListener('click', (e) => {
+    container.querySelector('#tab-history')?.addEventListener('click', (e) => {
         const btnDel = e.target.closest('.btn-del-history');
         if(btnDel && confirm('確定要刪除這筆歷史快照嗎？')) {
             const idx = Number(btnDel.dataset.idx);
@@ -612,22 +626,22 @@ export function bindEvents(container) {
         }
     });
 
-    const closeIntent = () => document.getElementById('change-intent-modal').classList.remove('open');
-    container.querySelector('#btn-close-intent-x').addEventListener('click', closeIntent);
-    container.querySelector('#btn-cancel-intent').addEventListener('click', closeIntent);
+    const closeIntent = () => document.getElementById('change-intent-modal')?.classList.remove('open');
+    container.querySelector('#btn-close-intent-x')?.addEventListener('click', closeIntent);
+    container.querySelector('#btn-cancel-intent')?.addEventListener('click', closeIntent);
     
     container.querySelectorAll('input[name="change_intent"]').forEach(r => {
         r.addEventListener('change', (e) => {
             if(e.target.value === 'history') {
-                document.getElementById('intent-history-fields').classList.remove('hidden');
-                document.getElementById('intent-end-date').value = Utils.getROCDateString(); 
+                document.getElementById('intent-history-fields')?.classList.remove('hidden');
+                if(document.getElementById('intent-end-date')) document.getElementById('intent-end-date').value = Utils.getROCDateString(); 
             } else {
-                document.getElementById('intent-history-fields').classList.add('hidden');
+                document.getElementById('intent-history-fields')?.classList.add('hidden');
             }
         });
     });
 
-    container.querySelector('#btn-confirm-intent').addEventListener('click', async () => {
+    container.querySelector('#btn-confirm-intent')?.addEventListener('click', async () => {
         const intent = document.querySelector('input[name="change_intent"]:checked').value;
         const isTypo = (intent === 'typo');
         
@@ -650,7 +664,7 @@ export function bindEvents(container) {
             });
         }
         
-        document.getElementById('change-intent-modal').classList.remove('open');
+        document.getElementById('change-intent-modal')?.classList.remove('open');
         await executeSaveAction(state.pendingPayload, isTypo); 
     });
 }
