@@ -6,6 +6,48 @@ import * as Data from './data.js';
 export function bindEvents(container) {
     if (!container) return;
 
+    // 🌟 [新增] 全域鍵盤快捷鍵綁定
+    if (!state.isKeyboardShortcutBound) {
+        document.addEventListener('keydown', (e) => {
+            // [快捷鍵: ESC] 關閉最上層彈窗
+            if (e.key === 'Escape') {
+                const openModals = document.querySelectorAll('.dialog-overlay.open');
+                if (openModals.length > 0) {
+                    openModals[openModals.length - 1].classList.remove('open');
+                }
+            }
+
+            // [快捷鍵: Ctrl + F 或 Cmd + F] 聚焦到搜尋框
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+                e.preventDefault();
+                const searchInput = document.getElementById('search-input');
+                if (searchInput) {
+                    searchInput.focus();
+                    searchInput.select();
+                }
+            }
+
+            // [快捷鍵: Ctrl + S 或 Cmd + S] 儲存當前開啟的彈窗表單
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+                if (state.isReadOnly) return; // 唯讀模式阻擋儲存
+                e.preventDefault();
+                
+                if (document.getElementById('change-intent-modal')?.classList.contains('open')) {
+                    document.getElementById('btn-confirm-intent')?.click();
+                } else if (document.getElementById('add-history-modal')?.classList.contains('open')) {
+                    document.getElementById('btn-save-history')?.click();
+                } else if (document.getElementById('batch-edit-modal')?.classList.contains('open')) {
+                    document.getElementById('btn-batch-edit-submit')?.click();
+                } else if (document.getElementById('merge-modal')?.classList.contains('open')) {
+                    document.getElementById('btn-merge-submit')?.click();
+                } else if (document.getElementById('data-modal')?.classList.contains('open')) {
+                    document.getElementById('btn-submit')?.click();
+                }
+            }
+        });
+        state.isKeyboardShortcutBound = true;
+    }
+
     // ---------------- 1. 頂部工具列事件 ----------------
     container.querySelector('#btn-export-csv')?.addEventListener('click', () => {
         if (state.filteredInstitutions.length === 0) { 
