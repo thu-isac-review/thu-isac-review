@@ -15,28 +15,31 @@ export async function render(containerId, context, options = { isReadOnly: false
     state.db = context.db;
     state.isReadOnly = options.isReadOnly;
     
-    // 2. 注入外部 HTML 模板
+    // 🌟 2. 每次切換進來時，強制重置所有欄位顯示設定 (勾選全開)
+    state.colVis = { tax_id: true, industry: true, venue_type: true, country: true, city: true, address: true };
+    
+    // 3. 注入外部 HTML 模板
     const container = document.getElementById(containerId);
     await UI.loadTemplate(containerId);
     
-    // 3. 狀態重置 (確保頁面切換時狀態乾淨)
+    // 4. 狀態重置 (確保頁面切換時狀態乾淨)
     state.selectedIds = []; 
     state.currentPage = 1; 
     state.expandedParents.clear(); 
     state.isAllExpanded = false;
     
-    // 4. UI 權限限制與事件綁定
+    // 5. UI 權限限制與事件綁定
     UI.applyReadOnlyMode(); // 如果是唯讀，直接把不需要的按鈕 CSS 設為隱藏
     UI.initSelectOptions(); 
     Events.bindEvents(container); 
     UI.updateColStyles(); 
     
-    // 5. 抓取資料並渲染
+    // 6. 抓取資料並渲染
     await Data.fetchInitialDataOnce();
     UI.updateBatchActionBar();
     UI.buildBaseTree();
     Render.renderTable();
     
-    // 6. 背景預載
+    // 7. 背景預載
     Data.handleInitialLoadEngine();
 }
