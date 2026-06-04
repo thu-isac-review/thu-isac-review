@@ -1097,21 +1097,9 @@ const Events = {
 // ==========================================
 // 7. 生命週期與初始化入口 (Main Entry)
 // ==========================================
+import { render as renderApp } from '../../components/InstitutionTable/main.js';
+
 export async function render(containerId, context) {
-    State.db = context.db;
-    const container = document.getElementById(containerId);
-    
-    // UI 建構
-    UI.inject(container); 
-    UI.initSelectOptions(); 
-    UI.updateColStyles();
-    
-    // 綁定事件
-    Events.bindGlobalEvents();
-    Events.bindToolbarEvents(container);
-    Events.bindFilterEvents(container);
-    Events.bindTableEvents(container);
-    
-    // 觸發載入資料
-    await API.fetchInitialDataOnce();
+    // 進入管理模式 (擁有完整權限，isReadOnly: false)
+    await renderApp(containerId, { ...context, isReadOnly: false });
 }
