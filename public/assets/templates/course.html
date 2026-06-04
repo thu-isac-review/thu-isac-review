@@ -27,8 +27,8 @@
   
   <!-- 批次操作工具列 (隱藏狀態) -->
   <div id="batch-bar">
-    <div class="batch-info">已選取 <span>0</span> 筆課程資料</div>
-    <button class="btn btn-danger-solid btn-sm"><i class="ti ti-trash"></i> 批次刪除</button>
+    <div class="batch-info" id="batch-info">已選取 <span id="batch-count">0</span> 筆課程資料</div>
+    <button class="btn btn-danger-solid btn-sm" id="btn-batch-delete"><i class="ti ti-trash"></i> 批次刪除</button>
     <div class="flex-spacer"></div>
     <button class="btn btn-secondary btn-sm" onclick="document.getElementById('batch-bar').classList.remove('visible')">取消</button>
   </div>
@@ -37,48 +37,50 @@
   <div class="toolbar">
     <div class="search-wrap">
       <i class="ti ti-search"></i>
-      <input type="text" class="search-input" placeholder="搜尋課程名稱、代碼...">
+      <input type="text" class="search-input" id="search-input" placeholder="搜尋課程名稱、代碼...">
     </div>
     <div class="flex-spacer"></div>
     
     <div class="toolbar-actions">
       <!-- 扁平化輕量全選按鈕 -->
-      <button class="btn btn-light-blue" title="全選此頁"><i class="ti ti-checkbox"></i> 全選</button>
+      <button class="btn btn-light-blue" id="btn-select-all-page" title="全選此頁"><i class="ti ti-checkbox"></i> 全選</button>
       <div class="v-divider"></div>
-      <button class="btn btn-secondary"><i class="ti ti-upload"></i> 匯入</button>
+      <button class="btn btn-secondary" id="btn-import"><i class="ti ti-upload"></i> 匯入</button>
       <!-- 扁平化主按鈕 -->
-      <button class="btn btn-primary"><i class="ti ti-plus"></i> 新增課程</button>
+      <button class="btn btn-primary" id="btn-add-course"><i class="ti ti-plus"></i> 新增課程</button>
     </div>
   </div>
 
   <!-- 篩選器 (支援手機橫向滑動) -->
   <div class="filter-row">
-    <div class="filters-scroll-area">
+    <div class="filters-scroll-area" id="filter-container">
       <!-- 狀態 Pill -->
       <div class="filter-pill-wrap">
-        <div class="filter-pill active">
-          全部課程 <span class="pill-count">120</span>
+        <div class="filter-pill active" data-status="all">
+          全部課程 <span class="pill-count" id="count-all">120</span>
         </div>
       </div>
       <div class="filter-pill-wrap">
-        <div class="filter-pill">
-          開課中 <span class="pill-count">85</span>
+        <div class="filter-pill" data-status="active">
+          開課中 <span class="pill-count" id="count-active">85</span>
         </div>
       </div>
 
       <!-- 可搜尋下拉選單 (Searchable Dropdown) 範例 -->
       <div class="searchable-select-wrap">
-        <div class="filter-pill">
+        <div class="filter-pill" id="department-filter-toggle">
           系所分類 <i class="ti ti-chevron-down"></i>
         </div>
         <!-- 點擊上方 Pill 後加上 show class 展開 -->
-        <div class="searchable-dropdown">
+        <div class="searchable-dropdown" id="department-dropdown">
           <div class="search-input-box">
-            <input type="text" placeholder="搜尋系所...">
+            <input type="text" id="department-search" placeholder="搜尋系所...">
           </div>
-          <div class="opt-item searchable-option">資訊工程學系</div>
-          <div class="opt-item searchable-option">企業管理學系</div>
-          <div class="opt-item searchable-option">外國語文學系</div>
+          <div id="department-list">
+            <div class="opt-item searchable-option">資訊工程學系</div>
+            <div class="opt-item searchable-option">企業管理學系</div>
+            <div class="opt-item searchable-option">外國語文學系</div>
+          </div>
         </div>
       </div>
     </div>
@@ -100,7 +102,8 @@
             <th class="col-actions">操作</th>
           </tr>
         </thead>
-        <tbody>
+        <!-- 加上 ID 讓 JS 能夠綁定與渲染 innerHTML -->
+        <tbody id="data-list">
           <tr>
             <!-- 凍結左側 -->
             <td class="col-checkbox"><input type="checkbox" class="row-check"></td>
@@ -140,27 +143,25 @@
       </table>
     </div>
 
-    <!-- 空狀態提示 (預設隱藏，若無資料可顯示此區塊) -->
-    <!-- 
-    <div class="empty-state">
+    <!-- 空狀態提示 (解開註解並給予 ID，避免 JS 找不到報錯，預設隱藏) -->
+    <div class="empty-state" id="empty-state" style="display: none;">
       <i class="ti ti-file-off empty-icon"></i>
-      <div class="empty-text">找不到相關課程</div>
-    </div> 
-    -->
+      <div class="empty-text" id="empty-text">找不到相關課程</div>
+    </div>
   </div>
 
   <!-- 分頁器 -->
-  <div class="pagination-bar">
-    <div class="pagination-info">
+  <div class="pagination-bar" id="pagination-bar">
+    <div class="pagination-info" id="pagination-info">
       顯示 <strong>1</strong> 到 <strong>2</strong> 筆，共 <strong>120</strong> 筆
     </div>
     <div class="pagination-bar-right">
-      <select class="per-page-select">
-        <option>10 筆/頁</option>
-        <option>20 筆/頁</option>
-        <option>50 筆/頁</option>
+      <select class="per-page-select" id="per-page-select">
+        <option value="10">10 筆/頁</option>
+        <option value="20">20 筆/頁</option>
+        <option value="50">50 筆/頁</option>
       </select>
-      <div class="pagination-controls">
+      <div class="pagination-controls" id="pagination-controls">
         <button class="page-btn" disabled><i class="ti ti-chevron-left"></i></button>
         <button class="page-btn active">1</button>
         <button class="page-btn">2</button>
@@ -177,56 +178,61 @@
 <div class="dialog-overlay" id="course-modal">
   <div class="dialog-box">
     <div class="dialog-header">
-      <h3><i class="ti ti-book"></i> 新增課程</h3>
+      <h3 id="modal-title"><i class="ti ti-book"></i> 新增課程</h3>
       <button class="dialog-close" onclick="document.getElementById('course-modal').classList.remove('open')">
         <i class="ti ti-x"></i>
       </button>
     </div>
-    <div class="dialog-body custom-scroll">
+    <div class="dialog-body custom-scroll" id="modal-body">
       <div class="form-section-title"><i class="ti ti-info-circle"></i> 課程基本資訊</div>
       <div class="form-grid">
         <div class="field">
           <label class="field-label">課程代碼 <span class="req">*</span></label>
-          <input type="text" class="field-input" placeholder="例如: CS101">
+          <input type="text" class="field-input" id="course-code" placeholder="例如: CS101">
         </div>
         <div class="field">
           <label class="field-label">課程名稱 <span class="req">*</span></label>
-          <input type="text" class="field-input" placeholder="輸入課程名稱">
+          <input type="text" class="field-input" id="course-name" placeholder="輸入課程名稱">
         </div>
         <div class="field">
           <label class="field-label">所屬系所 <span class="req">*</span></label>
-          <select class="field-select">
-            <option>請選擇系所</option>
-            <option>資訊工程學系</option>
-            <option>企業管理學系</option>
+          <select class="field-select" id="course-department">
+            <option value="">請選擇系所</option>
+            <option value="CS">資訊工程學系</option>
+            <option value="BA">企業管理學系</option>
           </select>
         </div>
         <div class="field">
           <label class="field-label">學分數 <span class="req">*</span></label>
-          <input type="number" class="field-input" placeholder="例如: 3">
+          <input type="number" class="field-input" id="course-credits" placeholder="例如: 3">
         </div>
       </div>
     </div>
     <div class="dialog-footer">
       <button class="btn btn-secondary" onclick="document.getElementById('course-modal').classList.remove('open')">取消</button>
-      <button class="btn btn-primary">儲存課程</button>
+      <button class="btn btn-primary" id="btn-save-course">儲存課程</button>
     </div>
   </div>
 </div>
 
 <script>
   // 簡易 Demo 腳本：開啟表單彈窗
-  document.querySelector('.btn-primary').addEventListener('click', () => {
-    document.getElementById('course-modal').classList.add('open');
-  });
+  const btnAddCourse = document.getElementById('btn-add-course');
+  if(btnAddCourse) {
+    btnAddCourse.addEventListener('click', () => {
+      document.getElementById('course-modal').classList.add('open');
+    });
+  }
 
   // 簡易 Demo 腳本：切換下拉選單顯示
   const searchableWrap = document.querySelector('.searchable-select-wrap');
-  searchableWrap.addEventListener('click', function(e) {
-    if(e.target.closest('.searchable-dropdown')) return; // 點擊內部不關閉
-    const dropdown = this.querySelector('.searchable-dropdown');
-    dropdown.classList.toggle('show');
-  });
+  if(searchableWrap) {
+    searchableWrap.addEventListener('click', function(e) {
+      if(e.target.closest('.searchable-dropdown')) return; // 點擊內部不關閉
+      const dropdown = this.querySelector('.searchable-dropdown');
+      if(dropdown) dropdown.classList.toggle('show');
+    });
+  }
 
   // 點擊外部關閉下拉選單
   document.addEventListener('click', function(e) {
