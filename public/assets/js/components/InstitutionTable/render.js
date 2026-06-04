@@ -96,9 +96,17 @@ export function renderTable() {
     const currentPaginatedIds = paginatedItems.map(d => d.id);
     document.getElementById('selectAll').checked = currentPaginatedIds.length > 0 && currentPaginatedIds.every(id => state.selectedIds.includes(id));
 
+    // 🌟 [修改] 空狀態處理：不再寫入 tbody，而是顯示/隱藏獨立的 empty-state-container
+    const emptyStateContainer = document.getElementById('empty-state-container');
     if (totalMainItems === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">找不到符合條件的機構資料。</div></td></tr>`;
+        tbody.innerHTML = ''; // 清空表格內容
+        if (emptyStateContainer) {
+            emptyStateContainer.style.display = 'flex';
+            emptyStateContainer.innerHTML = `<i class="ti ti-inbox empty-icon"></i><div class="empty-text">找不到符合條件的機構資料。</div>`;
+        }
         return;
+    } else {
+        if (emptyStateContainer) emptyStateContainer.style.display = 'none';
     }
 
     const renderRow = (data, isChild = false, parentId = null, isExpanded = false, hasChildren = false) => {
