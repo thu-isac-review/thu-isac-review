@@ -5,7 +5,7 @@
     <div class="toolbar">
         <div class="search-wrap">
             <i class="ti ti-search"></i>
-            <input type="text" id="search-input" placeholder="搜尋機構名稱、統編或地址..." class="search-input">
+            <input type="text" id="search-input" placeholder="搜尋機構名稱、統編或地址 (Ctrl+F)..." class="search-input">
         </div>
         <div class="flex-spacer"></div>
         <div class="toolbar-actions">
@@ -24,8 +24,8 @@
                 <div class="filter-dropdown" id="drop-country">
                     <div class="filter-dropdown-search">
                         <input type="text" id="search-country-input" placeholder="搜尋國別...">
-                        <div style="display:flex; justify-content:flex-end; margin-top:8px; padding:0 4px;">
-                            <button type="button" style="font-size:12px; color:var(--brand); background:none; border:none; cursor:pointer;" class="btn-filter-toggle" data-type="country" data-state="none">全選 / 全不選</button>
+                        <div style="margin-top:8px; padding:0 4px;">
+                            <button type="button" class="btn btn-secondary btn-sm btn-filter-toggle" style="width: 100%; justify-content: center;" data-type="country" data-state="none">全選 / 全不選</button>
                         </div>
                     </div>
                     <div class="filter-dropdown-list" id="country-options-container"></div>
@@ -37,8 +37,8 @@
                 <div class="filter-dropdown" id="drop-city">
                     <div class="filter-dropdown-search">
                         <input type="text" id="search-city-input" placeholder="搜尋縣市...">
-                        <div style="display:flex; justify-content:flex-end; margin-top:8px; padding:0 4px;">
-                            <button type="button" style="font-size:12px; color:var(--brand); background:none; border:none; cursor:pointer;" class="btn-filter-toggle" data-type="city" data-state="none">全選 / 全不選</button>
+                        <div style="margin-top:8px; padding:0 4px;">
+                            <button type="button" class="btn btn-secondary btn-sm btn-filter-toggle" style="width: 100%; justify-content: center;" data-type="city" data-state="none">全選 / 全不選</button>
                         </div>
                     </div>
                     <div class="filter-dropdown-list" id="city-options-container"></div>
@@ -50,8 +50,8 @@
                 <div class="filter-dropdown" id="drop-industry">
                     <div class="filter-dropdown-search">
                         <input type="text" id="search-industry-input" placeholder="搜尋行業別...">
-                        <div style="display:flex; justify-content:flex-end; margin-top:8px; padding:0 4px;">
-                            <button type="button" style="font-size:12px; color:var(--brand); background:none; border:none; cursor:pointer;" class="btn-filter-toggle" data-type="industry" data-state="none">全選 / 全不選</button>
+                        <div style="margin-top:8px; padding:0 4px;">
+                            <button type="button" class="btn btn-secondary btn-sm btn-filter-toggle" style="width: 100%; justify-content: center;" data-type="industry" data-state="none">全選 / 全不選</button>
                         </div>
                     </div>
                     <div class="filter-dropdown-list" id="industry-options-container"></div>
@@ -63,8 +63,8 @@
                 <div class="filter-dropdown" id="drop-venue">
                     <div class="filter-dropdown-search">
                         <input type="text" id="search-venue-input" placeholder="搜尋場所...">
-                        <div style="display:flex; justify-content:flex-end; margin-top:8px; padding:0 4px;">
-                            <button type="button" style="font-size:12px; color:var(--brand); background:none; border:none; cursor:pointer;" class="btn-filter-toggle" data-type="venue" data-state="none">全選 / 全不選</button>
+                        <div style="margin-top:8px; padding:0 4px;">
+                            <button type="button" class="btn btn-secondary btn-sm btn-filter-toggle" style="width: 100%; justify-content: center;" data-type="venue" data-state="none">全選 / 全不選</button>
                         </div>
                     </div>
                     <div class="filter-dropdown-list" id="venue-options-container"></div>
@@ -97,7 +97,7 @@
             <div class="flex-spacer"></div>
             <button id="btn-batch-edit" class="btn btn-sm btn-primary"><i class="ti ti-edit"></i> 批次修改屬性</button>
             <button id="btn-batch-merge" class="btn btn-sm btn-indigo-solid"><i class="ti ti-link"></i> 合併勾選</button>
-            <button id="btn-batch-delete" class="btn btn-sm btn-danger"><i class="ti ti-trash"></i> 批次刪除</button>
+            <button id="btn-batch-delete" class="btn btn-sm btn-danger-solid"><i class="ti ti-trash"></i> 批次刪除</button>
         </div>
     </div>
 
@@ -205,7 +205,7 @@
                 <div id="tab-history" class="custom-scroll" style="display: none; width: 100%; padding: 24px; overflow-y: auto;">
                     <div class="history-header" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
                         <p style="font-size:12px; color:var(--text-muted); padding-right:16px;">將機構過去的舊名稱與地址封存於此，系統在建立未來的實習紀錄時，便可調用相應年份的正確資料。</p>
-                        <button type="button" id="btn-show-add-history" class="btn btn-sm btn-indigo-solid" style="flex-shrink:0; box-shadow:var(--shadow-sm);"><i class="ti ti-plus"></i> 新增歷史快照</button>
+                        <button type="button" id="btn-show-add-history" class="btn btn-indigo-solid" style="height: 36px; padding: 0 16px; flex-shrink:0; box-shadow:var(--shadow-sm);"><i class="ti ti-plus"></i> 新增歷史快照</button>
                     </div>
                     <div id="history-list-container" style="display:flex; flex-direction:column; gap:12px;"></div>
                 </div>
@@ -213,7 +213,7 @@
 
             <div class="dialog-footer">
                 <button type="button" class="btn btn-secondary" id="btn-cancel-modal">取消</button>
-                <button type="button" id="btn-submit" class="btn btn-primary"><i class="ti ti-check"></i> 確認儲存變更</button>
+                <button type="button" id="btn-submit" class="btn btn-primary"><i class="ti ti-check"></i> 確認儲存變更 (Ctrl+S)</button>
             </div>
         </div>
     </div>
@@ -294,12 +294,12 @@
         <div class="dialog-box" style="max-width: 650px;">
             <div class="dialog-header flex-col items-start p-0 border-none">
                 <div style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:20px 24px 16px; border-bottom:1px solid var(--border); background:#f8fafc;">
-                    <h3 style="display:flex; align-items:center; gap:8px; font-size:16px; font-weight:700; color:var(--text-primary);"><i class="ti ti-link" style="color:var(--indigo); font-size:20px;"></i> 合併重複主機構</h3>
+                    <h3 style="display:flex; align-items:center; gap:8px; font-size:16px; font-weight:700; color:var(--text-primary);"><i class="ti ti-link" style="color:#3b82f6; font-size:20px;"></i> 合併重複主機構</h3>
                     <button type="button" class="dialog-close" id="btn-close-merge-x"><i class="ti ti-x"></i></button>
                 </div>
             </div>
             <div class="dialog-body custom-scroll" style="background:#f8fafc; padding:24px;">
-                <div style="background:#e0e7ff; border:1px solid #c7d2fe; color:#4338ca; padding:12px 16px; border-radius:8px; font-size:13px; line-height:1.6; margin-bottom:20px; box-shadow:var(--shadow-sm);">
+                <div style="background:#fefce8; border:1px solid #fef08a; color:#854d0e; padding:12px 16px; border-radius:8px; font-size:13px; line-height:1.6; margin-bottom:20px; box-shadow:var(--shadow-sm);">
                     您已選取 <span id="merge-count" style="font-size: 16px; font-weight: 700; margin: 0 4px;">0</span> 個機構準備進行合併。<br>
                     請在下方選擇<strong style="color: var(--danger); margin: 0 4px;">「唯一要保留的主體機構」</strong>。合併後，其餘被勾選的機構將被刪除，<br>且其底下的「分公司」及「學生實習紀錄」都會自動移轉到新的主體下。
                 </div>
