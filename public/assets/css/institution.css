@@ -7,15 +7,8 @@
 .ti-spin { animation: spin 1s linear infinite; display: inline-block; }
 @keyframes dialogIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } }
 
-/* 🌟 [修正] 全域 icon 垂直置中與大小 */
-i.ti { 
-    display: inline-flex; 
-    align-items: center; 
-    justify-content: center; 
-    line-height: 1; 
-    /* 消除純文字行高的微妙落差 */
-    vertical-align: -0.125em; 
-}
+/* 移除干擾的 i.ti 全域設定，讓 Flexbox 自然垂直置中 */
+i.ti { line-height: 1; }
 
 .tree-toggle { width: 22px; height: 22px; background: transparent; border: none; border-radius: 4px; cursor: pointer; padding: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--text-muted); transition: all 0.2s; outline: none; margin-right: 8px; flex-shrink: 0; }
 .tree-toggle:hover { color: var(--brand); background: var(--brand-light); }
@@ -48,7 +41,7 @@ i.ti {
 .toolbar-actions { display: flex; align-items: center; gap: 8px; }
 
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 14px; height: 34px; border-radius: var(--radius); font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; border: none; white-space: nowrap; transition: all var(--transition); text-decoration: none; }
-.btn i.ti { font-size: 1.25em; /* 放大按鈕內的 icon */ }
+.btn i.ti { font-size: 1.15em; display: flex; align-items: center; } /* 確保按鈕內 Icon 完美齊平 */
 .btn-primary { background: var(--brand); color: white; border: 1px solid var(--brand); }
 .btn-primary:hover { background: var(--brand-hover); }
 .btn-secondary { background: var(--surface); color: var(--text-secondary); border: 1px solid var(--border); }
@@ -61,10 +54,14 @@ i.ti {
 .btn-success-solid:hover { background: #047857; }
 .btn-indigo-solid { background: var(--indigo); color: white; border: 1px solid var(--indigo); }
 .btn-indigo-solid:hover { background: #4338ca; }
+
+/* 🌟 [新增] 全選/全不選的輕量化淡藍色背景無框按鈕 */
+.btn-light-blue { height: 24px; padding: 0 10px; font-size: 11px; border-radius: 4px; background: #e0f2fe; color: #0284c7; border: none; font-weight: 600; display: inline-flex; align-items: center; cursor: pointer; transition: 0.2s; }
+.btn-light-blue:hover { background: #bae6fd; color: #0369a1; }
+
 .btn-icon { width: 34px; padding: 0; justify-content: center; }
 .btn-icon.sm { min-width: 28px; width: 28px; height: 28px; border-radius: 6px; padding: 0; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
-.btn-sm i.ti { font-size: 1.15em; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .filter-row { padding: 10px 24px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; position: relative; }
@@ -104,23 +101,24 @@ tr { background-color: var(--surface); transition: background-color 0.15s; }
 tr:hover { background-color: #f3f6ff; }
 tr.selected { background-color: #eef2ff !important; }
 
-/* 🌟 [修正] 強制鎖定勾選框與操作按鈕在左右兩側，不隨欄位隱藏而漂移 */
-.col-checkbox { position: sticky; left: 0; width: 48px; text-align: center; z-index: 2; background-color: inherit; border-right: 1px solid var(--border) !important; }
+/* 🌟 [修正] 移除多餘的 border，維持乾淨的凍結效果 */
+.col-checkbox { position: sticky; left: 0; width: 48px; text-align: center; z-index: 2; background-color: inherit; }
 th.col-checkbox { z-index: 3; background-color: var(--surface); }
 
-/* 🌟 [修正] 名稱與地址設為 auto，讓它們自動 5:5 均分剩餘空間 */
 .col-name { width: auto; }
 th.col-name { text-align: center; z-index: 1; } 
 
 .col-tax_id { width: 110px; }
-.col-industry { width: 130px; }
+/* 🌟 [修正] 行業別稍微加寬 */
+.col-industry { width: 170px; }
 .col-venue_type { width: 130px; }
 .col-country { width: 90px; }
 .col-city { width: 90px; }
 
 .col-address { width: auto; } 
 
-.col-actions { position: sticky; right: 0; width: 100px; text-align: center; z-index: 2; background-color: inherit; border-left: 1px solid var(--border) !important; }
+/* 🌟 [修正] 移除多餘的 border，維持乾淨的凍結效果 */
+.col-actions { position: sticky; right: 0; width: 100px; text-align: center; z-index: 2; background-color: inherit; }
 th.col-actions { z-index: 3; background-color: var(--surface); }
 
 th[data-sort] { cursor: pointer; user-select: none; transition: color var(--transition); }
@@ -156,7 +154,7 @@ th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand
 .dialog-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg); flex-shrink: 0; }
 
 .form-section-title { font-size: 13px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px; margin-bottom: 16px; }
-.form-section-title i.ti, .dialog-header h3 i.ti { font-size: 1.25em; }
+.form-section-title i.ti, .dialog-header h3 i.ti { font-size: 1.25em; display: flex; align-items: center; }
 
 .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
 .field-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
@@ -165,7 +163,7 @@ th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand
 .field-input:focus, .field-select:focus, textarea.field-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
 
 .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
-.empty-icon { font-size: 36px !important; margin-bottom: 12px; opacity: 0.4; }
+.empty-icon { font-size: 36px !important; margin-bottom: 12px; opacity: 0.4; display: block; }
 .empty-text { font-size: 13px; font-weight: 600; }
 
 .intent-radio-card { display: block; cursor: pointer; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 12px; transition: all 0.2s; background: white; }
@@ -186,9 +184,9 @@ th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand
 .flex-center { display: flex; align-items: center; justify-content: center; }
 
 @media (max-width: 768px) {
-    .col-checkbox { position: static !important; width: 48px !important; }
+    .col-checkbox { position: static !important; width: 48px !important; border-right: none !important; }
     .col-name { position: static !important; width: 250px !important; }
-    .col-actions { position: static !important; width: 100px !important; }
+    .col-actions { position: static !important; width: 100px !important; border-left: none !important; }
     th.col-checkbox, th.col-name, th.col-actions { position: sticky !important; top: 0 !important; left: auto !important; right: auto !important; z-index: 2 !important; box-shadow: none !important; border-bottom: 1px solid var(--border) !important;}
     
     .filter-row { padding: 10px 16px; flex-wrap: nowrap; }
