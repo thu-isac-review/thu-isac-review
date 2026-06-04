@@ -124,9 +124,14 @@
                     </tr>
                 </thead>
                 <tbody id="table-body">
-                    <tr><td colspan="9" class="empty-state"><i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i><div class="empty-text">資料載入中...</div></td></tr>
+                    <!-- 初始載入時保持空白，交給 JS 控制 empty state -->
                 </tbody>
             </table>
+            <!-- 🌟 [新增] 獨立的空狀態容器，與 table 平行 -->
+            <div id="empty-state-container" class="empty-state">
+                <i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i>
+                <div class="empty-text">資料載入中...</div>
+            </div>
         </div>
         
         <div class="pagination-bar">
