@@ -9,6 +9,7 @@ export const CONSTANTS = {
 // 存放跨檔案共用的狀態變數 (也就是原本宣告在最上方的 let 變數)
 export const state = {
     db: null,
+    isReadOnly: false,
     allData: [],
     allRecords: [],
     baseTree: [],
@@ -58,3 +59,7 @@ export const Utils = {
         return text.toString().replace(regex, '<mark style="background-color: #ffeb3b; color: #000; padding: 0;">$1</mark>');
     }
 };
+
+export function setReadOnly(status) {
+    state.isReadOnly = status;
+}
