@@ -6,10 +6,10 @@ export const CONSTANTS = {
     VENUES: ["企業機構","其他機構","政府機構","就讀學校附屬機構"]
 };
 
-// 存放跨檔案共用的狀態變數 (加入 isReadOnly 作為權限識別)
+// 存放跨檔案共用的狀態變數
 export const state = {
     db: null,
-    isReadOnly: false, // 核心：決定元件為「檢視模式」還是「管理模式」
+    isReadOnly: false,
     allData: [],
     allRecords: [],
     baseTree: [],
@@ -32,7 +32,9 @@ export const state = {
     filterCitySet: new Set(),
     filterIndustrySet: new Set(),
     filterVenueSet: new Set(),
-    searchDebounceTimer: null
+    searchDebounceTimer: null,
+    isGlobalListenerBound: false,
+    isKeyboardShortcutBound: false // 🌟 新增：防止重複綁定快捷鍵
 };
 
 // 共用的輔助函式
