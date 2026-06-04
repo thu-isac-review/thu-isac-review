@@ -7,8 +7,10 @@
 .ti-spin { animation: spin 1s linear infinite; display: inline-block; }
 @keyframes dialogIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } }
 
+/* 🌟 [新增] 全域 icon 垂直置中微調 */
+i.ti { vertical-align: middle; position: relative; top: -1px; }
+
 .tree-toggle { width: 22px; height: 22px; background: transparent; border: none; border-radius: 4px; cursor: pointer; padding: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--text-muted); transition: all 0.2s; outline: none; margin-right: 8px; flex-shrink: 0; }
-.tree-toggle i { font-size: 16px; transition: transform 0.2s; }
 .tree-toggle:hover { color: var(--brand); background: var(--brand-light); }
 .tree-toggle.expanded i { transform: rotate(90deg); color: var(--brand); }
 
@@ -44,6 +46,11 @@
 .btn-secondary:hover { background: var(--bg); border-color: var(--border-strong); color: var(--text-primary); }
 .btn-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
 .btn-danger:hover { background: #fee2e2; }
+
+/* 🌟 [新增] 批次刪除實心紅底白字按鈕 */
+.btn-danger-solid { background: var(--danger); color: white; border: 1px solid var(--danger); }
+.btn-danger-solid:hover { background: #b91c1c; border-color: #b91c1c; }
+
 .btn-success-solid { background: var(--success); color: white; border: 1px solid var(--success); }
 .btn-success-solid:hover { background: #047857; }
 .btn-indigo-solid { background: var(--indigo); color: white; border: 1px solid var(--indigo); }
@@ -82,7 +89,8 @@
 .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; border-left: none; border-right: none; isolation: isolate; z-index: 0; }
 .table-scroll { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: none; }
 
-table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: auto; min-width: 1000px; }
+/* 🌟 [修改] table-layout 改為 fixed，避免欄寬因資料而自動縮放推擠 */
+table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; min-width: 1100px; }
 th { padding: 12px 16px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; position: sticky; top: 0; z-index: 1; background: var(--surface); border-bottom: 1px solid var(--border); }
 td { padding: 12px 16px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); background-color: inherit; }
 
@@ -90,24 +98,22 @@ tr { background-color: var(--surface); transition: background-color 0.15s; }
 tr:hover { background-color: #f3f6ff; }
 tr.selected { background-color: #eef2ff !important; }
 
-/* 左側凍結 */
-.col-checkbox { position: sticky; left: 0; width: 48px; min-width: 48px; max-width: 48px; text-align: center; z-index: 2; background-color: inherit; }
+/* 🌟 [修改] 配合 fixed layout，賦予所有欄位明確的絕對寬度或自動比例 */
+.col-checkbox { position: sticky; left: 0; width: 48px; text-align: center; z-index: 2; background-color: inherit; }
 th.col-checkbox { z-index: 3; background-color: var(--surface); }
 
-/* 動態延展的文字欄位 */
-.col-name { min-width: 250px; width: auto; }
+.col-name { width: 250px; }
 th.col-name { text-align: center; z-index: 1; } 
-.col-address { min-width: 220px; width: auto; }
 
-/* 固定寬度欄位 */
-.col-tax_id { width: 10%; min-width: 110px; }
-.col-industry { width: 12%; min-width: 130px; }
-.col-venue_type { width: 12%; min-width: 130px; }
-.col-country { width: 8%; min-width: 90px; }
-.col-city { width: 8%; min-width: 90px; }
+.col-tax_id { width: 110px; }
+.col-industry { width: 130px; }
+.col-venue_type { width: 130px; }
+.col-country { width: 90px; }
+.col-city { width: 90px; }
 
-/* 右側凍結 (拔除內外框線) */
-.col-actions { position: sticky; right: 0; width: 100px; min-width: 100px; max-width: 100px; text-align: center; z-index: 2; background-color: inherit; }
+.col-address { width: auto; } /* 唯一使用 auto，吃掉所有剩餘寬度 */
+
+.col-actions { position: sticky; right: 0; width: 100px; text-align: center; z-index: 2; background-color: inherit; }
 th.col-actions { z-index: 3; background-color: var(--surface); }
 
 th[data-sort] { cursor: pointer; user-select: none; transition: color var(--transition); }
@@ -119,7 +125,6 @@ th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand
 .cell-primary.bold { font-weight: 700; color: #000000; }
 .row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; }
 
-/* 分頁元件 */
 .pagination-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; gap: 10px; border-radius: 0 !important; }
 .pagination-info { font-size: 12px; color: var(--text-muted); }
 .pagination-info strong { color: var(--text-primary); }
@@ -131,19 +136,19 @@ th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand
 .page-btn.active { background: var(--brand); color: white; border-color: var(--brand); font-weight: 700; }
 .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* 統一的彈窗系統 (Modals) */
+/* 🌟 [修改] 為了手機版與彈窗完美滑動，強迫 max-height 並且讓內部 flex: 1 */
 .dialog-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; padding: 24px; }
 .dialog-overlay.open { display: flex; }
-.dialog-box { background: var(--surface); border-radius: var(--radius-xl); box-shadow: 0 20px 60px rgba(0,0,0,0.2); width: 100%; display: flex; flex-direction: column; overflow: hidden; animation: dialogIn 0.25s cubic-bezier(0.16,1,0.3,1); }
+.dialog-box { background: var(--surface); border-radius: var(--radius-xl); box-shadow: 0 20px 60px rgba(0,0,0,0.2); width: 100%; display: flex; flex-direction: column; overflow: hidden; animation: dialogIn 0.25s cubic-bezier(0.16,1,0.3,1); max-height: 90vh; }
+.dialog-body { overflow-y: auto !important; flex: 1; min-height: 0; }
 
-.dialog-header { background: var(--surface); }
+.dialog-header { background: var(--surface); flex-shrink: 0; }
 .dialog-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; padding: 4px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); transition: all var(--transition); }
 .dialog-close:hover { color: var(--danger); background: var(--danger-bg); }
 
 .dialog-body-container { height: 500px; display: flex; overflow: hidden; background: var(--bg); }
 .dialog-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg); flex-shrink: 0; }
 
-/* 表單元件 */
 .form-section-title { font-size: 13px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px; margin-bottom: 16px; }
 .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
 .field-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
@@ -155,14 +160,12 @@ th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand
 .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
 .empty-text { font-size: 13px; font-weight: 600; }
 
-/* 變更意圖、合併等選擇卡片樣式 */
 .intent-radio-card { display: block; cursor: pointer; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 12px; transition: all 0.2s; background: white; }
 .intent-radio-card:hover { border-color: var(--brand-light); background: #fafbff; }
 .intent-radio-card:has(input:checked) { border-color: var(--brand); background: #f0f4ff; box-shadow: 0 0 0 1px var(--brand); }
 .intent-radio-input { appearance: none; width: 16px; height: 16px; border: 2px solid #cbd5e1; border-radius: 50%; margin-right: 12px; position: relative; top: 2px; outline: none; cursor: pointer; transition: all 0.2s; background: white; flex-shrink: 0; }
 .intent-radio-input:checked { border-color: var(--brand); background-color: var(--brand); box-shadow: inset 0 0 0 3px #f0f4ff; }
 
-/* 合併選項無邊框圓點風格 */
 .merge-option { display: flex; align-items: flex-start; margin-bottom: 16px; cursor: pointer; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: white; transition: 0.2s; }
 .merge-option:hover { border-color: var(--brand); background: #f8fafc; }
 .merge-option:has(input:radio:checked) { border-color: var(--brand); background: #f0f4ff; box-shadow: 0 0 0 1px var(--brand); }
@@ -174,11 +177,10 @@ th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand
 
 .flex-center { display: flex; align-items: center; justify-content: center; }
 
-/* 手機版響應式設定 */
 @media (max-width: 768px) {
-    .col-checkbox { position: static !important; min-width: 48px !important; }
-    .col-name { position: static !important; min-width: 250px !important; width: auto !important; }
-    .col-actions { position: static !important; min-width: 100px !important; }
+    .col-checkbox { position: static !important; width: 48px !important; }
+    .col-name { position: static !important; width: 250px !important; }
+    .col-actions { position: static !important; width: 100px !important; }
     th.col-checkbox, th.col-name, th.col-actions { position: sticky !important; top: 0 !important; left: auto !important; right: auto !important; z-index: 2 !important; box-shadow: none !important; border-bottom: 1px solid var(--border) !important;}
     
     .filter-row { padding: 10px 16px; flex-wrap: nowrap; }
@@ -200,36 +202,26 @@ th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand
     .pagination-bar-right { width: 100%; justify-content: space-between; }
     .dialog-overlay { padding: 12px; }
     
-    /* =========================================
-       1. 彈窗容器：強制大彈窗固定高度，解決頁籤切換忽高忽低的問題
-       ========================================= */
     #data-modal .dialog-box, 
     #view-modal .dialog-box { 
-        height: 90vh !important; /* 直接鎖死佔用螢幕 90% 的高度 */
+        height: 90vh !important;
         max-height: 100% !important; 
         display: flex !important; 
         flex-direction: column !important; 
     }
 
     .dialog-body-container { 
-        flex: 1 !important; /* 讓中間的內容區塊自動填滿 90vh 扣去頭尾的剩餘空間 */
+        flex: 1 !important; 
         min-height: 0 !important; 
-        overflow-y: auto !important; /* 產生內部滑動捲軸 */
+        overflow-y: auto !important; 
         height: auto !important; 
         display: block !important; 
     }
 
-    /* 確保小彈窗不會破版，自動適應內容，但最高 80vh */
-    .dialog-body {
-        max-height: 80vh !important;
-        overflow-y: auto !important;
-    }
+    .dialog-body { max-height: none !important; overflow-y: auto !important; }
 
     .v-divider-modal { display: block !important; width: 100% !important; height: 1px !important; min-height: 1px !important; background-color: var(--border) !important; margin: 8px 0 !important; flex-shrink: 0 !important; }
 
-    /* =========================================
-       2. 統一頁籤大小：確保詳細資料與歷史軌跡邊距完全一致
-       ========================================= */
     #data-form, #tab-history, #tab-main-view, #tab-history-view {
         width: 100% !important;
         padding: 16px !important;
@@ -239,22 +231,18 @@ th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand
         flex: none !important;
     }
 
-    /* 詳細資料單欄化 */
     #data-form, #tab-main-view { flex-direction: column !important; gap: 16px !important; }
     #data-form > div, #tab-main-view > div { width: 100% !important; flex: none !important; }
 
-    /* =========================================
-       3. 歷史軌跡頁面 - 按鈕靠右並加高
-       ========================================= */
     .history-header { 
         display: flex !important;
-        flex-direction: row !important; /* 強制左右並排 */
-        align-items: flex-start !important; /* 向上對齊 */
+        flex-direction: row !important;
+        align-items: flex-start !important;
         gap: 12px !important; 
         flex-wrap: nowrap !important;
     }
     .history-header p { 
-        flex: 1 1 auto !important; /* 文字佔滿剩餘寬度並自動換行 */
+        flex: 1 1 auto !important;
         padding-right: 0 !important; 
         line-height: 1.5 !important; 
         font-size: 11px !important; 
@@ -262,8 +250,8 @@ th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand
     }
     #btn-show-add-history { 
         width: auto !important; 
-        flex-shrink: 0 !important; /* 確保按鈕不會被過長的文字擠壓 */
-        height: 38px !important; /* 稍微加高按鈕，讓手指更好點擊 */
+        flex-shrink: 0 !important;
+        height: 38px !important;
         padding: 0 14px !important; 
         white-space: nowrap !important; 
     }
