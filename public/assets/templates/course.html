@@ -1,27 +1,15 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>課程管理</title>
-  <!-- 假設依賴 Icon 與字體 -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-  <link rel="stylesheet" href="course.css">
-  <style>
-    /* 定義全域變數確保預覽正常 */
-    :root {
-      --bg: #f3f4f6;
-      --surface: #ffffff;
-      --border: #e5e7eb;
-      --text-primary: #1f2937;
-      --text-secondary: #4b5563;
-      --text-muted: #9ca3af;
-    }
-    body { margin: 0; padding: 0; display: flex; height: 100vh; background: var(--bg); }
-  </style>
-</head>
-<body>
+<link rel="stylesheet" href="/assets/css/course.css">
+<style>
+  /* 若外部 (index.html) 已經有定義這些變數，此段 style 可視情況移除 */
+  :root {
+    --bg: #f3f4f6;
+    --surface: #ffffff;
+    --border: #e5e7eb;
+    --text-primary: #1f2937;
+    --text-secondary: #4b5563;
+    --text-muted: #9ca3af;
+  }
+</style>
 
 <div id="course-page-wrapper">
   
@@ -89,7 +77,7 @@
   <!-- 表格區塊 -->
   <div class="table-wrap">
     <div class="table-scroll custom-scroll">
-      <table>
+      <table id="data-table">
         <thead>
           <tr>
             <!-- 凍結左側 -->
@@ -102,43 +90,9 @@
             <th class="col-actions">操作</th>
           </tr>
         </thead>
-        <!-- 將原本的 data-list 改為常見的 course-tbody / course-list 讓 JS 更容易抓到 -->
-        <tbody id="course-tbody" class="course-list">
-          <tr>
-            <!-- 凍結左側 -->
-            <td class="col-checkbox"><input type="checkbox" class="row-check"></td>
-            <td><span class="pill-code">CS101</span></td>
-            <td>
-              <div class="cell-primary bold">計算機概論</div>
-              <div style="font-size: 11px; color: var(--text-muted);">資訊工程學系</div>
-            </td>
-            <td>3</td>
-            <td class="cell-primary">王大明</td>
-            <!-- 凍結右側 -->
-            <td class="col-actions">
-              <div class="row-actions">
-                <button class="btn btn-icon btn-secondary sm"><i class="ti ti-pencil"></i></button>
-                <button class="btn btn-icon btn-danger sm"><i class="ti ti-trash"></i></button>
-              </div>
-            </td>
-          </tr>
-          <!-- 更多測試列 -->
-          <tr>
-            <td class="col-checkbox"><input type="checkbox" class="row-check"></td>
-            <td><span class="pill-code">BA202</span></td>
-            <td>
-              <div class="cell-primary bold">行銷管理</div>
-              <div style="font-size: 11px; color: var(--text-muted);">企業管理學系</div>
-            </td>
-            <td>3</td>
-            <td class="cell-primary">林淑芬</td>
-            <td class="col-actions">
-              <div class="row-actions">
-                <button class="btn btn-icon btn-secondary sm"><i class="ti ti-pencil"></i></button>
-                <button class="btn btn-icon btn-danger sm"><i class="ti ti-trash"></i></button>
-              </div>
-            </td>
-          </tr>
+        <!-- 確保 tbody 有對應到 render.js 期望的 ID (通常為 data-list 或 table-body) -->
+        <tbody id="data-list" class="data-list course-list">
+          <!-- JS 渲染目標區域 -->
         </tbody>
       </table>
     </div>
@@ -151,9 +105,9 @@
   </div>
 
   <!-- 分頁器 -->
-  <div class="pagination-bar" id="pagination-bar">
+  <div class="pagination-bar" id="pagination">
     <div class="pagination-info" id="pagination-info">
-      顯示 <strong>1</strong> 到 <strong>2</strong> 筆，共 <strong>120</strong> 筆
+      顯示 <strong>0</strong> 到 <strong>0</strong> 筆，共 <strong>0</strong> 筆
     </div>
     <div class="pagination-bar-right">
       <select class="per-page-select" id="per-page-select">
@@ -162,19 +116,14 @@
         <option value="50">50 筆/頁</option>
       </select>
       <div class="pagination-controls" id="pagination-controls">
-        <button class="page-btn" disabled><i class="ti ti-chevron-left"></i></button>
-        <button class="page-btn active">1</button>
-        <button class="page-btn">2</button>
-        <button class="page-btn">3</button>
-        <span style="color: var(--text-muted); font-size: 12px; margin: 0 4px;">...</span>
-        <button class="page-btn"><i class="ti ti-chevron-right"></i></button>
+        <!-- JS 渲染分頁按鈕 -->
       </div>
     </div>
   </div>
 
 </div>
 
-<!-- 新增/編輯課程彈窗範例 -->
+<!-- 新增/編輯課程彈窗 -->
 <div class="dialog-overlay" id="course-modal">
   <div class="dialog-box">
     <div class="dialog-header">
@@ -214,34 +163,3 @@
     </div>
   </div>
 </div>
-
-<script>
-  // 簡易 Demo 腳本：開啟表單彈窗
-  const btnAddCourse = document.getElementById('btn-add-course');
-  if(btnAddCourse) {
-    btnAddCourse.addEventListener('click', () => {
-      document.getElementById('course-modal').classList.add('open');
-    });
-  }
-
-  // 簡易 Demo 腳本：切換下拉選單顯示
-  const searchableWrap = document.querySelector('.searchable-select-wrap');
-  if(searchableWrap) {
-    searchableWrap.addEventListener('click', function(e) {
-      if(e.target.closest('.searchable-dropdown')) return; // 點擊內部不關閉
-      const dropdown = this.querySelector('.searchable-dropdown');
-      if(dropdown) dropdown.classList.toggle('show');
-    });
-  }
-
-  // 點擊外部關閉下拉選單
-  document.addEventListener('click', function(e) {
-    if (!e.target.closest('.searchable-select-wrap')) {
-      const dropdown = document.querySelector('.searchable-dropdown');
-      if(dropdown) dropdown.classList.remove('show');
-    }
-  });
-</script>
-
-</body>
-</html>
