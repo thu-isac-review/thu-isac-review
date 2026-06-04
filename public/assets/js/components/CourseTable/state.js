@@ -1,13 +1,28 @@
-// public/assets/js/components/CourseTable/state.js
 export const state = {
-    allCourses: [],
-    filteredCourses: [],
-    academicYearFilter: 'all',
-    departmentFilter: 'all',
-    searchQuery: '',
-    role: 'intern_view' // 預設為檢視模式，可在初始化時被覆蓋 (e.g., 'intern_manage')
+    db: null,
+    isReadOnly: false,
+    allData: [],
+    filteredData: [],
+    globalDepts: [],
+    orderedColleges: [],
+    editingId: null,
+    currentPage: 1,
+    itemsPerPage: 15,
+    selectedIds: [],
+    
+    filterYearSet: new Set(),
+    filterTermSet: new Set(),
+    filterEduSet: new Set(),
+    filterCollegeSet: new Set(),
+    filterDeptSet: new Set(),
+    filterCodeSet: new Set(),
+    filterNameSet: new Set(),
+    filterTypeSet: new Set(),
+    filterCreditSet: new Set(),
+    
+    sortCol: 'academic_year',
+    sortDir: 'desc',
+    searchDebounceTimer: null,
+    isGlobalListenerBound: false,
+    isKeyboardShortcutBound: false
 };
-
-export function updateState(newState) {
-    Object.assign(state, newState);
-}
