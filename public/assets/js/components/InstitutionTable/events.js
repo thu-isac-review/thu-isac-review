@@ -164,6 +164,9 @@ export function bindEvents(container) {
             const isSelectAll = btn.dataset.state !== 'all';
             btn.dataset.state = isSelectAll ? 'all' : 'none';
             
+            // 🌟 [新增] 點擊時動態切換按鈕文字
+            btn.innerText = isSelectAll ? '取消選取' : '全選';
+            
             let set = type === 'country' ? state.filterCountrySet : (type === 'city' ? state.filterCitySet : (type === 'industry' ? state.filterIndustrySet : state.filterVenueSet));
             container.querySelectorAll(`.filter-chk-${type}`).forEach(c => {
                 if(c.closest('.filter-option').style.display !== 'none') { 
