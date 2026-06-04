@@ -5,7 +5,7 @@
     <div class="toolbar">
         <div class="search-wrap">
             <i class="ti ti-search"></i>
-            <input type="text" id="search-input" placeholder="搜尋機構名稱、統編或地址 (Ctrl+F)..." class="search-input">
+            <input type="text" id="search-input" placeholder="搜尋機構名稱、統編或地址..." class="search-input">
         </div>
         <div class="flex-spacer"></div>
         <div class="toolbar-actions">
@@ -213,7 +213,7 @@
 
             <div class="dialog-footer">
                 <button type="button" class="btn btn-secondary" id="btn-cancel-modal">取消</button>
-                <button type="button" id="btn-submit" class="btn btn-primary"><i class="ti ti-check"></i> 確認儲存變更 (Ctrl+S)</button>
+                <button type="button" id="btn-submit" class="btn btn-primary"><i class="ti ti-check"></i> 確認儲存變更</button>
             </div>
         </div>
     </div>
@@ -307,7 +307,8 @@
             </div>
             <div class="dialog-footer" style="background:#f8fafc; border-top:1px solid var(--border); padding:16px 24px; border-radius: 0 0 12px 12px; display:flex; justify-content:flex-end; gap:8px;">
                 <button type="button" class="btn btn-secondary" style="background:white;" id="btn-cancel-merge">取消</button>
-                <button type="button" id="btn-merge-submit" class="btn btn-indigo-solid" disabled><i class="ti ti-link"></i> 確認執行深度合併</button>
+                <!-- 🌟 [修正] 顏色改為 btn-primary，使其符合上方圖示與 UI 基調藍色 -->
+                <button type="button" id="btn-merge-submit" class="btn btn-primary" disabled><i class="ti ti-link"></i> 確認執行深度合併</button>
             </div>
         </div>
     </div>
