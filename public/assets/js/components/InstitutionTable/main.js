@@ -1,26 +1,42 @@
-import { state, setReadOnly } from './state.js';
-import { injectUI } from './ui.js';
-import { bindEvents } from './events.js';
-import { fetchInstitutions } from './data.js';
+import { state } from './state.js';
+import * as UI from './ui.js';
+import * as Render from './render.js';
+import * as Events from './events.js';
+import * as Data from './data.js';
 
-export async function render(containerId, context) {
+/**
+ * 實習機構元件總初始化入口
+ * @param {string} containerId 渲染容器的 ID
+ * @param {object} context 包含 db 等全域注入的物件
+ * @param {object} options 元件選項 (例如 isReadOnly 權限控制)
+ */
+export async function render(containerId, context, options = { isReadOnly: false }) {
+    // 1. 寫入狀態與權限
     state.db = context.db;
-    setReadOnly(context.isReadOnly === true);
-
-    state.viewContainer = document.getElementById(containerId);
+    state.isReadOnly = options.isReadOnly;
     
-    // 狀態重設 (防呆機制，避免切換路由殘留上一頁狀態)
-    state.selectedIds = [];
-    state.currentPage = 1;
-    state.expandedParents.clear();
+    // 2. 注入外部 HTML 模板
+    const container = document.getElementById(containerId);
+    await UI.loadTemplate(containerId);
+    
+    // 3. 狀態重置 (確保頁面切換時狀態乾淨)
+    state.selectedIds = []; 
+    state.currentPage = 1; 
+    state.expandedParents.clear(); 
     state.isAllExpanded = false;
     
-    // 1. 載入共用 HTML 並根據模式修剪 UI
-    await injectUI(state.viewContainer);
+    // 4. UI 權限限制與事件綁定
+    UI.applyReadOnlyMode(); // 如果是唯讀，直接把不需要的按鈕 CSS 設為隱藏
+    UI.initSelectOptions(); 
+    Events.bindEvents(container); 
+    UI.updateColStyles(); 
     
-    // 2. 綁定共用事件
-    bindEvents(state.viewContainer);
+    // 5. 抓取資料並渲染
+    await Data.fetchInitialDataOnce();
+    UI.updateBatchActionBar();
+    UI.buildBaseTree();
+    Render.renderTable();
     
-    // 3. 獲取並渲染資料
-    await fetchInstitutions();
+    // 6. 背景預載
+    Data.handleInitialLoadEngine();
 }
