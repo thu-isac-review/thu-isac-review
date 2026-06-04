@@ -1,57 +1,52 @@
-// public/assets/js/components/CourseTable/data.js
-import { state, updateState } from './state.js';
-import { renderTable } from './render.js';
-import { updateFilters } from './events.js';
+import { collection, getDocs, doc, getDoc, updateDoc, deleteDoc, addDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { state } from './state.js';
 
-export async function fetchCourses(db) {
+export async function fetchSettingsOnce() {
     try {
-        const querySnapshot = await db.collection("intern_courses").get();
-        const courses = [];
-        querySnapshot.forEach((doc) => {
-            courses.push({ id: doc.id, ...doc.data() });
-        });
-
-        // 預設以學年度降序排列
-        courses.sort((a, b) => {
-            return (b.academic_year || '').localeCompare(a.academic_year || '');
-        });
-
-        updateState({ allCourses: courses, filteredCourses: courses });
-        renderTable();
-        updateFilters(); // 初始化過濾器選項
-    } catch (error) {
-        console.error("Error fetching courses:", error);
-        alert("載入課程資料失敗，請稍後再試。");
-    }
-}
-
-export async function saveCourse(db, courseId, data) {
-    try {
-        if (courseId) {
-            // 更新現有課程
-            await db.collection("intern_courses").doc(courseId).update(data);
-            console.log("Course updated successfully");
-        } else {
-            // 新增課程
-            await db.collection("intern_courses").add(data);
-            console.log("Course added successfully");
+        const collegeSnap = await getDoc(doc(state.db, "settings", "colleges"));
+        if (collegeSnap.exists()) {
+            const rawList = collegeSnap.data().list || [];
+            state.orderedColleges = rawList.map(c => typeof c === 'string' ? { name: c, shortName: c } : c);
         }
-        await fetchCourses(db); // 重新載入資料
-        return true;
-    } catch (error) {
-        console.error("Error saving course: ", error);
-        alert("儲存失敗: " + error.message);
-        return false;
+
+        const deptSnap = await getDocs(collection(state.db, "departments"));
+        state.globalDepts = deptSnap.docs.map(d => d.data());
+        state.globalDepts.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
+    } catch (e) {
+        console.error("Failed to load settings:", e);
     }
 }
 
-export async function deleteCourse(db, id) {
-    try {
-        await db.collection("intern_courses").doc(id).delete();
-        console.log("Course successfully deleted!");
-        await fetchCourses(db); // 重新載入資料
-    } catch (error) {
-        console.error("Error removing course: ", error);
-        alert("刪除失敗，請稍後再試。");
+export async function fetchInitialDataOnce() {
+    const dataSnap = await getDocs(collection(state.db, "internship_courses"));
+    state.allData = dataSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    state.selectedIds = [];
+}
+
+export async function executeSave(payload) {
+    if (state.editingId) {
+        await updateDoc(doc(state.db, "internship_courses", state.editingId), { ...payload, updated_at: serverTimestamp() });
+    } else {
+        await addDoc(collection(state.db, "internship_courses"), { ...payload, created_at: serverTimestamp() });
     }
+}
+
+export async function deleteData(id) {
+    await deleteDoc(doc(state.db, "internship_courses", id));
+}
+
+export async function batchDelete() {
+    const batch = writeBatch(state.db);
+    state.selectedIds.forEach(id => batch.delete(doc(state.db, "internship_courses", id)));
+    await batch.commit(); 
+}
+
+export async function batchImport(parsedRows) {
+    let addedCount = 0;
+    const colRef = collection(state.db, "internship_courses");
+    for (let payload of parsedRows) { 
+        await addDoc(colRef, payload); 
+        addedCount++; 
+    }
+    return addedCount;
 }
