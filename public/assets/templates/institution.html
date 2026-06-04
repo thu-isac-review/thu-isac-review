@@ -5,6 +5,7 @@
     <div class="toolbar">
         <div class="search-wrap">
             <i class="ti ti-search"></i>
+            <!-- 🌟 移除快捷鍵提示文字 -->
             <input type="text" id="search-input" placeholder="搜尋機構名稱、統編或地址..." class="search-input">
         </div>
         <div class="flex-spacer"></div>
@@ -25,7 +26,8 @@
                     <div class="filter-dropdown-search">
                         <input type="text" id="search-country-input" placeholder="搜尋國別...">
                         <div style="margin-top:8px; padding:0 4px;">
-                            <button type="button" class="btn btn-secondary btn-sm btn-filter-toggle" style="width: 100%; justify-content: center;" data-type="country" data-state="none">全選 / 全不選</button>
+                            <!-- 🌟 換成更輕量化的 btn-light-blue 無框設計 -->
+                            <button type="button" class="btn-light-blue btn-filter-toggle" style="width: 100%; justify-content: center;" data-type="country" data-state="none">全選 / 全不選</button>
                         </div>
                     </div>
                     <div class="filter-dropdown-list" id="country-options-container"></div>
@@ -38,7 +40,7 @@
                     <div class="filter-dropdown-search">
                         <input type="text" id="search-city-input" placeholder="搜尋縣市...">
                         <div style="margin-top:8px; padding:0 4px;">
-                            <button type="button" class="btn btn-secondary btn-sm btn-filter-toggle" style="width: 100%; justify-content: center;" data-type="city" data-state="none">全選 / 全不選</button>
+                            <button type="button" class="btn-light-blue btn-filter-toggle" style="width: 100%; justify-content: center;" data-type="city" data-state="none">全選 / 全不選</button>
                         </div>
                     </div>
                     <div class="filter-dropdown-list" id="city-options-container"></div>
@@ -51,7 +53,7 @@
                     <div class="filter-dropdown-search">
                         <input type="text" id="search-industry-input" placeholder="搜尋行業別...">
                         <div style="margin-top:8px; padding:0 4px;">
-                            <button type="button" class="btn btn-secondary btn-sm btn-filter-toggle" style="width: 100%; justify-content: center;" data-type="industry" data-state="none">全選 / 全不選</button>
+                            <button type="button" class="btn-light-blue btn-filter-toggle" style="width: 100%; justify-content: center;" data-type="industry" data-state="none">全選 / 全不選</button>
                         </div>
                     </div>
                     <div class="filter-dropdown-list" id="industry-options-container"></div>
@@ -64,7 +66,7 @@
                     <div class="filter-dropdown-search">
                         <input type="text" id="search-venue-input" placeholder="搜尋場所...">
                         <div style="margin-top:8px; padding:0 4px;">
-                            <button type="button" class="btn btn-secondary btn-sm btn-filter-toggle" style="width: 100%; justify-content: center;" data-type="venue" data-state="none">全選 / 全不選</button>
+                            <button type="button" class="btn-light-blue btn-filter-toggle" style="width: 100%; justify-content: center;" data-type="venue" data-state="none">全選 / 全不選</button>
                         </div>
                     </div>
                     <div class="filter-dropdown-list" id="venue-options-container"></div>
@@ -307,7 +309,6 @@
             </div>
             <div class="dialog-footer" style="background:#f8fafc; border-top:1px solid var(--border); padding:16px 24px; border-radius: 0 0 12px 12px; display:flex; justify-content:flex-end; gap:8px;">
                 <button type="button" class="btn btn-secondary" style="background:white;" id="btn-cancel-merge">取消</button>
-                <!-- 🌟 [修正] 顏色改為 btn-primary，使其符合上方圖示與 UI 基調藍色 -->
                 <button type="button" id="btn-merge-submit" class="btn btn-primary" disabled><i class="ti ti-link"></i> 確認執行深度合併</button>
             </div>
         </div>
