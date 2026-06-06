@@ -6,7 +6,7 @@ import * as Data from './data.js';
 export function bindEvents(container) {
     if (!container) return;
 
-    // 🌟 全域鍵盤快捷鍵綁定
+    // 全域鍵盤快捷鍵綁定
     if (!state.isKeyboardShortcutBound) {
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
@@ -32,9 +32,10 @@ export function bindEvents(container) {
     // ---------------- 1. 頂部工具列事件 ----------------
     container.querySelector('#btn-export-csv')?.addEventListener('click', () => {
         if (state.filteredData.length === 0) { UI.showNotification("沒有資料可供匯出！", "error"); return; }
-        let csv = '\uFEFF學年度,學期,開課學制,開課學院,開課學系,選課代號,課程名稱,實習課程屬性,實習學分數\n';
+        let csv = '\uFEFF學年度,學期,開課學制,開課學院,開課學系,選課代號,課程名稱,實習課程屬性,實習學分數,修課人數\n';
         state.filteredData.forEach(d => {
-            csv += [d.academic_year, d.term, d.edu_system, d.college, d.department, d.course_code, d.course_name, d.course_type, d.credits].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+            const count = state.allRecords.filter(r => r.courses && r.courses.includes(d.id)).length;
+            csv += [d.academic_year, d.term, d.edu_system, d.college, d.department, d.course_code, d.course_name, d.course_type, d.credits, count].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
         });
         const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
         link.download = `實習課程清單_${new Date().toISOString().split('T')[0]}.csv`; link.click();
@@ -148,6 +149,33 @@ export function bindEvents(container) {
                 if(type === 'college') { UI.populateDeptFilterUI(); }
                 state.currentPage = 1; UI.updatePillActive(type); Render.renderTable();
             }
+        });
+    });
+
+    // 🌟 [新增] 依據指示 F：修復課程篩選之「全選/取消選取」觸發綁定
+    container.querySelectorAll('.btn-filter-toggle').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const type = btn.dataset.type;
+            const isSelectAll = btn.dataset.state !== 'all';
+            btn.dataset.state = isSelectAll ? 'all' : 'none';
+            btn.innerText = isSelectAll ? '取消選取' : '全選';
+            
+            const setMap = { 
+                'year': state.filterYearSet, 'term': state.filterTermSet, 'edu': state.filterEduSet, 
+                'college': state.filterCollegeSet, 'dept': state.filterDeptSet, 'code': state.filterCodeSet, 
+                'name': state.filterNameSet, 'type': state.filterTypeSet, 'credit': state.filterCreditSet 
+            };
+            const set = setMap[type];
+            container.querySelectorAll(`.filter-chk-${type}`).forEach(c => {
+                if(c.closest('.filter-option').style.display !== 'none') { 
+                    c.checked = isSelectAll; 
+                    if(isSelectAll) set.add(c.value); else set.delete(c.value); 
+                }
+            });
+            
+            if(type === 'college') { UI.populateDeptFilterUI(); }
+            state.currentPage = 1; UI.updatePillActive(type); Render.renderTable();
         });
     });
 

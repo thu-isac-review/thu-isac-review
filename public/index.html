@@ -10,6 +10,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
 
+    <!-- 🌟 [優化] 在主框架頭部預載入 CSS，避免頁面載入非同步造成破圖 (FOUC) -->
+    <link rel="stylesheet" href="./assets/css/institution.css">
+    <link rel="stylesheet" href="./assets/css/course.css">
+
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         :root {
@@ -71,7 +75,7 @@
 
     <div id="sysLoading" class="fixed inset-0 flex flex-col items-center justify-center bg-[#f8f9fc] z-[9999]">
         <i class="ti ti-loader icon-spin text-4xl" style="color: var(--brand)"></i>
-        <p class="mt-3 text-sm font-bold text-gray-400">系統初始化中...</p>
+        <p class="mt-3 text-sm font-bold text-gray-400">系統載入中...</p>
     </div>
 
     <div id="mobileOverlay" class="mobile-overlay hidden" onclick="toggleMobileSidebar(false)"></div>
@@ -95,7 +99,7 @@
                     <i class="ti ti-home"></i><span>首頁看板</span>
                 </div>
                 
-                <!-- 💡 Section 1: 實習資料清單 (開放所有人) -->
+                <!-- Section 1: 實習資料清單 (開放所有人) -->
                 <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-4 mb-1" data-roles="all">實習資料清單</div>
                 
                 <div class="nav-item" data-hash="intern_view/course/main" data-roles="all">
@@ -111,7 +115,7 @@
                     <i class="ti ti-file-text"></i><span>實習記錄列表</span>
                 </div>
 
-                <!-- 💡 Section 2: 實習資料管理 (限管理者) -->
+                <!-- Section 2: 實習資料管理 (限管理者) -->
                 <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-4 mb-1" data-roles="admin">實習資料管理</div>
                 
                 <div class="nav-item" data-hash="intern_manage/course/main" data-roles="admin">
@@ -127,7 +131,7 @@
                     <i class="ti ti-file-settings"></i><span>實習記錄管理</span>
                 </div>
 
-                <!-- 💡 Section 3: 系統管理 (限管理者) -->
+                <!-- Section 3: 系統管理 (限管理者) -->
                 <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-4 mb-1" data-roles="admin">系統管理</div>
                 
                 <div class="nav-item" data-hash="manage/roles" data-roles="admin">
@@ -204,7 +208,6 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // 啟動視圖
         applySystemTheme('blue');
         document.body.style.visibility = 'visible';
 
@@ -236,7 +239,7 @@
 
                     filterSidebarMenuByRole(role);
                     
-                    // 初始化純 JS 動態路由引擎
+                    // 初始化純 JS SPA 路由
                     initPureSpaRouter(db);
 
                     if(sysLoading) sysLoading.style.display = 'none';
@@ -250,7 +253,6 @@
             }
         });
 
-        // 權限過濾
         function filterSidebarMenuByRole(userRole) {
             document.querySelectorAll('#sidebarMenu .nav-item, #sidebarMenu .nav-group-label').forEach(item => {
                 const allowed = item.getAttribute('data-roles');
@@ -262,14 +264,12 @@
             });
         }
 
-        // 核心引擎：動態載入 JS 模組
         function initPureSpaRouter(dbInstance) {
             const container = document.getElementById('content-view-container');
 
             const loadView = async () => {
                 let hash = window.location.hash.replace('#', '') || 'dashboard';
 
-                // 更新選單高亮與麵包屑
                 document.querySelectorAll('#sidebar .nav-item, #profileBtn').forEach(btn => {
                     const btnHash = btn.getAttribute('data-hash');
                     if (hash === btnHash) {
@@ -288,23 +288,19 @@
                 `;
 
                 try {
-                    // 💡 加入時間戳記 (?v=...)：強制打破瀏覽器快取，保證載入最新前端程式碼！
+                    // 導入時間戳防快取
                     const module = await import(`./assets/js/pages/${hash}.js?v=${new Date().getTime()}`);
-                    
-                    // 呼叫模組內導出的 render 函數
                     if(module.render) {
                         await module.render('content-view-container', { db: dbInstance });
                     }
                 } catch (error) {
-                    console.error("路由加載失敗，真實錯誤為:", error);
+                    console.error("路由加載失敗:", error);
                     container.innerHTML = `
                         <div class="flex flex-col items-center justify-center h-full p-6 text-red-500 text-center">
                             <i class="ti ti-alert-triangle text-6xl mb-3"></i>
-                            <h2 class="text-xl font-bold">模組建置中</h2>
-                            <p class="text-sm mt-2 text-gray-500">此模組路徑尚未部署或加載異常：<br>./assets/js/pages/${hash}.js</p>
-                            
+                            <h2 class="text-xl font-bold">模組載入失敗</h2>
+                            <p class="text-sm mt-2 text-gray-500">此模組尚未部署或載入異常：<br>./assets/js/pages/${hash}.js</p>
                             <div class="mt-5 p-4 bg-red-50 rounded-xl text-sm font-mono text-red-600 max-w-2xl text-left border border-red-200 overflow-x-auto shadow-sm">
-                                <strong class="text-gray-900 font-sans">系統詳細錯誤資訊：</strong><br><br>
                                 ${error.message || error}
                             </div>
                         </div>
@@ -313,7 +309,7 @@
             };
 
             window.addEventListener('hashchange', loadView);
-            loadView(); // 初次載入觸發
+            loadView();
 
             document.querySelectorAll('#sidebar .nav-item, #profileBtn').forEach(item => {
                 item.addEventListener('click', () => {

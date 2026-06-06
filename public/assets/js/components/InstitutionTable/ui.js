@@ -166,13 +166,34 @@ export function toggleDropdown(type) {
     if (!isOpen) { drop.classList.add('show'); wrap.classList.add('open'); }
 }
 
+// 🌟 [修正] 篩選無符合選項之一般粗體紅色提示 (A. 篩選結果如果找不到符合的選項...)
 export function filterDropdownItems(inputElement, containerId) {
-    const term = inputElement.value.toLowerCase();
-    const labels = document.getElementById(containerId).querySelectorAll('.filter-option');
+    const term = inputElement.value.toLowerCase().trim();
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const labels = container.querySelectorAll('.filter-option');
+    let visibleCount = 0;
+
     labels.forEach(lbl => {
         const text = lbl.textContent.toLowerCase();
-        lbl.style.display = text.includes(term) ? 'flex' : 'none';
+        const isMatch = text.includes(term);
+        lbl.style.display = isMatch ? 'flex' : 'none';
+        if (isMatch) visibleCount++;
     });
+
+    let emptyMsg = container.querySelector('.empty-filter-msg');
+    if (visibleCount === 0) {
+        if (!emptyMsg) {
+            emptyMsg = document.createElement('div');
+            emptyMsg.className = 'empty-filter-msg';
+            // 紅色、一般粗體、無斜體樣式
+            emptyMsg.style.cssText = 'color: #dc2626; font-weight: 700; padding: 12px; text-align: center; font-size: 13px;';
+            emptyMsg.textContent = '查無符合的選項';
+            container.appendChild(emptyMsg);
+        }
+    } else {
+        if (emptyMsg) emptyMsg.remove();
+    }
 }
 
 export function updatePillActive(type) {

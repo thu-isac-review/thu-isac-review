@@ -1,9 +1,9 @@
-import { state } from './state.js';
+import { state, Utils } from './state.js';
 
 export function renderTable() {
     const tbody = document.getElementById('table-body');
     const searchInput = document.getElementById('search-input');
-    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+    const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
     state.filteredData = state.allData.filter(d => {
         const matchSearch = (d.course_name || '').toLowerCase().includes(searchTerm) || (d.course_code || '').toLowerCase().includes(searchTerm);
@@ -22,6 +22,13 @@ export function renderTable() {
 
     // Sorting
     state.filteredData.sort((a, b) => {
+        // 🌟 [新增] 統計與排序「修課人數」
+        if (state.sortCol === 'student_count') {
+            const countA = state.allRecords.filter(r => r.courses && r.courses.includes(a.id)).length;
+            const countB = state.allRecords.filter(r => r.courses && r.courses.includes(b.id)).length;
+            return state.sortDir === 'asc' ? countA - countB : countB - countA;
+        }
+
         let valA = a[state.sortCol] || ''; let valB = b[state.sortCol] || '';
         
         if (state.sortCol === 'college' || state.sortCol === 'department') {
@@ -112,12 +119,20 @@ export function renderTable() {
         const deptDispName = deptObj && deptObj.shortName ? deptObj.shortName : data.department;
         const isChecked = state.selectedIds.includes(data.id) ? 'checked' : '';
         
+        // 🌟 [優化] 依據修課人數需求，動態計算該課程修課人數
+        const studentCount = state.allRecords.filter(r => r.courses && r.courses.includes(data.id)).length;
+
+        // 🌟 [修正] 操作按鈕樣式與機構模組 100% 相同 (紅色圓角高質感 btn-danger 按鈕)
         const actionHtml = state.isReadOnly ? '' : `
             <div class="row-actions">
                 <button data-id="${data.id}" class="btn btn-secondary btn-icon sm btn-row-edit" title="編輯"><i class="ti ti-edit"></i></button>
-                <button data-id="${data.id}" data-name="${data.course_name}" class="btn btn-icon sm btn-row-delete" style="color:var(--danger); border-color:var(--danger-border); background:var(--surface);" title="刪除"><i class="ti ti-trash"></i></button>
+                <button data-id="${data.id}" data-name="${data.course_name}" class="btn btn-danger btn-icon sm btn-row-delete" title="刪除"><i class="ti ti-trash"></i></button>
             </div>
         `;
+
+        // 🌟 [新增] 依關鍵字進行反黃高亮 (像 chrome 原生感)
+        const highlightedCode = Utils.highlightKeyword(data.course_code, searchTerm);
+        const highlightedName = Utils.highlightKeyword(data.course_name, searchTerm);
 
         html += `
         <tr class="${isChecked ? 'selected' : ''}" data-id="${data.id}">
@@ -131,10 +146,17 @@ export function renderTable() {
             <td style="text-align: center;"><div class="cell-primary">${data.edu_system}</div></td>
             <td style="text-align: center;"><div class="cell-primary">${colDispName || '-'}</div></td>
             <td style="text-align: center;"><div class="cell-primary">${deptDispName || '-'}</div></td>
-            <td style="text-align: center;"><span class="pill-code">${data.course_code}</span></td>
-            <td style="text-align: left;"><div class="cell-primary bold" title="${data.course_name}">${data.course_name}</div></td>
+            <td style="text-align: center;"><span class="pill-code">${highlightedCode}</span></td>
+            <td style="text-align: left;"><div class="cell-primary bold" title="${data.course_name}">${highlightedName}</div></td>
             <td style="text-align: center;"><div class="cell-primary">${data.course_type}</div></td>
             <td style="text-align: center;"><div class="cell-primary bold">${data.credits}</div></td>
+            <!-- 🌟 [新增] 顯示統計人數與大綱新欄位 -->
+            <td style="text-align: center;"><div class="cell-primary font-semibold" style="color:var(--brand);">${studentCount} 人</div></td>
+            <td style="text-align: center;">
+                <a href="http://desc.ithu.tw/${data.academic_year}/${data.term}/${data.course_code}" target="_blank" class="btn btn-secondary btn-icon sm" title="查看大綱 (開新分頁)">
+                    <i class="ti ti-external-link"></i>
+                </a>
+            </td>
             <td class="col-actions" style="text-align: center;">${actionHtml}</td>
         </tr>`;
     });

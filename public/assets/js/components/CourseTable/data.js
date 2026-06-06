@@ -20,6 +20,16 @@ export async function fetchSettingsOnce() {
 export async function fetchInitialDataOnce() {
     const dataSnap = await getDocs(collection(state.db, "internship_courses"));
     state.allData = dataSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    
+    // 🌟 [新增] 非同步預先載入實習紀錄，用於統計修課人數 (一秒完成)
+    try {
+        const recordsSnap = await getDocs(collection(state.db, "internship_records"));
+        state.allRecords = recordsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (err) {
+        console.warn("Failed to prefetch internship records for course metrics:", err);
+        state.allRecords = [];
+    }
+
     state.selectedIds = [];
 }
 

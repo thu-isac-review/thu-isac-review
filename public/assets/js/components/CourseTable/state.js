@@ -2,6 +2,7 @@ export const state = {
     db: null,
     isReadOnly: false,
     allData: [],
+    allRecords: [], // 🌟 [新增] 用於統計修課人數的實習紀錄
     filteredData: [],
     globalDepts: [],
     orderedColleges: [],
@@ -25,4 +26,13 @@ export const state = {
     searchDebounceTimer: null,
     isGlobalListenerBound: false,
     isKeyboardShortcutBound: false
+};
+
+// 🌟 [新增] 用於反黃高亮的關鍵字 Utils，與機構模組一致化
+export const Utils = {
+    highlightKeyword(text, keyword) {
+        if (!keyword || !text) return text || '';
+        const regex = new RegExp(`(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        return text.toString().replace(regex, '<mark style="background-color: #ffeb3b; color: #000; padding: 0;">$1</mark>');
+    }
 };

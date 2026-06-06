@@ -1,7 +1,7 @@
 <link rel="stylesheet" href="./assets/css/course.css">
 <style id="dynamic-col-styles"></style>
 
-<div id="course-page-wrapper">
+<div id="course-page-wrapper" style="height: 100%; display: flex; flex-direction: column;">
     <!-- ─── TOOLBAR ─── -->
     <div class="toolbar">
         <div class="search-wrap">
@@ -146,22 +146,8 @@
                 </div>
             </div>
         </div>
-        
-        <div class="relative inline-block text-left" id="display-settings-wrap">
-            <button id="btn-display-settings" class="btn btn-secondary btn-sm" style="font-weight: 500;"><i class="ti ti-settings"></i> 顯示設定</button>
-            <div id="display-settings-menu" style="position:absolute; right:0; top:calc(100% + 4px); width:200px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); padding:8px; z-index:100; display:none;" class="menu-popup">
-                <div style="font-size:11px; font-weight:700; color:var(--text-muted); padding:4px 8px;">顯示欄位設定</div>
-                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="academic_year" checked> 學年度</label>
-                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="term" checked> 學期</label>
-                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="edu_system" checked> 開課學制</label>
-                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="college" checked> 開課學院</label>
-                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="department" checked> 開課學系</label>
-                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="course_code" checked> 選課代號</label>
-                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="course_name" checked> 課程名稱</label>
-                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="course_type" checked> 課程屬性</label>
-                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="credits" checked> 學分數</label>
-            </div>
-        </div>
+
+        <!-- 🌟 [優化] 根據 B 點指示：課程不需要顯示欄位設定按鈕，已移除相關 HTML 以維持頁面清爽度 -->
 
         <!-- Batch Action Bar -->
         <div id="batch-bar">
@@ -193,6 +179,9 @@
                         <th data-sort="course_name" class="col-course_name" style="width: auto;">課程名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
                         <th data-sort="course_type" class="col-course_type" style="width: 100px;">課程屬性 <i class="ti ti-arrows-sort sort-icon"></i></th>
                         <th data-sort="credits" class="col-credits" style="width: 80px;">學分數 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <!-- 🌟 [新增] 依據修課統計指示加入之新欄位 -->
+                        <th data-sort="student_count" class="col-student_count" style="width: 100px;">修課人數 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th class="col-outline" style="width: 80px; text-align: center;">大綱</th>
                         <th class="col-actions">操作</th>
                     </tr>
                 </thead>
