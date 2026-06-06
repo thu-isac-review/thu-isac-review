@@ -37,10 +37,7 @@ export async function render(containerId, context) {
 function injectSkeleton(container) {
     container.innerHTML = `
     <div class="p-6 space-y-6 animate-pulse">
-        <div class="h-14 bg-white rounded-xl border border-gray-200 flex items-center justify-between px-6">
-            <div class="h-6 w-48 bg-gray-200 rounded-md"></div>
-            <div class="h-8 w-64 bg-gray-200 rounded-md"></div>
-        </div>
+        <div class="h-20 bg-gray-200 rounded-2xl"></div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="h-28 bg-white border border-gray-200 rounded-xl"></div>
             <div class="h-28 bg-white border border-gray-200 rounded-xl"></div>
@@ -64,7 +61,7 @@ async function fetchAllDashboardData(db) {
             getDocs(collection(db, "internship_courses")),
             getDocs(collection(db, "internship_records")),
             getDocs(collection(db, "internship_institutions")),
-            getDocs(collection(db, "students")).catch(() => ({ docs: [] })) // 容錯機制
+            getDocs(collection(db, "internship_students")).catch(() => ({ docs: [] })) // 🌟 [修正] 改為讀取後台正確的 internship_students 集合
         ]);
 
         localCache.courses = courseSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -120,43 +117,48 @@ function renderStatsUI(container) {
     container.innerHTML = `
     <div id="dashboard-wrapper" class="p-6 space-y-6 custom-scroll overflow-y-auto h-full" style="background: var(--bg);">
         
-        <!-- 頂部獨立雙維度篩選列 -->
-        <div class="flex flex-col sm:flex-row gap-4 items-center justify-between bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-            <div class="flex items-center gap-3">
-                <div class="w-1.5 h-6 bg-blue-600 rounded-full"></div>
+        <!-- 🌟 頂部高質感獨立雙維度篩選列 -->
+        <div class="bg-gradient-to-r from-slate-900 to-slate-800 p-6 rounded-2xl shadow-md text-white flex flex-col md:flex-row gap-6 items-start md:items-center justify-between border border-slate-700/50">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 text-2xl shadow-inner shrink-0">
+                    <i class="ti ti-dashboard"></i>
+                </div>
                 <div>
-                    <h1 class="text-base font-bold text-gray-900 leading-tight">實習數據主儀表板</h1>
-                    <p class="text-[11px] text-gray-400 mt-0.5">系統動態統計與系所成效交叉分析</p>
+                    <h1 class="text-lg font-bold tracking-tight">實習數據主儀表板</h1>
+                    <p class="text-xs text-slate-300 font-medium mt-1">
+                        <span class="bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full text-[10px] font-semibold mr-1.5 border border-blue-500/30">數據交叉決策</span>
+                        系統動態統計與系所成效交叉分析
+                    </p>
                 </div>
             </div>
             
-            <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
+            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-start md:justify-end border-t border-slate-700/50 md:border-t-0 pt-4 md:p-0">
                 <!-- 學年度篩選 -->
-                <div class="flex items-center gap-1.5">
-                    <span class="text-xs font-bold text-gray-500">學年度:</span>
-                    <select id="select-filter-year" class="bg-gray-50 border border-gray-200 text-gray-800 text-xs rounded-lg p-2 font-semibold focus:outline-none focus:border-blue-500 transition">
-                        <option value="all">全部學年度</option>
-                        ${uniqueYears.map(y => `<option value="${y}" ${currentFilters.year === y ? 'selected' : ''}>${y} 學年度</option>`).join('')}
+                <div class="flex items-center gap-2 bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700 shadow-sm">
+                    <span class="text-xs font-bold text-slate-400">學年度</span>
+                    <select id="select-filter-year" class="bg-transparent text-white text-xs font-bold focus:outline-none cursor-pointer">
+                        <option value="all" class="bg-slate-800 text-white">全部學年度</option>
+                        ${uniqueYears.map(y => `<option value="${y}" ${currentFilters.year === y ? 'selected' : ''} class="bg-slate-800 text-white">${y} 學年度</option>`).join('')}
                     </select>
                 </div>
                 
                 <!-- 學期篩選 -->
-                <div class="flex items-center gap-1.5">
-                    <span class="text-xs font-bold text-gray-500">學期:</span>
-                    <select id="select-filter-term" class="bg-gray-50 border border-gray-200 text-gray-800 text-xs rounded-lg p-2 font-semibold focus:outline-none focus:border-blue-500 transition">
-                        <option value="all">全部學期</option>
-                        ${uniqueTerms.map(t => `<option value="${t}" ${currentFilters.term === t ? 'selected' : ''}>第 ${t} 學期</option>`).join('')}
+                <div class="flex items-center gap-2 bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700 shadow-sm">
+                    <span class="text-xs font-bold text-slate-400">學期</span>
+                    <select id="select-filter-term" class="bg-transparent text-white text-xs font-bold focus:outline-none cursor-pointer">
+                        <option value="all" class="bg-slate-800 text-white">全部學期</option>
+                        ${uniqueTerms.map(t => `<option value="${t}" ${currentFilters.term === t ? 'selected' : ''} class="bg-slate-800 text-white">第 ${t} 學期</option>`).join('')}
                     </select>
                 </div>
                 
                 <!-- 重設按鈕 -->
-                <button id="btn-reset-dashboard" class="flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-white px-3 py-2 rounded-lg bg-blue-50 hover:bg-blue-600 border border-blue-100 hover:border-blue-600 transition duration-150">
-                    <i class="ti ti-refresh"></i>重設
+                <button id="btn-reset-dashboard" class="flex items-center gap-1.5 text-xs font-bold text-slate-200 hover:text-white px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 border border-slate-600 transition duration-150 shadow-sm">
+                    <i class="ti ti-refresh"></i> 恢復預設
                 </button>
             </div>
         </div>
 
-        <!-- 🌟 [更新] 四大核心實習指標統計區塊 -->
+        <!-- 🌟 四大核心實習指標統計區塊 -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="stats-grid-container">
             <!-- 數據經由 computeAndRenderStats() 動態更新 -->
         </div>
@@ -187,42 +189,6 @@ function renderStatsUI(container) {
                 <div id="top-institutions-list" class="flex-1 space-y-3.5 max-h-[320px] overflow-y-auto custom-scroll pr-1">
                     <!-- 動態載入熱門機構 -->
                 </div>
-            </div>
-        </div>
-
-        <!-- 系統快速連結 -->
-        <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-            <h2 class="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <i class="ti ti-layout-grid text-blue-600"></i> 系統快速連結
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <a href="#intern_view/institution/main" class="p-4 border border-gray-100 rounded-xl hover:border-blue-400 hover:bg-blue-50/50 transition flex items-center gap-3.5 group shadow-sm">
-                    <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xl group-hover:bg-blue-600 group-hover:text-white transition duration-150">
-                        <i class="ti ti-building-community"></i>
-                    </div>
-                    <div>
-                        <div class="font-bold text-sm text-gray-800">實習機構列表</div>
-                        <div class="text-[11px] text-gray-400 mt-0.5">瀏覽所有已登錄之國內外合作機構</div>
-                    </div>
-                </a>
-                <a href="#intern_view/course/main" class="p-4 border border-gray-100 rounded-xl hover:border-blue-400 hover:bg-blue-50/50 transition flex items-center gap-3.5 group shadow-sm">
-                    <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl group-hover:bg-emerald-600 group-hover:text-white transition duration-150">
-                        <i class="ti ti-book-2"></i>
-                    </div>
-                    <div>
-                        <div class="font-bold text-sm text-gray-800">實習課程列表</div>
-                        <div class="text-[11px] text-gray-400 mt-0.5">查看學年與學期開設之實習課程</div>
-                    </div>
-                </a>
-                <a href="#intern_view/record_view" class="p-4 border border-gray-100 rounded-xl hover:border-blue-400 hover:bg-blue-50/50 transition flex items-center gap-3.5 group shadow-sm">
-                    <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl group-hover:bg-indigo-600 group-hover:text-white transition duration-150">
-                        <i class="ti ti-file-analytics"></i>
-                    </div>
-                    <div>
-                        <div class="font-bold text-sm text-gray-800">實習記錄瀏覽</div>
-                        <div class="text-[11px] text-gray-400 mt-0.5">追蹤與統計目前實習進度、審核狀態</div>
-                    </div>
-                </a>
             </div>
         </div>
     </div>
@@ -270,17 +236,45 @@ function computeAndRenderStats() {
         return matchYear && matchTerm;
     });
 
-    // C. 統計不重複實習學生總數
-    const activeStudentIds = new Set(filteredRecords.map(r => r.student_id || r.student_num || r.uid).filter(Boolean));
-    const totalStudentsCount = activeStudentIds.size;
+    // 🌟 [修正] 統計不重複實習學生總數 (全面比對實習紀錄與實體 internship_students 集合中的 student_id)
+    const recordStudentIds = new Set();
+    filteredRecords.forEach(r => {
+        const sId = r.student_id || r.student_num || r.student_no || r.uid;
+        if (sId) {
+            recordStudentIds.add(String(sId).trim());
+        }
+    });
+
+    let totalStudentsCount = 0;
+    if (currentFilters.year === 'all' && currentFilters.term === 'all') {
+        // 如果沒有任何篩選，則顯示 internship_students 的總註冊人數
+        totalStudentsCount = localCache.students.length;
+    } else {
+        // 篩選特定學年學期時，統計該區間內，且存在於學生名單中的不重複學生人數
+        const matchedStudentIds = new Set();
+        localCache.students.forEach(s => {
+            const sId = s.student_id || s.id;
+            if (sId && recordStudentIds.has(String(sId).trim())) {
+                matchedStudentIds.add(String(sId).trim());
+            }
+        });
+        
+        // 容錯防呆：如果尚未建立詳細學生資料檔案，直接以紀錄中的不重複學生識別碼計數
+        totalStudentsCount = matchedStudentIds.size > 0 ? matchedStudentIds.size : recordStudentIds.size;
+    }
 
     // D. 統計實習機構數量
-    // 當無任何學年學期篩選時，顯示「總登記機構數」；有篩選時，則呈現「該期間實際參與合作之機構數」，並在小字加註總量，更加專業
     let activeInstCount = 0;
     if (currentFilters.year === 'all' && currentFilters.term === 'all') {
         activeInstCount = localCache.institutions.length;
     } else {
-        const activeInstIds = new Set(filteredRecords.map(r => r.institution_id || r.inst_id).filter(Boolean));
+        const activeInstIds = new Set();
+        filteredRecords.forEach(r => {
+            const instId = r.institution_id || r.inst_id || r.institution_name || r.inst_name;
+            if (instId && instId !== '其他實習機構' && instId !== 'undefined' && instId !== 'null') {
+                activeInstIds.add(String(instId).trim());
+            }
+        });
         activeInstCount = activeInstIds.size;
     }
 
@@ -307,7 +301,9 @@ function computeAndRenderStats() {
             <div>
                 <div class="text-[11px] font-bold text-gray-400 tracking-wider">實習學生總數</div>
                 <div class="text-2xl font-bold text-gray-900 mt-0.5">${totalStudentsCount} <span class="text-xs font-semibold text-gray-400">人</span></div>
-                <div class="text-[10px] text-gray-400 mt-1">此期間實際參與實習之學生</div>
+                <div class="text-[10px] text-gray-400 mt-1">
+                    ${(currentFilters.year === 'all' && currentFilters.term === 'all') ? '系統已登記之總學生數' : `參與實習學生 (總登記 ${localCache.students.length} 人)`}
+                </div>
             </div>
         </div>
 
@@ -393,8 +389,11 @@ function computeAndRenderStats() {
             const matchObj = localCache.institutions.find(i => i.id === (r.institution_id || r.inst_id));
             if (matchObj) name = matchObj.name;
         }
-        name = name || '其他實習機構';
-        instMap[name] = (instMap[name] || 0) + 1;
+        name = String(name || '').trim();
+        // [修正] 排行過濾：排除無效值與預設替代字串，只在有名稱時加入排行
+        if (name && name !== '其他實習機構' && name !== 'undefined' && name !== 'null') {
+            instMap[name] = (instMap[name] || 0) + 1;
+        }
     });
 
     const sortedInsts = Object.entries(instMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
