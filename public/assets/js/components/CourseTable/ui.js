@@ -24,6 +24,23 @@ export function applyReadOnlyMode() {
     }
 }
 
+// 修正 3：更新欄位顯示 CSS 的生成邏輯，加入 .cell-primary 的覆蓋
+export function updateColStyles() {
+    let css = '';
+    const cols = ['academic_year', 'term', 'edu_system', 'college', 'department', 'course_code', 'course_name', 'course_type', 'credits'];
+    
+    cols.forEach(col => {
+        if (!state.colVis[col]) {
+            // 強制隱藏整欄的 <th> 和 <td>
+            css += `.col-${col} { display: none !important; }\n`;
+            css += `td.col-${col} * { display: none !important; }\n`; 
+        }
+    });
+    
+    const styleEl = document.getElementById('dynamic-col-styles');
+    if (styleEl) styleEl.textContent = css;
+}
+
 export function toggleDropdown(type) {
     const drop = document.getElementById(`drop-${type}`);
     const wrap = document.getElementById(`pill-wrap-${type}`);
@@ -33,13 +50,53 @@ export function toggleDropdown(type) {
     if (!isOpen) { drop.classList.add('show'); wrap.classList.add('open'); }
 }
 
+// 修正 2：增加搜尋文字反黃 (Highlight) 的功能
 export function filterDropdownItems(inputElement, containerId) {
-    const term = inputElement.value.toLowerCase();
-    const labels = document.getElementById(containerId).querySelectorAll('.filter-option');
+    const term = inputElement.value.toLowerCase().trim();
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    const labels = container.querySelectorAll('.filter-option');
+    let hasVisible = false;
+
     labels.forEach(lbl => {
-        const text = lbl.textContent.toLowerCase();
-        lbl.style.display = text.includes(term) ? 'flex' : 'none';
+        const span = lbl.querySelector('span:not(.pill-count)'); // 避免選到數量標籤
+        if (!span) return;
+        
+        // 取得最原始的文字 (去除之前加上的 highlight span)
+        const originalText = span.textContent || span.innerText;
+        const textLower = originalText.toLowerCase();
+        
+        if (term === '') {
+            lbl.style.display = 'flex';
+            span.innerHTML = originalText; // 恢復原狀
+            hasVisible = true;
+        } else if (textLower.includes(term)) {
+            lbl.style.display = 'flex';
+            hasVisible = true;
+            
+            // 實作反黃標示
+            const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            span.innerHTML = originalText.replace(regex, '<mark style="background-color: #fef08a; padding: 0 2px; border-radius: 2px; color: #854d0e; font-weight: bold;">$1</mark>');
+        } else {
+            lbl.style.display = 'none';
+        }
     });
+
+    // 處理空狀態
+    let emptyOpt = container.querySelector('.empty-opt');
+    if (!hasVisible) {
+        if (!emptyOpt) {
+            emptyOpt = document.createElement('label');
+            emptyOpt.className = 'searchable-option empty-opt';
+            emptyOpt.textContent = '找不到符合的選項';
+            container.appendChild(emptyOpt);
+        } else {
+            emptyOpt.style.display = 'flex';
+        }
+    } else if (emptyOpt) {
+        emptyOpt.style.display = 'none';
+    }
 }
 
 export function updatePillActive(type) {
