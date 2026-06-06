@@ -146,7 +146,7 @@ export function bindEvents(container) {
         });
     });
 
-    // 修正 1：綁定全選/取消全選按鈕 (修復沒反應的問題)
+    // 綁定全選/取消全選按鈕 (修復沒反應的問題)
     container.querySelectorAll('.btn-filter-toggle').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation(); // 阻止事件冒泡關閉下拉選單
@@ -200,7 +200,7 @@ export function bindEvents(container) {
     // 防止點擊選單內部時關閉選單
     displayMenu?.addEventListener('click', (e) => { e.stopPropagation(); });
 
-    // 修正 3：讓 Checkbox 狀態更動後觸發 UI.updateColStyles();
+    // 讓 Checkbox 狀態更動後觸發 UI.updateColStyles();
     container.querySelectorAll('.col-toggle-chk').forEach(chk => {
         // 設定初始狀態
         chk.checked = state.colVis[chk.value] !== false; 
