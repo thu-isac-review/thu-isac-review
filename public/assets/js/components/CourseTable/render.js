@@ -1,6 +1,6 @@
 import { state } from './state.js';
 
-// 修正：原生尋找反黃樣式
+// 修正 A.2: 回歸最標準的 Chrome 搜尋反黃 (黃底黑字，無其他贅餘樣式)
 function highlightKeyword(text, keyword) {
     if (!text) return '';
     if (!keyword) return text;
@@ -16,7 +16,7 @@ export function renderTable() {
     state.filteredData = state.allData.filter(d => {
         const matchSearch = (d.course_name || '').toLowerCase().includes(searchTerm) || (d.course_code || '').toLowerCase().includes(searchTerm);
         
-        // 修正核心Bug：強制將資料庫讀出的數值與空值轉為字串再做 Set.has 驗證
+        // 修正：強固的比對與型別轉化防空保護 (確保空白載入正常)
         const matchYear = state.filterYearSet.size === 0 || state.filterYearSet.has(String(d.academic_year ?? ''));
         const matchTerm = state.filterTermSet.size === 0 || state.filterTermSet.has(String(d.term ?? ''));
         const matchEdu = state.filterEduSet.size === 0 || state.filterEduSet.has(String(d.edu_system ?? ''));
@@ -30,6 +30,7 @@ export function renderTable() {
         return matchSearch && matchYear && matchTerm && matchEdu && matchCol && matchDept && matchCode && matchName && matchType && matchCredit;
     });
 
+    // 排序
     state.filteredData.sort((a, b) => {
         let valA = a[state.sortCol] ?? ''; let valB = b[state.sortCol] ?? '';
         
@@ -121,7 +122,7 @@ export function renderTable() {
         const deptDispName = deptObj && deptObj.shortName ? deptObj.shortName : data.department;
         const isChecked = state.selectedIds.includes(data.id) ? 'checked' : '';
         
-        // 修正：刪除按鈕樣式與機構完全一致
+        // 修正 C：刪除按鈕樣式與機構完全一致（灰框，紅色垃圾桶圖示）
         const actionHtml = state.isReadOnly ? '' : `
             <div class="row-actions">
                 <button class="btn btn-icon sm btn-row-edit" data-id="${data.id}"><i class="ti ti-edit"></i></button>
@@ -131,6 +132,8 @@ export function renderTable() {
 
         const highlightedCode = highlightKeyword(data.course_code, searchTerm);
         const highlightedName = highlightKeyword(data.course_name, searchTerm);
+        
+        // 修正 E：查看課程大綱外部連結 (http://desc.ithu.tw/{學年}/{學期}/{選課代號})
         const syllabusUrl = `http://desc.ithu.tw/${data.academic_year}/${data.term}/${data.course_code}`;
 
         html += `
@@ -149,10 +152,12 @@ export function renderTable() {
             <td style="text-align: left;"><div class="cell-primary bold" title="${data.course_name}">${highlightedName}</div></td>
             <td style="text-align: center;"><div class="cell-primary">${data.course_type}</div></td>
             <td style="text-align: center;"><div class="cell-primary bold">${data.credits}</div></td>
-            <td style="text-align: center;"><div class="cell-primary bold">${data.student_count || 0}</div></td>
+            <!-- 修正 B & A.4：修課人數內容字體為粗體，顏色改為品牌藍色 -->
+            <td style="text-align: center;"><div class="cell-primary bold" style="color: var(--brand); font-weight: bold; justify-content: center;">${data.student_count || 0}</div></td>
+            <!-- 修正 A.3：大綱按鈕不寫文字，改用精緻圖示按鈕 -->
             <td style="text-align: center;">
-                <a href="${syllabusUrl}" target="_blank" class="btn btn-sm btn-secondary" style="font-weight: 600; padding: 0 10px; color: var(--brand);">
-                    <i class="ti ti-external-link" style="margin-right:4px;"></i> 大綱
+                <a href="${syllabusUrl}" target="_blank" class="btn btn-icon sm btn-secondary" title="課程大綱" style="color: var(--brand);">
+                    <i class="ti ti-external-link"></i>
                 </a>
             </td>
             <td class="col-actions" style="text-align: center;">${actionHtml}</td>
