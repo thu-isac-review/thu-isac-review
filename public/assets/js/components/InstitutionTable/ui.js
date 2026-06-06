@@ -1,4 +1,4 @@
-import { state, CONSTANTS } from './state.js';
+import { state } from './state.js';
 
 export async function loadTemplate(containerId) {
     const response = await fetch('./assets/templates/institution.html');
@@ -6,7 +6,6 @@ export async function loadTemplate(containerId) {
     document.getElementById(containerId).innerHTML = htmlString;
 }
 
-// 根據權限狀態來決定要隱藏哪些按鈕
 export function applyReadOnlyMode() {
     if (state.isReadOnly) {
         const style = document.createElement('style');
@@ -14,9 +13,7 @@ export function applyReadOnlyMode() {
             #btn-import-trigger, 
             #btn-create-inst, 
             .v-divider,
-            #btn-batch-edit, 
-            #btn-batch-merge, 
-            #btn-batch-delete,
+            #batch-bar,
             .col-checkbox, 
             .col-actions {
                 display: none !important;
@@ -26,163 +23,98 @@ export function applyReadOnlyMode() {
     }
 }
 
-export function initSelectOptions() {
-    let countryHtml = '';
-    CONSTANTS.COUNTRIES.forEach(item => countryHtml += `<option value="${item}">${item}</option>`);
-    document.getElementById('input-country').innerHTML = countryHtml;
-
-    let cityHtml = `<option value="">請選擇</option>`;
-    CONSTANTS.CITIES.forEach(item => cityHtml += `<option value="${item}">${item}</option>`);
-    document.getElementById('input-city').innerHTML = cityHtml;
-
-    let industryHtml = `<option value="">請選擇</option>`;
-    CONSTANTS.INDUSTRIES.forEach(item => industryHtml += `<option value="${item}">${item}</option>`);
-    document.getElementById('input-industry').innerHTML = industryHtml;
-
-    let venueHtml = `<option value="">請選擇</option>`;
-    CONSTANTS.VENUES.forEach(item => venueHtml += `<option value="${item}">${item}</option>`);
-    document.getElementById('input-venue-type').innerHTML = venueHtml;
-
-    let filterCountryHtml = '';
-    CONSTANTS.COUNTRIES.forEach(item => { filterCountryHtml += `<label class="filter-option"><input type="checkbox" class="filter-chk-country" value="${item}"><span>${item}</span></label>`; });
-    document.getElementById('country-options-container').innerHTML = filterCountryHtml;
-
-    let filterCityHtml = '';
-    CONSTANTS.CITIES.forEach(item => { filterCityHtml += `<label class="filter-option"><input type="checkbox" class="filter-chk-city" value="${item}"><span>${item}</span></label>`; });
-    document.getElementById('city-options-container').innerHTML = filterCityHtml;
-
-    let filterIndustryHtml = '';
-    CONSTANTS.INDUSTRIES.forEach(item => { filterIndustryHtml += `<label class="filter-option"><input type="checkbox" class="filter-chk-industry" value="${item}"><span>${item}</span></label>`; });
-    document.getElementById('industry-options-container').innerHTML = filterIndustryHtml;
-
-    let filterVenueHtml = '';
-    CONSTANTS.VENUES.forEach(item => { filterVenueHtml += `<label class="filter-option"><input type="checkbox" class="filter-chk-venue" value="${item}"><span>${item}</span></label>`; });
-    document.getElementById('venue-options-container').innerHTML = filterVenueHtml;
-    
-    let batchIndHtml = '<option value="NO_CHANGE">-- 不修改 --</option><option value="">[清空此欄位]</option>';
-    CONSTANTS.INDUSTRIES.forEach(item => batchIndHtml += `<option value="${item}">${item}</option>`);
-    document.getElementById('batch-input-industry').innerHTML = batchIndHtml;
-
-    let batchVenueHtml = '<option value="NO_CHANGE">-- 不修改 --</option><option value="">[清空此欄位]</option>';
-    CONSTANTS.VENUES.forEach(item => batchVenueHtml += `<option value="${item}">${item}</option>`);
-    document.getElementById('batch-input-venue').innerHTML = batchVenueHtml;
-}
-
 export function updateColStyles() {
     let css = '';
-    if (!state.colVis.tax_id) css += '.col-tax_id { display: none !important; }\n';
-    if (!state.colVis.industry) css += '.col-industry { display: none !important; }\n';
-    if (!state.colVis.venue_type) css += '.col-venue_type { display: none !important; }\n';
-    if (!state.colVis.country) css += '.col-country { display: none !important; }\n';
-    if (!state.colVis.city) css += '.col-city { display: none !important; }\n';
-    if (!state.colVis.address) css += '.col-address { display: none !important; }\n';
-    document.getElementById('dynamic-col-styles').textContent = css;
-}
-
-export function buildBaseTree() {
-    let grouped = {};
-    state.baseTree = [];
-    state.allData.forEach(d => {
-        if (!d.parent_id) { grouped[d.id] = { ...d, children: [] }; state.baseTree.push(grouped[d.id]); }
-    });
-    state.allData.forEach(d => {
-        if (d.parent_id) {
-            if (grouped[d.parent_id]) grouped[d.parent_id].children.push(d);
-            else state.baseTree.push({ ...d, children: [] });
+    const cols = ['inst_name', 'status', 'inst_type', 'inst_vat', 'inst_address', 'inst_category', 'employee_count'];
+    
+    cols.forEach(col => {
+        if (!state.colVis[col]) {
+            css += `.col-${col} { display: none !important; }\n`;
+            css += `td.col-${col} * { display: none !important; }\n`;
         }
     });
-}
-
-export function updateBatchActionBar() {
-    const bar = document.getElementById('batch-bar');
-    const count = document.getElementById('selected-count');
-    const btnSelectAll = document.getElementById('btn-select-all-filtered');
     
-    // 如果是唯讀模式，不需要顯示批次操作列
-    if (state.isReadOnly) {
-        bar.classList.remove('visible');
-        return;
-    }
-    
-    if (state.selectedIds.length > 0) {
-        bar.classList.add('visible');
-        count.innerText = state.selectedIds.length;
-        
-        let totalMatched = 0;
-        if(state.isTreeMode) {
-            state.filteredInstitutions.forEach(p => { totalMatched += 1 + p.children.length; });
-        } else {
-            totalMatched = state.filteredInstitutions.length;
-        }
-
-        if (state.selectedIds.length < totalMatched) {
-            btnSelectAll.style.display = 'inline-flex';
-            btnSelectAll.innerText = `選取全部符合條件 (${totalMatched})`;
-        } else {
-            btnSelectAll.style.display = 'none';
-        }
-    } else {
-        bar.classList.remove('visible');
-    }
-}
-
-export function handleCountryChange() {
-    const country = document.getElementById('input-country').value;
-    const isDomestic = country === '中華民國';
-    
-    const wrapTax = document.getElementById('wrap-tax-id');
-    const wrapCity = document.getElementById('wrap-city');
-    const wrapNameTrans = document.getElementById('wrap-name-translated');
-    const wrapOverseasTax = document.getElementById('wrap-overseas-tax');
-
-    const taxInput = document.getElementById('input-tax-id');
-    const cityInput = document.getElementById('input-city');
-
-    if (isDomestic) {
-        wrapTax.style.display = 'flex'; 
-        wrapCity.style.display = 'flex';
-        wrapNameTrans.style.display = 'none'; 
-        wrapOverseasTax.style.display = 'none';
-        taxInput.required = true; 
-        cityInput.required = true;
-    } else {
-        wrapTax.style.display = 'none'; 
-        wrapCity.style.display = 'none';
-        wrapNameTrans.style.display = 'flex'; 
-        wrapOverseasTax.style.display = 'flex';
-        taxInput.required = false; 
-        cityInput.required = false;
-        taxInput.value = ''; 
-        cityInput.value = '';
-    }
+    const styleEl = document.getElementById('dynamic-col-styles');
+    if (styleEl) styleEl.textContent = css;
 }
 
 export function toggleDropdown(type) {
     const drop = document.getElementById(`drop-${type}`);
     const wrap = document.getElementById(`pill-wrap-${type}`);
     const isOpen = drop.classList.contains('show');
+    
     document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
     document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
-    if (!isOpen) { drop.classList.add('show'); wrap.classList.add('open'); }
+    
+    if (!isOpen) {
+        drop.classList.add('show');
+        wrap.classList.add('open');
+    }
 }
 
+// 修正：補上空選項提示與反黃功能
 export function filterDropdownItems(inputElement, containerId) {
-    const term = inputElement.value.toLowerCase();
-    const labels = document.getElementById(containerId).querySelectorAll('.filter-option');
+    const term = inputElement.value.toLowerCase().trim();
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    const labels = container.querySelectorAll('.filter-option');
+    let hasVisible = false;
+
     labels.forEach(lbl => {
-        const text = lbl.textContent.toLowerCase();
-        lbl.style.display = text.includes(term) ? 'flex' : 'none';
+        const span = lbl.querySelector('span:not(.pill-count)'); 
+        if (!span) return;
+        
+        const originalText = span.textContent || span.innerText;
+        const textLower = originalText.toLowerCase();
+        
+        if (term === '') {
+            lbl.style.display = 'flex';
+            span.innerHTML = originalText; 
+            hasVisible = true;
+        } else if (textLower.includes(term)) {
+            lbl.style.display = 'flex';
+            hasVisible = true;
+            const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            span.innerHTML = originalText.replace(regex, '<mark style="background-color: #ffff00; color: #000; padding: 0;">$1</mark>');
+        } else {
+            lbl.style.display = 'none';
+        }
     });
+
+    let emptyOpt = container.querySelector('.empty-opt');
+    if (!hasVisible) {
+        if (!emptyOpt) {
+            emptyOpt = document.createElement('label');
+            emptyOpt.className = 'searchable-option empty-opt';
+            emptyOpt.textContent = '找不到符合的選項';
+            container.appendChild(emptyOpt);
+        } else {
+            emptyOpt.style.display = 'flex';
+        }
+    } else if (emptyOpt) {
+        emptyOpt.style.display = 'none';
+    }
 }
 
 export function updatePillActive(type) {
-    let set, typeName;
-    if(type === 'country') { set = state.filterCountrySet; typeName = '國別'; }
-    else if(type === 'city') { set = state.filterCitySet; typeName = '縣市'; }
-    else if(type === 'industry') { set = state.filterIndustrySet; typeName = '行業別'; }
-    else { set = state.filterVenueSet; typeName = '場所'; }
-
+    const setMap = {
+        'status': state.filterStatusSet,
+        'type': state.filterTypeSet,
+        'category': state.filterCategorySet
+    };
+    const nameMap = {
+        'status': '合作狀態',
+        'type': '機構類型',
+        'category': '產業類別'
+    };
+    
+    const set = setMap[type];
+    const typeName = nameMap[type];
     const pill = document.getElementById(`pill-${type}`);
+    
+    if (!pill) return;
+
     if (set.size > 0) {
         pill.classList.add('active');
         pill.innerHTML = `${typeName} <span class="pill-count">${set.size}</span> <i class="ti ti-chevron-down"></i>`;
@@ -192,28 +124,75 @@ export function updatePillActive(type) {
     }
 }
 
-export function populateParentDropdown(excludeId = null) {
-    const listContainer = document.getElementById('parent-dropdown-list');
-    let html = '<div class="searchable-option empty-opt" data-id="" data-name="">-- 獨立機構 / 總公司 (無隸屬) --</div>';
+export function populateAllFiltersUI() {
+    const getUnique = (key) => {
+        return [...new Set(state.allData.map(d => d[key]))].filter(Boolean).sort();
+    };
+
+    const categories = getUnique('inst_category');
     
-    state.allData.forEach(d => {
-        if (!d.parent_id && d.id !== excludeId) {
-            html += `
-            <div class="searchable-option" data-id="${d.id}" data-name="${d.name}">
-                <span>${d.name}</span> 
-            </div>`;
-        }
+    const generateHtml = (arr, type) => {
+        return arr.map(v => `
+            <label class="filter-option">
+                <input type="checkbox" class="filter-chk-${type}" value="${v}"> 
+                <span>${v}</span>
+            </label>
+        `).join('');
+    };
+
+    if(document.getElementById('category-options-container')) {
+        document.getElementById('category-options-container').innerHTML = generateHtml(categories, 'category');
+    }
+
+    ['status', 'type', 'category'].forEach(type => {
+        const setMap = { 'status': state.filterStatusSet, 'type': state.filterTypeSet, 'category': state.filterCategorySet };
+        document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = setMap[type].has(c.value));
+        updatePillActive(type);
     });
-    listContainer.innerHTML = html;
 }
 
-export function closeModal() { 
-    document.getElementById('data-modal').classList.remove('open'); 
-    state.editingId = null; 
-    state.pendingPayload = null; 
+export function updateBatchActionBar() {
+    const bar = document.getElementById('batch-bar');
+    const count = document.getElementById('selected-count');
+    const btnSelectAll = document.getElementById('btn-select-all-filtered');
+    
+    if (state.isReadOnly) {
+        if(bar) bar.classList.remove('visible');
+        return;
+    }
+    
+    if (state.selectedIds.length > 0) {
+        if(bar) bar.classList.add('visible');
+        if(count) count.innerText = state.selectedIds.length;
+        if(btnSelectAll) {
+            if (state.selectedIds.length < state.filteredData.length) {
+                btnSelectAll.style.display = 'inline-flex';
+                btnSelectAll.innerText = `選取全部符合條件 (${state.filteredData.length})`;
+            } else {
+                btnSelectAll.style.display = 'none';
+            }
+        }
+    } else {
+        if(bar) bar.classList.remove('visible');
+    }
 }
 
-// 統一 Notification 管理
+export function switchTab(tabId) {
+    document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+    
+    const btn = document.querySelector(`.sidebar-item[data-tab="${tabId}"]`);
+    const content = document.getElementById(`tab-${tabId}`);
+    
+    if (btn) btn.classList.add('active');
+    if (content) content.style.display = 'block';
+}
+
+export function closeModal() {
+    document.getElementById('data-modal')?.classList.remove('open');
+    state.editingId = null;
+}
+
 export function showNotification(message, type = 'success') {
     const toast = document.createElement('div');
     toast.className = `fixed bottom-5 right-5 z-[9999] flex items-center gap-2.5 px-4 py-3.5 rounded-xl shadow-xl border transition-all duration-300 transform translate-y-5 opacity-0`;
