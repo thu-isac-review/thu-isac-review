@@ -55,7 +55,7 @@ export function filterDropdownItems(inputElement, containerId) {
         } else if (textLower.includes(term)) {
             lbl.style.display = 'flex';
             hasVisible = true;
-            // 使用 Chrome 原生的尋找反黃樣式
+            // 與機構完全一致：黃底黑字 Chrome 效果
             const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
             span.innerHTML = originalText.replace(regex, '<mark style="background-color: #ffff00; color: #000; padding: 0;">$1</mark>');
         } else {
