@@ -1,6 +1,6 @@
 import { state, Utils } from './state.js';
 
-// 🌟 [新增] 用於解析學期權重的輔助函式，以便進行「多到少 (暑期 -> 2 -> 1)」排序
+// 🌟 用於解析學期權重的輔助函式，以便進行「多到少 (暑期 -> 2 -> 1)」排序
 function getTermValue(term) {
     const t = String(term || '').trim();
     if (t.includes('暑')) return 3;
@@ -9,19 +9,19 @@ function getTermValue(term) {
     return 0;
 }
 
-// 🌟 [新增] 取得學院排序索引值 (與篩選器的順序一致)
+// 🌟 取得學院排序索引值 (與篩選器的順序一致)
 function getCollegeSortValue(collegeName) {
     const idx = state.orderedColleges.findIndex(c => c.name === collegeName);
     return idx !== -1 ? idx : 999;
 }
 
-// 🌟 [新增] 取得學系排序權重 (依據資料庫中 globalDepts 排序設定 sortOrder)
+// 🌟 取得學系排序權重 (依據資料庫中 globalDepts 排序設定 sortOrder)
 function getDeptSortValue(deptName) {
     const dept = state.globalDepts.find(d => d.name === deptName);
     return dept ? (dept.sortOrder || 999) : 999;
 }
 
-// 🌟 [新增] 預設多階層排序鏈比較器
+// 🌟 預設多階層排序鏈比較器
 // 順序：學年度(多到少) > 學期(多到少) > 開課學院(系統排序) > 開課學系(系統排序) > 選課代號(少到多)
 function defaultMultiLevelCompare(a, b) {
     // 1. 學年度 (多到少, 降冪)
@@ -75,9 +75,6 @@ export function renderTable() {
         return matchSearch && matchYear && matchTerm && matchEdu && matchCol && matchDept && matchCode && matchName && matchType && matchCredit;
     });
 
-    // 🌟 [優化] 進階排序邏輯：
-    // 如果點擊了特定表頭進行排序 (state.sortCol)，則先以該欄位為主進行排序；
-    // 當該欄位值相同、或是使用預設排序時，將完美套用「學年度 > 學期 > 學院 > 學系 > 代號」多階層排序鏈。
     state.filteredData.sort((a, b) => {
         if (state.sortCol && state.sortCol !== 'none') {
             let diff = 0;
@@ -105,19 +102,16 @@ export function renderTable() {
                 const credB = Number(b.credits) || 0;
                 diff = credA - credB;
             } else {
-                // 字串比對 (開課學制、選課代號、課程名稱、課程屬性)
                 const valA = String(a[state.sortCol] || '').toLowerCase();
                 const valB = String(b[state.sortCol] || '').toLowerCase();
                 diff = valA.localeCompare(valB);
             }
 
-            // 如果該特定欄位比較有出入，直接返回其升降冪結果
             if (diff !== 0) {
                 return state.sortDir === 'asc' ? diff : -diff;
             }
         }
 
-        // 當點擊排序欄位值完全相同，或在預設無點擊排序的情況下，降落至預設多階層排序鏈
         return defaultMultiLevelCompare(a, b);
     });
 
@@ -190,6 +184,7 @@ export function renderTable() {
         const highlightedCode = Utils.highlightKeyword(data.course_code, searchTerm);
         const highlightedName = Utils.highlightKeyword(data.course_name, searchTerm);
 
+        // 🌟 [優化置中] 將 col-course_name td 調整為 text-align: center 以配合表頭置中需求
         html += `
         <tr class="${isChecked ? 'selected' : ''}" data-id="${data.id}">
             <td class="col-checkbox" style="text-align: center;">
@@ -203,7 +198,7 @@ export function renderTable() {
             <td class="col-college" style="text-align: center;"><div class="cell-primary">${colDispName || '-'}</div></td>
             <td class="col-department" style="text-align: center;"><div class="cell-primary">${deptDispName || '-'}</div></td>
             <td class="col-course_code" style="text-align: center;"><span class="pill-code">${highlightedCode}</span></td>
-            <td class="col-course_name" style="text-align: left;"><div class="cell-primary bold" title="${data.course_name}">${highlightedName}</div></td>
+            <td class="col-course_name" style="text-align: center;"><div class="cell-primary bold" title="${data.course_name}">${highlightedName}</div></td>
             <td class="col-course_type" style="text-align: center;"><div class="cell-primary">${data.course_type}</div></td>
             <td class="col-credits" style="text-align: center;"><div class="cell-primary bold">${data.credits}</div></td>
             <td class="col-student_count" style="text-align: center;"><div class="cell-primary font-semibold" style="color:var(--brand);">${studentCount} 人</div></td>
