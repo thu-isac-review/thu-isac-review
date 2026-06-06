@@ -1,12 +1,4 @@
-import { state } from './state.js';
-
-// 輔助函式：用來將搜尋關鍵字反黃
-function highlightKeyword(text, keyword) {
-    if (!text) return '';
-    if (!keyword) return text;
-    const regex = new RegExp(`(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-    return text.toString().replace(regex, '<mark style="background-color: #fef08a; padding: 0 2px; border-radius: 2px; color: #854d0e; font-weight: bold;">$1</mark>');
-}
+import { state, Utils } from './state.js';
 
 export function renderTable() {
     const tbody = document.getElementById('table-body');
@@ -127,9 +119,9 @@ export function renderTable() {
             </div>
         `;
 
-        // 在渲染表格內容時加入 highlight 處理
-        const highlightedCode = highlightKeyword(data.course_code, searchTerm);
-        const highlightedName = highlightKeyword(data.course_name, searchTerm);
+        // 使用共用 Utils 處理 highlight
+        const highlightedCode = Utils.highlightKeyword(data.course_code, searchTerm);
+        const highlightedName = Utils.highlightKeyword(data.course_name, searchTerm);
 
         // 確保每一個 <td> 都有對應的 col-{欄位名} 讓顯示設定可以抓取隱藏
         html += `
