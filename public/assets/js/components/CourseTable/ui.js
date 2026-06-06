@@ -2,7 +2,8 @@ import { state } from './state.js';
 import * as Render from './render.js';
 
 export async function loadTemplate(containerId) {
-    const response = await fetch('./assets/templates/course.html');
+    // 確保路徑與機構一致，避免快取問題，我們可以在 URL 後面加上時間戳記
+    const response = await fetch(`./assets/templates/course.html?v=${new Date().getTime()}`);
     const htmlString = await response.text();
     document.getElementById(containerId).innerHTML = htmlString;
 }
@@ -24,6 +25,7 @@ export function applyReadOnlyMode() {
     }
 }
 
+// 更新欄位顯示 CSS 的生成邏輯，加入 .cell-primary 的覆蓋
 export function updateColStyles() {
     let css = '';
     const cols = ['academic_year', 'term', 'edu_system', 'college', 'department', 'course_code', 'course_name', 'course_type', 'credits'];
@@ -49,6 +51,7 @@ export function toggleDropdown(type) {
     if (!isOpen) { drop.classList.add('show'); wrap.classList.add('open'); }
 }
 
+// 下拉選單的搜尋文字反黃功能
 export function filterDropdownItems(inputElement, containerId) {
     const term = inputElement.value.toLowerCase().trim();
     const container = document.getElementById(containerId);
