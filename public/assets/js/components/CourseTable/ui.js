@@ -1,403 +1,276 @@
 import { state } from './state.js';
-import * as UI from './ui.js';
 import * as Render from './render.js';
-import * as Data from './data.js';
 
-export function bindEvents(container) {
+export async function loadTemplate(containerId) {
+    const response = await fetch('./assets/templates/course.html');
+    const htmlString = await response.text();
+    document.getElementById(containerId).innerHTML = htmlString;
+}
+
+export function applyReadOnlyMode() {
+    if (state.isReadOnly) {
+        const style = document.createElement('style');
+        style.textContent = `
+            #btn-import-trigger, 
+            #btn-create-course, 
+            .v-divider,
+            #batch-bar,
+            .col-checkbox, 
+            .col-actions {
+                display: none !important;
+            }
+        `;
+        document.getElementById('course-page-wrapper').appendChild(style);
+    }
+}
+
+export function updateColStyles() {
+    let css = '';
+    const cols = ['academic_year', 'term', 'edu_system', 'college', 'department', 'course_code', 'course_name', 'course_type', 'credits'];
+    
+    cols.forEach(col => {
+        if (!state.colVis[col]) {
+            // 強制隱藏整欄的 <th> 和 <td>，並覆寫所有子元素的 display 避免破版
+            css += `.col-${col} { display: none !important; }\n`;
+            css += `td.col-${col} * { display: none !important; }\n`; 
+        }
+    });
+    
+    const styleEl = document.getElementById('dynamic-col-styles');
+    if (styleEl) styleEl.textContent = css;
+}
+
+export function toggleDropdown(type) {
+    const drop = document.getElementById(`drop-${type}`);
+    const wrap = document.getElementById(`pill-wrap-${type}`);
+    const isOpen = drop.classList.contains('show');
+    document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
+    document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
+    if (!isOpen) { drop.classList.add('show'); wrap.classList.add('open'); }
+}
+
+export function filterDropdownItems(inputElement, containerId) {
+    const term = inputElement.value.toLowerCase().trim();
+    const container = document.getElementById(containerId);
     if (!container) return;
+    
+    const labels = container.querySelectorAll('.filter-option');
+    let hasVisible = false;
 
-    // 🌟 全域鍵盤快捷鍵綁定
-    if (!state.isKeyboardShortcutBound) {
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                const openModals = document.querySelectorAll('.dialog-overlay.open');
-                if (openModals.length > 0) openModals[openModals.length - 1].classList.remove('open');
-            }
-            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
-                e.preventDefault();
-                const searchInput = document.getElementById('search-input');
-                if (searchInput) { searchInput.focus(); searchInput.select(); }
-            }
-            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
-                if (state.isReadOnly) return;
-                e.preventDefault();
-                if (document.getElementById('data-modal')?.classList.contains('open')) {
-                    document.getElementById('btn-submit')?.click();
-                }
-            }
-        });
-        state.isKeyboardShortcutBound = true;
+    labels.forEach(lbl => {
+        const span = lbl.querySelector('span:not(.pill-count)'); // 避免選到數量標籤
+        if (!span) return;
+        
+        // 取得最原始的文字 (去除之前加上的 highlight span)
+        const originalText = span.textContent || span.innerText;
+        const textLower = originalText.toLowerCase();
+        
+        if (term === '') {
+            lbl.style.display = 'flex';
+            span.innerHTML = originalText; // 恢復原狀
+            hasVisible = true;
+        } else if (textLower.includes(term)) {
+            lbl.style.display = 'flex';
+            hasVisible = true;
+            
+            // 實作反黃標示 (黃底棕字 Highlight)
+            const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            span.innerHTML = originalText.replace(regex, '<mark style="background-color: #fef08a; padding: 0 2px; border-radius: 2px; color: #854d0e; font-weight: bold;">$1</mark>');
+        } else {
+            lbl.style.display = 'none';
+        }
+    });
+
+    // 處理找不到選項時的空狀態
+    let emptyOpt = container.querySelector('.empty-opt');
+    if (!hasVisible) {
+        if (!emptyOpt) {
+            emptyOpt = document.createElement('label');
+            emptyOpt.className = 'searchable-option empty-opt';
+            emptyOpt.textContent = '找不到符合的選項';
+            container.appendChild(emptyOpt);
+        } else {
+            emptyOpt.style.display = 'flex';
+        }
+    } else if (emptyOpt) {
+        emptyOpt.style.display = 'none';
+    }
+}
+
+export function updatePillActive(type) {
+    const setMap = {
+        'year': state.filterYearSet, 'term': state.filterTermSet, 'edu': state.filterEduSet,
+        'college': state.filterCollegeSet, 'dept': state.filterDeptSet, 'code': state.filterCodeSet,
+        'name': state.filterNameSet, 'type': state.filterTypeSet, 'credit': state.filterCreditSet
+    };
+    const nameMap = {
+        'year': '學年度', 'term': '學期', 'edu': '學制',
+        'college': '學院', 'dept': '學系', 'code': '代號',
+        'name': '名稱', 'type': '屬性', 'credit': '學分'
+    };
+    
+    const set = setMap[type];
+    const typeName = nameMap[type];
+    const pill = document.getElementById(`pill-${type}`);
+    
+    if (!pill) return;
+
+    if (set.size > 0) {
+        pill.classList.add('active');
+        pill.innerHTML = `${typeName} <span class="pill-count">${set.size}</span> <i class="ti ti-chevron-down"></i>`;
+    } else {
+        pill.classList.remove('active');
+        pill.innerHTML = `全部${typeName} <i class="ti ti-chevron-down"></i>`;
+    }
+}
+
+export function populateAllFiltersUI() {
+    const getUnique = (key) => [...new Set(state.allData.map(d => d[key]))].filter(Boolean).sort();
+    
+    const years = getUnique('academic_year').reverse();
+    const terms = getUnique('term');
+    const edus = getUnique('edu_system');
+    const codes = getUnique('course_code');
+    const names = getUnique('course_name');
+    const types = getUnique('course_type');
+    const credits = getUnique('credits').sort((a,b) => a-b);
+
+    const generateHtml = (arr, type) => arr.map(v => `
+        <label class="filter-option">
+            <input type="checkbox" class="filter-chk-${type}" value="${v}"> 
+            <span>${v}</span>
+        </label>`).join('');
+
+    if(document.getElementById('year-options-container')) document.getElementById('year-options-container').innerHTML = generateHtml(years, 'year');
+    if(document.getElementById('term-options-container')) document.getElementById('term-options-container').innerHTML = generateHtml(terms, 'term');
+    if(document.getElementById('edu-options-container')) document.getElementById('edu-options-container').innerHTML = generateHtml(edus, 'edu');
+    if(document.getElementById('code-options-container')) document.getElementById('code-options-container').innerHTML = generateHtml(codes, 'code');
+    if(document.getElementById('name-options-container')) document.getElementById('name-options-container').innerHTML = generateHtml(names, 'name');
+    if(document.getElementById('type-options-container')) document.getElementById('type-options-container').innerHTML = generateHtml(types, 'type');
+    if(document.getElementById('credit-options-container')) document.getElementById('credit-options-container').innerHTML = generateHtml(credits, 'credit');
+
+    const colleges = state.orderedColleges.length > 0 
+        ? state.orderedColleges 
+        : [...new Set(state.globalDepts.map(d => d.college))].filter(Boolean).map(c => ({name: c, shortName: c}));
+    
+    if(document.getElementById('college-options-container')) {
+        document.getElementById('college-options-container').innerHTML = colleges.map(c => `
+            <label class="filter-option">
+                <input type="checkbox" class="filter-chk-college" value="${c.name}"> 
+                <span>${c.shortName || c.name}</span>
+            </label>`).join('');
+    }
+    
+    if(document.getElementById('input-college')) {
+        document.getElementById('input-college').innerHTML = `<option value="">請選擇學院...</option>` + colleges.map(c => `<option value="${c.name}">${c.shortName || c.name}</option>`).join('');
     }
 
-    // ---------------- 1. 頂部工具列事件 ----------------
-    container.querySelector('#btn-export-csv')?.addEventListener('click', () => {
-        if (state.filteredData.length === 0) { UI.showNotification("沒有資料可供匯出！", "error"); return; }
-        let csv = '\uFEFF學年度,學期,開課學制,開課學院,開課學系,選課代號,課程名稱,實習課程屬性,實習學分數\n';
-        state.filteredData.forEach(d => {
-            csv += [d.academic_year, d.term, d.edu_system, d.college, d.department, d.course_code, d.course_name, d.course_type, d.credits].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
-        });
-        const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-        link.download = `實習課程清單_${new Date().toISOString().split('T')[0]}.csv`; link.click();
-        UI.showNotification("課程清單匯出成功！", "success");
-    });
+    populateDeptFilterUI();
     
-    container.querySelector('#btn-import-trigger')?.addEventListener('click', () => {
-        if(state.isReadOnly) return;
-        container.querySelector('#import-file')?.click();
+    // 保持勾選狀態
+    ['year', 'term', 'edu', 'code', 'name', 'type', 'credit'].forEach(type => {
+        const setMap = { 'year': state.filterYearSet, 'term': state.filterTermSet, 'edu': state.filterEduSet, 'code': state.filterCodeSet, 'name': state.filterNameSet, 'type': state.filterTypeSet, 'credit': state.filterCreditSet };
+        document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = setMap[type].has(c.value));
+        updatePillActive(type);
     });
+}
+
+export function populateDeptFilterUI() {
+    let deptsToShow = state.globalDepts;
+    if (state.filterCollegeSet.size > 0) deptsToShow = state.globalDepts.filter(d => state.filterCollegeSet.has(d.college));
     
-    container.querySelector('#import-file')?.addEventListener('change', async (e) => {
-        if(state.isReadOnly) return;
-        const file = e.target.files[0]; if (!file) return;
-        const btn = document.getElementById('btn-import-trigger');
-        const originalHtml = btn.innerHTML;
-        btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> <span class="btn-text">匯入中...</span>';
-        btn.disabled = true;
-
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-            try {
-                const rows = event.target.result.split('\n').map(row => row.trim()).filter(row => row);
-                let parsedRows = [];
-                for (let i = 1; i < rows.length; i++) {
-                    let cols = []; let inQuotes = false; let currentVal = '';
-                    for (let char of rows[i]) {
-                        if (char === '"') inQuotes = !inQuotes;
-                        else if (char === ',' && !inQuotes) { cols.push(currentVal.trim()); currentVal = ''; }
-                        else currentVal += char;
-                    }
-                    cols.push(currentVal.trim());
-
-                    if (cols.length >= 9) {
-                        const payload = {
-                            academic_year: cols[0], term: cols[1], semester: `${cols[0]}-${cols[1]}`,
-                            edu_system: cols[2] === '學士班' ? '日間學士班' : cols[2], 
-                            college: cols[3], department: cols[4], course_code: cols[5],
-                            course_name: cols[6], course_type: cols[7], credits: Number(cols[8]) || 0
-                        };
-                        if (!payload.academic_year || !payload.term || !payload.course_code || !payload.course_name) continue;
-                        parsedRows.push(payload);
-                    }
-                }
-                
-                const addedCount = await Data.batchImport(parsedRows);
-                UI.showNotification(`✅ 成功匯入 ${addedCount} 筆課程資料！`, "success");
-                
-                await Data.fetchInitialDataOnce();
-                UI.populateAllFiltersUI();
-                UI.updateBatchActionBar();
-                Render.renderTable();
-            } catch (error) { 
-                UI.showNotification("匯入失敗：" + error.message, "error"); 
-            } 
-            finally { btn.innerHTML = originalHtml; btn.disabled = false; e.target.value = ''; }
-        };
-        reader.readAsText(file);
-    });
-
-    container.querySelector('#btn-create-course')?.addEventListener('click', () => {
-        if(state.isReadOnly) return;
-        state.editingId = null;
-        document.getElementById('data-form')?.reset();
-        document.getElementById('input-department').innerHTML = '<option value="">請先選擇學院...</option>';
-        const mt = document.getElementById('modal-title');
-        if(mt) mt.innerHTML = '<i class="ti ti-book text-brand" style="font-size: 20px;"></i> 新增實習課程';
-        document.getElementById('data-modal')?.classList.add('open');
-    });
+    const validDeptNames = new Set(deptsToShow.map(d => d.name));
+    for (let dept of state.filterDeptSet) { if (!validDeptNames.has(dept)) state.filterDeptSet.delete(dept); }
     
-    container.querySelector('#search-input')?.addEventListener('input', () => { 
-        clearTimeout(state.searchDebounceTimer);
-        state.searchDebounceTimer = setTimeout(() => {
-            state.currentPage = 1; Render.renderTable(); 
-        }, 250);
-    });
-
-    // ---------------- 2. 篩選器與顯示設定事件 ----------------
-    const filterTypes = ['year', 'term', 'edu', 'college', 'dept', 'code', 'name', 'type', 'credit'];
-    
-    filterTypes.forEach(type => {
-        container.querySelector(`#pill-${type}`)?.addEventListener('click', (e) => { e.stopPropagation(); UI.toggleDropdown(type); });
-        container.querySelector(`#search-${type}-input`)?.addEventListener('keyup', (e) => UI.filterDropdownItems(e.target, `${type}-options-container`));
-        
-        container.querySelector(`#drop-${type}`)?.addEventListener('change', (e) => {
-            if(e.target.classList.contains(`filter-chk-${type}`)) {
-                const val = e.target.value;
-                const setMap = { 'year': state.filterYearSet, 'term': state.filterTermSet, 'edu': state.filterEduSet, 'college': state.filterCollegeSet, 'dept': state.filterDeptSet, 'code': state.filterCodeSet, 'name': state.filterNameSet, 'type': state.filterTypeSet, 'credit': state.filterCreditSet };
-                const set = setMap[type];
-
-                if (set.has(val)) set.delete(val); else set.add(val);
-                document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
-                
-                // 檢查是否所有選項都被勾選或取消，藉此連動「全選」按鈕的狀態
-                const containerEl = document.getElementById(`${type}-options-container`);
-                const allCheckboxes = containerEl ? Array.from(containerEl.querySelectorAll(`.filter-chk-${type}`)) : [];
-                const visibleCheckboxes = allCheckboxes.filter(c => c.closest('.filter-option').style.display !== 'none');
-                
-                const btnToggle = document.querySelector(`.btn-filter-toggle[data-type="${type}"]`);
-                if (btnToggle && visibleCheckboxes.length > 0) {
-                    const allChecked = visibleCheckboxes.every(c => c.checked);
-                    btnToggle.dataset.state = allChecked ? 'all' : 'none';
-                    btnToggle.innerText = allChecked ? '取消選取' : '全選';
-                }
-
-                if(type === 'college') { UI.populateDeptFilterUI(); }
-                state.currentPage = 1; UI.updatePillActive(type); Render.renderTable();
-            }
-        });
-    });
-
-    // 綁定全選/取消全選按鈕
-    container.querySelectorAll('.btn-filter-toggle').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation(); // 阻止事件冒泡關閉下拉選單
-            const type = btn.dataset.type;
-            const isSelectAll = btn.dataset.state !== 'all';
-            btn.dataset.state = isSelectAll ? 'all' : 'none';
-            btn.innerText = isSelectAll ? '取消選取' : '全選';
-            
-            const setMap = { 'year': state.filterYearSet, 'term': state.filterTermSet, 'edu': state.filterEduSet, 'college': state.filterCollegeSet, 'dept': state.filterDeptSet, 'code': state.filterCodeSet, 'name': state.filterNameSet, 'type': state.filterTypeSet, 'credit': state.filterCreditSet };
-            const set = setMap[type];
-
-            // 抓出容器中「目前沒有被隱藏 (display:none)」的 checkbox 進行全選/取消操作
-            const containerEl = document.getElementById(`${type}-options-container`);
-            if (containerEl) {
-                containerEl.querySelectorAll(`.filter-chk-${type}`).forEach(c => {
-                    if (c.closest('.filter-option').style.display !== 'none') { 
-                        c.checked = isSelectAll; 
-                        if (isSelectAll) {
-                            set.add(c.value); 
-                        } else {
-                            set.delete(c.value); 
-                        }
-                    }
-                });
-            }
-            
-            // 同步外層的全域 checkbox 狀態 (如果有其他地方綁定同一個值)
-            document.querySelectorAll(`.filter-chk-${type}`).forEach(c => {
-                 c.checked = set.has(c.value);
-            });
-
-            if(type === 'college') { UI.populateDeptFilterUI(); }
-            state.currentPage = 1; UI.updatePillActive(type); Render.renderTable();
-        });
-    });
-
-    // 顯示設定選單
-    const btnDisplaySettings = container.querySelector('#btn-display-settings');
-    const displayMenu = container.querySelector('#display-settings-menu');
-    btnDisplaySettings?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if(displayMenu) {
-             // 將所有其他的選單關閉
-            document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
-            document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
-            // 切換顯示
-            displayMenu.style.display = displayMenu.style.display === 'block' ? 'none' : 'block';
-        }
-    });
-    
-    // 防止點擊選單內部時關閉選單
-    displayMenu?.addEventListener('click', (e) => { e.stopPropagation(); });
-
-    // 讓 Checkbox 狀態更動後觸發 UI.updateColStyles();
-    container.querySelectorAll('.col-toggle-chk').forEach(chk => {
-        // 設定初始狀態
-        chk.checked = state.colVis[chk.value] !== false; 
-        
-        chk.addEventListener('change', (e) => {
-            state.colVis[e.target.value] = e.target.checked;
-            UI.updateColStyles();
-        });
-    });
-
-    if (!state.isGlobalListenerBound) {
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.filter-pill-wrap')) {
-                document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
-                document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
-            }
-            const dm = document.getElementById('display-settings-menu');
-            if (dm && !e.target.closest('#display-settings-wrap')) {
-                dm.style.display = 'none';
-            }
-        });
-        state.isGlobalListenerBound = true;
+    if(document.getElementById('dept-options-container')) {
+        document.getElementById('dept-options-container').innerHTML = deptsToShow.map(d => `
+            <label class="filter-option">
+                <input type="checkbox" class="filter-chk-dept" value="${d.name}"> 
+                <span>${d.shortName || d.name}</span>
+            </label>`).join('');
     }
-
-    // ---------------- 3. 批次操作列事件 ----------------
-    container.querySelector('#selectAll')?.addEventListener('change', (e) => {
-        const isChecked = e.target.checked;
-        const startIndex = (state.currentPage - 1) * state.itemsPerPage;
-        const currentPaginatedIds = state.filteredData.slice(startIndex, startIndex + state.itemsPerPage).map(d => d.id);
-        
-        if (isChecked) { currentPaginatedIds.forEach(id => { if (!state.selectedIds.includes(id)) state.selectedIds.push(id); }); } 
-        else { state.selectedIds = state.selectedIds.filter(id => !currentPaginatedIds.includes(id)); }
-        UI.updateBatchActionBar(); Render.renderTable();
-    });
-
-    container.querySelector('#btn-select-all-filtered')?.addEventListener('click', () => {
-        state.selectedIds = state.filteredData.map(d => d.id);
-        UI.updateBatchActionBar(); Render.renderTable();
-    });
-
-    container.querySelector('#btn-clear-selection')?.addEventListener('click', () => {
-        state.selectedIds = []; UI.updateBatchActionBar(); Render.renderTable();
-    });
-
-    container.querySelector('#btn-batch-delete')?.addEventListener('click', async () => {
-        if(state.isReadOnly) return;
-        if (!confirm(`確定刪除選取的 ${state.selectedIds.length} 筆課程嗎？`)) return;
-        
-        const btn = document.getElementById('btn-batch-delete');
-        const originalHtml = btn.innerHTML;
-        btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 刪除中...';
-        btn.disabled = true;
-
-        try {
-            await Data.batchDelete();
-            state.selectedIds = [];
-            await Data.fetchInitialDataOnce(); 
-            UI.populateAllFiltersUI();
-            UI.updateBatchActionBar(); Render.renderTable(); 
-            UI.showNotification("已成功批次刪除所選課程！", "success");
-        } catch (e) {
-            UI.showNotification("刪除失敗，請檢查資料庫連線", "error");
-        } finally {
-            if(btn) { btn.innerHTML = originalHtml; btn.disabled = false; }
-        }
-    });
-
-    // ---------------- 4. 分頁與排序 ----------------
-    container.querySelector('#per-page-select')?.addEventListener('change', (e) => { 
-        state.itemsPerPage = Number(e.target.value); state.currentPage = 1; Render.renderTable(); 
-    });
     
-    container.querySelector('#pagination-controls')?.addEventListener('click', (e) => {
-        const btn = e.target.closest('.page-btn');
-        if (!btn || btn.disabled || btn.classList.contains('active')) return;
-        const p = Number(btn.dataset.page);
-        if (p) { state.currentPage = p; Render.renderTable(); }
-    });
+    document.querySelectorAll(`.filter-chk-dept`).forEach(c => c.checked = state.filterDeptSet.has(c.value));
+    updatePillActive('dept');
+
+    const searchInput = document.getElementById('search-dept-input');
+    if (searchInput && searchInput.value) filterDropdownItems(searchInput, 'dept-options-container');
+}
+
+export function updateFormDepts(preselectedValue = '') {
+    const selectedCol = document.getElementById('input-college')?.value;
+    const inputDept = document.getElementById('input-department');
+    if(!inputDept) return;
     
-    container.querySelector('#course-table-head')?.addEventListener('click', (e) => {
-        const th = e.target.closest('th[data-sort]');
-        if (th) {
-            const col = th.dataset.sort;
-            if (state.sortCol === col) { state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc'; } 
-            else { state.sortCol = col; state.sortDir = 'asc'; }
-            
-            document.querySelectorAll('th[data-sort]').forEach(t => {
-                t.classList.remove('sort-asc', 'sort-desc');
-                const icon = t.querySelector('.sort-icon');
-                if(icon) icon.className = 'ti ti-arrows-sort sort-icon';
-            });
-            
-            th.classList.add(state.sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
-            const thIcon = th.querySelector('.sort-icon');
-            if(thIcon) thIcon.className = `ti ti-sort-${state.sortDir === 'asc' ? 'ascending' : 'descending'} sort-icon`;
-            Render.renderTable();
-        }
-    });
+    let html = '<option value="">請選擇學系...</option>';
+    
+    if (selectedCol) {
+        const depts = state.globalDepts.filter(d => d.college === selectedCol);
+        depts.forEach(d => html += `<option value="${d.name}">${d.shortName || d.name}</option>`);
+    } else { 
+        html = '<option value="">請先選擇學院...</option>'; 
+    }
+    
+    inputDept.innerHTML = html;
+    if (preselectedValue) inputDept.value = preselectedValue;
+}
 
-    // ---------------- 5. 表單交互 ----------------
-    container.querySelector('#input-college')?.addEventListener('change', () => UI.updateFormDepts());
-    container.querySelector('#btn-close-modal-x')?.addEventListener('click', UI.closeModal);
-    container.querySelector('#btn-cancel-modal')?.addEventListener('click', UI.closeModal);
-
-    // ---------------- 6. 表單送出與儲存判斷 ----------------
-    container.querySelector('#btn-submit')?.addEventListener('click', async () => {
-        if(state.isReadOnly) return;
-        const year = document.getElementById('input-academic-year').value.trim();
-        const term = document.getElementById('input-term').value.trim();
-        const payload = { 
-            academic_year: year, term: term, semester: `${year}-${term}`,
-            college: document.getElementById('input-college').value,
-            department: document.getElementById('input-department').value,
-            course_code: document.getElementById('input-course-code').value.trim(),
-            course_name: document.getElementById('input-course-name').value.trim(),
-            edu_system: document.getElementById('input-edu-system').value,
-            course_type: document.getElementById('input-course-type').value,
-            credits: Number(document.getElementById('input-credits').value)
-        };
-
-        if(!payload.academic_year || !payload.term || !payload.college || !payload.department || !payload.course_code || !payload.course_name) { 
-            alert("請填寫所有必填欄位！"); return; 
-        }
-
-        const btn = document.getElementById('btn-submit');
-        if(btn) { btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 儲存中...'; }
-
-        try {
-            const isEdit = !!state.editingId;
-            await Data.executeSave(payload);
-            UI.closeModal(); 
-            await Data.fetchInitialDataOnce(); 
-            UI.populateAllFiltersUI();
-            UI.updateBatchActionBar(); Render.renderTable(); 
-            UI.showNotification(isEdit ? "課程資料更新成功！" : "新課程建立成功！", "success");
-        } catch (err) {
-            UI.showNotification("儲存失敗，請重試", "error");
-            console.error(err);
-        } finally {
-            if(btn) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> 確認儲存'; }
-        }
-    });
-
-    // ---------------- 7. 表格內行操作 ----------------
-    container.querySelector('#table-body')?.addEventListener('click', async (e) => {
-        const rowChk = e.target.closest('.row-select-chk');
-        const btnEdit = e.target.closest('.btn-row-edit');
-        const btnDel = e.target.closest('.btn-row-delete');
-        
-        if (rowChk) { 
-            const id = rowChk.value;
-            const index = state.selectedIds.indexOf(id);
-            if (index === -1) state.selectedIds.push(id); else state.selectedIds.splice(index, 1);
-            UI.updateBatchActionBar(); 
-            const row = rowChk.closest('tr');
-            if(index === -1) row.classList.add('selected'); else row.classList.remove('selected');
-        }
-        else if (btnEdit) { 
-            if(state.isReadOnly) return;
-            const id = btnEdit.dataset.id;
-            const docData = state.allData.find(d => d.id === id); if (!docData) return;
-            state.editingId = id; 
-            
-            document.getElementById('input-academic-year').value = docData.academic_year || '';
-            document.getElementById('input-term').value = docData.term || '';
-            document.getElementById('input-college').value = docData.college || '';
-            UI.updateFormDepts(docData.department); 
-            
-            document.getElementById('input-course-code').value = docData.course_code || '';
-            document.getElementById('input-course-name').value = docData.course_name || ''; 
-            document.getElementById('input-edu-system').value = docData.edu_system || '日間學士班'; 
-            document.getElementById('input-course-type').value = docData.course_type || '必修'; 
-            document.getElementById('input-credits').value = docData.credits || 0; 
-
-            const mt = document.getElementById('modal-title');
-            if(mt) mt.innerHTML = '<i class="ti ti-edit text-brand" style="font-size: 20px;"></i> 編輯課程資料';
-            document.getElementById('data-modal')?.classList.add('open');
-        }
-        else if (btnDel) { 
-            if(state.isReadOnly) return;
-            const id = btnDel.dataset.id;
-            const name = btnDel.dataset.name;
-            
-            if (confirm(`確定要刪除課程「${name}」嗎？`)) {
-                const originalHtml = btnDel.innerHTML;
-                btnDel.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i>';
-                try {
-                    await Data.deleteData(id);
-                    await Data.fetchInitialDataOnce(); 
-                    UI.populateAllFiltersUI();
-                    UI.updateBatchActionBar(); Render.renderTable();
-                    UI.showNotification(`課程「${name}」已刪除成功！`, "success");
-                } catch(e) {
-                    UI.showNotification("刪除失敗", "error");
-                    btnDel.innerHTML = originalHtml;
-                }
+export function updateBatchActionBar() {
+    const bar = document.getElementById('batch-bar');
+    const count = document.getElementById('selected-count');
+    const btnSelectAll = document.getElementById('btn-select-all-filtered');
+    
+    if (state.isReadOnly) {
+        if(bar) bar.classList.remove('visible');
+        return;
+    }
+    
+    if (state.selectedIds.length > 0) {
+        if(bar) bar.classList.add('visible');
+        if(count) count.innerText = state.selectedIds.length;
+        if(btnSelectAll) {
+            if (state.selectedIds.length < state.filteredData.length) {
+                btnSelectAll.style.display = 'inline-flex';
+                btnSelectAll.innerText = `選取全部符合條件 (${state.filteredData.length})`;
+            } else { 
+                btnSelectAll.style.display = 'none'; 
             }
         }
-    });
+    } else { 
+        if(bar) bar.classList.remove('visible'); 
+    }
+}
+
+export function closeModal() { 
+    document.getElementById('data-modal')?.classList.remove('open'); 
+    state.editingId = null; 
+}
+
+export function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `fixed bottom-5 right-5 z-[9999] flex items-center gap-2.5 px-4 py-3.5 rounded-xl shadow-xl border transition-all duration-300 transform translate-y-5 opacity-0`;
+    
+    if (type === 'success') {
+        toast.className += ' bg-emerald-50 text-emerald-800 border-emerald-200';
+        toast.innerHTML = `<i class="ti ti-circle-check text-emerald-500 text-lg"></i><span class="font-semibold text-sm">${message}</span>`;
+    } else if (type === 'error') {
+        toast.className += ' bg-rose-50 text-rose-800 border-rose-200';
+        toast.innerHTML = `<i class="ti ti-alert-circle text-rose-500 text-lg"></i><span class="font-semibold text-sm">${message}</span>`;
+    } else {
+        toast.className += ' bg-blue-50 text-blue-800 border-blue-200';
+        toast.innerHTML = `<i class="ti ti-info-circle text-blue-500 text-lg"></i><span class="font-semibold text-sm">${message}</span>`;
+    }
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.remove('translate-y-5', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+    }, 50);
+    
+    setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-5', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }
