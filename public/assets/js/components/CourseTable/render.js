@@ -119,6 +119,7 @@ export function renderTable() {
             </div>
         `;
 
+        // 確保每一個 <td> 都有對應的 col-{欄位名} 讓顯示設定可以抓取隱藏
         html += `
         <tr class="${isChecked ? 'selected' : ''}" data-id="${data.id}">
             <td class="col-checkbox" style="text-align: center;">
@@ -126,15 +127,15 @@ export function renderTable() {
                     <input type="checkbox" value="${data.id}" class="row-select-chk" ${isChecked} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                 </div>
             </td>
-            <td style="text-align: center;"><div class="cell-primary bold">${data.academic_year}</div></td>
-            <td style="text-align: center;"><div class="cell-primary">${data.term}</div></td>
-            <td style="text-align: center;"><div class="cell-primary">${data.edu_system}</div></td>
-            <td style="text-align: center;"><div class="cell-primary">${colDispName || '-'}</div></td>
-            <td style="text-align: center;"><div class="cell-primary">${deptDispName || '-'}</div></td>
-            <td style="text-align: center;"><span class="pill-code">${data.course_code}</span></td>
-            <td style="text-align: left;"><div class="cell-primary bold" title="${data.course_name}">${data.course_name}</div></td>
-            <td style="text-align: center;"><div class="cell-primary">${data.course_type}</div></td>
-            <td style="text-align: center;"><div class="cell-primary bold">${data.credits}</div></td>
+            <td class="col-academic_year" style="text-align: center;"><div class="cell-primary bold">${data.academic_year}</div></td>
+            <td class="col-term" style="text-align: center;"><div class="cell-primary">${data.term}</div></td>
+            <td class="col-edu_system" style="text-align: center;"><div class="cell-primary">${data.edu_system}</div></td>
+            <td class="col-college" style="text-align: center;"><div class="cell-primary">${colDispName || '-'}</div></td>
+            <td class="col-department" style="text-align: center;"><div class="cell-primary">${deptDispName || '-'}</div></td>
+            <td class="col-course_code" style="text-align: center;"><span class="pill-code">${data.course_code}</span></td>
+            <td class="col-course_name" style="text-align: left;"><div class="cell-primary bold" title="${data.course_name}">${data.course_name}</div></td>
+            <td class="col-course_type" style="text-align: center;"><div class="cell-primary">${data.course_type}</div></td>
+            <td class="col-credits" style="text-align: center;"><div class="cell-primary bold">${data.credits}</div></td>
             <td class="col-actions" style="text-align: center;">${actionHtml}</td>
         </tr>`;
     });
