@@ -20,7 +20,6 @@ export function renderTable() {
         return matchSearch && matchYear && matchTerm && matchEdu && matchCol && matchDept && matchCode && matchName && matchType && matchCredit;
     });
 
-    // Sorting
     state.filteredData.sort((a, b) => {
         // 🌟 [新增] 統計與排序「修課人數」
         if (state.sortCol === 'student_count') {
@@ -134,6 +133,7 @@ export function renderTable() {
         const highlightedCode = Utils.highlightKeyword(data.course_code, searchTerm);
         const highlightedName = Utils.highlightKeyword(data.course_name, searchTerm);
 
+        // 🌟 [優化] 將精確的 col- 樣式名稱附加到所有 td，鎖定列寬，防止瀏覽器因為 inline 缺失造成擠壓
         html += `
         <tr class="${isChecked ? 'selected' : ''}" data-id="${data.id}">
             <td class="col-checkbox" style="text-align: center;">
@@ -141,18 +141,18 @@ export function renderTable() {
                     <input type="checkbox" value="${data.id}" class="row-select-chk" ${isChecked} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                 </div>
             </td>
-            <td style="text-align: center;"><div class="cell-primary bold">${data.academic_year}</div></td>
-            <td style="text-align: center;"><div class="cell-primary">${data.term}</div></td>
-            <td style="text-align: center;"><div class="cell-primary">${data.edu_system}</div></td>
-            <td style="text-align: center;"><div class="cell-primary">${colDispName || '-'}</div></td>
-            <td style="text-align: center;"><div class="cell-primary">${deptDispName || '-'}</div></td>
-            <td style="text-align: center;"><span class="pill-code">${highlightedCode}</span></td>
-            <td style="text-align: left;"><div class="cell-primary bold" title="${data.course_name}">${highlightedName}</div></td>
-            <td style="text-align: center;"><div class="cell-primary">${data.course_type}</div></td>
-            <td style="text-align: center;"><div class="cell-primary bold">${data.credits}</div></td>
+            <td class="col-academic_year" style="text-align: center;"><div class="cell-primary bold">${data.academic_year}</div></td>
+            <td class="col-term" style="text-align: center;"><div class="cell-primary">${data.term}</div></td>
+            <td class="col-edu_system" style="text-align: center;"><div class="cell-primary">${data.edu_system}</div></td>
+            <td class="col-college" style="text-align: center;"><div class="cell-primary">${colDispName || '-'}</div></td>
+            <td class="col-department" style="text-align: center;"><div class="cell-primary">${deptDispName || '-'}</div></td>
+            <td class="col-course_code" style="text-align: center;"><span class="pill-code">${highlightedCode}</span></td>
+            <td class="col-course_name" style="text-align: left;"><div class="cell-primary bold" title="${data.course_name}">${highlightedName}</div></td>
+            <td class="col-course_type" style="text-align: center;"><div class="cell-primary">${data.course_type}</div></td>
+            <td class="col-credits" style="text-align: center;"><div class="cell-primary bold">${data.credits}</div></td>
             <!-- 🌟 [新增] 顯示統計人數與大綱新欄位 -->
-            <td style="text-align: center;"><div class="cell-primary font-semibold" style="color:var(--brand);">${studentCount} 人</div></td>
-            <td style="text-align: center;">
+            <td class="col-student_count" style="text-align: center;"><div class="cell-primary font-semibold" style="color:var(--brand);">${studentCount} 人</div></td>
+            <td class="col-outline" style="text-align: center;">
                 <a href="http://desc.ithu.tw/${data.academic_year}/${data.term}/${data.course_code}" target="_blank" class="btn btn-secondary btn-icon sm" title="查看大綱 (開新分頁)">
                     <i class="ti ti-external-link"></i>
                 </a>
