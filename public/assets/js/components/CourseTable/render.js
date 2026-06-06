@@ -1,5 +1,60 @@
 import { state, Utils } from './state.js';
 
+// 🌟 [新增] 用於解析學期權重的輔助函式，以便進行「多到少 (暑期 -> 2 -> 1)」排序
+function getTermValue(term) {
+    const t = String(term || '').trim();
+    if (t.includes('暑')) return 3;
+    if (t === '2') return 2;
+    if (t === '1') return 1;
+    return 0;
+}
+
+// 🌟 [新增] 取得學院排序索引值 (與篩選器的順序一致)
+function getCollegeSortValue(collegeName) {
+    const idx = state.orderedColleges.findIndex(c => c.name === collegeName);
+    return idx !== -1 ? idx : 999;
+}
+
+// 🌟 [新增] 取得學系排序權重 (依據資料庫中 globalDepts 排序設定 sortOrder)
+function getDeptSortValue(deptName) {
+    const dept = state.globalDepts.find(d => d.name === deptName);
+    return dept ? (dept.sortOrder || 999) : 999;
+}
+
+// 🌟 [新增] 預設多階層排序鏈比較器
+// 順序：學年度(多到少) > 學期(多到少) > 開課學院(系統排序) > 開課學系(系統排序) > 選課代號(少到多)
+function defaultMultiLevelCompare(a, b) {
+    // 1. 學年度 (多到少, 降冪)
+    const yearA = Number(a.academic_year) || 0;
+    const yearB = Number(b.academic_year) || 0;
+    if (yearA !== yearB) return yearB - yearA;
+
+    // 2. 學期 (多到少, 降冪: 暑期 -> 2 -> 1)
+    const termA = getTermValue(a.term);
+    const termB = getTermValue(b.term);
+    if (termA !== termB) return termB - termA;
+
+    // 3. 開課學院 (系統排序, 升冪)
+    const colA = getCollegeSortValue(a.college);
+    const colB = getCollegeSortValue(b.college);
+    if (colA !== colB) return colA - colB;
+
+    // 4. 開課學系 (系統排序, 升冪)
+    const deptSortA = getDeptSortValue(a.department);
+    const deptSortB = getDeptSortValue(b.department);
+    if (deptSortA !== deptSortB) return deptSortA - deptSortB;
+
+    // 5. 選課代號 (少到多, 升冪)
+    const codeA = String(a.course_code || '');
+    const codeB = String(b.course_code || '');
+    const numCodeA = parseInt(codeA, 10);
+    const numCodeB = parseInt(codeB, 10);
+    if (!isNaN(numCodeA) && !isNaN(numCodeB)) {
+        if (numCodeA !== numCodeB) return numCodeA - numCodeB;
+    }
+    return codeA.localeCompare(codeB);
+}
+
 export function renderTable() {
     const tbody = document.getElementById('table-body');
     const searchInput = document.getElementById('search-input');
@@ -20,45 +75,50 @@ export function renderTable() {
         return matchSearch && matchYear && matchTerm && matchEdu && matchCol && matchDept && matchCode && matchName && matchType && matchCredit;
     });
 
+    // 🌟 [優化] 進階排序邏輯：
+    // 如果點擊了特定表頭進行排序 (state.sortCol)，則先以該欄位為主進行排序；
+    // 當該欄位值相同、或是使用預設排序時，將完美套用「學年度 > 學期 > 學院 > 學系 > 代號」多階層排序鏈。
     state.filteredData.sort((a, b) => {
-        // 🌟 [新增] 統計與排序「修課人數」
-        if (state.sortCol === 'student_count') {
-            const countA = state.allRecords.filter(r => r.courses && r.courses.includes(a.id)).length;
-            const countB = state.allRecords.filter(r => r.courses && r.courses.includes(b.id)).length;
-            return state.sortDir === 'asc' ? countA - countB : countB - countA;
-        }
-
-        let valA = a[state.sortCol] || ''; let valB = b[state.sortCol] || '';
-        
-        if (state.sortCol === 'college' || state.sortCol === 'department') {
-            if (state.sortCol === 'college') {
-                const colIdxA = state.orderedColleges.findIndex(c => c.name === valA);
-                const colIdxB = state.orderedColleges.findIndex(c => c.name === valB);
-                valA = colIdxA !== -1 ? colIdxA : 999;
-                valB = colIdxB !== -1 ? colIdxB : 999;
+        if (state.sortCol && state.sortCol !== 'none') {
+            let diff = 0;
+            
+            if (state.sortCol === 'student_count') {
+                const countA = state.allRecords.filter(r => r.courses && r.courses.includes(a.id)).length;
+                const countB = state.allRecords.filter(r => r.courses && r.courses.includes(b.id)).length;
+                diff = countA - countB;
+            } else if (state.sortCol === 'college') {
+                const colA = getCollegeSortValue(a.college);
+                const colB = getCollegeSortValue(b.college);
+                diff = colA - colB;
+            } else if (state.sortCol === 'department') {
+                const deptSortA = getDeptSortValue(a.department);
+                const deptSortB = getDeptSortValue(b.department);
+                diff = deptSortA - deptSortB;
+            } else if (state.sortCol === 'academic_year') {
+                const yrA = Number(a.academic_year) || 0;
+                const yrB = Number(b.academic_year) || 0;
+                diff = yrA - yrB;
+            } else if (state.sortCol === 'term') {
+                diff = getTermValue(a.term) - getTermValue(b.term);
+            } else if (state.sortCol === 'credits') {
+                const credA = Number(a.credits) || 0;
+                const credB = Number(b.credits) || 0;
+                diff = credA - credB;
             } else {
-                const deptA = state.globalDepts.find(d => d.name === valA);
-                const deptB = state.globalDepts.find(d => d.name === valB);
-                valA = deptA ? (deptA.sortOrder || 999) : 999;
-                valB = deptB ? (deptB.sortOrder || 999) : 999;
+                // 字串比對 (開課學制、選課代號、課程名稱、課程屬性)
+                const valA = String(a[state.sortCol] || '').toLowerCase();
+                const valB = String(b[state.sortCol] || '').toLowerCase();
+                diff = valA.localeCompare(valB);
             }
-            if (valA < valB) return state.sortDir === 'asc' ? -1 : 1;
-            if (valA > valB) return state.sortDir === 'asc' ? 1 : -1;
-            return 0;
+
+            // 如果該特定欄位比較有出入，直接返回其升降冪結果
+            if (diff !== 0) {
+                return state.sortDir === 'asc' ? diff : -diff;
+            }
         }
 
-        if (state.sortCol === 'credits' || state.sortCol === 'academic_year' || state.sortCol === 'term') {
-            valA = Number(valA) || 0;
-            valB = Number(valB) || 0;
-            if (valA < valB) return state.sortDir === 'asc' ? -1 : 1;
-            if (valA > valB) return state.sortDir === 'asc' ? 1 : -1;
-            return 0;
-        }
-        
-        valA = valA.toString().toLowerCase(); valB = valB.toString().toLowerCase();
-        if (valA < valB) return state.sortDir === 'asc' ? -1 : 1;
-        if (valA > valB) return state.sortDir === 'asc' ? 1 : -1;
-        return 0;
+        // 當點擊排序欄位值完全相同，或在預設無點擊排序的情況下，降落至預設多階層排序鏈
+        return defaultMultiLevelCompare(a, b);
     });
 
     const total = state.filteredData.length;
@@ -118,10 +178,8 @@ export function renderTable() {
         const deptDispName = deptObj && deptObj.shortName ? deptObj.shortName : data.department;
         const isChecked = state.selectedIds.includes(data.id) ? 'checked' : '';
         
-        // 🌟 [優化] 依據修課人數需求，動態計算該課程修課人數
         const studentCount = state.allRecords.filter(r => r.courses && r.courses.includes(data.id)).length;
 
-        // 🌟 [修正] 操作按鈕樣式與機構模組 100% 相同 (紅色圓角高質感 btn-danger 按鈕)
         const actionHtml = state.isReadOnly ? '' : `
             <div class="row-actions">
                 <button data-id="${data.id}" class="btn btn-secondary btn-icon sm btn-row-edit" title="編輯"><i class="ti ti-edit"></i></button>
@@ -129,11 +187,9 @@ export function renderTable() {
             </div>
         `;
 
-        // 🌟 [新增] 依關鍵字進行反黃高亮 (像 chrome 原生感)
         const highlightedCode = Utils.highlightKeyword(data.course_code, searchTerm);
         const highlightedName = Utils.highlightKeyword(data.course_name, searchTerm);
 
-        // 🌟 [優化] 將精確的 col- 樣式名稱附加到所有 td，鎖定列寬，防止瀏覽器因為 inline 缺失造成擠壓
         html += `
         <tr class="${isChecked ? 'selected' : ''}" data-id="${data.id}">
             <td class="col-checkbox" style="text-align: center;">
@@ -150,7 +206,6 @@ export function renderTable() {
             <td class="col-course_name" style="text-align: left;"><div class="cell-primary bold" title="${data.course_name}">${highlightedName}</div></td>
             <td class="col-course_type" style="text-align: center;"><div class="cell-primary">${data.course_type}</div></td>
             <td class="col-credits" style="text-align: center;"><div class="cell-primary bold">${data.credits}</div></td>
-            <!-- 🌟 [新增] 顯示統計人數與大綱新欄位 -->
             <td class="col-student_count" style="text-align: center;"><div class="cell-primary font-semibold" style="color:var(--brand);">${studentCount} 人</div></td>
             <td class="col-outline" style="text-align: center;">
                 <a href="http://desc.ithu.tw/${data.academic_year}/${data.term}/${data.course_code}" target="_blank" class="btn btn-secondary btn-icon sm" title="查看大綱 (開新分頁)">
