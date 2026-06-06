@@ -28,7 +28,6 @@
     <!-- ─── FILTER ROW & BATCH BAR ─── -->
     <div class="filter-row">
         <div class="filters-scroll-area custom-scroll">
-            <!-- 篩選列維持不變 -->
             <div class="filter-pill-wrap" id="pill-wrap-year">
                 <button class="filter-pill" id="pill-year">全部學年度 <i class="ti ti-chevron-down"></i></button>
                 <div class="filter-dropdown" id="drop-year">
@@ -162,23 +161,24 @@
         <div class="table-scroll custom-scroll">
             <table>
                 <thead id="course-table-head">
+                    <!-- A.2 調整欄位寬度，把開課學制/學院/學系寬度縮小，釋放最大空間給課程名稱 -->
                     <tr>
                         <th class="col-checkbox" style="width: 48px;">
                             <div class="flex-center">
                                 <input type="checkbox" id="selectAll" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                             </div>
                         </th>
-                        <th data-sort="academic_year" style="width: 80px;">學年度 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="term" style="width: 80px;">學期 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="edu_system" style="width: 120px;">開課學制 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="college" style="width: 140px;">開課學院 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="department" style="width: 140px;">開課學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="course_code" style="width: 120px;">選課代號 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="academic_year" style="width: 70px;">學年度 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="term" style="width: 60px;">學期 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="edu_system" style="width: 100px;">開課學制 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="college" style="width: 110px;">開課學院 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="department" style="width: 110px;">開課學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="course_code" style="width: 90px;">選課代號 <i class="ti ti-arrows-sort sort-icon"></i></th>
                         <th data-sort="course_name" style="width: auto;">課程名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="course_type" style="width: 100px;">課程屬性 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="credits" style="width: 80px;">學分數 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th style="width: 100px; text-align: center;">修課人數</th>
-                        <th style="width: 100px; text-align: center;">課程大綱</th>
+                        <th data-sort="course_type" style="width: 90px;">課程屬性 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="credits" style="width: 70px;">學分數 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th style="width: 80px; text-align: center;">修課人數</th>
+                        <th style="width: 70px; text-align: center;">課程大綱</th>
                         <th class="col-actions" style="width: 100px;">操作</th>
                     </tr>
                 </thead>
