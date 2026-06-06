@@ -1,319 +1,271 @@
-<link rel="stylesheet" href="./assets/css/course.css">
-<style id="dynamic-col-styles"></style>
-
 <div id="course-page-wrapper">
-    <!-- ─── TOOLBAR ─── -->
-    <div class="toolbar">
-        <div class="search-wrap">
-            <i class="ti ti-search"></i>
-            <input type="text" id="search-input" placeholder="搜尋選課代號或課程名稱..." class="search-input">
-        </div>
-        
-        <div class="flex-spacer"></div>
-        
-        <div class="toolbar-actions">
-            <button id="btn-export-csv" class="btn btn-success-solid">
-                <i class="ti ti-file-export"></i> <span class="btn-text">匯出清單</span>
-            </button>
-            <button id="btn-import-trigger" class="btn btn-indigo-solid">
-                <i class="ti ti-file-import"></i> <span class="btn-text">批次匯入</span>
-            </button>
+    <!-- 頂部工具列 -->
+    <div class="top-bar">
+        <h1 class="page-title"><i class="ti ti-book"></i> 實習課程管理</h1>
+        <div class="top-actions">
+            <button id="btn-export-csv" class="btn btn-secondary"><i class="ti ti-download"></i> 匯出清單</button>
             <div class="v-divider"></div>
-            <button id="btn-create-course" class="btn btn-primary">
-                <i class="ti ti-plus"></i> <span class="btn-text">新增課程</span>
-            </button>
+            <button id="btn-import-trigger" class="btn btn-secondary"><i class="ti ti-upload"></i> 批次匯入</button>
+            <input type="file" id="import-file" accept=".csv" style="display:none;">
+            <button id="btn-create-course" class="btn btn-primary"><i class="ti ti-plus"></i> 新增課程</button>
         </div>
-        <input type="file" id="import-file" accept=".csv" style="display:none;">
     </div>
 
-    <!-- ─── FILTER ROW & BATCH BAR ─── -->
-    <div class="filter-row">
-        <div class="filters-scroll-area custom-scroll">
-            <!-- 學年度 -->
+    <!-- 篩選列 -->
+    <div class="filter-bar">
+        <div class="search-wrap">
+            <i class="ti ti-search search-icon"></i>
+            <input type="text" id="search-input" class="search-input" placeholder="搜尋課程名稱或代碼 (Ctrl+F)">
+        </div>
+        
+        <div class="filters-container">
+            <!-- 學年度篩選 -->
             <div class="filter-pill-wrap" id="pill-wrap-year">
                 <button class="filter-pill" id="pill-year">全部學年度 <i class="ti ti-chevron-down"></i></button>
                 <div class="filter-dropdown" id="drop-year">
-                    <div class="filter-dropdown-search">
-                        <input type="text" id="search-year-input" placeholder="搜尋學年度...">
-                        <div style="margin-top:8px; padding:0 4px; display: flex; justify-content: flex-end;">
-                            <button type="button" class="btn-light-blue btn-filter-toggle" data-type="year" data-state="none">全選</button>
-                        </div>
+                    <div class="filter-dropdown-header">
+                        <span class="filter-dropdown-title">篩選學年度</span>
+                        <button class="btn-filter-toggle" data-type="year" data-state="all">取消選取</button>
                     </div>
-                    <div class="filter-dropdown-list custom-scroll" id="year-options-container"></div>
+                    <div class="filter-dropdown-search">
+                        <i class="ti ti-search"></i>
+                        <input type="text" id="search-year-input" placeholder="搜尋...">
+                    </div>
+                    <div class="filter-options" id="year-options-container"></div>
                 </div>
             </div>
 
-            <!-- 學期 -->
+            <!-- 學期篩選 -->
             <div class="filter-pill-wrap" id="pill-wrap-term">
                 <button class="filter-pill" id="pill-term">全部學期 <i class="ti ti-chevron-down"></i></button>
                 <div class="filter-dropdown" id="drop-term">
-                    <div class="filter-dropdown-search">
-                        <input type="text" id="search-term-input" placeholder="搜尋學期...">
-                        <div style="margin-top:8px; padding:0 4px; display: flex; justify-content: flex-end;">
-                            <button type="button" class="btn-light-blue btn-filter-toggle" data-type="term" data-state="none">全選</button>
-                        </div>
+                    <div class="filter-dropdown-header">
+                        <span class="filter-dropdown-title">篩選學期</span>
+                        <button class="btn-filter-toggle" data-type="term" data-state="all">取消選取</button>
                     </div>
-                    <div class="filter-dropdown-list custom-scroll" id="term-options-container"></div>
+                    <div class="filter-options" id="term-options-container"></div>
                 </div>
             </div>
 
-            <!-- 學制 -->
+            <!-- 學制篩選 -->
             <div class="filter-pill-wrap" id="pill-wrap-edu">
                 <button class="filter-pill" id="pill-edu">全部學制 <i class="ti ti-chevron-down"></i></button>
                 <div class="filter-dropdown" id="drop-edu">
-                    <div class="filter-dropdown-search">
-                        <input type="text" id="search-edu-input" placeholder="搜尋學制...">
-                        <div style="margin-top:8px; padding:0 4px; display: flex; justify-content: flex-end;">
-                            <button type="button" class="btn-light-blue btn-filter-toggle" data-type="edu" data-state="none">全選</button>
-                        </div>
+                    <div class="filter-dropdown-header">
+                        <span class="filter-dropdown-title">篩選學制</span>
+                        <button class="btn-filter-toggle" data-type="edu" data-state="all">取消選取</button>
                     </div>
-                    <div class="filter-dropdown-list custom-scroll" id="edu-options-container"></div>
+                    <div class="filter-options" id="edu-options-container"></div>
                 </div>
             </div>
 
-            <!-- 學院 -->
+            <!-- 學院篩選 -->
             <div class="filter-pill-wrap" id="pill-wrap-college">
                 <button class="filter-pill" id="pill-college">全部學院 <i class="ti ti-chevron-down"></i></button>
                 <div class="filter-dropdown" id="drop-college">
-                    <div class="filter-dropdown-search">
-                        <input type="text" id="search-college-input" placeholder="搜尋學院...">
-                        <div style="margin-top:8px; padding:0 4px; display: flex; justify-content: flex-end;">
-                            <button type="button" class="btn-light-blue btn-filter-toggle" data-type="college" data-state="none">全選</button>
-                        </div>
+                    <div class="filter-dropdown-header">
+                        <span class="filter-dropdown-title">篩選學院</span>
+                        <button class="btn-filter-toggle" data-type="college" data-state="all">取消選取</button>
                     </div>
-                    <div class="filter-dropdown-list custom-scroll" id="college-options-container"></div>
+                    <div class="filter-options" id="college-options-container"></div>
                 </div>
             </div>
 
-            <!-- 學系 -->
+            <!-- 學系篩選 -->
             <div class="filter-pill-wrap" id="pill-wrap-dept">
                 <button class="filter-pill" id="pill-dept">全部學系 <i class="ti ti-chevron-down"></i></button>
                 <div class="filter-dropdown" id="drop-dept">
-                    <div class="filter-dropdown-search">
-                        <input type="text" id="search-dept-input" placeholder="搜尋學系...">
-                        <div style="margin-top:8px; padding:0 4px; display: flex; justify-content: flex-end;">
-                            <button type="button" class="btn-light-blue btn-filter-toggle" data-type="dept" data-state="none">全選</button>
-                        </div>
+                    <div class="filter-dropdown-header">
+                        <span class="filter-dropdown-title">篩選學系</span>
+                        <button class="btn-filter-toggle" data-type="dept" data-state="all">取消選取</button>
                     </div>
-                    <div class="filter-dropdown-list custom-scroll" id="dept-options-container"></div>
+                    <div class="filter-dropdown-search">
+                        <i class="ti ti-search"></i>
+                        <input type="text" id="search-dept-input" placeholder="搜尋...">
+                    </div>
+                    <div class="filter-options" id="dept-options-container"></div>
                 </div>
             </div>
 
-            <!-- 選課代號 -->
+            <!-- 代號篩選 -->
             <div class="filter-pill-wrap" id="pill-wrap-code">
                 <button class="filter-pill" id="pill-code">全部代號 <i class="ti ti-chevron-down"></i></button>
                 <div class="filter-dropdown" id="drop-code">
-                    <div class="filter-dropdown-search">
-                        <input type="text" id="search-code-input" placeholder="搜尋代號...">
-                        <div style="margin-top:8px; padding:0 4px; display: flex; justify-content: flex-end;">
-                            <button type="button" class="btn-light-blue btn-filter-toggle" data-type="code" data-state="none">全選</button>
-                        </div>
+                    <div class="filter-dropdown-header">
+                        <span class="filter-dropdown-title">篩選代號</span>
+                        <button class="btn-filter-toggle" data-type="code" data-state="all">取消選取</button>
                     </div>
-                    <div class="filter-dropdown-list custom-scroll" id="code-options-container"></div>
+                    <div class="filter-dropdown-search">
+                        <i class="ti ti-search"></i>
+                        <input type="text" id="search-code-input" placeholder="搜尋...">
+                    </div>
+                    <div class="filter-options" id="code-options-container"></div>
                 </div>
             </div>
 
-            <!-- 課程名稱 -->
-            <div class="filter-pill-wrap" id="pill-wrap-name">
-                <button class="filter-pill" id="pill-name">全部名稱 <i class="ti ti-chevron-down"></i></button>
-                <div class="filter-dropdown" id="drop-name">
-                    <div class="filter-dropdown-search">
-                        <input type="text" id="search-name-input" placeholder="搜尋名稱...">
-                        <div style="margin-top:8px; padding:0 4px; display: flex; justify-content: flex-end;">
-                            <button type="button" class="btn-light-blue btn-filter-toggle" data-type="name" data-state="none">全選</button>
-                        </div>
-                    </div>
-                    <div class="filter-dropdown-list custom-scroll" id="name-options-container"></div>
-                </div>
-            </div>
-
-            <!-- 屬性 -->
+            <!-- 屬性篩選 -->
             <div class="filter-pill-wrap" id="pill-wrap-type">
                 <button class="filter-pill" id="pill-type">全部屬性 <i class="ti ti-chevron-down"></i></button>
                 <div class="filter-dropdown" id="drop-type">
-                    <div class="filter-dropdown-search">
-                        <input type="text" id="search-type-input" placeholder="搜尋屬性...">
-                        <div style="margin-top:8px; padding:0 4px; display: flex; justify-content: flex-end;">
-                            <button type="button" class="btn-light-blue btn-filter-toggle" data-type="type" data-state="none">全選</button>
-                        </div>
+                    <div class="filter-dropdown-header">
+                        <span class="filter-dropdown-title">篩選屬性</span>
+                        <button class="btn-filter-toggle" data-type="type" data-state="all">取消選取</button>
                     </div>
-                    <div class="filter-dropdown-list custom-scroll" id="type-options-container"></div>
+                    <div class="filter-options" id="type-options-container"></div>
                 </div>
             </div>
 
-            <!-- 學分 -->
+            <!-- 學分篩選 -->
             <div class="filter-pill-wrap" id="pill-wrap-credit">
                 <button class="filter-pill" id="pill-credit">全部學分 <i class="ti ti-chevron-down"></i></button>
                 <div class="filter-dropdown" id="drop-credit">
-                    <div class="filter-dropdown-search">
-                        <input type="text" id="search-credit-input" placeholder="搜尋學分...">
-                        <div style="margin-top:8px; padding:0 4px; display: flex; justify-content: flex-end;">
-                            <button type="button" class="btn-light-blue btn-filter-toggle" data-type="credit" data-state="none">全選</button>
-                        </div>
+                    <div class="filter-dropdown-header">
+                        <span class="filter-dropdown-title">篩選學分</span>
+                        <button class="btn-filter-toggle" data-type="credit" data-state="all">取消選取</button>
                     </div>
-                    <div class="filter-dropdown-list custom-scroll" id="credit-options-container"></div>
+                    <div class="filter-options" id="credit-options-container"></div>
                 </div>
-            </div>
-        </div>
-        
-        <!-- 顯示設定選單 -->
-        <div class="relative inline-block text-left" id="display-settings-wrap">
-            <button id="btn-display-settings" class="btn btn-secondary btn-sm" style="font-weight: 500;"><i class="ti ti-settings"></i> 顯示設定</button>
-            <div id="display-settings-menu" style="position:absolute; right:0; top:calc(100% + 4px); width:200px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); padding:8px; z-index:100; display:none;" class="menu-popup">
-                <div style="font-size:11px; font-weight:700; color:var(--text-muted); padding:4px 8px;">顯示欄位設定</div>
-                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="academic_year" checked> 學年度</label>
-                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="term" checked> 學期</label>
-                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="edu_system" checked> 開課學制</label>
-                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="college" checked> 開課學院</label>
-                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="department" checked> 開課學系</label>
-                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="course_code" checked> 選課代號</label>
-                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="course_name" checked> 課程名稱</label>
-                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="course_type" checked> 課程屬性</label>
-                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="credits" checked> 學分數</label>
-            </div>
-        </div>
-
-        <!-- Batch Action Bar -->
-        <div id="batch-bar">
-            <div class="batch-info"><i class="ti ti-checks" style="font-size:18px;"></i> 已選 <span id="selected-count">0</span> 筆課程</div>
-            <button id="btn-select-all-filtered" class="btn btn-sm btn-secondary">選取全部符合條件</button>
-            <button id="btn-clear-selection" class="btn btn-sm btn-secondary">取消選取</button>
-            <div class="flex-spacer"></div>
-            <button id="btn-batch-delete" class="btn btn-sm btn-danger-solid"><i class="ti ti-trash"></i> 批次刪除</button>
-        </div>
-    </div>
-
-    <!-- ─── TABLE AREA ─── -->
-    <div class="table-wrap">
-        <div class="table-scroll custom-scroll">
-            <table>
-                <thead id="course-table-head">
-                    <tr>
-                        <th class="col-checkbox" style="width: 48px;">
-                            <div class="flex-center">
-                                <input type="checkbox" id="selectAll" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
-                            </div>
-                        </th>
-                        <th data-sort="academic_year" class="col-academic_year" style="width: 80px;">學年度 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="term" class="col-term" style="width: 80px;">學期 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="edu_system" class="col-edu_system" style="width: 120px;">開課學制 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="college" class="col-college" style="width: 140px;">開課學院 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="department" class="col-department" style="width: 140px;">開課學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="course_code" class="col-course_code" style="width: 120px;">選課代號 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="course_name" class="col-course_name" style="width: auto;">課程名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="course_type" class="col-course_type" style="width: 100px;">課程屬性 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="credits" class="col-credits" style="width: 80px;">學分數 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th class="col-actions">操作</th>
-                    </tr>
-                </thead>
-                <tbody id="table-body">
-                    <!-- JS 控制 -->
-                </tbody>
-            </table>
-        </div>
-        
-        <!-- 空狀態容器 -->
-        <div id="empty-state-container" class="empty-state" style="display: none;">
-            <i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i>
-            <div class="empty-text">資料載入中...</div>
-        </div>
-
-        <div class="pagination-bar">
-            <div class="pagination-info" id="pagination-info">共 0 筆</div>
-            <div class="pagination-bar-right">
-                <div style="display:flex; align-items:center; gap:6px;">
-                    <span style="font-size:12px; color:var(--text-muted)">每頁顯示</span>
-                    <select class="per-page-select" id="per-page-select">
-                        <option value="15">15 筆</option>
-                        <option value="25">25 筆</option>
-                        <option value="50">50 筆</option>
-                    </select>
-                </div>
-                <div class="pagination-controls" id="pagination-controls"></div>
             </div>
         </div>
     </div>
 
-    <!-- ─── MODAL ─── -->
+    <!-- 批次操作列 -->
+    <div id="batch-bar" class="batch-action-bar">
+        <div class="batch-left">
+            <span class="batch-count-badge">已選取 <span id="selected-count">0</span> 筆</span>
+            <button id="btn-select-all-filtered" class="btn btn-secondary sm" style="display:none;"></button>
+            <button id="btn-clear-selection" class="btn btn-text sm">取消選取</button>
+        </div>
+        <div class="batch-right">
+            <button id="btn-batch-delete" class="btn btn-danger sm"><i class="ti ti-trash"></i> 批次刪除</button>
+        </div>
+    </div>
+
+    <!-- 表格區域 -->
+    <div class="table-container">
+        <table class="data-table">
+            <thead id="course-table-head">
+                <tr>
+                    <th class="col-checkbox" style="width: 40px; text-align: center;">
+                        <input type="checkbox" id="selectAll" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
+                    </th>
+                    <th class="col-academic_year" data-sort="academic_year" style="width: 90px; text-align: center;">學年度 <i class="ti ti-sort-descending sort-icon"></i></th>
+                    <th class="col-term" data-sort="term" style="width: 70px; text-align: center;">學期 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                    <th class="col-edu_system" data-sort="edu_system" style="width: 120px; text-align: center;">開課學制 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                    <th class="col-college" data-sort="college" style="width: 120px; text-align: center;">開課學院 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                    <th class="col-department" data-sort="department" style="width: 160px; text-align: center;">開課學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                    <th class="col-course_code" data-sort="course_code" style="width: 110px; text-align: center;">選課代號 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                    <th class="col-course_name" data-sort="course_name" style="min-width: 200px; text-align: left;">課程名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                    <th class="col-course_type" data-sort="course_type" style="width: 120px; text-align: center;">課程屬性 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                    <th class="col-credits" data-sort="credits" style="width: 100px; text-align: center;">實習學分數 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                    <!-- 新增：統計修課人數與課程大綱 -->
+                    <th class="col-student_count" data-sort="student_count" style="width: 110px; text-align: center;">修課人數 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                    <th class="col-syllabus" style="width: 90px; text-align: center;">課程大綱</th>
+                    <th class="col-actions" style="width: 90px; text-align: center;">操作</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                <!-- 資料行將由 JS 動態生成 -->
+            </tbody>
+        </table>
+        
+        <!-- 空狀態顯示區塊 -->
+        <div id="empty-state-container" class="empty-state-container" style="display: none; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; text-align: center; color: var(--text-muted);"></div>
+    </div>
+
+    <!-- 分頁列 -->
+    <div class="pagination-bar">
+        <div class="pagination-info" id="pagination-info">載入中...</div>
+        <div class="pagination-right">
+            <div class="per-page-selector">
+                <select id="per-page-select" class="form-select sm" style="width: auto;">
+                    <option value="15">15 筆/頁</option>
+                    <option value="30">30 筆/頁</option>
+                    <option value="50">50 筆/頁</option>
+                    <option value="100">100 筆/頁</option>
+                </select>
+            </div>
+            <div class="pagination-controls" id="pagination-controls"></div>
+        </div>
+    </div>
+
+    <!-- 新增/編輯課程 Modal -->
     <div id="data-modal" class="dialog-overlay">
-        <div class="dialog-box" style="max-width: 650px;">
-            <div class="dialog-header flex-col items-start p-0 border-none" style="flex-direction: column; align-items: flex-start; padding: 0; border: none;">
-                <div style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 20px 20px 16px;">
-                    <h3 id="modal-title" style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700;"><i class="ti ti-book text-brand" style="font-size: 20px;"></i> 新增實習課程</h3>
-                    <button type="button" class="dialog-close" id="btn-close-modal-x"><i class="ti ti-x"></i></button>
-                </div>
+        <div class="dialog-content" style="max-width: 700px;">
+            <div class="dialog-header">
+                <h2 id="modal-title" style="margin:0; font-size: 18px; font-weight: 700; display:flex; align-items:center; gap:8px;">
+                    <i class="ti ti-book text-brand" style="font-size: 20px;"></i> 新增實習課程
+                </h2>
+                <button type="button" class="btn-close" id="btn-close-modal-x"><i class="ti ti-x"></i></button>
             </div>
-
-            <div class="dialog-body-container">
-                <form id="data-form" class="custom-scroll" style="display: flex; flex-direction: column; width: 100%; padding: 24px; overflow-y: auto;">
-                    <div class="form-section-title"><i class="ti ti-info-circle"></i> 課程基本資料</div>
-                    
-                    <div class="form-grid">
-                        <div class="field">
-                            <label class="field-label">學年度 <span class="req">*</span></label>
-                            <input type="text" id="input-academic-year" required placeholder="例如：114" class="field-input">
+            <div class="dialog-body" style="padding: 24px; max-height: 70vh; overflow-y: auto;">
+                <form id="data-form">
+                    <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        
+                        <div class="form-group">
+                            <label class="form-label required">學年度</label>
+                            <input type="number" id="input-academic-year" class="form-input" required placeholder="例如: 114">
                         </div>
-                        <div class="field">
-                            <label class="field-label">學期 <span class="req">*</span></label>
-                            <input type="text" id="input-term" required placeholder="如: 1, 2, 暑期" class="field-input">
-                        </div>
-                    </div>
-
-                    <div class="form-grid">
-                        <div class="field">
-                            <label class="field-label">開課學院 <span class="req">*</span></label>
-                            <select id="input-college" required class="field-select">
-                                <option value="">請選擇學院...</option>
+                        <div class="form-group">
+                            <label class="form-label required">學期</label>
+                            <select id="input-term" class="form-select" required>
+                                <option value="">請選擇</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3 (暑修)</option>
                             </select>
                         </div>
-                        <div class="field">
-                            <label class="field-label">開課學系 <span class="req">*</span></label>
-                            <select id="input-department" required class="field-select">
+
+                        <div class="form-group">
+                            <label class="form-label required">開課學院</label>
+                            <select id="input-college" class="form-select" required>
+                                <option value="">載入中...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label required">開課學系</label>
+                            <select id="input-department" class="form-select" required>
                                 <option value="">請先選擇學院...</option>
                             </select>
                         </div>
-                    </div>
 
-                    <div class="form-grid" style="grid-template-columns: 1fr 2fr;">
-                        <div class="field">
-                            <label class="field-label">選課代號 <span class="req">*</span></label>
-                            <input type="text" id="input-course-code" required placeholder="如: 1234" class="field-input">
+                        <div class="form-group">
+                            <label class="form-label required">選課代號</label>
+                            <input type="text" id="input-course-code" class="form-input" required placeholder="例如: 0091">
                         </div>
-                        <div class="field">
-                            <label class="field-label">課程名稱 <span class="req">*</span></label>
-                            <input type="text" id="input-course-name" required placeholder="例如：企業實習(一)" class="field-input">
+                        <div class="form-group">
+                            <label class="form-label required">課程名稱</label>
+                            <input type="text" id="input-course-name" class="form-input" required placeholder="請輸入課程名稱">
                         </div>
-                    </div>
 
-                    <div class="form-grid-3">
-                        <div class="field">
-                            <label class="field-label">開課學制 <span class="req">*</span></label>
-                            <select id="input-edu-system" required class="field-select">
-                                <option value="日間學士班" selected>日間學士班</option>
-                                <option value="研究所">研究所</option>
+                        <div class="form-group">
+                            <label class="form-label required">開課學制</label>
+                            <select id="input-edu-system" class="form-select" required>
+                                <option value="日間學士班">日間學士班</option>
                                 <option value="進修學士班">進修學士班</option>
+                                <option value="碩士班">碩士班</option>
+                                <option value="碩士在職專班">碩士在職專班</option>
+                                <option value="博士班">博士班</option>
                             </select>
                         </div>
-                        <div class="field">
-                            <label class="field-label">實習課程屬性 <span class="req">*</span></label>
-                            <select id="input-course-type" required class="field-select">
-                                <option value="必修" selected>必修</option>
+                        <div class="form-group">
+                            <label class="form-label required">課程屬性</label>
+                            <select id="input-course-type" class="form-select" required>
+                                <option value="必修">必修</option>
                                 <option value="選修">選修</option>
-                                <option value="必選">必選</option>
-                                <option value="畢業條件">畢業條件</option>
                             </select>
                         </div>
-                        <div class="field">
-                            <label class="field-label">實習學分數 <span class="req">*</span></label>
-                            <input type="number" id="input-credits" min="0" step="0.5" required placeholder="如: 3" class="field-input">
+
+                        <div class="form-group">
+                            <label class="form-label required">實習學分數</label>
+                            <input type="number" id="input-credits" class="form-input" required min="0" step="0.5" value="0">
                         </div>
                     </div>
                 </form>
             </div>
-            
-            <div class="dialog-footer">
+            <div class="dialog-footer" style="display: flex; justify-content: flex-end; gap: 12px; padding: 16px 24px; border-top: 1px solid var(--border); background: var(--surface);">
                 <button type="button" class="btn btn-secondary" id="btn-cancel-modal">取消</button>
-                <button type="button" id="btn-submit" class="btn btn-primary"><i class="ti ti-check"></i> 確認儲存</button>
+                <button type="button" class="btn btn-primary" id="btn-submit"><i class="ti ti-check"></i> 確認儲存</button>
             </div>
         </div>
     </div>
