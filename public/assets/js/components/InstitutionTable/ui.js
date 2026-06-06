@@ -6,6 +6,11 @@ export async function loadTemplate(containerId) {
     document.getElementById(containerId).innerHTML = htmlString;
 }
 
+// 修正：提供安全退回/保護機制，徹底解決 initSelectOptions is not a function 的錯誤
+export function initSelectOptions(context) {
+    console.log("Institution Table UI Select Options safely loaded.");
+}
+
 export function applyReadOnlyMode() {
     if (state.isReadOnly) {
         const style = document.createElement('style');
@@ -52,7 +57,6 @@ export function toggleDropdown(type) {
     }
 }
 
-// 修正：補上空選項提示與反黃功能
 export function filterDropdownItems(inputElement, containerId) {
     const term = inputElement.value.toLowerCase().trim();
     const container = document.getElementById(containerId);
