@@ -37,7 +37,7 @@ export async function render(containerId, context) {
 function injectSkeleton(container) {
     container.innerHTML = `
     <div class="p-6 space-y-6 animate-pulse">
-        <div class="h-20 bg-gray-200 rounded-2xl"></div>
+        <div class="h-16 bg-gray-200 rounded-xl"></div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="h-28 bg-white border border-gray-200 rounded-xl"></div>
             <div class="h-28 bg-white border border-gray-200 rounded-xl"></div>
@@ -61,7 +61,7 @@ async function fetchAllDashboardData(db) {
             getDocs(collection(db, "internship_courses")),
             getDocs(collection(db, "internship_records")),
             getDocs(collection(db, "internship_institutions")),
-            getDocs(collection(db, "internship_students")).catch(() => ({ docs: [] })) // 🌟 [修正] 改為讀取後台正確的 internship_students 集合
+            getDocs(collection(db, "internship_students")).catch(() => ({ docs: [] })) 
         ]);
 
         localCache.courses = courseSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -117,55 +117,32 @@ function renderStatsUI(container) {
     container.innerHTML = `
     <div id="dashboard-wrapper" class="p-6 space-y-6 custom-scroll overflow-y-auto h-full" style="background: var(--bg);">
         
-        <!-- 🌟 頂部高質感獨立雙維度篩選列 -->
-        <div class="bg-gradient-to-r from-slate-900 to-slate-800 p-6 rounded-2xl shadow-md text-white flex flex-col md:flex-row gap-6 items-start md:items-center justify-between border border-slate-700/50">
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 text-2xl shadow-inner shrink-0">
-                    <i class="ti ti-dashboard"></i>
-                </div>
-                <div>
-                    <h1 class="text-lg font-bold tracking-tight">實習數據主儀表板</h1>
-                    <p class="text-xs text-slate-300 font-medium mt-1">
-                        <span class="bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full text-[10px] font-semibold mr-1.5 border border-blue-500/30">數據交叉決策</span>
-                        系統動態統計與系所成效交叉分析
-                    </p>
-                </div>
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-wrap items-center gap-3 w-full justify-start">
+            <div class="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200">
+                <span class="text-xs font-bold text-gray-500">學年度</span>
+                <select id="select-filter-year" class="bg-transparent text-gray-800 text-xs font-bold focus:outline-none cursor-pointer">
+                    <option value="all">全部學年度</option>
+                    ${uniqueYears.map(y => `<option value="${y}" ${currentFilters.year === y ? 'selected' : ''}>${y} 學年度</option>`).join('')}
+                </select>
             </div>
             
-            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-start md:justify-end border-t border-slate-700/50 md:border-t-0 pt-4 md:p-0">
-                <!-- 學年度篩選 -->
-                <div class="flex items-center gap-2 bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700 shadow-sm">
-                    <span class="text-xs font-bold text-slate-400">學年度</span>
-                    <select id="select-filter-year" class="bg-transparent text-white text-xs font-bold focus:outline-none cursor-pointer">
-                        <option value="all" class="bg-slate-800 text-white">全部學年度</option>
-                        ${uniqueYears.map(y => `<option value="${y}" ${currentFilters.year === y ? 'selected' : ''} class="bg-slate-800 text-white">${y} 學年度</option>`).join('')}
-                    </select>
-                </div>
-                
-                <!-- 學期篩選 -->
-                <div class="flex items-center gap-2 bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700 shadow-sm">
-                    <span class="text-xs font-bold text-slate-400">學期</span>
-                    <select id="select-filter-term" class="bg-transparent text-white text-xs font-bold focus:outline-none cursor-pointer">
-                        <option value="all" class="bg-slate-800 text-white">全部學期</option>
-                        ${uniqueTerms.map(t => `<option value="${t}" ${currentFilters.term === t ? 'selected' : ''} class="bg-slate-800 text-white">第 ${t} 學期</option>`).join('')}
-                    </select>
-                </div>
-                
-                <!-- 重設按鈕 -->
-                <button id="btn-reset-dashboard" class="flex items-center gap-1.5 text-xs font-bold text-slate-200 hover:text-white px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 border border-slate-600 transition duration-150 shadow-sm">
-                    <i class="ti ti-refresh"></i> 恢復預設
-                </button>
+            <div class="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200">
+                <span class="text-xs font-bold text-gray-500">學期</span>
+                <select id="select-filter-term" class="bg-transparent text-gray-800 text-xs font-bold focus:outline-none cursor-pointer">
+                    <option value="all">全部學期</option>
+                    ${uniqueTerms.map(t => `<option value="${t}" ${currentFilters.term === t ? 'selected' : ''}>第 ${t} 學期</option>`).join('')}
+                </select>
             </div>
+            
+            <button id="btn-reset-dashboard" class="flex items-center gap-1.5 text-xs font-bold text-gray-600 hover:text-blue-600 px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 transition duration-150">
+                <i class="ti ti-refresh"></i> 恢復預設
+            </button>
         </div>
 
-        <!-- 🌟 四大核心實習指標統計區塊 -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="stats-grid-container">
-            <!-- 數據經由 computeAndRenderStats() 動態更新 -->
-        </div>
+            </div>
 
-        <!-- 深度分析與熱門排行圖表區 -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- 系所實習人數分佈 -->
             <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm col-span-1 lg:col-span-2 flex flex-col">
                 <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
                     <h3 class="text-sm font-bold text-gray-900 flex items-center gap-1.5">
@@ -174,11 +151,9 @@ function renderStatsUI(container) {
                     <span class="text-[11px] text-gray-400 font-semibold">依據篩選期間計算</span>
                 </div>
                 <div id="dept-stats-list" class="flex-1 space-y-4 max-h-[320px] overflow-y-auto custom-scroll pr-1">
-                    <!-- 動態載入系所排行 -->
-                </div>
+                    </div>
             </div>
 
-            <!-- 熱門實習機構 -->
             <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex flex-col">
                 <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
                     <h3 class="text-sm font-bold text-gray-900 flex items-center gap-1.5">
@@ -187,8 +162,7 @@ function renderStatsUI(container) {
                     <span class="text-[11px] text-amber-600 font-bold bg-amber-50 px-2 py-0.5 rounded-full">Top 5</span>
                 </div>
                 <div id="top-institutions-list" class="flex-1 space-y-3.5 max-h-[320px] overflow-y-auto custom-scroll pr-1">
-                    <!-- 動態載入熱門機構 -->
-                </div>
+                    </div>
             </div>
         </div>
     </div>
@@ -236,10 +210,11 @@ function computeAndRenderStats() {
         return matchYear && matchTerm;
     });
 
-    // 🌟 [修正] 統計不重複實習學生總數 (全面比對實習紀錄與實體 internship_students 集合中的 student_id)
+    // 🌟 統計不重複實習學生總數 (直接交叉比對篩選過後的 internship_records)
     const recordStudentIds = new Set();
     filteredRecords.forEach(r => {
-        const sId = r.student_id || r.student_num || r.student_no || r.uid;
+        // 盡可能抓取紀錄中可能代表學生的欄位
+        const sId = r.student_id || r.student_num || r.student_no || r.uid || r.student_name;
         if (sId) {
             recordStudentIds.add(String(sId).trim());
         }
@@ -247,20 +222,11 @@ function computeAndRenderStats() {
 
     let totalStudentsCount = 0;
     if (currentFilters.year === 'all' && currentFilters.term === 'all') {
-        // 如果沒有任何篩選，則顯示 internship_students 的總註冊人數
-        totalStudentsCount = localCache.students.length;
+        // 沒有篩選任何條件時，如果實體學生集合有資料就顯示實體資料總數，否則顯示實習紀錄中的不重複人數
+        totalStudentsCount = localCache.students.length > 0 ? localCache.students.length : recordStudentIds.size;
     } else {
-        // 篩選特定學年學期時，統計該區間內，且存在於學生名單中的不重複學生人數
-        const matchedStudentIds = new Set();
-        localCache.students.forEach(s => {
-            const sId = s.student_id || s.id;
-            if (sId && recordStudentIds.has(String(sId).trim())) {
-                matchedStudentIds.add(String(sId).trim());
-            }
-        });
-        
-        // 容錯防呆：如果尚未建立詳細學生資料檔案，直接以紀錄中的不重複學生識別碼計數
-        totalStudentsCount = matchedStudentIds.size > 0 ? matchedStudentIds.size : recordStudentIds.size;
+        // 有篩選條件時，直接以該條件下的實習紀錄來統計「實際參與實習的不重複學生人數」
+        totalStudentsCount = recordStudentIds.size;
     }
 
     // D. 統計實習機構數量
@@ -281,7 +247,6 @@ function computeAndRenderStats() {
     // ─── 渲染四大指標 Grid 卡片 ───
     const statsGrid = document.getElementById('stats-grid-container');
     statsGrid.innerHTML = `
-        <!-- 實習課程總數 -->
         <div class="flex items-center gap-4 p-5 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow transition duration-150">
             <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0" style="background: var(--brand-light); color: var(--brand);">
                 <i class="ti ti-book-2"></i>
@@ -293,7 +258,6 @@ function computeAndRenderStats() {
             </div>
         </div>
 
-        <!-- 實習學生總數 -->
         <div class="flex items-center gap-4 p-5 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow transition duration-150">
             <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0" style="background: var(--indigo-bg); color: var(--indigo);">
                 <i class="ti ti-users"></i>
@@ -302,12 +266,11 @@ function computeAndRenderStats() {
                 <div class="text-[11px] font-bold text-gray-400 tracking-wider">實習學生總數</div>
                 <div class="text-2xl font-bold text-gray-900 mt-0.5">${totalStudentsCount} <span class="text-xs font-semibold text-gray-400">人</span></div>
                 <div class="text-[10px] text-gray-400 mt-1">
-                    ${(currentFilters.year === 'all' && currentFilters.term === 'all') ? '系統已登記之總學生數' : `參與實習學生 (總登記 ${localCache.students.length} 人)`}
+                    ${(currentFilters.year === 'all' && currentFilters.term === 'all') ? '系統已登記之總學生數' : '此區間內參與實習人數'}
                 </div>
             </div>
         </div>
 
-        <!-- 實習機構總數 -->
         <div class="flex items-center gap-4 p-5 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow transition duration-150">
             <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0" style="background: #fffbeb; color: #d97706;">
                 <i class="ti ti-building-community"></i>
@@ -316,12 +279,11 @@ function computeAndRenderStats() {
                 <div class="text-[11px] font-bold text-gray-400 tracking-wider">實習機構總數</div>
                 <div class="text-2xl font-bold text-gray-900 mt-0.5">${activeInstCount} <span class="text-xs font-semibold text-gray-400">家</span></div>
                 <div class="text-[10px] text-gray-400 mt-1">
-                    ${(currentFilters.year === 'all' && currentFilters.term === 'all') ? '系統已登記之總機構數' : `合作中機構 (總登記 ${localCache.institutions.length} 家)`}
+                    ${(currentFilters.year === 'all' && currentFilters.term === 'all') ? '系統已登記之總機構數' : '合作中機構總數'}
                 </div>
             </div>
         </div>
 
-        <!-- 實習記錄總數 -->
         <div class="flex items-center gap-4 p-5 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow transition duration-150">
             <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0" style="background: #ecfdf5; color: #059669;">
                 <i class="ti ti-file-text"></i>
@@ -390,7 +352,6 @@ function computeAndRenderStats() {
             if (matchObj) name = matchObj.name;
         }
         name = String(name || '').trim();
-        // [修正] 排行過濾：排除無效值與預設替代字串，只在有名稱時加入排行
         if (name && name !== '其他實習機構' && name !== 'undefined' && name !== 'null') {
             instMap[name] = (instMap[name] || 0) + 1;
         }
