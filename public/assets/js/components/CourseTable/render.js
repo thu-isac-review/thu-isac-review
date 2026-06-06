@@ -1,6 +1,6 @@
 import { state, Utils } from './state.js';
 
-// 🌟 用於解析學期權重的輔助函式，以便進行「多到少 (暑期 -> 2 -> 1)」排序
+// 用於解析學期權重的輔助函式，以便進行「多到少 (暑期 -> 2 -> 1)」排序
 function getTermValue(term) {
     const t = String(term || '').trim();
     if (t.includes('暑')) return 3;
@@ -9,19 +9,19 @@ function getTermValue(term) {
     return 0;
 }
 
-// 🌟 取得學院排序索引值 (與篩選器的順序一致)
+// 取得學院排序索引值 (與篩選器的順序一致)
 function getCollegeSortValue(collegeName) {
     const idx = state.orderedColleges.findIndex(c => c.name === collegeName);
     return idx !== -1 ? idx : 999;
 }
 
-// 🌟 取得學系排序權重 (依據資料庫中 globalDepts 排序設定 sortOrder)
+// 取得學系排序權重 (依據資料庫中 globalDepts 排序設定 sortOrder)
 function getDeptSortValue(deptName) {
     const dept = state.globalDepts.find(d => d.name === deptName);
     return dept ? (dept.sortOrder || 999) : 999;
 }
 
-// 🌟 預設多階層排序鏈比較器
+// 預設多階層排序鏈比較器
 // 順序：學年度(多到少) > 學期(多到少) > 開課學院(系統排序) > 開課學系(系統排序) > 選課代號(少到多)
 function defaultMultiLevelCompare(a, b) {
     // 1. 學年度 (多到少, 降冪)
@@ -184,7 +184,7 @@ export function renderTable() {
         const highlightedCode = Utils.highlightKeyword(data.course_code, searchTerm);
         const highlightedName = Utils.highlightKeyword(data.course_name, searchTerm);
 
-        // 🌟 [優化置中] 將 col-course_name td 調整為 text-align: center 以配合表頭置中需求
+        // 🌟 [優化對齊與寬度] 將 td.col-course_name 設為 text-align: left 靠左對齊，而大綱 td.col-outline 設為 text-align: center
         html += `
         <tr class="${isChecked ? 'selected' : ''}" data-id="${data.id}">
             <td class="col-checkbox" style="text-align: center;">
@@ -198,7 +198,7 @@ export function renderTable() {
             <td class="col-college" style="text-align: center;"><div class="cell-primary">${colDispName || '-'}</div></td>
             <td class="col-department" style="text-align: center;"><div class="cell-primary">${deptDispName || '-'}</div></td>
             <td class="col-course_code" style="text-align: center;"><span class="pill-code">${highlightedCode}</span></td>
-            <td class="col-course_name" style="text-align: center;"><div class="cell-primary bold" title="${data.course_name}">${highlightedName}</div></td>
+            <td class="col-course_name" style="text-align: left;"><div class="cell-primary bold" title="${data.course_name}">${highlightedName}</div></td>
             <td class="col-course_type" style="text-align: center;"><div class="cell-primary">${data.course_type}</div></td>
             <td class="col-credits" style="text-align: center;"><div class="cell-primary bold">${data.credits}</div></td>
             <td class="col-student_count" style="text-align: center;"><div class="cell-primary font-semibold" style="color:var(--brand);">${studentCount} 人</div></td>
