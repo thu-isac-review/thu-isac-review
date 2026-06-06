@@ -32,9 +32,10 @@ export function bindEvents(container) {
     // ---------------- 1. 頂部工具列事件 ----------------
     container.querySelector('#btn-export-csv')?.addEventListener('click', () => {
         if (state.filteredData.length === 0) { UI.showNotification("沒有資料可供匯出！", "error"); return; }
-        let csv = '\uFEFF學年度,學期,開課學制,開課學院,開課學系,選課代號,課程名稱,實習課程屬性,實習學分數\n';
+        // Task 2B: 匯出功能加入統計修課人數
+        let csv = '\uFEFF學年度,學期,開課學制,開課學院,開課學系,選課代號,課程名稱,實習課程屬性,實習學分數,統計修課人數\n';
         state.filteredData.forEach(d => {
-            csv += [d.academic_year, d.term, d.edu_system, d.college, d.department, d.course_code, d.course_name, d.course_type, d.credits].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+            csv += [d.academic_year, d.term, d.edu_system, d.college, d.department, d.course_code, d.course_name, d.course_type, d.credits, d.student_count || 0].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
         });
         const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
         link.download = `實習課程清單_${new Date().toISOString().split('T')[0]}.csv`; link.click();
