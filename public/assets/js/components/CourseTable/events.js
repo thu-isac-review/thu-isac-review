@@ -146,7 +146,7 @@ export function bindEvents(container) {
         });
     });
 
-    // 綁定全選/取消全選按鈕 (修復沒反應的問題)
+    // 綁定全選/取消全選按鈕
     container.querySelectorAll('.btn-filter-toggle').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation(); // 阻止事件冒泡關閉下拉選單
