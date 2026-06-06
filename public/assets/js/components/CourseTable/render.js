@@ -1,5 +1,13 @@
 import { state } from './state.js';
 
+// 輔助函式：用來將搜尋關鍵字反黃
+function highlightKeyword(text, keyword) {
+    if (!text) return '';
+    if (!keyword) return text;
+    const regex = new RegExp(`(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    return text.toString().replace(regex, '<mark style="background-color: #fef08a; padding: 0 2px; border-radius: 2px; color: #854d0e; font-weight: bold;">$1</mark>');
+}
+
 export function renderTable() {
     const tbody = document.getElementById('table-body');
     const searchInput = document.getElementById('search-input');
@@ -119,6 +127,10 @@ export function renderTable() {
             </div>
         `;
 
+        // 在渲染表格內容時加入 highlight 處理
+        const highlightedCode = highlightKeyword(data.course_code, searchTerm);
+        const highlightedName = highlightKeyword(data.course_name, searchTerm);
+
         // 確保每一個 <td> 都有對應的 col-{欄位名} 讓顯示設定可以抓取隱藏
         html += `
         <tr class="${isChecked ? 'selected' : ''}" data-id="${data.id}">
@@ -132,8 +144,8 @@ export function renderTable() {
             <td class="col-edu_system" style="text-align: center;"><div class="cell-primary">${data.edu_system}</div></td>
             <td class="col-college" style="text-align: center;"><div class="cell-primary">${colDispName || '-'}</div></td>
             <td class="col-department" style="text-align: center;"><div class="cell-primary">${deptDispName || '-'}</div></td>
-            <td class="col-course_code" style="text-align: center;"><span class="pill-code">${data.course_code}</span></td>
-            <td class="col-course_name" style="text-align: left;"><div class="cell-primary bold" title="${data.course_name}">${data.course_name}</div></td>
+            <td class="col-course_code" style="text-align: center;"><span class="pill-code">${highlightedCode}</span></td>
+            <td class="col-course_name" style="text-align: left;"><div class="cell-primary bold" title="${data.course_name}">${highlightedName}</div></td>
             <td class="col-course_type" style="text-align: center;"><div class="cell-primary">${data.course_type}</div></td>
             <td class="col-credits" style="text-align: center;"><div class="cell-primary bold">${data.credits}</div></td>
             <td class="col-actions" style="text-align: center;">${actionHtml}</td>
