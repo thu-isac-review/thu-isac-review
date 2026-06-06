@@ -210,13 +210,18 @@ function computeAndRenderStats() {
         return matchYear && matchTerm;
     });
 
-    // 🌟 統計不重複實習學生總數 (直接交叉比對篩選過後的 internship_records)
+    // 🌟 統計不重複實習學生總數 (直接提取 student_raw)
     const recordStudentIds = new Set();
     filteredRecords.forEach(r => {
-        // 盡可能抓取紀錄中可能代表學生的欄位
-        const sId = r.student_id || r.student_num || r.student_no || r.uid || r.student_name;
-        if (sId) {
-            recordStudentIds.add(String(sId).trim());
+        if (r.student_raw) {
+            let sId = r.student_raw;
+            // 防呆處理：若 student_raw 是物件，嘗試提取裡面的識別碼；否則強制轉字串
+            if (typeof sId === 'object') {
+                sId = sId.student_id || sId.id || sId.uid || sId.name || JSON.stringify(sId);
+            }
+            if (sId && String(sId).trim() !== '') {
+                recordStudentIds.add(String(sId).trim());
+            }
         }
     });
 
@@ -299,7 +304,11 @@ function computeAndRenderStats() {
     // ─── 統計各系所的人數佔比與排名分佈 ───
     const deptMap = {};
     filteredRecords.forEach(r => {
-        let deptName = r.department || r.student_dept || '';
+        let deptName = r.department || r.student_dept;
+        // 同步嘗試從 student_raw 中抓取可能存在的系所欄位
+        if (!deptName && r.student_raw && typeof r.student_raw === 'object') {
+            deptName = r.student_raw.department || r.student_raw.dept;
+        }
         // 紀錄無系所時，嘗試對應課程系所
         if (!deptName && r.courses && r.courses.length > 0) {
             const courseObj = localCache.courses.find(c => r.courses.includes(c.id));
