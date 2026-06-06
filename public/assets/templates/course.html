@@ -1,5 +1,4 @@
 <link rel="stylesheet" href="./assets/css/course.css">
-<style id="dynamic-col-styles"></style>
 
 <div id="course-page-wrapper">
     <!-- ─── TOOLBAR ─── -->
@@ -29,7 +28,7 @@
     <!-- ─── FILTER ROW & BATCH BAR ─── -->
     <div class="filter-row">
         <div class="filters-scroll-area custom-scroll">
-            <!-- 學年度 -->
+            <!-- 篩選列維持不變 -->
             <div class="filter-pill-wrap" id="pill-wrap-year">
                 <button class="filter-pill" id="pill-year">全部學年度 <i class="ti ti-chevron-down"></i></button>
                 <div class="filter-dropdown" id="drop-year">
@@ -43,7 +42,6 @@
                 </div>
             </div>
 
-            <!-- 學期 -->
             <div class="filter-pill-wrap" id="pill-wrap-term">
                 <button class="filter-pill" id="pill-term">全部學期 <i class="ti ti-chevron-down"></i></button>
                 <div class="filter-dropdown" id="drop-term">
@@ -57,7 +55,6 @@
                 </div>
             </div>
 
-            <!-- 學制 -->
             <div class="filter-pill-wrap" id="pill-wrap-edu">
                 <button class="filter-pill" id="pill-edu">全部學制 <i class="ti ti-chevron-down"></i></button>
                 <div class="filter-dropdown" id="drop-edu">
@@ -71,7 +68,6 @@
                 </div>
             </div>
 
-            <!-- 學院 -->
             <div class="filter-pill-wrap" id="pill-wrap-college">
                 <button class="filter-pill" id="pill-college">全部學院 <i class="ti ti-chevron-down"></i></button>
                 <div class="filter-dropdown" id="drop-college">
@@ -85,7 +81,6 @@
                 </div>
             </div>
 
-            <!-- 學系 -->
             <div class="filter-pill-wrap" id="pill-wrap-dept">
                 <button class="filter-pill" id="pill-dept">全部學系 <i class="ti ti-chevron-down"></i></button>
                 <div class="filter-dropdown" id="drop-dept">
@@ -99,7 +94,6 @@
                 </div>
             </div>
 
-            <!-- 選課代號 -->
             <div class="filter-pill-wrap" id="pill-wrap-code">
                 <button class="filter-pill" id="pill-code">全部代號 <i class="ti ti-chevron-down"></i></button>
                 <div class="filter-dropdown" id="drop-code">
@@ -113,7 +107,6 @@
                 </div>
             </div>
 
-            <!-- 課程名稱 -->
             <div class="filter-pill-wrap" id="pill-wrap-name">
                 <button class="filter-pill" id="pill-name">全部名稱 <i class="ti ti-chevron-down"></i></button>
                 <div class="filter-dropdown" id="drop-name">
@@ -127,7 +120,6 @@
                 </div>
             </div>
 
-            <!-- 屬性 -->
             <div class="filter-pill-wrap" id="pill-wrap-type">
                 <button class="filter-pill" id="pill-type">全部屬性 <i class="ti ti-chevron-down"></i></button>
                 <div class="filter-dropdown" id="drop-type">
@@ -141,7 +133,6 @@
                 </div>
             </div>
 
-            <!-- 學分 -->
             <div class="filter-pill-wrap" id="pill-wrap-credit">
                 <button class="filter-pill" id="pill-credit">全部學分 <i class="ti ti-chevron-down"></i></button>
                 <div class="filter-dropdown" id="drop-credit">
@@ -153,23 +144,6 @@
                     </div>
                     <div class="filter-dropdown-list custom-scroll" id="credit-options-container"></div>
                 </div>
-            </div>
-        </div>
-        
-        <!-- 顯示設定選單 -->
-        <div class="relative inline-block text-left" id="display-settings-wrap">
-            <button id="btn-display-settings" class="btn btn-secondary btn-sm" style="font-weight: 500;"><i class="ti ti-settings"></i> 顯示設定</button>
-            <div id="display-settings-menu" style="position:absolute; right:0; top:calc(100% + 4px); width:200px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); padding:8px; z-index:100; display:none;" class="menu-popup">
-                <div style="font-size:11px; font-weight:700; color:var(--text-muted); padding:4px 8px;">顯示欄位設定</div>
-                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="academic_year" checked> 學年度</label>
-                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="term" checked> 學期</label>
-                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="edu_system" checked> 開課學制</label>
-                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="college" checked> 開課學院</label>
-                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="department" checked> 開課學系</label>
-                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="course_code" checked> 選課代號</label>
-                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="course_name" checked> 課程名稱</label>
-                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="course_type" checked> 課程屬性</label>
-                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;"><input type="checkbox" class="col-toggle-chk" value="credits" checked> 學分數</label>
             </div>
         </div>
 
@@ -194,16 +168,18 @@
                                 <input type="checkbox" id="selectAll" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                             </div>
                         </th>
-                        <th data-sort="academic_year" class="col-academic_year" style="width: 80px;">學年度 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="term" class="col-term" style="width: 80px;">學期 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="edu_system" class="col-edu_system" style="width: 120px;">開課學制 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="college" class="col-college" style="width: 140px;">開課學院 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="department" class="col-department" style="width: 140px;">開課學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="course_code" class="col-course_code" style="width: 120px;">選課代號 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="course_name" class="col-course_name" style="width: auto;">課程名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="course_type" class="col-course_type" style="width: 100px;">課程屬性 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="credits" class="col-credits" style="width: 80px;">學分數 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th class="col-actions">操作</th>
+                        <th data-sort="academic_year" style="width: 80px;">學年度 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="term" style="width: 80px;">學期 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="edu_system" style="width: 120px;">開課學制 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="college" style="width: 140px;">開課學院 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="department" style="width: 140px;">開課學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="course_code" style="width: 120px;">選課代號 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="course_name" style="width: auto;">課程名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="course_type" style="width: 100px;">課程屬性 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="credits" style="width: 80px;">學分數 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th style="width: 100px; text-align: center;">修課人數</th>
+                        <th style="width: 100px; text-align: center;">課程大綱</th>
+                        <th class="col-actions" style="width: 100px;">操作</th>
                     </tr>
                 </thead>
                 <tbody id="table-body">
