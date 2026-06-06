@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- 🌟 [優化] 在主框架頭部預載入 CSS，避免頁面載入非同步造成破圖 (FOUC) -->
     <link rel="stylesheet" href="./assets/css/institution.css">
     <link rel="stylesheet" href="./assets/css/course.css">
 
@@ -44,46 +43,64 @@
             --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
             --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.04);
             
-            --transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
         }
         html, body, #app { height: 100%; overflow: hidden; font-family: 'Noto Sans TC', sans-serif; color: var(--text-primary); background: var(--bg); -webkit-font-smoothing: antialiased; }
         
         /* 隱藏直到身分驗證完成 */
         body { visibility: hidden; }
 
-        /* 側邊欄基礎展開樣式與過渡 */
+        /* 側邊欄基礎與動畫優化 */
         #sidebar { width: var(--sidebar-w); background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; z-index: 30; transition: width var(--transition), transform var(--transition); }
         
-        /* 🌟 優化收合狀態 (Collapsed) 的質感與排版 */
-        #sidebar.collapsed { width: var(--sidebar-collapsed-w); }
-        #sidebar.collapsed .logo-text, 
-        #sidebar.collapsed .logo-sub, 
-        #sidebar.collapsed .nav-item span, 
-        #sidebar.collapsed .user-info, 
-        #sidebar.collapsed .settings-icon { display: none; }
-        
-        #sidebar.collapsed .sidebar-logo { padding: 0; justify-content: center; }
-        #sidebar.collapsed #sidebarMenu { padding-left: 10px; padding-right: 10px; }
-        
-        #sidebar.collapsed .nav-group-label { text-align: center; font-size: 0; padding: 12px 0 8px; margin: 4px 0; }
-        #sidebar.collapsed .nav-group-label::after { content: '•••'; font-size: 14px; color: var(--border-strong); letter-spacing: 1.5px; }
-        
-        #sidebar.collapsed .nav-item { justify-content: center; padding: 0; height: 44px; margin-bottom: 6px; border-radius: 12px; }
-        #sidebar.collapsed .nav-item i { font-size: 22px; width: auto; margin: 0; }
-        
-        #sidebar.collapsed .border-t { padding: 12px 0; display: flex; justify-content: center; }
-        #sidebar.collapsed #profileBtn { padding: 0; width: 44px; height: 44px; justify-content: center; border-radius: 50%; }
-        #sidebar.collapsed #userAvatar { width: 36px !important; height: 36px !important; font-size: 16px !important; }
+        /* 側邊欄內所有文字與排版元素的過渡效果 */
+        .logo-info, .nav-item span, .user-info, .settings-icon {
+            transition: opacity var(--transition), max-width var(--transition), visibility var(--transition);
+            max-width: 200px;
+            opacity: 1;
+            white-space: nowrap;
+        }
 
-        .sidebar-logo { height: var(--topbar-h); padding: 0 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); flex-shrink: 0; overflow: hidden; transition: padding var(--transition); }
-        .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius); cursor: pointer; color: var(--text-secondary); font-size: 13px; font-weight: 500; transition: all 0.2s ease; user-select: none; margin-bottom: 4px; white-space: nowrap; }
-        .nav-item i { font-size: 18px; flex-shrink: 0; text-align: center; width: 22px; transition: font-size 0.2s ease; }
+        /* 項目容器與圖示居中微調 */
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: var(--radius); cursor: pointer; color: var(--text-secondary); font-size: 13px; font-weight: 500; transition: all var(--transition); user-select: none; margin-bottom: 2px; white-space: nowrap; }
+        .nav-item i { font-size: 18px; flex-shrink: 0; text-align: center; width: 20px; transition: margin var(--transition); }
         .nav-item:hover { background: var(--bg); color: var(--text-primary); }
         .nav-item.active { background: var(--brand-light); color: var(--brand); font-weight: 700; }
+
+        /* 分類標籤樣式與過渡 */
+        .nav-group-label { transition: all var(--transition); position: relative; display: flex; align-items: center; }
+
+        /* 🌟核心改動：當側邊欄收合時的特殊處理 */
+        #sidebar.collapsed { width: var(--sidebar-collapsed-w); }
         
+        /* 收合時，隱藏所有文字並使其不佔空間 */
+        #sidebar.collapsed .logo-info,
+        #sidebar.collapsed .nav-item span, 
+        #sidebar.collapsed .user-info, 
+        #sidebar.collapsed .settings-icon { 
+            max-width: 0;
+            opacity: 0;
+            overflow: hidden;
+            visibility: hidden;
+        }
+        
+        /* 收合時項目置中調整 */
+        #sidebar.collapsed .nav-item { padding: 10px 0; justify-content: center; gap: 0; }
+        #sidebar.collapsed .nav-item i { margin: 0; }
+
+        /* 收合時，分類群組標籤轉變成一條精緻的橫線，取代點點點 */
+        #sidebar.collapsed .nav-group-label { font-size: 0; padding: 12px 16px; margin: 4px 0; justify-content: center; }
+        #sidebar.collapsed .nav-group-label::after { 
+            content: ''; 
+            display: block; 
+            width: 100%; 
+            height: 1px; 
+            background: var(--border); 
+            transition: all var(--transition);
+        }
+
         .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
-        
         @media (max-width: 768px) { #sidebar { position: fixed; height: 100%; transform: translateX(-100%); } #sidebar.open { transform: translateX(0); } .mobile-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 25; } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade { animation: fadeIn 0.25s ease-out forwards; }
@@ -114,7 +131,6 @@
             </div>
             
             <div class="flex-1 px-2 py-3 overflow-y-auto custom-scroll" id="sidebarMenu">
-                <!-- 首頁看板 (開放所有人) -->
                 <div class="nav-item" data-hash="dashboard" data-roles="all" title="首頁看板">
                     <i class="ti ti-home"></i><span>首頁看板</span>
                 </div>
@@ -123,7 +139,6 @@
                     <i class="ti ti-chart-pie"></i><span>進階統計分析</span>
                 </div>
                 
-                <!-- Section 1: 實習資料清單 (開放所有人) -->
                 <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-4 mb-1" data-roles="all">實習資料清單</div>
                 
                 <div class="nav-item" data-hash="intern_view/course/main" data-roles="all" title="實習課程列表">
@@ -139,7 +154,6 @@
                     <i class="ti ti-file-text"></i><span>實習記錄列表</span>
                 </div>
 
-                <!-- Section 2: 實習資料管理 (限管理者) -->
                 <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-4 mb-1" data-roles="admin">實習資料管理</div>
                 
                 <div class="nav-item" data-hash="intern_manage/course/main" data-roles="admin" title="實習課程管理">
@@ -155,7 +169,6 @@
                     <i class="ti ti-file-settings"></i><span>實習記錄管理</span>
                 </div>
 
-                <!-- Section 3: 系統管理 (限管理者) -->
                 <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-4 mb-1" data-roles="admin">系統管理</div>
                 
                 <div class="nav-item" data-hash="manage/roles" data-roles="admin" title="用戶權限管理">
@@ -167,8 +180,8 @@
             </div>
             
             <div class="p-2 border-t border-gray-200 bg-white flex-shrink-0">
-                <div class="nav-item !mb-0" id="profileBtn" data-hash="profile" data-roles="all" title="個人資料設定">
-                    <div class="w-7 h-7 rounded-full text-xs font-bold flex items-center justify-center" style="background: var(--brand-light); color: var(--brand); border: 1.5px solid var(--brand-border)" id="userAvatar">U</div>
+                <div class="nav-item !mb-0" id="profileBtn" data-hash="profile" data-roles="all" title="帳號設定">
+                    <div class="w-7 h-7 rounded-full text-xs font-bold flex items-center justify-center bg-blue-50 text-blue-600 border border-blue-200" id="userAvatar">U</div>
                     <div class="user-info flex-1 min-w-0">
                         <div class="text-xs font-bold text-gray-900 truncate" id="userTitleName">載入中...</div>
                         <div class="text-[10px] text-gray-400 truncate" id="userRoleTag">讀取權限中...</div>
@@ -180,7 +193,7 @@
 
         <div id="main" class="flex-1 flex flex-col overflow-hidden min-w-0">
             <header id="topbar" class="h-14 bg-white flex items-center px-4 md:px-6 gap-3 flex-shrink-0 z-20 border-b border-gray-200">
-                <button class="hidden md:flex p-1.5 rounded-md border border-gray-200 text-gray-500 hover:text-blue-600 hover:bg-gray-50 transition" onclick="toggleDesktopSidebar()" title="收合/展開側邊欄">
+                <button class="hidden md:flex p-1.5 rounded-md border border-gray-200 text-gray-500 hover:text-blue-600 hover:bg-gray-50 transition" onclick="toggleDesktopSidebar()">
                     <i class="ti ti-menu-2 text-lg"></i>
                 </button>
                 <button class="flex md:hidden text-gray-500 hover:text-blue-600" onclick="toggleMobileSidebar(true)">
@@ -281,7 +294,7 @@
             document.querySelectorAll('#sidebarMenu .nav-item, #sidebarMenu .nav-group-label').forEach(item => {
                 const allowed = item.getAttribute('data-roles');
                 if (allowed === 'all' || allowed.split(',').includes(userRole)) {
-                    item.style.display = item.classList.contains('nav-group-label') ? 'block' : 'flex';
+                    item.style.display = item.classList.contains('nav-group-label') ? 'flex' : 'flex';
                 } else {
                     item.style.display = 'none';
                 }
