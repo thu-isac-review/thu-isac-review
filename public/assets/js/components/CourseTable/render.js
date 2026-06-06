@@ -1,4 +1,12 @@
-import { state, Utils } from './state.js';
+import { state } from './state.js';
+
+// 修正：原生尋找反黃樣式
+function highlightKeyword(text, keyword) {
+    if (!text) return '';
+    if (!keyword) return text;
+    const regex = new RegExp(`(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    return text.toString().replace(regex, '<mark style="background-color: #ffff00; color: #000; padding: 0;">$1</mark>');
+}
 
 export function renderTable() {
     const tbody = document.getElementById('table-body');
@@ -7,22 +15,23 @@ export function renderTable() {
 
     state.filteredData = state.allData.filter(d => {
         const matchSearch = (d.course_name || '').toLowerCase().includes(searchTerm) || (d.course_code || '').toLowerCase().includes(searchTerm);
-        const matchYear = state.filterYearSet.size === 0 || state.filterYearSet.has(d.academic_year);
-        const matchTerm = state.filterTermSet.size === 0 || state.filterTermSet.has(d.term);
-        const matchEdu = state.filterEduSet.size === 0 || state.filterEduSet.has(d.edu_system);
-        const matchCol = state.filterCollegeSet.size === 0 || state.filterCollegeSet.has(d.college);
-        const matchDept = state.filterDeptSet.size === 0 || state.filterDeptSet.has(d.department);
-        const matchCode = state.filterCodeSet.size === 0 || state.filterCodeSet.has(d.course_code);
-        const matchName = state.filterNameSet.size === 0 || state.filterNameSet.has(d.course_name);
-        const matchType = state.filterTypeSet.size === 0 || state.filterTypeSet.has(d.course_type);
-        const matchCredit = state.filterCreditSet.size === 0 || state.filterCreditSet.has(String(d.credits));
+        
+        // 修正核心Bug：強制將資料庫讀出的數值與空值轉為字串再做 Set.has 驗證
+        const matchYear = state.filterYearSet.size === 0 || state.filterYearSet.has(String(d.academic_year ?? ''));
+        const matchTerm = state.filterTermSet.size === 0 || state.filterTermSet.has(String(d.term ?? ''));
+        const matchEdu = state.filterEduSet.size === 0 || state.filterEduSet.has(String(d.edu_system ?? ''));
+        const matchCol = state.filterCollegeSet.size === 0 || state.filterCollegeSet.has(String(d.college ?? ''));
+        const matchDept = state.filterDeptSet.size === 0 || state.filterDeptSet.has(String(d.department ?? ''));
+        const matchCode = state.filterCodeSet.size === 0 || state.filterCodeSet.has(String(d.course_code ?? ''));
+        const matchName = state.filterNameSet.size === 0 || state.filterNameSet.has(String(d.course_name ?? ''));
+        const matchType = state.filterTypeSet.size === 0 || state.filterTypeSet.has(String(d.course_type ?? ''));
+        const matchCredit = state.filterCreditSet.size === 0 || state.filterCreditSet.has(String(d.credits ?? ''));
         
         return matchSearch && matchYear && matchTerm && matchEdu && matchCol && matchDept && matchCode && matchName && matchType && matchCredit;
     });
 
-    // Sorting
     state.filteredData.sort((a, b) => {
-        let valA = a[state.sortCol] || ''; let valB = b[state.sortCol] || '';
+        let valA = a[state.sortCol] ?? ''; let valB = b[state.sortCol] ?? '';
         
         if (state.sortCol === 'college' || state.sortCol === 'department') {
             if (state.sortCol === 'college') {
@@ -112,18 +121,18 @@ export function renderTable() {
         const deptDispName = deptObj && deptObj.shortName ? deptObj.shortName : data.department;
         const isChecked = state.selectedIds.includes(data.id) ? 'checked' : '';
         
+        // 修正：刪除按鈕樣式與機構完全一致
         const actionHtml = state.isReadOnly ? '' : `
             <div class="row-actions">
-                <button data-id="${data.id}" class="btn btn-secondary btn-icon sm btn-row-edit" title="編輯"><i class="ti ti-edit"></i></button>
-                <button data-id="${data.id}" data-name="${data.course_name}" class="btn btn-icon sm btn-row-delete" style="color:var(--danger); border-color:var(--danger-border); background:var(--surface);" title="刪除"><i class="ti ti-trash"></i></button>
+                <button class="btn btn-icon sm btn-row-edit" data-id="${data.id}"><i class="ti ti-edit"></i></button>
+                <button class="btn btn-icon sm btn-row-delete" data-id="${data.id}"><i class="ti ti-trash" style="color: var(--danger);"></i></button>
             </div>
         `;
 
-        // 使用共用 Utils 處理 highlight
-        const highlightedCode = Utils.highlightKeyword(data.course_code, searchTerm);
-        const highlightedName = Utils.highlightKeyword(data.course_name, searchTerm);
+        const highlightedCode = highlightKeyword(data.course_code, searchTerm);
+        const highlightedName = highlightKeyword(data.course_name, searchTerm);
+        const syllabusUrl = `http://desc.ithu.tw/${data.academic_year}/${data.term}/${data.course_code}`;
 
-        // 確保每一個 <td> 都有對應的 col-{欄位名} 讓顯示設定可以抓取隱藏
         html += `
         <tr class="${isChecked ? 'selected' : ''}" data-id="${data.id}">
             <td class="col-checkbox" style="text-align: center;">
@@ -131,15 +140,21 @@ export function renderTable() {
                     <input type="checkbox" value="${data.id}" class="row-select-chk" ${isChecked} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                 </div>
             </td>
-            <td class="col-academic_year" style="text-align: center;"><div class="cell-primary bold">${data.academic_year}</div></td>
-            <td class="col-term" style="text-align: center;"><div class="cell-primary">${data.term}</div></td>
-            <td class="col-edu_system" style="text-align: center;"><div class="cell-primary">${data.edu_system}</div></td>
-            <td class="col-college" style="text-align: center;"><div class="cell-primary">${colDispName || '-'}</div></td>
-            <td class="col-department" style="text-align: center;"><div class="cell-primary">${deptDispName || '-'}</div></td>
-            <td class="col-course_code" style="text-align: center;"><span class="pill-code">${highlightedCode}</span></td>
-            <td class="col-course_name" style="text-align: left;"><div class="cell-primary bold" title="${data.course_name}">${highlightedName}</div></td>
-            <td class="col-course_type" style="text-align: center;"><div class="cell-primary">${data.course_type}</div></td>
-            <td class="col-credits" style="text-align: center;"><div class="cell-primary bold">${data.credits}</div></td>
+            <td style="text-align: center;"><div class="cell-primary bold">${data.academic_year}</div></td>
+            <td style="text-align: center;"><div class="cell-primary">${data.term}</div></td>
+            <td style="text-align: center;"><div class="cell-primary">${data.edu_system}</div></td>
+            <td style="text-align: center;"><div class="cell-primary">${colDispName || '-'}</div></td>
+            <td style="text-align: center;"><div class="cell-primary">${deptDispName || '-'}</div></td>
+            <td style="text-align: center;"><span class="pill-code">${highlightedCode}</span></td>
+            <td style="text-align: left;"><div class="cell-primary bold" title="${data.course_name}">${highlightedName}</div></td>
+            <td style="text-align: center;"><div class="cell-primary">${data.course_type}</div></td>
+            <td style="text-align: center;"><div class="cell-primary bold">${data.credits}</div></td>
+            <td style="text-align: center;"><div class="cell-primary bold">${data.student_count || 0}</div></td>
+            <td style="text-align: center;">
+                <a href="${syllabusUrl}" target="_blank" class="btn btn-sm btn-secondary" style="font-weight: 600; padding: 0 10px; color: var(--brand);">
+                    <i class="ti ti-external-link" style="margin-right:4px;"></i> 大綱
+                </a>
+            </td>
             <td class="col-actions" style="text-align: center;">${actionHtml}</td>
         </tr>`;
     });
