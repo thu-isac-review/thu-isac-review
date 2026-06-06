@@ -24,14 +24,13 @@ export function applyReadOnlyMode() {
     }
 }
 
-// 更新欄位顯示 CSS 的生成邏輯，加入 .cell-primary 的覆蓋
 export function updateColStyles() {
     let css = '';
     const cols = ['academic_year', 'term', 'edu_system', 'college', 'department', 'course_code', 'course_name', 'course_type', 'credits'];
     
     cols.forEach(col => {
         if (!state.colVis[col]) {
-            // 強制隱藏整欄的 <th> 和 <td>
+            // 強制隱藏整欄的 <th> 和 <td>，並覆寫所有子元素的 display 避免破版
             css += `.col-${col} { display: none !important; }\n`;
             css += `td.col-${col} * { display: none !important; }\n`; 
         }
@@ -50,7 +49,6 @@ export function toggleDropdown(type) {
     if (!isOpen) { drop.classList.add('show'); wrap.classList.add('open'); }
 }
 
-// 增加搜尋文字反黃 (Highlight) 的功能
 export function filterDropdownItems(inputElement, containerId) {
     const term = inputElement.value.toLowerCase().trim();
     const container = document.getElementById(containerId);
@@ -75,7 +73,7 @@ export function filterDropdownItems(inputElement, containerId) {
             lbl.style.display = 'flex';
             hasVisible = true;
             
-            // 實作反黃標示
+            // 實作反黃標示 (黃底棕字 Highlight)
             const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
             span.innerHTML = originalText.replace(regex, '<mark style="background-color: #fef08a; padding: 0 2px; border-radius: 2px; color: #854d0e; font-weight: bold;">$1</mark>');
         } else {
@@ -83,7 +81,7 @@ export function filterDropdownItems(inputElement, containerId) {
         }
     });
 
-    // 處理空狀態
+    // 處理找不到選項時的空狀態
     let emptyOpt = container.querySelector('.empty-opt');
     if (!hasVisible) {
         if (!emptyOpt) {
