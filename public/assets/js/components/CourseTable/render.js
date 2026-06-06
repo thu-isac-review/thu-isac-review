@@ -1,13 +1,5 @@
 import { state } from './state.js';
 
-// 修正 A.2: 回歸最標準的 Chrome 搜尋反黃 (黃底黑字，無其他贅餘樣式)
-function highlightKeyword(text, keyword) {
-    if (!text) return '';
-    if (!keyword) return text;
-    const regex = new RegExp(`(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-    return text.toString().replace(regex, '<mark style="background-color: #ffff00; color: #000; padding: 0;">$1</mark>');
-}
-
 export function renderTable() {
     const tbody = document.getElementById('table-body');
     const searchInput = document.getElementById('search-input');
@@ -15,24 +7,22 @@ export function renderTable() {
 
     state.filteredData = state.allData.filter(d => {
         const matchSearch = (d.course_name || '').toLowerCase().includes(searchTerm) || (d.course_code || '').toLowerCase().includes(searchTerm);
-        
-        // 修正：強固的比對與型別轉化防空保護 (確保空白載入正常)
-        const matchYear = state.filterYearSet.size === 0 || state.filterYearSet.has(String(d.academic_year ?? ''));
-        const matchTerm = state.filterTermSet.size === 0 || state.filterTermSet.has(String(d.term ?? ''));
-        const matchEdu = state.filterEduSet.size === 0 || state.filterEduSet.has(String(d.edu_system ?? ''));
-        const matchCol = state.filterCollegeSet.size === 0 || state.filterCollegeSet.has(String(d.college ?? ''));
-        const matchDept = state.filterDeptSet.size === 0 || state.filterDeptSet.has(String(d.department ?? ''));
-        const matchCode = state.filterCodeSet.size === 0 || state.filterCodeSet.has(String(d.course_code ?? ''));
-        const matchName = state.filterNameSet.size === 0 || state.filterNameSet.has(String(d.course_name ?? ''));
-        const matchType = state.filterTypeSet.size === 0 || state.filterTypeSet.has(String(d.course_type ?? ''));
-        const matchCredit = state.filterCreditSet.size === 0 || state.filterCreditSet.has(String(d.credits ?? ''));
+        const matchYear = state.filterYearSet.size === 0 || state.filterYearSet.has(d.academic_year);
+        const matchTerm = state.filterTermSet.size === 0 || state.filterTermSet.has(d.term);
+        const matchEdu = state.filterEduSet.size === 0 || state.filterEduSet.has(d.edu_system);
+        const matchCol = state.filterCollegeSet.size === 0 || state.filterCollegeSet.has(d.college);
+        const matchDept = state.filterDeptSet.size === 0 || state.filterDeptSet.has(d.department);
+        const matchCode = state.filterCodeSet.size === 0 || state.filterCodeSet.has(d.course_code);
+        const matchName = state.filterNameSet.size === 0 || state.filterNameSet.has(d.course_name);
+        const matchType = state.filterTypeSet.size === 0 || state.filterTypeSet.has(d.course_type);
+        const matchCredit = state.filterCreditSet.size === 0 || state.filterCreditSet.has(String(d.credits));
         
         return matchSearch && matchYear && matchTerm && matchEdu && matchCol && matchDept && matchCode && matchName && matchType && matchCredit;
     });
 
-    // 排序
+    // Sorting
     state.filteredData.sort((a, b) => {
-        let valA = a[state.sortCol] ?? ''; let valB = b[state.sortCol] ?? '';
+        let valA = a[state.sortCol] || ''; let valB = b[state.sortCol] || '';
         
         if (state.sortCol === 'college' || state.sortCol === 'department') {
             if (state.sortCol === 'college') {
@@ -122,19 +112,12 @@ export function renderTable() {
         const deptDispName = deptObj && deptObj.shortName ? deptObj.shortName : data.department;
         const isChecked = state.selectedIds.includes(data.id) ? 'checked' : '';
         
-        // 修正 C：刪除按鈕樣式與機構完全一致（灰框，紅色垃圾桶圖示）
         const actionHtml = state.isReadOnly ? '' : `
             <div class="row-actions">
-                <button class="btn btn-icon sm btn-row-edit" data-id="${data.id}"><i class="ti ti-edit"></i></button>
-                <button class="btn btn-icon sm btn-row-delete" data-id="${data.id}"><i class="ti ti-trash" style="color: var(--danger);"></i></button>
+                <button data-id="${data.id}" class="btn btn-secondary btn-icon sm btn-row-edit" title="編輯"><i class="ti ti-edit"></i></button>
+                <button data-id="${data.id}" data-name="${data.course_name}" class="btn btn-icon sm btn-row-delete" style="color:var(--danger); border-color:var(--danger-border); background:var(--surface);" title="刪除"><i class="ti ti-trash"></i></button>
             </div>
         `;
-
-        const highlightedCode = highlightKeyword(data.course_code, searchTerm);
-        const highlightedName = highlightKeyword(data.course_name, searchTerm);
-        
-        // 修正 E：查看課程大綱外部連結 (http://desc.ithu.tw/{學年}/{學期}/{選課代號})
-        const syllabusUrl = `http://desc.ithu.tw/${data.academic_year}/${data.term}/${data.course_code}`;
 
         html += `
         <tr class="${isChecked ? 'selected' : ''}" data-id="${data.id}">
@@ -148,18 +131,10 @@ export function renderTable() {
             <td style="text-align: center;"><div class="cell-primary">${data.edu_system}</div></td>
             <td style="text-align: center;"><div class="cell-primary">${colDispName || '-'}</div></td>
             <td style="text-align: center;"><div class="cell-primary">${deptDispName || '-'}</div></td>
-            <td style="text-align: center;"><span class="pill-code">${highlightedCode}</span></td>
-            <td style="text-align: left;"><div class="cell-primary bold" title="${data.course_name}">${highlightedName}</div></td>
+            <td style="text-align: center;"><span class="pill-code">${data.course_code}</span></td>
+            <td style="text-align: left;"><div class="cell-primary bold" title="${data.course_name}">${data.course_name}</div></td>
             <td style="text-align: center;"><div class="cell-primary">${data.course_type}</div></td>
             <td style="text-align: center;"><div class="cell-primary bold">${data.credits}</div></td>
-            <!-- 修正 B & A.4：修課人數內容字體為粗體，顏色改為品牌藍色 -->
-            <td style="text-align: center;"><div class="cell-primary bold" style="color: var(--brand); font-weight: bold; justify-content: center;">${data.student_count || 0}</div></td>
-            <!-- 修正 A.3：大綱按鈕不寫文字，改用精緻圖示按鈕 -->
-            <td style="text-align: center;">
-                <a href="${syllabusUrl}" target="_blank" class="btn btn-icon sm btn-secondary" title="課程大綱" style="color: var(--brand);">
-                    <i class="ti ti-external-link"></i>
-                </a>
-            </td>
             <td class="col-actions" style="text-align: center;">${actionHtml}</td>
         </tr>`;
     });

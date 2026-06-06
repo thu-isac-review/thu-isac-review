@@ -6,6 +6,7 @@ import * as Data from './data.js';
 export function bindEvents(container) {
     if (!container) return;
 
+    // 🌟 全域鍵盤快捷鍵綁定
     if (!state.isKeyboardShortcutBound) {
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
@@ -28,11 +29,12 @@ export function bindEvents(container) {
         state.isKeyboardShortcutBound = true;
     }
 
+    // ---------------- 1. 頂部工具列事件 ----------------
     container.querySelector('#btn-export-csv')?.addEventListener('click', () => {
         if (state.filteredData.length === 0) { UI.showNotification("沒有資料可供匯出！", "error"); return; }
-        let csv = '\uFEFF學年度,學期,開課學制,開課學院,開課學系,選課代號,課程名稱,實習課程屬性,實習學分數,修課人數\n';
+        let csv = '\uFEFF學年度,學期,開課學制,開課學院,開課學系,選課代號,課程名稱,實習課程屬性,實習學分數\n';
         state.filteredData.forEach(d => {
-            csv += [d.academic_year, d.term, d.edu_system, d.college, d.department, d.course_code, d.course_name, d.course_type, d.credits, (d.student_count || 0)].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+            csv += [d.academic_year, d.term, d.edu_system, d.college, d.department, d.course_code, d.course_name, d.course_type, d.credits].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
         });
         const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
         link.download = `實習課程清單_${new Date().toISOString().split('T')[0]}.csv`; link.click();
@@ -110,6 +112,7 @@ export function bindEvents(container) {
         }, 250);
     });
 
+    // ---------------- 2. 篩選器事件 ----------------
     const filterTypes = ['year', 'term', 'edu', 'college', 'dept', 'code', 'name', 'type', 'credit'];
     
     filterTypes.forEach(type => {
@@ -125,54 +128,26 @@ export function bindEvents(container) {
                 if (set.has(val)) set.delete(val); else set.add(val);
                 document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
                 
-                const containerEl = document.getElementById(`${type}-options-container`);
-                const allCheckboxes = containerEl ? Array.from(containerEl.querySelectorAll(`.filter-chk-${type}`)) : [];
-                const visibleCheckboxes = allCheckboxes.filter(c => c.closest('.filter-option').style.display !== 'none');
+                if(type === 'college') { UI.populateDeptFilterUI(); }
+                state.currentPage = 1; UI.updatePillActive(type); Render.renderTable();
+            }
+        });
+        
+        container.querySelector(`#drop-${type}`)?.addEventListener('click', (e) => {
+            if(e.target.classList.contains('btn-clear-filter') && e.target.dataset.type === type) {
+                const setMap = { 'year': state.filterYearSet, 'term': state.filterTermSet, 'edu': state.filterEduSet, 'college': state.filterCollegeSet, 'dept': state.filterDeptSet, 'code': state.filterCodeSet, 'name': state.filterNameSet, 'type': state.filterTypeSet, 'credit': state.filterCreditSet };
+                setMap[type].clear();
                 
-                const btnToggle = document.querySelector(`.btn-filter-toggle[data-type="${type}"]`);
-                if (btnToggle && visibleCheckboxes.length > 0) {
-                    const allChecked = visibleCheckboxes.every(c => c.checked);
-                    btnToggle.dataset.state = allChecked ? 'all' : 'none';
-                    btnToggle.innerText = allChecked ? '取消選取' : '全選';
+                document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = false);
+                const searchInput = document.getElementById(`search-${type}-input`);
+                if (searchInput) {
+                    searchInput.value = '';
+                    UI.filterDropdownItems(searchInput, `${type}-options-container`);
                 }
 
                 if(type === 'college') { UI.populateDeptFilterUI(); }
                 state.currentPage = 1; UI.updatePillActive(type); Render.renderTable();
             }
-        });
-    });
-
-    container.querySelectorAll('.btn-filter-toggle').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation(); 
-            const type = btn.dataset.type;
-            const isSelectAll = btn.dataset.state !== 'all';
-            btn.dataset.state = isSelectAll ? 'all' : 'none';
-            btn.innerText = isSelectAll ? '取消選取' : '全選';
-            
-            const setMap = { 'year': state.filterYearSet, 'term': state.filterTermSet, 'edu': state.filterEduSet, 'college': state.filterCollegeSet, 'dept': state.filterDeptSet, 'code': state.filterCodeSet, 'name': state.filterNameSet, 'type': state.filterTypeSet, 'credit': state.filterCreditSet };
-            const set = setMap[type];
-
-            const containerEl = document.getElementById(`${type}-options-container`);
-            if (containerEl) {
-                containerEl.querySelectorAll(`.filter-chk-${type}`).forEach(c => {
-                    if (c.closest('.filter-option').style.display !== 'none') { 
-                        c.checked = isSelectAll; 
-                        if (isSelectAll) {
-                            set.add(c.value); 
-                        } else {
-                            set.delete(c.value); 
-                        }
-                    }
-                });
-            }
-            
-            document.querySelectorAll(`.filter-chk-${type}`).forEach(c => {
-                 c.checked = set.has(c.value);
-            });
-
-            if(type === 'college') { UI.populateDeptFilterUI(); }
-            state.currentPage = 1; UI.updatePillActive(type); Render.renderTable();
         });
     });
 
@@ -186,6 +161,7 @@ export function bindEvents(container) {
         state.isGlobalListenerBound = true;
     }
 
+    // ---------------- 3. 批次操作列事件 ----------------
     container.querySelector('#selectAll')?.addEventListener('change', (e) => {
         const isChecked = e.target.checked;
         const startIndex = (state.currentPage - 1) * state.itemsPerPage;
@@ -228,6 +204,7 @@ export function bindEvents(container) {
         }
     });
 
+    // ---------------- 4. 分頁與排序 ----------------
     container.querySelector('#per-page-select')?.addEventListener('change', (e) => { 
         state.itemsPerPage = Number(e.target.value); state.currentPage = 1; Render.renderTable(); 
     });
@@ -259,10 +236,12 @@ export function bindEvents(container) {
         }
     });
 
+    // ---------------- 5. 表單交互 ----------------
     container.querySelector('#input-college')?.addEventListener('change', () => UI.updateFormDepts());
     container.querySelector('#btn-close-modal-x')?.addEventListener('click', UI.closeModal);
     container.querySelector('#btn-cancel-modal')?.addEventListener('click', UI.closeModal);
 
+    // ---------------- 6. 表單送出與儲存判斷 ----------------
     container.querySelector('#btn-submit')?.addEventListener('click', async () => {
         if(state.isReadOnly) return;
         const year = document.getElementById('input-academic-year').value.trim();
@@ -301,6 +280,7 @@ export function bindEvents(container) {
         }
     });
 
+    // ---------------- 7. 表格內行操作 ----------------
     container.querySelector('#table-body')?.addEventListener('click', async (e) => {
         const rowChk = e.target.closest('.row-select-chk');
         const btnEdit = e.target.closest('.btn-row-edit');

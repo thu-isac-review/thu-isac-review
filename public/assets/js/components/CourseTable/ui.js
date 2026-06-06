@@ -2,7 +2,7 @@ import { state } from './state.js';
 import * as Render from './render.js';
 
 export async function loadTemplate(containerId) {
-    const response = await fetch(`./assets/templates/course.html?v=${new Date().getTime()}`);
+    const response = await fetch('./assets/templates/course.html');
     const htmlString = await response.text();
     document.getElementById(containerId).innerHTML = htmlString;
 }
@@ -34,48 +34,12 @@ export function toggleDropdown(type) {
 }
 
 export function filterDropdownItems(inputElement, containerId) {
-    const term = inputElement.value.toLowerCase().trim();
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    
-    const labels = container.querySelectorAll('.filter-option');
-    let hasVisible = false;
-
+    const term = inputElement.value.toLowerCase();
+    const labels = document.getElementById(containerId).querySelectorAll('.filter-option');
     labels.forEach(lbl => {
-        const span = lbl.querySelector('span:not(.pill-count)'); 
-        if (!span) return;
-        
-        const originalText = span.textContent || span.innerText;
-        const textLower = originalText.toLowerCase();
-        
-        if (term === '') {
-            lbl.style.display = 'flex';
-            span.innerHTML = originalText; 
-            hasVisible = true;
-        } else if (textLower.includes(term)) {
-            lbl.style.display = 'flex';
-            hasVisible = true;
-            // 與機構完全一致：黃底黑字 Chrome 效果
-            const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-            span.innerHTML = originalText.replace(regex, '<mark style="background-color: #ffff00; color: #000; padding: 0;">$1</mark>');
-        } else {
-            lbl.style.display = 'none';
-        }
+        const text = lbl.textContent.toLowerCase();
+        lbl.style.display = text.includes(term) ? 'flex' : 'none';
     });
-
-    let emptyOpt = container.querySelector('.empty-opt');
-    if (!hasVisible) {
-        if (!emptyOpt) {
-            emptyOpt = document.createElement('label');
-            emptyOpt.className = 'searchable-option empty-opt';
-            emptyOpt.textContent = '找不到符合的選項';
-            container.appendChild(emptyOpt);
-        } else {
-            emptyOpt.style.display = 'flex';
-        }
-    } else if (emptyOpt) {
-        emptyOpt.style.display = 'none';
-    }
 }
 
 export function updatePillActive(type) {
@@ -148,6 +112,7 @@ export function populateAllFiltersUI() {
 
     populateDeptFilterUI();
     
+    // 保持勾選狀態
     ['year', 'term', 'edu', 'code', 'name', 'type', 'credit'].forEach(type => {
         const setMap = { 'year': state.filterYearSet, 'term': state.filterTermSet, 'edu': state.filterEduSet, 'code': state.filterCodeSet, 'name': state.filterNameSet, 'type': state.filterTypeSet, 'credit': state.filterCreditSet };
         document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = setMap[type].has(c.value));

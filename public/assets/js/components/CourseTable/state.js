@@ -10,7 +10,6 @@ export const state = {
     itemsPerPage: 15,
     selectedIds: [],
     
-    // 篩選集合
     filterYearSet: new Set(),
     filterTermSet: new Set(),
     filterEduSet: new Set(),
