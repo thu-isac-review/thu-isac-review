@@ -2,7 +2,6 @@ import { state } from './state.js';
 import * as Render from './render.js';
 
 export async function loadTemplate(containerId) {
-    // 確保路徑與機構一致，避免快取問題，我們可以在 URL 後面加上時間戳記
     const response = await fetch(`./assets/templates/course.html?v=${new Date().getTime()}`);
     const htmlString = await response.text();
     document.getElementById(containerId).innerHTML = htmlString;
@@ -25,23 +24,6 @@ export function applyReadOnlyMode() {
     }
 }
 
-// 更新欄位顯示 CSS 的生成邏輯，加入 .cell-primary 的覆蓋
-export function updateColStyles() {
-    let css = '';
-    const cols = ['academic_year', 'term', 'edu_system', 'college', 'department', 'course_code', 'course_name', 'course_type', 'credits'];
-    
-    cols.forEach(col => {
-        if (!state.colVis[col]) {
-            // 強制隱藏整欄的 <th> 和 <td>，並覆寫所有子元素的 display 避免破版
-            css += `.col-${col} { display: none !important; }\n`;
-            css += `td.col-${col} * { display: none !important; }\n`; 
-        }
-    });
-    
-    const styleEl = document.getElementById('dynamic-col-styles');
-    if (styleEl) styleEl.textContent = css;
-}
-
 export function toggleDropdown(type) {
     const drop = document.getElementById(`drop-${type}`);
     const wrap = document.getElementById(`pill-wrap-${type}`);
@@ -60,23 +42,27 @@ export function filterDropdownItems(inputElement, containerId) {
     let hasVisible = false;
 
     labels.forEach(lbl => {
-        const span = lbl.querySelector('span:not(.pill-count)'); // 避免選到數量標籤
+        const span = lbl.querySelector('span:not(.pill-count)'); 
         if (!span) return;
         
-        // 取得最原始的文字
         const originalText = span.textContent || span.innerText;
         const textLower = originalText.toLowerCase();
         
-        if (term === '' || textLower.includes(term)) {
+        if (term === '') {
             lbl.style.display = 'flex';
-            span.innerHTML = originalText; // 恢復原狀不加 mark (取消篩選器反黃)
+            span.innerHTML = originalText; 
             hasVisible = true;
+        } else if (textLower.includes(term)) {
+            lbl.style.display = 'flex';
+            hasVisible = true;
+            // 使用 Chrome 原生的尋找反黃樣式
+            const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            span.innerHTML = originalText.replace(regex, '<mark style="background-color: #ffff00; color: #000; padding: 0;">$1</mark>');
         } else {
             lbl.style.display = 'none';
         }
     });
 
-    // 處理找不到選項時的空狀態
     let emptyOpt = container.querySelector('.empty-opt');
     if (!hasVisible) {
         if (!emptyOpt) {
@@ -162,7 +148,6 @@ export function populateAllFiltersUI() {
 
     populateDeptFilterUI();
     
-    // 保持勾選狀態
     ['year', 'term', 'edu', 'code', 'name', 'type', 'credit'].forEach(type => {
         const setMap = { 'year': state.filterYearSet, 'term': state.filterTermSet, 'edu': state.filterEduSet, 'code': state.filterCodeSet, 'name': state.filterNameSet, 'type': state.filterTypeSet, 'credit': state.filterCreditSet };
         document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = setMap[type].has(c.value));
