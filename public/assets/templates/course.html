@@ -161,26 +161,25 @@
     <div class="table-wrap">
         <div class="table-scroll custom-scroll">
             <table>
-                <!-- 🌟 [優化] Th 樣式精美化，移除 inline style 改由 css 完全集中控制 -->
                 <thead id="course-table-head">
                     <tr>
-                        <th class="col-checkbox">
+                        <th class="col-checkbox" style="width: 48px;">
                             <div class="flex-center">
                                 <input type="checkbox" id="selectAll" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                             </div>
                         </th>
-                        <th data-sort="academic_year" class="col-academic_year">學年度 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="term" class="col-term">學期 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="edu_system" class="col-edu_system">開課學制 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="college" class="col-college">開課學院 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="department" class="col-department">開課學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="course_code" class="col-course_code">選課代號 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="course_name" class="col-course_name">課程名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="course_type" class="col-course_type">課程屬性 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="credits" class="col-credits">學分數 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="student_count" class="col-student_count">修課人數 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th class="col-outline">大綱</th>
-                        <th class="col-actions">操作</th>
+                        <th data-sort="academic_year" class="col-academic_year" style="width: 80px;">學年度 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="term" class="col-term" style="width: 70px;">學期 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="edu_system" class="col-edu_system" style="width: 100px;">開課學制 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="college" class="col-college" style="width: 110px;">開課學院 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="department" class="col-department" style="width: 110px;">開課學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="course_code" class="col-course_code" style="width: 100px;">選課代號 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="course_name" class="col-course_name" style="width: 200px; text-align: center;">課程名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="course_type" class="col-course_type" style="width: 90px;">課程屬性 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="credits" class="col-credits" style="width: 70px;">學分數 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="student_count" class="col-student_count" style="width: 90px;">修課人數 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th class="col-outline" style="width: 70px; text-align: center;">大綱</th>
+                        <th class="col-actions" style="width: 90px;">操作</th>
                     </tr>
                 </thead>
                 <tbody id="table-body">
