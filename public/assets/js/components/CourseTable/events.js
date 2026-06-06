@@ -112,7 +112,7 @@ export function bindEvents(container) {
         }, 250);
     });
 
-    // ---------------- 2. 篩選器事件 ----------------
+    // ---------------- 2. 篩選器與顯示設定事件 ----------------
     const filterTypes = ['year', 'term', 'edu', 'college', 'dept', 'code', 'name', 'type', 'credit'];
     
     filterTypes.forEach(type => {
@@ -128,21 +128,16 @@ export function bindEvents(container) {
                 if (set.has(val)) set.delete(val); else set.add(val);
                 document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
                 
-                if(type === 'college') { UI.populateDeptFilterUI(); }
-                state.currentPage = 1; UI.updatePillActive(type); Render.renderTable();
-            }
-        });
-        
-        container.querySelector(`#drop-${type}`)?.addEventListener('click', (e) => {
-            if(e.target.classList.contains('btn-clear-filter') && e.target.dataset.type === type) {
-                const setMap = { 'year': state.filterYearSet, 'term': state.filterTermSet, 'edu': state.filterEduSet, 'college': state.filterCollegeSet, 'dept': state.filterDeptSet, 'code': state.filterCodeSet, 'name': state.filterNameSet, 'type': state.filterTypeSet, 'credit': state.filterCreditSet };
-                setMap[type].clear();
+                // 檢查是否所有選項都被勾選或取消，藉此連動「全選」按鈕的狀態
+                const containerEl = document.getElementById(`${type}-options-container`);
+                const allCheckboxes = containerEl ? Array.from(containerEl.querySelectorAll(`.filter-chk-${type}`)) : [];
+                const visibleCheckboxes = allCheckboxes.filter(c => c.closest('.filter-option').style.display !== 'none');
                 
-                document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = false);
-                const searchInput = document.getElementById(`search-${type}-input`);
-                if (searchInput) {
-                    searchInput.value = '';
-                    UI.filterDropdownItems(searchInput, `${type}-options-container`);
+                const btnToggle = document.querySelector(`.btn-filter-toggle[data-type="${type}"]`);
+                if (btnToggle && visibleCheckboxes.length > 0) {
+                    const allChecked = visibleCheckboxes.every(c => c.checked);
+                    btnToggle.dataset.state = allChecked ? 'all' : 'none';
+                    btnToggle.innerText = allChecked ? '取消選取' : '全選';
                 }
 
                 if(type === 'college') { UI.populateDeptFilterUI(); }
@@ -151,11 +146,80 @@ export function bindEvents(container) {
         });
     });
 
+    // 修正 1：綁定全選/取消全選按鈕 (修復沒反應的問題)
+    container.querySelectorAll('.btn-filter-toggle').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation(); // 阻止事件冒泡關閉下拉選單
+            const type = btn.dataset.type;
+            const isSelectAll = btn.dataset.state !== 'all';
+            btn.dataset.state = isSelectAll ? 'all' : 'none';
+            btn.innerText = isSelectAll ? '取消選取' : '全選';
+            
+            const setMap = { 'year': state.filterYearSet, 'term': state.filterTermSet, 'edu': state.filterEduSet, 'college': state.filterCollegeSet, 'dept': state.filterDeptSet, 'code': state.filterCodeSet, 'name': state.filterNameSet, 'type': state.filterTypeSet, 'credit': state.filterCreditSet };
+            const set = setMap[type];
+
+            // 抓出容器中「目前沒有被隱藏 (display:none)」的 checkbox 進行全選/取消操作
+            const containerEl = document.getElementById(`${type}-options-container`);
+            if (containerEl) {
+                containerEl.querySelectorAll(`.filter-chk-${type}`).forEach(c => {
+                    if (c.closest('.filter-option').style.display !== 'none') { 
+                        c.checked = isSelectAll; 
+                        if (isSelectAll) {
+                            set.add(c.value); 
+                        } else {
+                            set.delete(c.value); 
+                        }
+                    }
+                });
+            }
+            
+            // 同步外層的全域 checkbox 狀態 (如果有其他地方綁定同一個值)
+            document.querySelectorAll(`.filter-chk-${type}`).forEach(c => {
+                 c.checked = set.has(c.value);
+            });
+
+            if(type === 'college') { UI.populateDeptFilterUI(); }
+            state.currentPage = 1; UI.updatePillActive(type); Render.renderTable();
+        });
+    });
+
+    // 顯示設定選單
+    const btnDisplaySettings = container.querySelector('#btn-display-settings');
+    const displayMenu = container.querySelector('#display-settings-menu');
+    btnDisplaySettings?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if(displayMenu) {
+             // 將所有其他的選單關閉
+            document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
+            document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
+            // 切換顯示
+            displayMenu.style.display = displayMenu.style.display === 'block' ? 'none' : 'block';
+        }
+    });
+    
+    // 防止點擊選單內部時關閉選單
+    displayMenu?.addEventListener('click', (e) => { e.stopPropagation(); });
+
+    // 修正 3：讓 Checkbox 狀態更動後觸發 UI.updateColStyles();
+    container.querySelectorAll('.col-toggle-chk').forEach(chk => {
+        // 設定初始狀態
+        chk.checked = state.colVis[chk.value] !== false; 
+        
+        chk.addEventListener('change', (e) => {
+            state.colVis[e.target.value] = e.target.checked;
+            UI.updateColStyles();
+        });
+    });
+
     if (!state.isGlobalListenerBound) {
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.filter-pill-wrap')) {
                 document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
                 document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
+            }
+            const dm = document.getElementById('display-settings-menu');
+            if (dm && !e.target.closest('#display-settings-wrap')) {
+                dm.style.display = 'none';
             }
         });
         state.isGlobalListenerBound = true;
