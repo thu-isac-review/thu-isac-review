@@ -51,7 +51,6 @@ export function toggleDropdown(type) {
     if (!isOpen) { drop.classList.add('show'); wrap.classList.add('open'); }
 }
 
-// 下拉選單的搜尋文字反黃功能
 export function filterDropdownItems(inputElement, containerId) {
     const term = inputElement.value.toLowerCase().trim();
     const container = document.getElementById(containerId);
@@ -64,21 +63,14 @@ export function filterDropdownItems(inputElement, containerId) {
         const span = lbl.querySelector('span:not(.pill-count)'); // 避免選到數量標籤
         if (!span) return;
         
-        // 取得最原始的文字 (去除之前加上的 highlight span)
+        // 取得最原始的文字
         const originalText = span.textContent || span.innerText;
         const textLower = originalText.toLowerCase();
         
-        if (term === '') {
+        if (term === '' || textLower.includes(term)) {
             lbl.style.display = 'flex';
-            span.innerHTML = originalText; // 恢復原狀
+            span.innerHTML = originalText; // 恢復原狀不加 mark (取消篩選器反黃)
             hasVisible = true;
-        } else if (textLower.includes(term)) {
-            lbl.style.display = 'flex';
-            hasVisible = true;
-            
-            // 實作反黃標示 (黃底棕字 Highlight)
-            const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-            span.innerHTML = originalText.replace(regex, '<mark style="background-color: #fef08a; padding: 0 2px; border-radius: 2px; color: #854d0e; font-weight: bold;">$1</mark>');
         } else {
             lbl.style.display = 'none';
         }
