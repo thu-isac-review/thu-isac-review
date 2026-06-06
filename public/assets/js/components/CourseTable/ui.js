@@ -24,7 +24,7 @@ export function applyReadOnlyMode() {
     }
 }
 
-// 修正 3：更新欄位顯示 CSS 的生成邏輯，加入 .cell-primary 的覆蓋
+// 更新欄位顯示 CSS 的生成邏輯，加入 .cell-primary 的覆蓋
 export function updateColStyles() {
     let css = '';
     const cols = ['academic_year', 'term', 'edu_system', 'college', 'department', 'course_code', 'course_name', 'course_type', 'credits'];
@@ -50,7 +50,7 @@ export function toggleDropdown(type) {
     if (!isOpen) { drop.classList.add('show'); wrap.classList.add('open'); }
 }
 
-// 修正 2：增加搜尋文字反黃 (Highlight) 的功能
+// 增加搜尋文字反黃 (Highlight) 的功能
 export function filterDropdownItems(inputElement, containerId) {
     const term = inputElement.value.toLowerCase().trim();
     const container = document.getElementById(containerId);
