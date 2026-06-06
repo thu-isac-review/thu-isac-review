@@ -4,7 +4,6 @@ import * as Render from './render.js';
 import * as Events from './events.js';
 import * as Data from './data.js';
 
-// 確保這裡是 export async function render
 export async function render(containerId, context, options = { isReadOnly: false }) {
     state.db = context.db;
     state.isReadOnly = options.isReadOnly;
@@ -20,4 +19,8 @@ export async function render(containerId, context, options = { isReadOnly: false
     
     await Data.fetchSettingsOnce();
     await Data.fetchInitialDataOnce();
+    
+    UI.populateAllFiltersUI();
+    UI.updateBatchActionBar();
+    Render.renderTable();
 }
