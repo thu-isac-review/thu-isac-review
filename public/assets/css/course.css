@@ -452,7 +452,7 @@ i.ti {
     overscroll-behavior: none;
 }
 
-/* 🌟 [優化] 重新微調：將表格最低寬度 min-width 設定為極致契合的 1240px，消彌多餘空白 */
+/* 重新微調：將表格最低寬度 min-width 設定為極致契合的 1240px，消彌多餘空白 */
 table {
     width: 100%;
     border-collapse: separate;
@@ -494,7 +494,7 @@ tr.selected {
     background-color: #eef2ff !important;
 }
 
-/* 🌟 [優化] 依據指示調小：學制、學院、學系寬度，並使課程名稱限制於 200px 置中 */
+/* 依據指示調小：學制、學院、學系寬度 */
 .col-checkbox {
     position: sticky;
     left: 0;
@@ -515,12 +515,17 @@ th.col-checkbox {
 .col-department { width: 110px; text-align: center; }
 .col-course_code { width: 100px; text-align: center; }
 
-/* 🌟 課程名稱精準 200px 寬，並強制內容置中對齊 */
-.col-course_name { width: 200px; text-align: center; }
+/* 🌟 [優化] 課程名稱精準 200px 寬：th 置中、td 內容靠左 */
+.col-course_name { width: 200px; }
+th.col-course_name { text-align: center !important; }
+td.col-course_name { text-align: left !important; }
+
 .col-course_type { width: 90px; text-align: center; }
 .col-credits { width: 70px; text-align: center; }
 .col-student_count { width: 90px; text-align: center; }
-.col-outline { width: 70px; text-align: center; }
+
+/* 🌟 [優化] 修課大綱欄位加寬至 80px (與前後欄位完美配稱) */
+.col-outline { width: 80px; text-align: center; }
 
 .col-actions {
     position: sticky;
