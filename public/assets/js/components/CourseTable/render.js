@@ -55,7 +55,8 @@ export function renderTable() {
     if (!tbody) return; 
 
     const searchInput = document.getElementById('search-input');
-    const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    const rawSearchTerm = searchInput ? searchInput.value.trim() : ''; 
+    const searchTerm = rawSearchTerm.toLowerCase();
 
     state.filteredData = state.allData.filter(d => {
         const matchSearch = (d.course_name || '').toLowerCase().includes(searchTerm) || (d.course_code || '').toLowerCase().includes(searchTerm);
@@ -174,9 +175,9 @@ export function renderTable() {
         `;
 
         // 🌟 [優化] 藉由 Utils 物件調用高亮函式，確保搜尋關鍵字反黃
-        const highlightedCode = Utils.highlightKeyword(data.course_code, searchTerm);
-        const highlightedName = Utils.highlightKeyword(data.course_name, searchTerm);
-
+        const highlightedCode = Utils.highlightKeyword(data.course_code, rawSearchTerm);
+        const highlightedName = Utils.highlightKeyword(data.course_name, rawSearchTerm);
+        
         html += `
         <tr class="${isChecked ? 'selected' : ''}" data-id="${data.id}">
             <td class="col-checkbox" style="text-align: center;">
