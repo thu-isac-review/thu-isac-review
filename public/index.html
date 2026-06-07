@@ -12,6 +12,7 @@
 
     <link rel="stylesheet" href="./assets/css/institution.css">
     <link rel="stylesheet" href="./assets/css/course.css">
+    <link rel="stylesheet" href="./assets/css/student.css">
 
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -29,7 +30,7 @@
             
             /* 3. 佈局與基礎色 */
             --sidebar-w: 250px; --sidebar-collapsed-w: 72px; --topbar-h: 56px;
-            --bg: #f8f9fc; --surface: #ffffff; --border: #e5e7ef; --border-strong: #cdd0dd;
+            --bg: #f8f9fc; --surface: #surface; --border: #e5e7ef; --border-strong: #cdd0dd;
             --text-primary: #111827; --text-secondary: #4b5563; --text-muted: #9ca3af;
             
             /* 4. 圓角系統 */
@@ -127,7 +128,7 @@
                 <div class="nav-item" data-hash="intern_manage/institution/main" data-roles="admin">
                     <i class="ti ti-building"></i><span>實習機構管理</span>
                 </div>
-                <div class="nav-item" data-hash="intern_manage/student" data-roles="admin">
+                <div class="nav-item" data-hash="intern_manage/students/main" data-roles="admin">
                     <i class="ti ti-user-cog"></i><span>實習學生管理</span>
                 </div>
                 <div class="nav-item" data-hash="intern_manage/record" data-roles="admin">
@@ -198,57 +199,44 @@
                 "系統以為今天是假日不用上班，正在起床中..."
             ];
 
-            // 隨機決定要抽取的數量 (3 到 5 種)
             const countToPick = Math.floor(Math.random() * 3) + 3; 
-            
-            // 洗牌演算法隨機挑選
             const shuffled = [...hints].sort(() => 0.5 - Math.random());
             const selectedHints = shuffled.slice(0, countToPick);
 
             let currentIndex = 0;
-            let displayCount = 0; // 記錄目前已經完整顯示過幾個提示詞
-            let isAuthReady = false; // 紀錄 Firebase 驗證是否完成
+            let displayCount = 0; 
+            let isAuthReady = false; 
             let rotationInterval = null;
 
             const textEl = document.getElementById('loadingText');
 
             function changeText() {
                 if (currentIndex >= selectedHints.length) {
-                    // 如果隨機抽取的播完了，重新打亂再播，確保不會中斷
                     const reShuffled = [...hints].sort(() => 0.5 - Math.random());
                     selectedHints.push(...reShuffled.slice(0, 3));
                 }
 
-                // 淡出舊文字
                 textEl.style.opacity = 0;
 
                 setTimeout(() => {
                     textEl.textContent = selectedHints[currentIndex];
-                    // 淡入新文字
                     textEl.style.opacity = 1;
                     currentIndex++;
                     displayCount++;
 
-                    // 檢查是否滿足關閉 Loading 的條件：
-                    // 1. Firebase 驗證已完成 (isAuthReady === true)
-                    // 2. 至少已經播完 3 個提示詞 (每種停留2秒，故至少過 6 秒)
                     if (isAuthReady && displayCount >= 3) {
                         clearInterval(rotationInterval);
                         const sysLoading = document.getElementById('sysLoading');
                         if (sysLoading) sysLoading.style.display = 'none';
                     }
-                }, 300); // 留 300ms 給淡出效果
+                }, 300); 
             }
 
-            // 初始化第一次顯示
             changeText();
-            // 每 2000ms (2秒) 輪播一次
             rotationInterval = setInterval(changeText, 2000);
 
-            // 將控制權限對外暴露，讓 Firebase 載入完後可以通知
             window.notifyAuthFinished = function() {
                 isAuthReady = true;
-                // 如果 Firebase 驗證好時，已經播完3個以上的提示詞，直接手動觸發關閉
                 if (displayCount >= 3) {
                     clearInterval(rotationInterval);
                     const sysLoading = document.getElementById('sysLoading');
@@ -263,7 +251,6 @@
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // 主題配置
         const THEMES = { blue: { brand: '#1a56db', hover: '#1649c0', light: '#eff4ff', border: '#c3d2f9' } };
         const applySystemTheme = (themeKey) => {
             const t = THEMES[themeKey] || THEMES.blue;
@@ -288,7 +275,6 @@
         applySystemTheme('blue');
         document.body.style.visibility = 'visible';
 
-        // 登入狀態與權限控管
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 try {
@@ -314,11 +300,8 @@
                     document.getElementById('userRoleTag').textContent = role.toUpperCase();
 
                     filterSidebarMenuByRole(role);
-                    
-                    // 初始化純 JS SPA 路由
                     initPureSpaRouter(db);
 
-                    // 🌟 核心修改：不直接隱藏，而是通知輪播調度器「驗證已就緒」
                     if(window.notifyAuthFinished) window.notifyAuthFinished();
 
                 } catch (err) {
@@ -365,7 +348,6 @@
                 `;
 
                 try {
-                    // 導入時間戳防快取
                     const module = await import(`./assets/js/pages/${hash}.js?v=${new Date().getTime()}`);
                     if(module.render) {
                         await module.render('content-view-container', { db: dbInstance });
