@@ -548,27 +548,33 @@ export function bindEvents(container) {
         const rowChk = e.target.closest('.row-select-chk');
         const btnEdit = e.target.closest('.btn-row-edit');
         const btnDel = e.target.closest('.btn-row-delete');
+        
+        // 🌟 精準捕捉樹狀開關按鈕（相容點擊到 <i> 的情況）
         const toggleBtn = e.target.closest('.tree-toggle');
         
         if (toggleBtn) {
-            // 🌟 阻止冒泡與預設行為
             e.stopPropagation();
             e.preventDefault();
 
             const tr = toggleBtn.closest('tr');
-            const pId = tr.dataset.id;
+            if (!tr) return;
             
-            // 根據目前 state 是否已有該 ID，來決定是展開還是收合
+            const pId = tr.dataset.id;
+            if (!pId) return;
+            
+            // 🌟 切換狀態：若已展開則移除（收合），若未展開則加入（展開）
             if (state.expandedParents.has(pId)) {
                 state.expandedParents.delete(pId);
             } else {
                 state.expandedParents.add(pId);
             }
             
-            // 🌟 核心修正：狀態改變後，直接呼叫 renderTable() 讓介面重新依據 state 繪製
+            // 🌟 核心修正：拋棄原本手動隱藏 DOM 的錯誤作法，直接交由渲染器重新繪製
             Render.renderTable();
+            return; // 處理完畢，直接結束本次點擊事件
         }
-        else if (rowChk) {
+        else if (rowChk) { 
+            const id = rowChk.value;
             const id = rowChk.value;
             const index = state.selectedIds.indexOf(id);
             if (index === -1) state.selectedIds.push(id); else state.selectedIds.splice(index, 1);
