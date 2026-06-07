@@ -575,7 +575,6 @@ export function bindEvents(container) {
         }
         else if (rowChk) { 
             const id = rowChk.value;
-            const id = rowChk.value;
             const index = state.selectedIds.indexOf(id);
             if (index === -1) state.selectedIds.push(id); else state.selectedIds.splice(index, 1);
             UI.updateBatchActionBar(); 
