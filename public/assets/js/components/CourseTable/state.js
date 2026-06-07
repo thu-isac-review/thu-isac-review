@@ -1,4 +1,4 @@
-export const state = {
+export let state = {
     db: null,
     isReadOnly: false,
     allData: [],
@@ -27,6 +27,39 @@ export const state = {
     isGlobalListenerBound: false,
     isKeyboardShortcutBound: false
 };
+
+// 🌟 [新增] 用於切換 SPA 頁面時重置狀態，防止資料污染
+export function resetCourseState() {
+    state = {
+        db: null,
+        isReadOnly: false,
+        allData: [],
+        allRecords: [],
+        filteredData: [],
+        globalDepts: [],
+        orderedColleges: [],
+        editingId: null,
+        currentPage: 1,
+        itemsPerPage: 15,
+        selectedIds: [],
+        
+        filterYearSet: new Set(),
+        filterTermSet: new Set(),
+        filterEduSet: new Set(),
+        filterCollegeSet: new Set(),
+        filterDeptSet: new Set(),
+        filterCodeSet: new Set(),
+        filterNameSet: new Set(),
+        filterTypeSet: new Set(),
+        filterCreditSet: new Set(),
+        
+        sortCol: 'academic_year',
+        sortDir: 'desc',
+        searchDebounceTimer: null,
+        isGlobalListenerBound: false,
+        isKeyboardShortcutBound: false
+    };
+}
 
 // 🌟 [新增] 用於反黃高亮的關鍵字 Utils，與機構模組一致化
 export const Utils = {
