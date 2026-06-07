@@ -1,0 +1,71 @@
+/* ─── 學生管理模組專屬設計 ─── */
+
+/* 學號與姓名反黃高亮樣式 */
+#student-table-body mark {
+    background-color: #ffeb3b;
+    color: #000;
+    padding: 0 2px;
+    border-radius: 2px;
+    font-weight: 6px;
+}
+
+/* 學號欄位強制大寫與等寬字型 */
+.uppercase {
+    text-transform: uppercase;
+    font-family: 'Courier New', Courier, monospace;
+    letter-spacing: 0.05em;
+}
+
+/* 下拉選單寬度最佳化 */
+#pill-wrap-college .filter-dropdown {
+    min-width: 260px;
+}
+
+#pill-wrap-dept .filter-dropdown {
+    min-width: 320px;
+}
+
+/* 批次操作列動態顯示特效 */
+#batch-bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--brand-light);
+    border: 1px solid var(--brand-border);
+    padding: 6px 16px;
+    border-radius: 20px;
+    margin-left: 12px;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.25s ease-in-out;
+    pointer-events: none;
+}
+
+#batch-bar.visible {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+}
+
+.batch-info {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--brand);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* 彈出視窗排版微調 */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1px 1px;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+@media (max-width: 640px) {
+    .form-grid {
+        grid-template-columns: 1px;
+    }
+}
