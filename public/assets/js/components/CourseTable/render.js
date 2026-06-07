@@ -22,29 +22,23 @@ function getDeptSortValue(deptName) {
 }
 
 // 預設多階層排序鏈比較器
-// 順序：學年度(多到少) > 學期(多到少) > 開課學院(系統排序) > 開課學系(系統排序) > 選課代號(少到多)
 function defaultMultiLevelCompare(a, b) {
-    // 1. 學年度 (多到少, 降冪)
     const yearA = Number(a.academic_year) || 0;
     const yearB = Number(b.academic_year) || 0;
     if (yearA !== yearB) return yearB - yearA;
 
-    // 2. 學期 (多到少, 降冪: 暑期 -> 2 -> 1)
     const termA = getTermValue(a.term);
     const termB = getTermValue(b.term);
     if (termA !== termB) return termB - termA;
 
-    // 3. 開課學院 (系統排序, 升冪)
     const colA = getCollegeSortValue(a.college);
     const colB = getCollegeSortValue(b.college);
     if (colA !== colB) return colA - colB;
 
-    // 4. 開課學系 (系統排序, 升冪)
     const deptSortA = getDeptSortValue(a.department);
     const deptSortB = getDeptSortValue(b.department);
     if (deptSortA !== deptSortB) return deptSortA - deptSortB;
 
-    // 5. 選課代號 (少到多, 升冪)
     const codeA = String(a.course_code || '');
     const codeB = String(b.course_code || '');
     const numCodeA = parseInt(codeA, 10);
@@ -56,7 +50,10 @@ function defaultMultiLevelCompare(a, b) {
 }
 
 export function renderTable() {
-    const tbody = document.getElementById('table-body');
+    // 🌟 [修改] 改用專屬的 course-table-body ID，並加入防禦性攔截，防止非同步蓋到別頁的 HTML 容器
+    const tbody = document.getElementById('course-table-body');
+    if (!tbody) return; 
+
     const searchInput = document.getElementById('search-input');
     const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
@@ -78,7 +75,6 @@ export function renderTable() {
     state.filteredData.sort((a, b) => {
         if (state.sortCol && state.sortCol !== 'none') {
             let diff = 0;
-            
             if (state.sortCol === 'student_count') {
                 const countA = state.allRecords.filter(r => r.courses && r.courses.includes(a.id)).length;
                 const countB = state.allRecords.filter(r => r.courses && r.courses.includes(b.id)).length;
@@ -106,12 +102,8 @@ export function renderTable() {
                 const valB = String(b[state.sortCol] || '').toLowerCase();
                 diff = valA.localeCompare(valB);
             }
-
-            if (diff !== 0) {
-                return state.sortDir === 'asc' ? diff : -diff;
-            }
+            if (diff !== 0) return state.sortDir === 'asc' ? diff : -diff;
         }
-
         return defaultMultiLevelCompare(a, b);
     });
 
@@ -181,10 +173,10 @@ export function renderTable() {
             </div>
         `;
 
+        // 🌟 [優化] 藉由 Utils 物件調用高亮函式，確保搜尋關鍵字反黃
         const highlightedCode = Utils.highlightKeyword(data.course_code, searchTerm);
         const highlightedName = Utils.highlightKeyword(data.course_name, searchTerm);
 
-        // 🌟 [優化對齊與寬度] 將 td.col-course_name 設為 text-align: left 靠左對齊，而大綱 td.col-outline 設為 text-align: center
         html += `
         <tr class="${isChecked ? 'selected' : ''}" data-id="${data.id}">
             <td class="col-checkbox" style="text-align: center;">
