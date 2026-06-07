@@ -244,12 +244,15 @@ export function bindEvents(container) {
     container.querySelector('#selectAll')?.addEventListener('change', (e) => {
         const isChecked = e.target.checked;
         const visibleIds = [];
-        document.querySelectorAll('#table-body tr').forEach(tr => {
+        
+        // 🌟 修正2：這裡原本是 #table-body tr，必須改成 #institution-table-body tr
+        document.querySelectorAll('#institution-table-body tr').forEach(tr => {
             if(tr.style.display !== 'none' && !tr.querySelector('.empty-state')) {
                 const chk = tr.querySelector('.row-select-chk');
                 if(chk) visibleIds.push(chk.value);
             }
         });
+        
         if (isChecked) {
             visibleIds.forEach(id => { if (!state.selectedIds.includes(id)) state.selectedIds.push(id); });
         } else {
@@ -544,12 +547,10 @@ export function bindEvents(container) {
     });
 
     // ---------------- 9. 表格內行操作 ----------------
-    container.querySelector('#table-body')?.addEventListener('click', async (e) => {
+    container.querySelector('#institution-table-body')?.addEventListener('click', async (e) => {
         const rowChk = e.target.closest('.row-select-chk');
         const btnEdit = e.target.closest('.btn-row-edit');
         const btnDel = e.target.closest('.btn-row-delete');
-        
-        // 🌟 精準捕捉樹狀開關按鈕（相容點擊到 <i> 的情況）
         const toggleBtn = e.target.closest('.tree-toggle');
         
         if (toggleBtn) {
@@ -558,22 +559,28 @@ export function bindEvents(container) {
 
             const tr = toggleBtn.closest('tr');
             if (!tr) return;
-            
             const pId = tr.dataset.id;
-            if (!pId) return;
             
-            // 🌟 切換狀態：若已展開則移除（收合），若未展開則加入（展開）
+            // 使用 state 來控制展開與收合
             if (state.expandedParents.has(pId)) {
                 state.expandedParents.delete(pId);
             } else {
                 state.expandedParents.add(pId);
             }
             
-            // 🌟 核心修正：拋棄原本手動隱藏 DOM 的錯誤作法，直接交由渲染器重新繪製
+            // 直接交由 renderTable() 重新渲染畫面
             Render.renderTable();
-            return; // 處理完畢，直接結束本次點擊事件
+            return;
         }
         else if (rowChk) { 
+            const id = rowChk.value;
+            const index = state.selectedIds.indexOf(id);
+            if (index === -1) state.selectedIds.push(id); else state.selectedIds.splice(index, 1);
+            UI.updateBatchActionBar(); 
+            const row = rowChk.closest('tr');
+            if(index === -1) row.classList.add('selected'); else row.classList.remove('selected');
+        }
+        else if (btnEdit) {
             const id = rowChk.value;
             const index = state.selectedIds.indexOf(id);
             if (index === -1) state.selectedIds.push(id); else state.selectedIds.splice(index, 1);
