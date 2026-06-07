@@ -7,7 +7,7 @@ export const CONSTANTS = {
 };
 
 // 存放跨檔案共用的狀態變數
-export const state = {
+export let state = {
     db: null,
     isReadOnly: false,
     allData: [],
@@ -36,6 +36,39 @@ export const state = {
     isGlobalListenerBound: false,
     isKeyboardShortcutBound: false // 🌟 新增：防止重複綁定快捷鍵
 };
+
+// 🌟 [新增] 用於切換 SPA 頁面時重置狀態，防止資料污染
+export function resetInstitutionState() {
+    state = {
+        db: null,
+        isReadOnly: false,
+        allData: [],
+        allRecords: [],
+        baseTree: [],
+        editingId: null,
+        editingOldData: null,
+        pendingPayload: null,
+        currentHistory: [],
+        currentPage: 1,
+        itemsPerPage: 15,
+        selectedIds: [],
+        filteredInstitutions: [],
+        sortCol: '',
+        sortDir: '',
+        isTreeMode: true,
+        expandedParents: new Set(),
+        isSearchAutoExpand: false,
+        isAllExpanded: false,
+        colVis: { tax_id: true, industry: true, venue_type: true, country: true, city: true, address: true },
+        filterCountrySet: new Set(),
+        filterCitySet: new Set(),
+        filterIndustrySet: new Set(),
+        filterVenueSet: new Set(),
+        searchDebounceTimer: null,
+        isGlobalListenerBound: false,
+        isKeyboardShortcutBound: false
+    };
+}
 
 // 共用的輔助函式
 export const Utils = {
