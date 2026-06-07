@@ -1,6 +1,5 @@
 import { state, Utils } from './state.js';
 
-// 用於解析學期權重的輔助函式，以便進行「多到少 (暑期 -> 2 -> 1)」排序
 function getTermValue(term) {
     const t = String(term || '').trim();
     if (t.includes('暑')) return 3;
@@ -9,42 +8,33 @@ function getTermValue(term) {
     return 0;
 }
 
-// 取得學院排序索引值 (與篩選器的順序一致)
 function getCollegeSortValue(collegeName) {
     const idx = state.orderedColleges.findIndex(c => c.name === collegeName);
     return idx !== -1 ? idx : 999;
 }
 
-// 取得學系排序權重 (依據資料庫中 globalDepts 排序設定 sortOrder)
 function getDeptSortValue(deptName) {
     const dept = state.globalDepts.find(d => d.name === deptName);
     return dept ? (dept.sortOrder || 999) : 999;
 }
 
-// 預設多階層排序鏈比較器
-// 順序：學年度(多到少) > 學期(多到少) > 開課學院(系統排序) > 開課學系(系統排序) > 選課代號(少到多)
 function defaultMultiLevelCompare(a, b) {
-    // 1. 學年度 (多到少, 降冪)
     const yearA = Number(a.academic_year) || 0;
     const yearB = Number(b.academic_year) || 0;
     if (yearA !== yearB) return yearB - yearA;
 
-    // 2. 學期 (多到少, 降冪: 暑期 -> 2 -> 1)
     const termA = getTermValue(a.term);
     const termB = getTermValue(b.term);
     if (termA !== termB) return termB - termA;
 
-    // 3. 開課學院 (系統排序, 升冪)
     const colA = getCollegeSortValue(a.college);
     const colB = getCollegeSortValue(b.college);
     if (colA !== colB) return colA - colB;
 
-    // 4. 開課學系 (系統排序, 升冪)
     const deptSortA = getDeptSortValue(a.department);
     const deptSortB = getDeptSortValue(b.department);
     if (deptSortA !== deptSortB) return deptSortA - deptSortB;
 
-    // 5. 選課代號 (少到多, 升冪)
     const codeA = String(a.course_code || '');
     const codeB = String(b.course_code || '');
     const numCodeA = parseInt(codeA, 10);
@@ -56,8 +46,11 @@ function defaultMultiLevelCompare(a, b) {
 }
 
 export function renderTable() {
-    const tbody = document.getElementById('table-body');
-    const searchInput = document.getElementById('search-input');
+    // 🌟 [修正] 改為專屬的 course-開頭 ID，若當前不在課程頁面則直接 return 攔截非同步干擾
+    const tbody = document.getElementById('course-table-body');
+    if (!tbody) return; 
+
+    const searchInput = document.getElementById('course-search-input');
     const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
     state.filteredData = state.allData.filter(d => {
@@ -78,7 +71,6 @@ export function renderTable() {
     state.filteredData.sort((a, b) => {
         if (state.sortCol && state.sortCol !== 'none') {
             let diff = 0;
-            
             if (state.sortCol === 'student_count') {
                 const countA = state.allRecords.filter(r => r.courses && r.courses.includes(a.id)).length;
                 const countB = state.allRecords.filter(r => r.courses && r.courses.includes(b.id)).length;
@@ -111,7 +103,6 @@ export function renderTable() {
                 return state.sortDir === 'asc' ? diff : -diff;
             }
         }
-
         return defaultMultiLevelCompare(a, b);
     });
 
@@ -122,7 +113,8 @@ export function renderTable() {
     const start = (state.currentPage - 1) * state.itemsPerPage;
     const paginatedItems = state.filteredData.slice(start, start + state.itemsPerPage);
 
-    const infoEl = document.getElementById('pagination-info');
+    // 🌟 [修正] 改為專屬的 course-開頭 ID
+    const infoEl = document.getElementById('course-pagination-info');
     if(infoEl) {
         if (total > 0) {
             infoEl.innerHTML = `共 <strong>${total}</strong> 筆，顯示第 ${start + 1}–${Math.min(start + state.itemsPerPage, total)} 筆`;
@@ -143,15 +135,19 @@ export function renderTable() {
     });
     pHtml += `<button class="page-btn page-step-btn" data-page="${state.currentPage+1}" ${state.currentPage>=totalPages?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
     
-    const controls = document.getElementById('pagination-controls');
+    // 🌟 [修正] 改為專屬的 course-開合 ID
+    const controls = document.getElementById('course-pagination-controls');
     if(controls) controls.innerHTML = pHtml;
 
     const currentPaginatedIds = paginatedItems.map(d => d.id);
     const isAllVisibleSelected = currentPaginatedIds.length > 0 && currentPaginatedIds.every(id => state.selectedIds.includes(id));
-    const selectAllChk = document.getElementById('selectAll');
+    
+    // 🌟 [修正] 改為專屬的 course-開頭 ID
+    const selectAllChk = document.getElementById('course-selectAll');
     if(selectAllChk) selectAllChk.checked = isAllVisibleSelected;
 
-    const emptyStateContainer = document.getElementById('empty-state-container');
+    // 🌟 [修正] 改為專屬的 course-開頭 ID
+    const emptyStateContainer = document.getElementById('course-empty-state-container');
 
     if (total === 0) {
         tbody.innerHTML = '';
@@ -184,7 +180,6 @@ export function renderTable() {
         const highlightedCode = Utils.highlightKeyword(data.course_code, searchTerm);
         const highlightedName = Utils.highlightKeyword(data.course_name, searchTerm);
 
-        // 🌟 [優化對齊與寬度] 將 td.col-course_name 設為 text-align: left 靠左對齊，而大綱 td.col-outline 設為 text-align: center
         html += `
         <tr class="${isChecked ? 'selected' : ''}" data-id="${data.id}">
             <td class="col-checkbox" style="text-align: center;">
