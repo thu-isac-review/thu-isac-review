@@ -1,7 +1,10 @@
 import { state, Utils } from './state.js';
 
 export function renderTable() {
-    const tbody = document.getElementById('table-body');
+    // 🌟 [修改] 改用專屬的 institution-table-body ID，並加入防禦性攔截
+    const tbody = document.getElementById('institution-table-body');
+    if (!tbody) return;
+
     const searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
 
     const checkMatch = (d) => {
@@ -96,10 +99,9 @@ export function renderTable() {
     const currentPaginatedIds = paginatedItems.map(d => d.id);
     document.getElementById('selectAll').checked = currentPaginatedIds.length > 0 && currentPaginatedIds.every(id => state.selectedIds.includes(id));
 
-    // 🌟 [修改] 空狀態處理：不再寫入 tbody，而是顯示/隱藏獨立的 empty-state-container
     const emptyStateContainer = document.getElementById('empty-state-container');
     if (totalMainItems === 0) {
-        tbody.innerHTML = ''; // 清空表格內容
+        tbody.innerHTML = ''; 
         if (emptyStateContainer) {
             emptyStateContainer.style.display = 'flex';
             emptyStateContainer.innerHTML = `<i class="ti ti-inbox empty-icon"></i><div class="empty-text">找不到符合條件的機構資料。</div>`;
@@ -130,7 +132,6 @@ export function renderTable() {
 
         const hAddress = Utils.highlightKeyword(data.address, searchTerm);
 
-        // 如果是唯讀狀態，就不輸出編輯與刪除的 HTML 按鈕
         const actionHtml = state.isReadOnly ? '' : `
             <div class="row-actions">
                 <button data-id="${data.id}" class="btn btn-secondary btn-icon sm btn-row-edit" title="編輯"><i class="ti ti-edit"></i></button>
@@ -168,7 +169,7 @@ export function renderTable() {
     tbody.innerHTML = finalHtml;
     
     const currentVisibleIds = [];
-    document.querySelectorAll('#table-body tr').forEach(tr => {
+    document.querySelectorAll('#institution-table-body tr').forEach(tr => {
         if(tr.style.display !== 'none') {
             const chk = tr.querySelector('.row-select-chk');
             if(chk) currentVisibleIds.push(chk.value);
