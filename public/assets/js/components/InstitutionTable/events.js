@@ -551,16 +551,24 @@ export function bindEvents(container) {
         const toggleBtn = e.target.closest('.tree-toggle');
         
         if (toggleBtn) {
+            // 🌟 阻止冒泡與預設行為
+            e.stopPropagation();
+            e.preventDefault();
+
             const tr = toggleBtn.closest('tr');
             const pId = tr.dataset.id;
-            const isExpanded = toggleBtn.classList.toggle('expanded');
             
-            if (isExpanded) state.expandedParents.add(pId);
-            else state.expandedParents.delete(pId);
+            // 根據目前 state 是否已有該 ID，來決定是展開還是收合
+            if (state.expandedParents.has(pId)) {
+                state.expandedParents.delete(pId);
+            } else {
+                state.expandedParents.add(pId);
+            }
             
-            document.querySelectorAll(`.child-of-${pId}`).forEach(row => { row.style.display = isExpanded ? '' : 'none'; });
+            // 🌟 核心修正：狀態改變後，直接呼叫 renderTable() 讓介面重新依據 state 繪製
+            Render.renderTable();
         }
-        else if (rowChk) { 
+        else if (rowChk) {
             const id = rowChk.value;
             const index = state.selectedIds.indexOf(id);
             if (index === -1) state.selectedIds.push(id); else state.selectedIds.splice(index, 1);
