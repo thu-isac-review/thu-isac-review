@@ -1,11 +1,8 @@
 import { state, Utils } from './state.js';
 
 export function renderTable() {
-    // 🌟 [修正] 改為機構專屬的 institution-開頭 ID，若不在機構頁面則攔截中斷
-    const tbody = document.getElementById('institution-table-body');
-    if (!tbody) return;
-
-    const searchTerm = document.getElementById('institution-search-input').value.trim().toLowerCase();
+    const tbody = document.getElementById('table-body');
+    const searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
 
     const checkMatch = (d) => {
         const matchSearch = String(d.name || '').toLowerCase().includes(searchTerm) || 
@@ -73,17 +70,14 @@ export function renderTable() {
 
     let totalAllMatched = 0;
     let totalChildrenMatched = 0;
-    
-    // 🌟 [修正] 改為專屬的 institution-開頭 ID
-    const infoEl = document.getElementById('institution-pagination-info');
     if (state.isTreeMode) {
         state.filteredInstitutions.forEach(p => { 
             totalAllMatched++; 
             p.children.forEach(c => { totalAllMatched++; totalChildrenMatched++; }); 
         });
-        if(infoEl) infoEl.innerHTML = totalMainItems > 0 ? `共 <strong>${totalAllMatched}</strong> 間實習機構（含 ${totalChildrenMatched} 間分支機構），顯示第 ${start + 1}–${Math.min(start + state.itemsPerPage, totalMainItems)} 間主機構` : `共 <strong>0</strong> 間實習機構`;
+        document.getElementById('pagination-info').innerHTML = totalMainItems > 0 ? `共 <strong>${totalAllMatched}</strong> 間實習機構（含 ${totalChildrenMatched} 間分支機構），顯示第 ${start + 1}–${Math.min(start + state.itemsPerPage, totalMainItems)} 間主機構` : `共 <strong>0</strong> 間實習機構`;
     } else {
-        if(infoEl) infoEl.innerHTML = totalMainItems > 0 ? `共 <strong>${totalMainItems}</strong> 間實習機構，顯示第 ${start + 1}–${Math.min(start + state.itemsPerPage, totalMainItems)} 間` : `共 <strong>0</strong> 間實習機構`;
+        document.getElementById('pagination-info').innerHTML = totalMainItems > 0 ? `共 <strong>${totalMainItems}</strong> 間實習機構，顯示第 ${start + 1}–${Math.min(start + state.itemsPerPage, totalMainItems)} 間` : `共 <strong>0</strong> 間實習機構`;
     }
     
     let pHtml = `<button class="page-btn page-step-btn" data-page="${state.currentPage-1}" ${state.currentPage<=1?'disabled':''}><i class="ti ti-chevron-left"></i></button>`;
@@ -97,20 +91,15 @@ export function renderTable() {
         else pHtml += `<button class="page-btn page-num-btn ${p === state.currentPage ? 'active' : ''}" data-page="${p}">${p}</button>`;
     });
     pHtml += `<button class="page-btn page-step-btn" data-page="${state.currentPage+1}" ${state.currentPage>=totalPages?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
-    
-    // 🌟 [修正] 改為專屬的 institution-開頭 ID
-    const controlsEl = document.getElementById('institution-pagination-controls');
-    if(controlsEl) controlsEl.innerHTML = pHtml;
+    document.getElementById('pagination-controls').innerHTML = pHtml;
 
     const currentPaginatedIds = paginatedItems.map(d => d.id);
-    // 🌟 [修正] 改為專屬的 institution-開頭 ID
-    const selectAllChk = document.getElementById('institution-selectAll');
-    if(selectAllChk) selectAllChk.checked = currentPaginatedIds.length > 0 && currentPaginatedIds.every(id => state.selectedIds.includes(id));
+    document.getElementById('selectAll').checked = currentPaginatedIds.length > 0 && currentPaginatedIds.every(id => state.selectedIds.includes(id));
 
-    // 🌟 [修正] 改為專屬的 institution-開頭 ID
-    const emptyStateContainer = document.getElementById('institution-empty-state-container');
+    // 🌟 [修改] 空狀態處理：不再寫入 tbody，而是顯示/隱藏獨立的 empty-state-container
+    const emptyStateContainer = document.getElementById('empty-state-container');
     if (totalMainItems === 0) {
-        tbody.innerHTML = ''; 
+        tbody.innerHTML = ''; // 清空表格內容
         if (emptyStateContainer) {
             emptyStateContainer.style.display = 'flex';
             emptyStateContainer.innerHTML = `<i class="ti ti-inbox empty-icon"></i><div class="empty-text">找不到符合條件的機構資料。</div>`;
@@ -141,6 +130,7 @@ export function renderTable() {
 
         const hAddress = Utils.highlightKeyword(data.address, searchTerm);
 
+        // 如果是唯讀狀態，就不輸出編輯與刪除的 HTML 按鈕
         const actionHtml = state.isReadOnly ? '' : `
             <div class="row-actions">
                 <button data-id="${data.id}" class="btn btn-secondary btn-icon sm btn-row-edit" title="編輯"><i class="ti ti-edit"></i></button>
@@ -178,15 +168,13 @@ export function renderTable() {
     tbody.innerHTML = finalHtml;
     
     const currentVisibleIds = [];
-    document.querySelectorAll('#institution-table-body tr').forEach(tr => {
+    document.querySelectorAll('#table-body tr').forEach(tr => {
         if(tr.style.display !== 'none') {
             const chk = tr.querySelector('.row-select-chk');
             if(chk) currentVisibleIds.push(chk.value);
         }
     });
-    
-    const selectAllBottom = document.getElementById('institution-selectAll');
-    if(selectAllBottom) selectAllBottom.checked = currentVisibleIds.length > 0 && currentVisibleIds.every(id => state.selectedIds.includes(id));
+    document.getElementById('selectAll').checked = currentVisibleIds.length > 0 && currentVisibleIds.every(id => state.selectedIds.includes(id));
 }
 
 export function renderHistoryList() {

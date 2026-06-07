@@ -2,7 +2,7 @@ export let state = {
     db: null,
     isReadOnly: false,
     allData: [],
-    allRecords: [], 
+    allRecords: [], // 🌟 [新增] 用於統計修課人數的實習紀錄
     filteredData: [],
     globalDepts: [],
     orderedColleges: [],
@@ -28,6 +28,7 @@ export let state = {
     isKeyboardShortcutBound: false
 };
 
+// 🌟 [新增] 用於切換 SPA 頁面時重置狀態，防止資料污染
 export function resetCourseState() {
     state = {
         db: null,
@@ -60,11 +61,11 @@ export function resetCourseState() {
     };
 }
 
-// 🌟 [補上] 提供給課程 render.js 使用的反黃高亮輔助工具，與機構模組邏輯完全對齊
+// 🌟 [新增] 用於反黃高亮的關鍵字 Utils，與機構模組一致化
 export const Utils = {
     highlightKeyword(text, keyword) {
         if (!keyword || !text) return text || '';
         const regex = new RegExp(`(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
         return text.toString().replace(regex, '<mark style="background-color: #ffeb3b; color: #000; padding: 0;">$1</mark>');
     }
-};
+}; 
