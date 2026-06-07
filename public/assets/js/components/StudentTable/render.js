@@ -12,13 +12,13 @@ function getDeptSortValue(name) {
 
 export function renderTable() {
     const tbody = document.getElementById('student-table-body');
-    if (!tbody) return; // 🌟 專屬 ID 安全防禦閥門
+    if (!tbody) return; 
 
     const searchInput = document.getElementById('search-input');
     const rawSearchTerm = searchInput ? searchInput.value.trim() : '';
     const searchTerm = rawSearchTerm.toLowerCase();
 
-    // 1. 純前端高效過濾
+    // 1. 前端過濾
     state.filteredData = state.allData.filter(d => {
         const matchSearch = (d.name || '').toLowerCase().includes(searchTerm) || (d.student_id || '').toLowerCase().includes(searchTerm);
         const matchCol = state.filterCollegeSet.size === 0 || state.filterCollegeSet.has(d.college);
@@ -28,16 +28,14 @@ export function renderTable() {
         return matchSearch && matchCol && matchDept && matchGender && matchNat;
     });
 
-    // 2. 前端多層級排序
+    // 2. 前端排序
     state.filteredData.sort((a, b) => {
         let valA = a[state.sortCol] || ''; let valB = b[state.sortCol] || '';
-        
         if (state.sortCol === 'college' || state.sortCol === 'department') {
             valA = state.sortCol === 'college' ? getCollegeSortValue(valA) : getDeptSortValue(valA);
             valB = state.sortCol === 'college' ? getCollegeSortValue(valB) : getDeptSortValue(valB);
             return state.sortDir === 'asc' ? valA - valB : valB - valA;
         }
-        
         valA = valA.toString().toLowerCase(); valB = valB.toString().toLowerCase();
         return state.sortDir === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
     });
@@ -50,7 +48,6 @@ export function renderTable() {
     const start = (state.currentPage - 1) * state.itemsPerPage;
     const paginatedItems = state.filteredData.slice(start, start + state.itemsPerPage);
 
-    // 4. 更新分頁 DOM 資訊
     const infoEl = document.getElementById('pagination-info');
     if (infoEl) {
         infoEl.innerHTML = total > 0 ? `共 <strong>${total}</strong> 筆，顯示第 ${start + 1}–${Math.min(start + state.itemsPerPage, total)} 筆` : `共 <strong>0</strong> 筆`;
@@ -88,7 +85,7 @@ export function renderTable() {
         if (emptyStateContainer) emptyStateContainer.style.display = 'none';
     }
 
-    // 5. 輸出 DOM 列 HTML
+    // 4. 生成 HTML 字串
     let html = '';
     paginatedItems.forEach((data) => {
         const colObj = state.orderedColleges.find(c => c.name === data.college);
@@ -104,7 +101,6 @@ export function renderTable() {
             </div>
         `;
 
-        // 🌟 反黃處理：保留最原始大小寫的輸入外觀
         const highlightedId = Utils.highlightKeyword(data.student_id, rawSearchTerm);
         const highlightedName = Utils.highlightKeyword(data.name, rawSearchTerm);
 
@@ -127,9 +123,9 @@ export function renderTable() {
     tbody.innerHTML = html;
 }
 
+// 🌟 保留與資料流對接的下拉清單 DOM 生成邏輯
 export function populateCollegesUI() {
     const colleges = state.orderedColleges.length > 0 ? state.orderedColleges : [...new Set(state.globalDepts.map(d => d.college))].filter(Boolean).map(c => ({name: c, shortName: c}));
-    
     const container = document.getElementById('college-options-container');
     if (container) {
         container.innerHTML = colleges.map(c => `
@@ -138,7 +134,6 @@ export function populateCollegesUI() {
             </label>
         `).join('');
     }
-
     const select = document.getElementById('input-college');
     if (select) {
         select.innerHTML = `<option value="">請選擇學院...</option>` + colleges.map(c => `<option value="${c.name}">${c.shortName || c.name}</option>`).join('');
@@ -149,7 +144,6 @@ export function populateCollegesUI() {
 export function populateDeptFilterUI() {
     let deptsToShow = state.globalDepts;
     if (state.filterCollegeSet.size > 0) deptsToShow = state.globalDepts.filter(d => state.filterCollegeSet.has(d.college));
-    
     const container = document.getElementById('dept-options-container');
     if (container) {
         container.innerHTML = deptsToShow.map(d => `
@@ -165,7 +159,6 @@ export function updateFormDepts(preselectedValue = '') {
     const inputDept = document.getElementById('input-department');
     if (!inputDept) return;
     let html = '<option value="">請選擇學系...</option>';
-    
     if (selectedCol) {
         const depts = state.globalDepts.filter(d => d.college === selectedCol);
         depts.forEach(d => { html += `<option value="${d.name}">${d.shortName || d.name}</option>`; });
