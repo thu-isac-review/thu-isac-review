@@ -109,9 +109,8 @@ th.col-checkbox { z-index: 3; background-color: var(--surface); }
 .col-name { width: auto; }
 th.col-name { text-align: center; z-index: 1; } 
 
-/* 🌟 加寬：統編 +20px, 行業別 +20px，並自然擠壓自動寬度的地址欄位 */
 .col-tax_id { width: 130px; }
-.col-industry { width: 190px; }
+.col-industry { width: 110px; }
 .col-venue_type { width: 130px; }
 .col-country { width: 90px; }
 .col-city { width: 90px; }
