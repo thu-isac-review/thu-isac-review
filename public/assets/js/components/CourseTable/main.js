@@ -1,10 +1,3 @@
-// 在 CourseTable 負責將 HTML 塞入表格的 render 函式中加入：
-const tableBody = document.getElementById('course-table-body'); // 確保用專屬 ID
-if (!tableBody) {
-    // 說明當前 DOM 容器已經被切換成「機構」或其他頁面了，立即中斷舊的非同步回呼
-    return; 
-}
-
 import { state } from './state.js';
 import * as UI from './ui.js';
 import * as Render from './render.js';
