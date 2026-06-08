@@ -580,14 +580,7 @@ export function bindEvents(container) {
             const row = rowChk.closest('tr');
             if(index === -1) row.classList.add('selected'); else row.classList.remove('selected');
         }
-        else if (btnEdit) {
-            const id = rowChk.value;
-            const index = state.selectedIds.indexOf(id);
-            if (index === -1) state.selectedIds.push(id); else state.selectedIds.splice(index, 1);
-            UI.updateBatchActionBar(); 
-            const row = rowChk.closest('tr');
-            if(index === -1) row.classList.add('selected'); else row.classList.remove('selected');
-        }
+            
         else if (btnEdit) { 
             if(state.isReadOnly) return;
             const id = btnEdit.dataset.id;
