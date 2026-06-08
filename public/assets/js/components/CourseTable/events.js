@@ -309,10 +309,9 @@ export function bindEvents(container) {
     });
 
     // ---------------- 7. 表格內行操作 ----------------
-    container.querySelector('#table-body')?.addEventListener('click', async (e) => {
+    container.querySelector('#course-table-body')?.addEventListener('click', async (e) => {
         const rowChk = e.target.closest('.row-select-chk');
         const btnEdit = e.target.closest('.btn-row-edit');
-        const btnDel = e.target.closest('.btn-row-delete');
         
         if (rowChk) { 
             const id = rowChk.value;
