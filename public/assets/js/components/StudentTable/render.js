@@ -19,7 +19,16 @@ function getStudentIdPrefixWeight(id) {
     return 4; // 其他
 }
 
-// 🌟 [新增] 預設多層次排序邏輯 (學院 -> 學系 -> 學號)
+// 🌟 [新增] 學號排序對比邏輯
+function compareStudentId(aId, bId) {
+    const prefA = getStudentIdPrefixWeight(aId);
+    const prefB = getStudentIdPrefixWeight(bId);
+    if (prefA !== prefB) return prefA - prefB;
+    // 前綴相同時，依據學號數字大小排序 (由小到大)
+    return String(aId || '').localeCompare(String(bId || ''), 'en', { numeric: true });
+}
+
+// 🌟 [修改] 預設多層次排序邏輯 (學院 -> 學系 -> 學號)
 function defaultMultiLevelCompare(a, b) {
     const colA = getCollegeSortValue(a.college);
     const colB = getCollegeSortValue(b.college);
@@ -29,12 +38,7 @@ function defaultMultiLevelCompare(a, b) {
     const deptB = getDeptSortValue(b.department);
     if (deptA !== deptB) return deptA - deptB;
 
-    const prefA = getStudentIdPrefixWeight(a.student_id);
-    const prefB = getStudentIdPrefixWeight(b.student_id);
-    if (prefA !== prefB) return prefA - prefB;
-
-    // 前綴相同時，依據學號數字大小排序
-    return String(a.student_id || '').localeCompare(String(b.student_id || ''), 'en', { numeric: true });
+    return compareStudentId(a.student_id, b.student_id);
 }
 
 export function renderTable() {
@@ -59,9 +63,10 @@ export function renderTable() {
         if (state.sortCol && state.sortCol !== 'default') {
             let diff = 0;
             if (state.sortCol === 'record_count') {
-                const countA = state.allRecords.filter(r => r.student_id === a.student_id).length;
-                const countB = state.allRecords.filter(r => r.student_id === b.student_id).length;
-                diff = countA - countB;
+                const getCount = d => state.allRecords.filter(r => r.student_id === d.id || r.student_id === d.student_id || r.studentId === d.id || r.studentId === d.student_id || r.student_doc_id === d.id).length;
+                diff = getCount(a) - getCount(b);
+            } else if (state.sortCol === 'student_id') {
+                diff = compareStudentId(a.student_id, b.student_id);
             } else if (state.sortCol === 'college' || state.sortCol === 'department') {
                 let valA = state.sortCol === 'college' ? getCollegeSortValue(a.college) : getDeptSortValue(a.department);
                 let valB = state.sortCol === 'college' ? getCollegeSortValue(b.college) : getDeptSortValue(b.department);
@@ -135,8 +140,12 @@ export function renderTable() {
         const deptDispName = deptObj && deptObj.shortName ? deptObj.shortName : data.department;
         const isChecked = state.selectedIds.includes(data.id) ? 'checked' : '';
         
-        // 🌟 [新增] 計算此學生擁有的實習紀錄筆數
-        const recordCount = state.allRecords.filter(r => r.student_id === data.student_id).length;
+        // 🌟 [修正] 強化實習紀錄筆數的關聯比對，支援多種可能的外鍵命名格式
+        const recordCount = state.allRecords.filter(r => 
+            r.student_id === data.id || r.student_id === data.student_id || 
+            r.studentId === data.id || r.studentId === data.student_id || 
+            r.student_doc_id === data.id
+        ).length;
 
         const actionHtml = state.isReadOnly ? '' : `
             <div class="row-actions">
