@@ -10,6 +10,33 @@ function getDeptSortValue(deptName) {
     return dept ? (dept.sortOrder || 999) : 999;
 }
 
+// 🌟 [新增] 按照學號英文前綴進行權重解析 (S > G > F)
+function getStudentIdPrefixWeight(id) {
+    const prefix = (id || '').charAt(0).toUpperCase();
+    if (prefix === 'S') return 1; // S 開頭優先
+    if (prefix === 'G') return 2; // 次之
+    if (prefix === 'F') return 3; // 再次之
+    return 4; // 其他
+}
+
+// 🌟 [新增] 預設多層次排序邏輯 (學院 -> 學系 -> 學號)
+function defaultMultiLevelCompare(a, b) {
+    const colA = getCollegeSortValue(a.college);
+    const colB = getCollegeSortValue(b.college);
+    if (colA !== colB) return colA - colB;
+
+    const deptA = getDeptSortValue(a.department);
+    const deptB = getDeptSortValue(b.department);
+    if (deptA !== deptB) return deptA - deptB;
+
+    const prefA = getStudentIdPrefixWeight(a.student_id);
+    const prefB = getStudentIdPrefixWeight(b.student_id);
+    if (prefA !== prefB) return prefA - prefB;
+
+    // 前綴相同時，依據學號數字大小排序
+    return String(a.student_id || '').localeCompare(String(b.student_id || ''), 'en', { numeric: true });
+}
+
 export function renderTable() {
     const tbody = document.getElementById('student-table-body');
     if (!tbody) return; 
@@ -29,25 +56,26 @@ export function renderTable() {
     });
 
     state.filteredData.sort((a, b) => {
-        let valA = a[state.sortCol] || ''; 
-        let valB = b[state.sortCol] || '';
-        
-        if (state.sortCol === 'college' || state.sortCol === 'department') {
-            if (state.sortCol === 'college') {
-                valA = getCollegeSortValue(a.college);
-                valB = getCollegeSortValue(b.college);
+        if (state.sortCol && state.sortCol !== 'default') {
+            let diff = 0;
+            if (state.sortCol === 'record_count') {
+                const countA = state.allRecords.filter(r => r.student_id === a.student_id).length;
+                const countB = state.allRecords.filter(r => r.student_id === b.student_id).length;
+                diff = countA - countB;
+            } else if (state.sortCol === 'college' || state.sortCol === 'department') {
+                let valA = state.sortCol === 'college' ? getCollegeSortValue(a.college) : getDeptSortValue(a.department);
+                let valB = state.sortCol === 'college' ? getCollegeSortValue(b.college) : getDeptSortValue(b.department);
+                diff = valA - valB;
             } else {
-                valA = getDeptSortValue(a.department);
-                valB = getDeptSortValue(b.department);
+                let valA = String(a[state.sortCol] || '').toLowerCase();
+                let valB = String(b[state.sortCol] || '').toLowerCase();
+                diff = valA.localeCompare(valB, 'zh-TW');
             }
-            if (valA !== valB) return state.sortDir === 'asc' ? valA - valB : valB - valA;
-            return 0;
+            if (diff !== 0) return state.sortDir === 'asc' ? diff : -diff;
         }
         
-        valA = valA.toString().toLowerCase(); 
-        valB = valB.toString().toLowerCase();
-        let cmp = valA.localeCompare(valB, 'zh-TW');
-        return state.sortDir === 'asc' ? cmp : -cmp;
+        // 未指定排序或是排序對比結果相同時，使用預設的多層級排序防呆
+        return defaultMultiLevelCompare(a, b);
     });
 
     const total = state.filteredData.length;
@@ -106,6 +134,9 @@ export function renderTable() {
         const deptObj = state.globalDepts.find(d => d.name === data.department);
         const deptDispName = deptObj && deptObj.shortName ? deptObj.shortName : data.department;
         const isChecked = state.selectedIds.includes(data.id) ? 'checked' : '';
+        
+        // 🌟 [新增] 計算此學生擁有的實習紀錄筆數
+        const recordCount = state.allRecords.filter(r => r.student_id === data.student_id).length;
 
         const actionHtml = state.isReadOnly ? '' : `
             <div class="row-actions">
@@ -127,9 +158,10 @@ export function renderTable() {
             <td class="col-college" style="text-align: center;"><div class="cell-primary">${colDispName || '-'}</div></td>
             <td class="col-department" style="text-align: center;"><div class="cell-primary">${deptDispName || '-'}</div></td>
             <td class="col-student_id" style="text-align: center;"><div class="cell-primary bold uppercase" style="letter-spacing:0.02em;">${highlightedID}</div></td>
-            <td class="col-name" style="text-align: left;"><div class="cell-primary bold">${highlightedName}</div></td>
+            <td class="col-name" style="text-align: center;"><div class="cell-primary bold">${highlightedName}</div></td>
             <td class="col-gender" style="text-align: center;"><div class="cell-primary">${data.gender || '男'}</div></td>
             <td class="col-nationality" style="text-align: center;"><div class="cell-primary">${data.nationality || '本國籍'}</div></td>
+            <td class="col-record_count" style="text-align: center;"><div class="cell-primary font-semibold" style="color:var(--brand);">${recordCount} 筆</div></td>
             <td class="col-actions" style="text-align: center;">${actionHtml}</td>
         </tr>`;
     });
