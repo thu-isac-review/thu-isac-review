@@ -31,10 +31,14 @@ export function bindEvents(container) {
     // ---------------- 1. 頂部工具列事件 ----------------
     container.querySelector('#btn-export-csv')?.addEventListener('click', () => {
         if (state.filteredData.length === 0) { UI.showNotification("沒有資料可供匯出！", "error"); return; }
-        let csv = '\uFEFF學院,學系,學號,姓名,性別,國籍\n';
+        
+        // 🌟 [修改] 匯出的報表也要加上「實習紀錄數」的計算邏輯
+        let csv = '\uFEFF學院,學系,學號,姓名,性別,國籍,實習紀錄數\n';
         state.filteredData.forEach(d => {
-            csv += [d.college, d.department, d.student_id, d.name, d.gender, d.nationality || '本國籍'].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+            const recordCount = state.allRecords.filter(r => r.student_id === d.student_id).length;
+            csv += [d.college, d.department, d.student_id, d.name, d.gender, d.nationality || '本國籍', recordCount].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
         });
+        
         const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
         link.download = `實習學生清單_${new Date().toISOString().split('T')[0]}.csv`; link.click();
         UI.showNotification("學生清單匯出成功！", "success");
