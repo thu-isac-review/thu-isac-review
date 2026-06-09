@@ -32,12 +32,20 @@ export function bindEvents(container) {
     container.querySelector('#btn-export-csv')?.addEventListener('click', () => {
         if (state.filteredData.length === 0) { UI.showNotification("沒有資料可供匯出！", "error"); return; }
         
-        // 🌟 [修改] 匯出的報表也要加上「實習紀錄數」的計算邏輯，並強化防呆匹配
+        // 🌟 [修改] 強化實習紀錄數的比對邏輯 (涵蓋大寫學號、文件 ID、參照物件)
         let csv = '\uFEFF學院,學系,學號,姓名,性別,國籍,實習紀錄數\n';
         state.filteredData.forEach(d => {
-            const recordCount = state.allRecords.filter(r => 
-                r.student_id === d.id || r.student_id === d.student_id || r.studentId === d.id || r.studentId === d.student_id || r.student_doc_id === d.id
-            ).length;
+            const targetDocId = String(d.id);
+            const targetStudentId = String(d.student_id).toUpperCase();
+            
+            const recordCount = state.allRecords.filter(r => {
+                const rSid = String(r.student_id || '').toUpperCase();
+                const rDocId = String(r.student_doc_id || r.studentId || '').toUpperCase();
+                return (rSid === targetStudentId) || 
+                       (rDocId === targetDocId.toUpperCase()) || 
+                       (r.student_ref && r.student_ref.id === targetDocId);
+            }).length;
+
             csv += [d.college, d.department, d.student_id, d.name, d.gender, d.nationality || '本國籍', recordCount].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
         });
         
