@@ -1,4 +1,3 @@
-/* 頁面整體包裝與基礎排版樣式 */
 #student-page-wrapper {
     font-family: 'Noto Sans TC', sans-serif;
     font-size: 14px;
@@ -21,11 +20,8 @@
 i.ti { line-height: 1; }
 
 .toolbar {
-    padding: 12px 24px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; gap: 10px;
-    flex-shrink: 0; flex-wrap: wrap;
+    padding: 12px 24px; background: var(--surface); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px; flex-shrink: 0; flex-wrap: wrap;
 }
 .search-wrap { position: relative; flex: 0 0 260px; }
 .search-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px; }
@@ -91,26 +87,28 @@ i.ti { line-height: 1; }
 
 .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; border-left: none; border-right: none; isolation: isolate; z-index: 0; position: relative; }
 .table-scroll { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: none; }
-table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; min-width: 900px; }
-th { padding: 12px 10px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; position: sticky; top: 0; z-index: 1; background: var(--surface); border-bottom: 1px solid var(--border); }
+table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; min-width: 1040px; }
+th { padding: 12px 10px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; position: sticky; top: 0; z-index: 1; background: var(--surface); border-bottom: 1px solid var(--border); }
 td { padding: 12px 10px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); background-color: inherit; }
 tr { background-color: var(--surface); transition: background-color 0.15s; }
 tr:hover { background-color: #f3f6ff; }
 tr.selected { background-color: #eef2ff !important; }
 
+/* 🌟 [優化] 固定左右欄位（打勾框、操作欄）並保證不跑版 */
 .col-checkbox { position: sticky; left: 0; width: 48px; text-align: center; z-index: 2; background-color: inherit; }
 th.col-checkbox { z-index: 3; background-color: var(--surface); }
 
-.col-college { width: 140px; }
-.col-department { width: 160px; }
-.col-student_id { width: 120px; }
-.col-name { width: 130px; }
-th.col-name { text-align: left !important; padding-left: 0; }
-td.col-name { text-align: left !important; padding-left: 0; }
-.col-gender { width: 80px; }
-.col-nationality { width: 100px; }
 .col-actions { position: sticky; right: 0; width: 90px; text-align: center; z-index: 2; background-color: inherit; }
 th.col-actions { z-index: 3; background-color: var(--surface); }
+
+/* 🌟 [優化] 學院、學系、學號、姓名、性別、國籍 六大欄位完美等寬 (130px) 且置中對齊 */
+.col-college, .col-department, .col-student_id, .col-name, .col-gender, .col-nationality { width: 130px; text-align: center; }
+th.col-college, th.col-department, th.col-student_id, th.col-name, th.col-gender, th.col-nationality,
+td.col-college, td.col-department, td.col-student_id, td.col-name, td.col-gender, td.col-nationality { text-align: center !important; }
+
+/* 🌟 [優化] 新增的實習紀錄筆數專屬欄位 */
+.col-record_count { width: 90px; text-align: center; }
+th.col-record_count, td.col-record_count { text-align: center !important; }
 
 th[data-sort] { cursor: pointer; user-select: none; transition: color var(--transition); }
 th[data-sort]:hover { color: var(--text-secondary); }
