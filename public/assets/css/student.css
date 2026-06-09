@@ -89,21 +89,21 @@ i.ti { line-height: 1; }
 .table-scroll { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: none; }
 table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; min-width: 1040px; }
 
-/* 🌟 [優化] 加大行高：將 td padding 設定為 16px，並統一 th 高度，確保與管理介面對齊 */
-th { padding: 14px 12px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; position: sticky; top: 0; z-index: 1; background: var(--surface); border-bottom: 1px solid var(--border); }
-td { padding: 16px 12px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); background-color: inherit; }
+/* 🌟 [高度修正] 將 td padding 調回 12px 10px，與課程/機構管理端保持一致的緊湊高度 */
+th { padding: 12px 10px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; position: sticky; top: 0; z-index: 1; background: var(--surface); border-bottom: 1px solid var(--border); }
+td { padding: 12px 10px; vertical-align: middle; word-break: break-word; border-bottom: 1px solid var(--border); background-color: inherit; }
 tr { background-color: var(--surface); transition: background-color 0.15s; }
 tr:hover { background-color: #f3f6ff; }
 tr:hover td.col-checkbox, tr:hover td.col-actions { background-color: #f3f6ff; }
 tr.selected { background-color: #eef2ff !important; }
 tr.selected td.col-checkbox, tr.selected td.col-actions { background-color: #eef2ff; }
 
-/* 🌟 [優化] 固定左右欄位並保證不跑版，設定底色防止透明穿透 */
-.col-checkbox { position: sticky; left: 0; width: 48px; text-align: center; z-index: 2; background-color: var(--surface); }
+/* 🌟 固定左右欄位並保證不跑版，設定底色防止透明穿透 */
+.col-checkbox { position: sticky; left: 0; width: 48px; text-align: center; z-index: 2; background-color: var(--surface); border-right: 1px solid var(--border); }
 th.col-checkbox { z-index: 3; background-color: var(--surface); }
 
-/* 🌟 [優化] 操作按鈕欄位寬度加寬至 110px，避免 padding 導致按鈕折行 */
-.col-actions { position: sticky; right: 0; width: 110px; text-align: center; z-index: 2; background-color: var(--surface); }
+/* 🌟 [寬度修正] 確保操作按鈕區域寬度足夠且不折行 */
+.col-actions { position: sticky; right: 0; width: 100px; text-align: center; z-index: 2; background-color: var(--surface); border-left: 1px solid var(--border); }
 th.col-actions { z-index: 3; background-color: var(--surface); }
 
 .col-college, .col-department, .col-student_id, .col-name, .col-gender, .col-nationality { width: 130px; text-align: center; }
@@ -121,7 +121,7 @@ th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand
 .cell-primary { font-size: 13px; color: var(--text-primary); line-height: 1.4; }
 .cell-primary.bold { font-weight: 700; color: #000000; }
 
-/* 🌟 [優化] 強制不換行 (nowrap)，保證按鈕永遠並排水平置中 */
+/* 🌟 [按鈕對齊] 強制不換行 (nowrap)，保證按鈕並排水平置中 */
 .row-actions { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: nowrap; }
 
 .pagination-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; gap: 10px; border-radius: 0 !important; }
@@ -161,7 +161,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
 @media (max-width: 768px) {
     .col-checkbox { position: static !important; width: 48px !important; border-right: none !important; }
-    .col-actions { position: static !important; width: 110px !important; border-left: none !important; }
+    .col-actions { position: static !important; width: 100px !important; border-left: none !important; }
     th.col-checkbox, th.col-actions { position: sticky !important; top: 0 !important; left: auto !important; right: auto !important; z-index: 2 !important; box-shadow: none !important; border-bottom: 1px solid var(--border) !important; }
     .filter-row { padding: 10px 16px; flex-wrap: nowrap; }
     .filters-scroll-area { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: none; padding-bottom: 2px; scrollbar-width: none; }
