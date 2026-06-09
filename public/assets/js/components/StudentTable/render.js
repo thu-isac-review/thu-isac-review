@@ -120,32 +120,6 @@ export const renderPagination = () => {
     ui.pagination.appendChild(nextBtn);
 };
 
-export const renderPagination = () => {
-    if (!ui.pagination) return;
-    
-    const totalPages = Math.ceil(state.filteredData.length / state.itemsPerPage);
-    ui.pagination.innerHTML = '';
-
-    if (totalPages <= 1) return;
-
-    for (let i = 1; i <= totalPages; i++) {
-        const btn = document.createElement('button');
-        btn.className = `btn btn-outline ${i === state.currentPage ? 'active' : ''}`;
-        btn.textContent = i;
-        btn.style.margin = '0 4px';
-        if (i === state.currentPage) {
-            btn.style.background = 'var(--brand, #1a56db)';
-            btn.style.color = 'white';
-            btn.style.borderColor = 'var(--brand, #1a56db)';
-        }
-        btn.onclick = () => {
-            state.currentPage = i;
-            renderTable();
-        };
-        ui.pagination.appendChild(btn);
-    }
-};
-
 export const updateSelectionUI = () => {
     if (state.viewMode !== 'manage' || !ui.selectAllCheckbox || !ui.btnBatchDelete) return;
 
