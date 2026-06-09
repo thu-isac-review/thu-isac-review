@@ -100,8 +100,12 @@ tr.selected td.col-checkbox, tr.selected td.col-actions { background-color: #eef
 .col-checkbox { position: sticky; left: 0; width: 48px; text-align: center; z-index: 2; background-color: var(--surface); border-right: 1px solid var(--border); }
 th.col-checkbox { z-index: 3; background-color: var(--surface); }
 
-/* 🌟 [寬度修正] 操作按鈕區域加寬至 130px (容納3顆按鈕避免被擠壓折行) */
-.col-actions { position: sticky; right: 0; width: 130px; text-align: center; z-index: 2; background-color: var(--surface); border-left: 1px solid var(--border); }
+/* 🌟 [新增] 查看紀錄欄位設定 */
+.col-view_record { width: 100px; text-align: center; }
+th.col-view_record, td.col-view_record { text-align: center !important; }
+
+/* 🌟 [修改] 操作按鈕區域調回 90px (只剩兩顆按鈕) */
+.col-actions { position: sticky; right: 0; width: 90px; text-align: center; z-index: 2; background-color: var(--surface); border-left: 1px solid var(--border); }
 th.col-actions { z-index: 3; background-color: var(--surface); }
 
 .col-college, .col-department, .col-student_id, .col-name, .col-gender, .col-nationality { width: 130px; text-align: center; }
