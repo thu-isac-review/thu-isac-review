@@ -32,7 +32,6 @@ export function bindEvents(container) {
     container.querySelector('#btn-export-csv')?.addEventListener('click', () => {
         if (state.filteredData.length === 0) { UI.showNotification("沒有資料可供匯出！", "error"); return; }
         
-        // 🌟 [修正] 針對 internship_records 的 student_raw (學號 - 姓名) 進行解析比對
         let csv = '\uFEFF學院,學系,學號,姓名,性別,國籍,實習紀錄數\n';
         state.filteredData.forEach(d => {
             const targetStudentId = String(d.student_id).toUpperCase().trim();
@@ -329,7 +328,8 @@ export function bindEvents(container) {
         const rowChk = e.target.closest('.row-select-chk');
         const btnEdit = e.target.closest('.btn-row-edit');
         const btnDel = e.target.closest('.btn-row-delete');
-        
+        const btnViewRecords = e.target.closest('.btn-row-view-records'); // 🌟 [新增] 抓取查看紀錄按鈕
+
         if (rowChk) { 
             const id = rowChk.value;
             const index = state.selectedIds.indexOf(id);
@@ -337,6 +337,18 @@ export function bindEvents(container) {
             UI.updateBatchActionBar(); 
             const row = rowChk.closest('tr');
             if(index === -1) row.classList.add('selected'); else row.classList.remove('selected');
+        }
+        else if (btnViewRecords) {
+            // 🌟 [新增] 查看紀錄的跳轉提示邏輯
+            const sid = btnViewRecords.dataset.studentid;
+            
+            // 提示：因為我們不知道您 Router 的全域呼叫名稱 (如 window.router.navigate 或 window.location.hash)
+            // 所以先透過原生 alert 做提示。您可以在這裡修改成真實的路由跳轉碼。
+            alert(`💡 準備查看該生實習紀錄！\n\n您可以在 code 內將此事件換成：\nwindow.location.hash = '#/intern_view/record?student=${sid}'\n或是呼叫您的 Router 切換畫面。`);
+            
+            /* * 替換範例：
+             * window.location.href = `record.html?search=${sid}`;
+             */
         }
         else if (btnEdit) { 
             if(state.isReadOnly) return;
