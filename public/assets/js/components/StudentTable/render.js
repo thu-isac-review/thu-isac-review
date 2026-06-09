@@ -60,12 +60,11 @@ export function renderTable() {
             let diff = 0;
             if (state.sortCol === 'record_count') {
                 const getCount = (d) => {
-                    const tDoc = String(d.id);
-                    const tSid = String(d.student_id).toUpperCase();
+                    const tSid = String(d.student_id).toUpperCase().trim();
                     return state.allRecords.filter(r => {
-                        const rSid = String(r.student_id || '').toUpperCase();
-                        const rDoc = String(r.student_doc_id || r.studentId || '').toUpperCase();
-                        return (rSid === tSid) || (rDoc === tDoc.toUpperCase()) || (r.student_ref && r.student_ref.id === tDoc);
+                        if (!r.student_raw) return false;
+                        const rSid = String(r.student_raw).split('-')[0].trim().toUpperCase();
+                        return rSid === tSid;
                     }).length;
                 };
                 diff = getCount(a) - getCount(b);
@@ -143,16 +142,14 @@ export function renderTable() {
         const deptDispName = deptObj && deptObj.shortName ? deptObj.shortName : data.department;
         const isChecked = state.selectedIds.includes(data.id) ? 'checked' : '';
         
-        // 🌟 [修正] 強化實習紀錄數的比對邏輯
-        const targetDocId = String(data.id);
-        const targetStudentId = String(data.student_id).toUpperCase();
+        // 🌟 [修正] 針對 internship_records 的 student_raw (學號 - 姓名) 進行解析比對
+        const targetStudentId = String(data.student_id).toUpperCase().trim();
         
         const recordCount = state.allRecords.filter(r => {
-            const rSid = String(r.student_id || '').toUpperCase();
-            const rDocId = String(r.student_doc_id || r.studentId || '').toUpperCase();
-            return (rSid === targetStudentId) || 
-                   (rDocId === targetDocId.toUpperCase()) || 
-                   (r.student_ref && r.student_ref.id === targetDocId);
+            if (!r.student_raw) return false;
+            // 解析 "S11910670 - 詹揚飛" -> 取得 "S11910670"
+            const recordStudentId = String(r.student_raw).split('-')[0].trim().toUpperCase();
+            return recordStudentId === targetStudentId;
         }).length;
 
         const actionHtml = state.isReadOnly ? '' : `
