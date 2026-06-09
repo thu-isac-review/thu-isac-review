@@ -1,84 +1,97 @@
-<div class="student-module-container">
-    <!-- 頂部操作與搜尋區 -->
-    <div class="module-header">
-        <div class="search-filters">
-            <input type="text" id="student-search-input" placeholder="搜尋學號、姓名或系所..." />
-            <select id="student-status-filter">
-                <option value="">所有狀態</option>
-                <option value="pending">審核中</option>
-                <option value="active">實習中</option>
-                <option value="completed">已結案</option>
-            </select>
+<div class="table-card" style="background:#fff; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); padding:20px; margin-top:20px;">
+    <!-- 工具列 -->
+    <div class="toolbar" style="display:flex; justify-content:space-between; margin-bottom:16px;">
+        <div class="search-box" style="position:relative; width:300px;">
+            <i class="ti ti-search text-muted" style="position:absolute; left:12px; top:10px;"></i>
+            <input type="text" id="search-input" placeholder="搜尋學號、姓名、系所..." style="width:100%; padding:8px 12px 8px 36px; border:1px solid var(--border); border-radius:6px;">
         </div>
-        <div class="header-actions">
-            <button id="btn-add-student" class="btn btn-primary" style="display: none;">+ 新增學生</button>
+        <div class="actions" style="display:flex; gap:10px;">
+            <button class="btn btn-danger" id="btn-batch-delete" style="display: none;">
+                <i class="ti ti-trash"></i> 批次刪除 (<span id="selected-count">0</span>)
+            </button>
+            <input type="file" id="import-csv" accept=".csv" style="display: none;">
+            <button class="btn btn-outline" id="btn-import" onclick="document.getElementById('import-csv').click();">
+                <i class="ti ti-upload"></i> 匯入 CSV
+            </button>
+            <button class="btn btn-outline" id="btn-export">
+                <i class="ti ti-download"></i> 匯出 CSV
+            </button>
+            <button class="btn btn-primary" id="btn-add">
+                <i class="ti ti-plus"></i> 新增學生
+            </button>
         </div>
     </div>
 
-    <!-- 資料表格區 -->
-    <div class="table-responsive">
-        <table class="data-table" id="student-table">
+    <!-- 表格區塊 -->
+    <div class="table-responsive" style="overflow-x:auto;">
+        <table class="table" id="data-table" style="width:100%; border-collapse:collapse; text-align:left;">
             <thead>
-                <tr>
-                    <th>學號</th>
-                    <th>姓名</th>
-                    <th>系級</th>
-                    <th>實習機構</th>
-                    <th>狀態</th>
-                    <th class="action-column" style="display: none;">操作</th>
+                <tr style="border-bottom:2px solid var(--border); background:var(--bg);">
+                    <th width="40" style="padding:12px;"><input type="checkbox" id="select-all"></th>
+                    <th style="padding:12px;">學號</th>
+                    <th style="padding:12px;">姓名</th>
+                    <th style="padding:12px;">性別</th>
+                    <th style="padding:12px;">國籍</th>
+                    <th style="padding:12px;">學院</th>
+                    <th style="padding:12px;">系所</th>
+                    <th width="100" style="padding:12px;">狀態</th>
+                    <th width="120" class="col-actions" style="padding:12px;">操作</th>
                 </tr>
             </thead>
-            <tbody id="student-table-body">
-                <!-- 資料將由 JS 動態渲染 -->
+            <tbody id="table-body">
+                <!-- 資料由 JS 動態生成 -->
             </tbody>
         </table>
     </div>
+    
+    <!-- 分頁 -->
+    <div class="pagination" id="pagination" style="display:flex; justify-content:center; margin-top:20px; gap:8px;"></div>
+</div>
 
-    <!-- 分頁區 -->
-    <div class="pagination-container" id="student-pagination">
-        <!-- 分頁按鈕動態渲染 -->
-    </div>
-
-    <!-- 新增/編輯 學生 Modal -->
-    <div id="student-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="student-modal-title">新增學生</h3>
-                <button class="btn-close-modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="student-form">
-                    <input type="hidden" id="student-id" name="id">
-                    <div class="form-group">
-                        <label for="student-number">學號 <span class="required">*</span></label>
-                        <input type="text" id="student-number" name="number" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="student-name">姓名 <span class="required">*</span></label>
-                        <input type="text" id="student-name" name="name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="student-dept">系級 <span class="required">*</span></label>
-                        <input type="text" id="student-dept" name="department" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="student-company">實習機構</label>
-                        <input type="text" id="student-company" name="company">
-                    </div>
-                    <div class="form-group">
-                        <label for="student-status">狀態</label>
-                        <select id="student-status" name="status">
-                            <option value="pending">審核中</option>
-                            <option value="active">實習中</option>
-                            <option value="completed">已結案</option>
-                        </select>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-secondary btn-cancel-modal">取消</button>
-                        <button type="submit" class="btn btn-primary">儲存</button>
-                    </div>
-                </form>
-            </div>
+<!-- 新增/編輯 Modal -->
+<div class="modal" id="form-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:100; align-items:center; justify-content:center;">
+    <div class="modal-content" style="background:#fff; padding:24px; border-radius:8px; width:100%; max-width:500px;">
+        <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h3 class="modal-title" id="modal-title" style="margin:0;">新增學生</h3>
+            <button class="modal-close" id="modal-close" style="background:none; border:none; cursor:pointer; font-size:20px;"><i class="ti ti-x"></i></button>
         </div>
+        <form id="data-form">
+            <div class="form-group" style="margin-bottom:16px;">
+                <label class="form-label">學號 <span style="color:red;">*</span></label>
+                <input type="text" class="form-control" id="f-student-id" required style="width:100%; padding:8px; border:1px solid var(--border); border-radius:4px;">
+            </div>
+            <div class="form-group" style="margin-bottom:16px;">
+                <label class="form-label">姓名 <span style="color:red;">*</span></label>
+                <input type="text" class="form-control" id="f-name" required style="width:100%; padding:8px; border:1px solid var(--border); border-radius:4px;">
+            </div>
+            <div class="form-row" style="display:flex; gap:16px; margin-bottom:16px;">
+                <div class="form-group" style="flex:1;">
+                    <label class="form-label">性別</label>
+                    <select class="form-control" id="f-gender" style="width:100%; padding:8px; border:1px solid var(--border); border-radius:4px;">
+                        <option value="男">男</option>
+                        <option value="女">女</option>
+                        <option value="其他">其他</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label class="form-label">國籍</label>
+                    <input type="text" class="form-control" id="f-nationality" value="本國籍" style="width:100%; padding:8px; border:1px solid var(--border); border-radius:4px;">
+                </div>
+            </div>
+            <div class="form-row" style="display:flex; gap:16px; margin-bottom:20px;">
+                <div class="form-group" style="flex:1;">
+                    <label class="form-label">學院 <span style="color:red;">*</span></label>
+                    <input type="text" class="form-control" id="f-college" required style="width:100%; padding:8px; border:1px solid var(--border); border-radius:4px;">
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label class="form-label">系所 <span style="color:red;">*</span></label>
+                    <input type="text" class="form-control" id="f-department" required style="width:100%; padding:8px; border:1px solid var(--border); border-radius:4px;">
+                </div>
+            </div>
+            <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:12px;">
+                <button type="button" class="btn btn-outline" id="btn-cancel" style="padding:8px 16px; border:1px solid var(--border); background:#fff; cursor:pointer; border-radius:4px;">取消</button>
+                <button type="submit" class="btn btn-primary" id="btn-save" style="padding:8px 16px; border:none; background:var(--brand, #1a56db); color:#fff; cursor:pointer; border-radius:4px;">儲存</button>
+            </div>
+        </form>
     </div>
 </div>
