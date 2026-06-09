@@ -29,7 +29,6 @@
     <!-- ─── FILTER ROW & BATCH BAR ─── -->
     <div class="filter-row">
         <div class="filters-scroll-area custom-scroll">
-            
             <div class="filter-pill-wrap" id="pill-wrap-college">
                 <button class="filter-pill" id="pill-college">全部學院 <i class="ti ti-chevron-down"></i></button>
                 <div class="filter-dropdown" id="drop-college">
@@ -59,9 +58,7 @@
             <div class="filter-pill-wrap" id="pill-wrap-gender">
                 <button class="filter-pill" id="pill-gender">全部性別 <i class="ti ti-chevron-down"></i></button>
                 <div class="filter-dropdown" id="drop-gender">
-                    <div class="filter-dropdown-list custom-scroll" id="gender-options-container">
-                        <!-- JS 渲染 -->
-                    </div>
+                    <div class="filter-dropdown-list custom-scroll" id="gender-options-container"></div>
                     <div class="filter-dropdown-footer" style="padding: 6px 8px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end;">
                         <button type="button" class="btn-clear-filter" data-type="gender" style="font-size: 11px; font-weight: 600; color: var(--danger); background: none; border: none; cursor: pointer; padding: 2px 4px; border-radius: var(--radius-sm);">清除此篩選</button>
                     </div>
@@ -71,9 +68,7 @@
             <div class="filter-pill-wrap" id="pill-wrap-nationality">
                 <button class="filter-pill" id="pill-nationality">全部國籍 <i class="ti ti-chevron-down"></i></button>
                 <div class="filter-dropdown" id="drop-nationality">
-                    <div class="filter-dropdown-list custom-scroll" id="nationality-options-container">
-                        <!-- JS 渲染 -->
-                    </div>
+                    <div class="filter-dropdown-list custom-scroll" id="nationality-options-container"></div>
                     <div class="filter-dropdown-footer" style="padding: 6px 8px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end;">
                         <button type="button" class="btn-clear-filter" data-type="nationality" style="font-size: 11px; font-weight: 600; color: var(--danger); background: none; border: none; cursor: pointer; padding: 2px 4px; border-radius: var(--radius-sm);">清除此篩選</button>
                     </div>
@@ -81,7 +76,6 @@
             </div>
         </div>
 
-        <!-- Batch Action Bar -->
         <div id="batch-bar">
             <div class="batch-info"><i class="ti ti-checks" style="font-size:18px;"></i> 已選 <span id="selected-count">0</span> 名學生</div>
             <button id="btn-select-all-filtered" class="btn btn-sm btn-secondary">選取全部符合條件</button>
@@ -97,23 +91,22 @@
             <table>
                 <thead id="student-table-head">
                     <tr>
-                        <th class="col-checkbox" style="width: 48px;">
+                        <th class="col-checkbox">
                             <div class="flex-center">
                                 <input type="checkbox" id="selectAll" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                             </div>
                         </th>
-                        <th data-sort="college" class="col-college" style="width: 140px;">學院 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="department" class="col-department" style="width: 160px;">學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="student_id" class="col-student_id" style="width: 120px;">學號 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="name" class="col-name" style="width: 130px; text-align: left;">姓名 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="gender" class="col-gender" style="width: 80px;">性別 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="nationality" class="col-nationality" style="width: 100px;">國籍 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th class="col-actions" style="width: 90px;">操作</th>
+                        <th data-sort="college" class="col-college">學院 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="department" class="col-department">學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="student_id" class="col-student_id">學號 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="name" class="col-name">姓名 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="gender" class="col-gender">性別 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="nationality" class="col-nationality">國籍 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="record_count" class="col-record_count">實習紀錄 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th class="col-actions">操作</th>
                     </tr>
                 </thead>
                 <tbody id="student-table-body"></tbody>
-                    <!-- JS 控制 -->
-                </tbody>
             </table>
         </div>
         
