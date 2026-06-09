@@ -1,69 +1,52 @@
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-// 請根據您的 Firebase 設定路徑調整 import，此處假設全域可用 window.db
-const db = window.db; 
-
-const COLLECTION_NAME = 'students';
-const getCollection = () => collection(db, COLLECTION_NAME);
-
+import { collection, getDocs, doc, getDoc, updateDoc, deleteDoc, addDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 import { state } from './state.js';
 
-export const fetchData = async () => {
+export async function fetchSettingsOnce() {
     try {
-        const snapshot = await getDocs(getCollection());
-        state.allData = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        })).sort((a, b) => {
-            const timeA = a.created_at?.toMillis?.() || 0;
-            const timeB = b.created_at?.toMillis?.() || 0;
-            return timeB - timeA;
-        });
-        return state.allData;
-    } catch (error) {
-        console.error("Error fetching data:", error);
-        throw error;
-    }
-};
+        const collegeSnap = await getDoc(doc(state.db, "settings", "colleges"));
+        if (collegeSnap.exists()) {
+            const rawList = collegeSnap.data().list || [];
+            state.orderedColleges = rawList.map(c => typeof c === 'string' ? { name: c, shortName: c } : c);
+        }
 
-export const addData = async (data) => {
-    try {
-        data.created_at = serverTimestamp();
-        await addDoc(getCollection(), data);
-    } catch (error) {
-        console.error("Error adding data:", error);
-        throw error;
+        const deptSnap = await getDocs(collection(state.db, "departments"));
+        state.globalDepts = deptSnap.docs.map(d => d.data());
+        state.globalDepts.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
+    } catch (e) {
+        console.error("Failed to load settings:", e);
     }
-};
+}
 
-export const updateData = async (id, data) => {
-    try {
-        const docRef = doc(db, COLLECTION_NAME, id);
-        await updateDoc(docRef, data);
-    } catch (error) {
-        console.error("Error updating data:", error);
-        throw error;
-    }
-};
+export async function fetchInitialDataOnce() {
+    const dataSnap = await getDocs(collection(state.db, "internship_students"));
+    state.allData = dataSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    state.selectedIds = [];
+}
 
-export const deleteData = async (id) => {
-    try {
-        await deleteDoc(doc(db, COLLECTION_NAME, id));
-    } catch (error) {
-        console.error("Error deleting data:", error);
-        throw error;
+export async function executeSave(payload) {
+    if (state.editingId) {
+        await updateDoc(doc(state.db, "internship_students", state.editingId), { ...payload, updated_at: serverTimestamp() });
+    } else {
+        await addDoc(collection(state.db, "internship_students"), { ...payload, created_at: serverTimestamp() });
     }
-};
+}
 
-export const batchDeleteData = async (ids) => {
-    try {
-        const batch = writeBatch(db);
-        ids.forEach(id => {
-            const docRef = doc(db, COLLECTION_NAME, id);
-            batch.delete(docRef);
-        });
-        await batch.commit();
-    } catch (error) {
-        console.error("Error batch deleting data:", error);
-        throw error;
+export async function deleteData(id) {
+    await deleteDoc(doc(state.db, "internship_students", id));
+}
+
+export async function batchDelete() {
+    const batch = writeBatch(state.db);
+    state.selectedIds.forEach(id => batch.delete(doc(state.db, "internship_students", id)));
+    await batch.commit(); 
+}
+
+export async function batchImport(parsedRows) {
+    let addedCount = 0;
+    const colRef = collection(state.db, "internship_students");
+    for (let payload of parsedRows) { 
+        await addDoc(colRef, payload); 
+        addedCount++; 
     }
-};
+    return addedCount;
+}
