@@ -1,5 +1,5 @@
 // 這是供「管理員(Manage)」使用的頁面入口檔
-import { initStudentTable } from '../../../../components/StudentTable/main.js';
+import { initStudentTable } from '../../../components/StudentTable/main.js';
 
 // 配合 index.html SPA 路由，匯出 render 函式
 export const render = async (containerId, { db }) => {
