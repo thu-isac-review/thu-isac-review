@@ -2,6 +2,7 @@ export let state = {
     db: null,
     isReadOnly: false,
     allData: [],
+    allRecords: [], // 🌟 [新增] 用於統計學生的實習紀錄數
     filteredData: [],
     globalDepts: [],
     orderedColleges: [],
@@ -15,7 +16,7 @@ export let state = {
     filterGenderSet: new Set(),
     filterNatSet: new Set(),
     
-    sortCol: 'student_id',
+    sortCol: 'default', // 🌟 [修改] 將預設排序改為多層次演算法（學院 -> 學系 -> 學號）
     sortDir: 'asc',
     searchDebounceTimer: null,
     isGlobalListenerBound: false,
@@ -28,6 +29,7 @@ export function resetStudentState() {
         db: null,
         isReadOnly: false,
         allData: [],
+        allRecords: [],
         filteredData: [],
         globalDepts: [],
         orderedColleges: [],
@@ -41,7 +43,7 @@ export function resetStudentState() {
         filterGenderSet: new Set(),
         filterNatSet: new Set(),
         
-        sortCol: 'student_id',
+        sortCol: 'default',
         sortDir: 'asc',
         searchDebounceTimer: null,
         isGlobalListenerBound: false,
