@@ -1,138 +1,137 @@
-import { state } from './state.js';
-import { ui } from './ui.js';
+import { state, Utils } from './state.js';
 
-export const renderTable = () => {
-    if (!ui.tableBody) return;
-    
-    ui.tableBody.innerHTML = '';
-    const searchTerm = ui.searchInput ? ui.searchInput.value.toLowerCase() : '';
-    
-    state.filteredData = state.allData.filter(item => 
-        (item.student_id || '').toLowerCase().includes(searchTerm) ||
-        (item.name || '').toLowerCase().includes(searchTerm) ||
-        (item.department || '').toLowerCase().includes(searchTerm)
-    );
+function getCollegeSortValue(collegeName) {
+    const idx = state.orderedColleges.findIndex(c => c.name === collegeName);
+    return idx !== -1 ? idx : 999;
+}
 
-    const isManage = state.viewMode === 'manage';
+function getDeptSortValue(deptName) {
+    const dept = state.globalDepts.find(d => d.name === deptName);
+    return dept ? (dept.sortOrder || 999) : 999;
+}
 
-    if (state.filteredData.length === 0) {
-        ui.tableBody.innerHTML = `<tr><td colspan="${isManage ? 9 : 8}" class="text-center text-gray-500 py-8">沒有找到相關資料</td></tr>`;
-        renderPagination();
-        updateSelectionUI();
-        return;
-    }
+export function renderTable() {
+    const tbody = document.getElementById('student-table-body');
+    if (!tbody) return; 
 
-    const start = (state.currentPage - 1) * state.itemsPerPage;
-    const end = start + state.itemsPerPage;
-    const pageData = state.filteredData.slice(start, end);
+    const searchInput = document.getElementById('search-input');
+    const rawSearchTerm = searchInput ? searchInput.value.trim() : ''; 
+    const searchTerm = rawSearchTerm.toLowerCase();
 
-    pageData.forEach(item => {
-        const tr = document.createElement('tr');
-        tr.className = 'hover:bg-gray-50 transition-colors group';
+    state.filteredData = state.allData.filter(d => {
+        const matchSearch = (d.name || '').toLowerCase().includes(searchTerm) || (d.student_id || '').toLowerCase().includes(searchTerm);
+        const matchCol = state.filterCollegeSet.size === 0 || state.filterCollegeSet.has(d.college);
+        const matchDept = state.filterDeptSet.size === 0 || state.filterDeptSet.has(d.department);
+        const matchGender = state.filterGenderSet.size === 0 || state.filterGenderSet.has(d.gender || '男');
+        const matchNat = state.filterNatSet.size === 0 || state.filterNatSet.has(d.nationality || '本國籍');
         
-        let checkboxTd = '';
-        if (isManage) {
-            checkboxTd = `<td class="px-4 py-3 text-center"><input type="checkbox" class="row-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500" data-id="${item.id}" ${state.selectedIds.has(item.id) ? 'checked' : ''}></td>`;
-        }
-
-        let actionTd = '';
-        if (isManage) {
-            actionTd = `
-                <td class="col-actions px-4 py-3 text-center">
-                    <div class="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button class="btn-edit p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors" data-id="${item.id}" title="編輯"><i class="ti ti-edit text-lg"></i></button>
-                        <button class="btn-delete p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" data-id="${item.id}" title="刪除"><i class="ti ti-trash text-lg"></i></button>
-                    </div>
-                </td>
-            `;
-        }
-
-        tr.innerHTML = `
-            ${checkboxTd}
-            <td class="px-4 py-3 font-medium text-gray-900">${item.student_id || ''}</td>
-            <td class="px-4 py-3">${item.name || ''}</td>
-            <td class="px-4 py-3">${item.gender || ''}</td>
-            <td class="px-4 py-3 text-gray-500">${item.nationality || ''}</td>
-            <td class="px-4 py-3 text-gray-500">${item.college || ''}</td>
-            <td class="px-4 py-3 text-gray-500">${item.department || ''}</td>
-            <td class="px-4 py-3"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">未設定</span></td>
-            ${actionTd}
-        `;
-        ui.tableBody.appendChild(tr);
+        return matchSearch && matchCol && matchDept && matchGender && matchNat;
     });
 
-    // Update page info
-    const pageStartEl = document.getElementById('page-start');
-    const pageEndEl = document.getElementById('page-end');
-    const pageTotalEl = document.getElementById('page-total');
-    
-    if(pageStartEl) pageStartEl.textContent = state.filteredData.length > 0 ? start + 1 : 0;
-    if(pageEndEl) pageEndEl.textContent = Math.min(end, state.filteredData.length);
-    if(pageTotalEl) pageTotalEl.textContent = state.filteredData.length;
-
-    renderPagination();
-    updateSelectionUI();
-};
-
-export const renderPagination = () => {
-    if (!ui.pagination) return;
-    
-    const totalPages = Math.ceil(state.filteredData.length / state.itemsPerPage);
-    ui.pagination.innerHTML = '';
-
-    if (totalPages <= 1) return;
-
-    // Previous button
-    const prevBtn = document.createElement('button');
-    prevBtn.className = `px-2 py-1 text-sm rounded border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 transition-colors ${state.currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`;
-    prevBtn.innerHTML = '<i class="ti ti-chevron-left"></i>';
-    prevBtn.disabled = state.currentPage === 1;
-    prevBtn.onclick = () => {
-        if(state.currentPage > 1) {
-            state.currentPage--;
-            renderTable();
+    state.filteredData.sort((a, b) => {
+        let valA = a[state.sortCol] || ''; 
+        let valB = b[state.sortCol] || '';
+        
+        if (state.sortCol === 'college' || state.sortCol === 'department') {
+            if (state.sortCol === 'college') {
+                valA = getCollegeSortValue(a.college);
+                valB = getCollegeSortValue(b.college);
+            } else {
+                valA = getDeptSortValue(a.department);
+                valB = getDeptSortValue(b.department);
+            }
+            if (valA !== valB) return state.sortDir === 'asc' ? valA - valB : valB - valA;
+            return 0;
         }
-    };
-    ui.pagination.appendChild(prevBtn);
+        
+        valA = valA.toString().toLowerCase(); 
+        valB = valB.toString().toLowerCase();
+        let cmp = valA.localeCompare(valB, 'zh-TW');
+        return state.sortDir === 'asc' ? cmp : -cmp;
+    });
 
-    for (let i = 1; i <= totalPages; i++) {
-        const btn = document.createElement('button');
-        btn.className = `px-3 py-1 text-sm rounded border transition-colors ${i === state.currentPage ? 'bg-blue-600 text-white border-blue-600 font-medium shadow-sm' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'}`;
-        btn.textContent = i;
-        btn.onclick = () => {
-            state.currentPage = i;
-            renderTable();
-        };
-        ui.pagination.appendChild(btn);
+    const total = state.filteredData.length;
+    const totalPages = Math.max(1, Math.ceil(total / state.itemsPerPage));
+    if (state.currentPage > totalPages) state.currentPage = totalPages;
+    
+    const start = (state.currentPage - 1) * state.itemsPerPage;
+    const paginatedItems = state.filteredData.slice(start, start + state.itemsPerPage);
+
+    const infoEl = document.getElementById('pagination-info');
+    if(infoEl) {
+        if (total > 0) {
+            infoEl.innerHTML = `共 <strong>${total}</strong> 筆，顯示第 ${start + 1}–${Math.min(start + state.itemsPerPage, total)} 筆`;
+        } else {
+            infoEl.innerHTML = `共 <strong>0</strong> 筆`;
+        }
     }
-
-    // Next button
-    const nextBtn = document.createElement('button');
-    nextBtn.className = `px-2 py-1 text-sm rounded border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 transition-colors ${state.currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`;
-    nextBtn.innerHTML = '<i class="ti ti-chevron-right"></i>';
-    nextBtn.disabled = state.currentPage === totalPages;
-    nextBtn.onclick = () => {
-        if(state.currentPage < totalPages) {
-            state.currentPage++;
-            renderTable();
-        }
-    };
-    ui.pagination.appendChild(nextBtn);
-};
-
-export const updateSelectionUI = () => {
-    if (state.viewMode !== 'manage' || !ui.selectAllCheckbox || !ui.btnBatchDelete) return;
-
-    const currentRows = Array.from(ui.tableBody.querySelectorAll('.row-checkbox'));
-    const allChecked = currentRows.length > 0 && currentRows.every(cb => cb.checked);
     
-    ui.selectAllCheckbox.checked = allChecked;
-    state.isSelectAll = allChecked;
+    let pHtml = `<button class="page-btn page-step-btn" data-page="${state.currentPage-1}" ${state.currentPage<=1?'disabled':''}><i class="ti ti-chevron-left"></i></button>`;
+    const pages = [];
+    for (let p=1; p<=totalPages; p++) {
+        if (p===1 || p===totalPages || Math.abs(p-state.currentPage)<=1) pages.push(p);
+        else if (pages[pages.length-1] !== '…') pages.push('…');
+    }
+    pages.forEach(p => {
+        if (p === '…') pHtml += `<span class="page-btn" style="cursor:default;border:none">…</span>`;
+        else pHtml += `<button class="page-btn page-num-btn ${p === state.currentPage ? 'active' : ''}" data-page="${p}">${p}</button>`;
+    });
+    pHtml += `<button class="page-btn page-step-btn" data-page="${state.currentPage+1}" ${state.currentPage>=totalPages?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
+    
+    const controls = document.getElementById('pagination-controls');
+    if(controls) controls.innerHTML = pHtml;
 
-    if (state.selectedIds.size > 0) {
-        ui.btnBatchDelete.style.display = 'inline-flex';
-        if(ui.selectedCountDisplay) ui.selectedCountDisplay.textContent = state.selectedIds.size;
+    const currentPaginatedIds = paginatedItems.map(d => d.id);
+    const isAllVisibleSelected = currentPaginatedIds.length > 0 && currentPaginatedIds.every(id => state.selectedIds.includes(id));
+    const selectAllChk = document.getElementById('selectAll');
+    if(selectAllChk) selectAllChk.checked = isAllVisibleSelected;
+
+    const emptyStateContainer = document.getElementById('empty-state-container');
+
+    if (total === 0) {
+        tbody.innerHTML = '';
+        if (emptyStateContainer) {
+            emptyStateContainer.style.display = 'flex';
+            emptyStateContainer.innerHTML = `<i class="ti ti-inbox empty-icon"></i><div class="empty-text">找不到符合條件的學生。</div>`;
+        }
+        return;
     } else {
-        ui.btnBatchDelete.style.display = 'none';
+        if (emptyStateContainer) emptyStateContainer.style.display = 'none';
     }
-};
+
+    let html = '';
+    paginatedItems.forEach((data) => {
+        const colObj = state.orderedColleges.find(c => c.name === data.college);
+        const colDispName = colObj && colObj.shortName ? colObj.shortName : data.college;
+        const deptObj = state.globalDepts.find(d => d.name === data.department);
+        const deptDispName = deptObj && deptObj.shortName ? deptObj.shortName : data.department;
+        const isChecked = state.selectedIds.includes(data.id) ? 'checked' : '';
+
+        const actionHtml = state.isReadOnly ? '' : `
+            <div class="row-actions">
+                <button data-id="${data.id}" class="btn btn-secondary btn-icon sm btn-row-edit" title="編輯"><i class="ti ti-edit"></i></button>
+                <button data-id="${data.id}" data-name="${data.name}" class="btn btn-danger btn-icon sm btn-row-delete" title="刪除"><i class="ti ti-trash"></i></button>
+            </div>
+        `;
+
+        const highlightedID = Utils.highlightKeyword(data.student_id, rawSearchTerm);
+        const highlightedName = Utils.highlightKeyword(data.name, rawSearchTerm);
+        
+        html += `
+        <tr class="${isChecked ? 'selected' : ''}" data-id="${data.id}">
+            <td class="col-checkbox" style="text-align: center;">
+                <div style="display:flex; justify-content:center; align-items:center;">
+                    <input type="checkbox" value="${data.id}" class="row-select-chk" ${isChecked} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
+                </div>
+            </td>
+            <td class="col-college" style="text-align: center;"><div class="cell-primary">${colDispName || '-'}</div></td>
+            <td class="col-department" style="text-align: center;"><div class="cell-primary">${deptDispName || '-'}</div></td>
+            <td class="col-student_id" style="text-align: center;"><div class="cell-primary bold uppercase" style="letter-spacing:0.02em;">${highlightedID}</div></td>
+            <td class="col-name" style="text-align: left;"><div class="cell-primary bold">${highlightedName}</div></td>
+            <td class="col-gender" style="text-align: center;"><div class="cell-primary">${data.gender || '男'}</div></td>
+            <td class="col-nationality" style="text-align: center;"><div class="cell-primary">${data.nationality || '本國籍'}</div></td>
+            <td class="col-actions" style="text-align: center;">${actionHtml}</td>
+        </tr>`;
+    });
+    tbody.innerHTML = html;
+}
