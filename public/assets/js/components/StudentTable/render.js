@@ -150,17 +150,12 @@ export function renderTable() {
             return recordStudentId === targetStudentId;
         }).length;
 
-        // 🌟 [新增] 獨立的「查看紀錄」按鈕
-        const btnViewRecordsHtml = `<button data-studentid="${data.student_id}" class="btn btn-icon sm btn-row-view-records" style="color: var(--brand); border-color: var(--brand-border); background: var(--brand-light);" title="查看實習紀錄"><i class="ti ti-file-description"></i></button>`;
+        // 🌟 [修改] 獨立的「查看紀錄」按鈕，並改為文字樣式
+        const viewRecordHtml = `<button data-studentid="${data.student_id}" class="btn btn-sm btn-secondary btn-row-view-records" style="font-weight: 500;">查看紀錄</button>`;
 
-        // 🌟 [修改] 不管是不是 isReadOnly 都要顯示「查看」按鈕
-        const actionHtml = state.isReadOnly ? `
+        // 🌟 [修改] 操作欄位僅保留編輯與刪除
+        const actionHtml = state.isReadOnly ? '' : `
             <div class="row-actions">
-                ${btnViewRecordsHtml}
-            </div>
-        ` : `
-            <div class="row-actions">
-                ${btnViewRecordsHtml}
                 <button data-id="${data.id}" class="btn btn-secondary btn-icon sm btn-row-edit" title="編輯"><i class="ti ti-edit"></i></button>
                 <button data-id="${data.id}" data-name="${data.name}" class="btn btn-danger btn-icon sm btn-row-delete" title="刪除"><i class="ti ti-trash"></i></button>
             </div>
@@ -183,6 +178,7 @@ export function renderTable() {
             <td class="col-gender" style="text-align: center;"><div class="cell-primary">${data.gender || '男'}</div></td>
             <td class="col-nationality" style="text-align: center;"><div class="cell-primary">${data.nationality || '本國籍'}</div></td>
             <td class="col-record_count" style="text-align: center;"><div class="cell-primary font-semibold" style="color:var(--brand);">${recordCount} 筆</div></td>
+            <td class="col-view_record" style="text-align: center;">${viewRecordHtml}</td>
             <td class="col-actions" style="text-align: center;">${actionHtml}</td>
         </tr>`;
     });
