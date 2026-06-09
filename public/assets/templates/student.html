@@ -1,135 +1,206 @@
-<!-- public/assets/templates/student.html -->
-<div class="content-header p-4 md:p-6 pb-0 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-    <div>
-        <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <i class="ti ti-users text-blue-600"></i>
-            實習學生管理
-        </h1>
-        <p class="text-sm text-gray-500 mt-1">管理各系所實習學生基本資料與狀態</p>
-    </div>
-</div>
+<link rel="stylesheet" href="./assets/css/student.css">
+<style id="dynamic-col-styles"></style>
 
-<div class="p-4 md:p-6">
-    <div class="table-card bg-white rounded-lg shadow-sm border border-gray-200">
-        <!-- 頂部控制列 -->
-        <div class="toolbar p-4 border-b border-gray-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div class="search-box relative w-full md:w-72">
-                <i class="ti ti-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                <input type="text" id="search-input" placeholder="搜尋學號、姓名、系所..." 
-                    class="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow">
-            </div>
+<div id="student-page-wrapper" style="height: 100%; display: flex; flex-direction: column;">
+    <!-- ─── TOOLBAR ─── -->
+    <div class="toolbar">
+        <div class="search-wrap">
+            <i class="ti ti-search"></i>
+            <input type="text" id="search-input" placeholder="搜尋學號或姓名..." class="search-input">
+        </div>
+        
+        <div class="flex-spacer"></div>
+        
+        <div class="toolbar-actions">
+            <button id="btn-export-csv" class="btn btn-success-solid">
+                <i class="ti ti-file-export"></i> <span class="btn-text">匯出清單</span>
+            </button>
+            <button id="btn-import-trigger" class="btn btn-indigo-solid">
+                <i class="ti ti-file-import"></i> <span class="btn-text">批次匯入</span>
+            </button>
+            <div class="v-divider"></div>
+            <button id="btn-create-student" class="btn btn-primary">
+                <i class="ti ti-plus"></i> <span class="btn-text">新增學生</span>
+            </button>
+        </div>
+        <input type="file" id="import-file" accept=".csv" style="display:none;">
+    </div>
+
+    <!-- ─── FILTER ROW & BATCH BAR ─── -->
+    <div class="filter-row">
+        <div class="filters-scroll-area custom-scroll">
             
-            <div class="actions flex flex-wrap gap-2 w-full md:w-auto">
-                <button id="btn-batch-delete" class="btn hidden items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-md hover:bg-red-100 border border-red-200 transition-colors">
-                    <i class="ti ti-trash"></i> 批次刪除 (<span id="selected-count">0</span>)
-                </button>
-                <input type="file" id="import-csv" accept=".csv" class="hidden">
-                <button id="btn-import" onclick="document.getElementById('import-csv').click();" class="btn flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors shadow-sm">
-                    <i class="ti ti-upload"></i> 匯入 CSV
-                </button>
-                <button id="btn-export" class="btn flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors shadow-sm">
-                    <i class="ti ti-download"></i> 匯出 CSV
-                </button>
-                <button id="btn-add" class="btn flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors shadow-sm">
-                    <i class="ti ti-plus"></i> 新增學生
-                </button>
+            <div class="filter-pill-wrap" id="pill-wrap-college">
+                <button class="filter-pill" id="pill-college">全部學院 <i class="ti ti-chevron-down"></i></button>
+                <div class="filter-dropdown" id="drop-college">
+                    <div class="filter-dropdown-search">
+                        <input type="text" id="search-college-input" placeholder="搜尋學院...">
+                        <div style="margin-top:8px; padding:0 4px; display: flex; justify-content: flex-end;">
+                            <button type="button" class="btn-light-blue btn-filter-toggle" data-type="college" data-state="none">全選</button>
+                        </div>
+                    </div>
+                    <div class="filter-dropdown-list custom-scroll" id="college-options-container"></div>
+                </div>
+            </div>
+
+            <div class="filter-pill-wrap" id="pill-wrap-dept">
+                <button class="filter-pill" id="pill-dept">全部學系 <i class="ti ti-chevron-down"></i></button>
+                <div class="filter-dropdown" id="drop-dept">
+                    <div class="filter-dropdown-search">
+                        <input type="text" id="search-dept-input" placeholder="搜尋學系...">
+                        <div style="margin-top:8px; padding:0 4px; display: flex; justify-content: flex-end;">
+                            <button type="button" class="btn-light-blue btn-filter-toggle" data-type="dept" data-state="none">全選</button>
+                        </div>
+                    </div>
+                    <div class="filter-dropdown-list custom-scroll" id="dept-options-container"></div>
+                </div>
+            </div>
+
+            <div class="filter-pill-wrap" id="pill-wrap-gender">
+                <button class="filter-pill" id="pill-gender">全部性別 <i class="ti ti-chevron-down"></i></button>
+                <div class="filter-dropdown" id="drop-gender">
+                    <div class="filter-dropdown-list custom-scroll" id="gender-options-container">
+                        <!-- JS 渲染 -->
+                    </div>
+                    <div class="filter-dropdown-footer" style="padding: 6px 8px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end;">
+                        <button type="button" class="btn-clear-filter" data-type="gender" style="font-size: 11px; font-weight: 600; color: var(--danger); background: none; border: none; cursor: pointer; padding: 2px 4px; border-radius: var(--radius-sm);">清除此篩選</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-pill-wrap" id="pill-wrap-nationality">
+                <button class="filter-pill" id="pill-nationality">全部國籍 <i class="ti ti-chevron-down"></i></button>
+                <div class="filter-dropdown" id="drop-nationality">
+                    <div class="filter-dropdown-list custom-scroll" id="nationality-options-container">
+                        <!-- JS 渲染 -->
+                    </div>
+                    <div class="filter-dropdown-footer" style="padding: 6px 8px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end;">
+                        <button type="button" class="btn-clear-filter" data-type="nationality" style="font-size: 11px; font-weight: 600; color: var(--danger); background: none; border: none; cursor: pointer; padding: 2px 4px; border-radius: var(--radius-sm);">清除此篩選</button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- 表格區塊 -->
-        <div class="table-responsive overflow-x-auto">
-            <table id="data-table" class="w-full text-left text-sm text-gray-600">
-                <thead class="bg-gray-50 text-gray-700 font-medium border-b border-gray-200">
+        <!-- Batch Action Bar -->
+        <div id="batch-bar">
+            <div class="batch-info"><i class="ti ti-checks" style="font-size:18px;"></i> 已選 <span id="selected-count">0</span> 名學生</div>
+            <button id="btn-select-all-filtered" class="btn btn-sm btn-secondary">選取全部符合條件</button>
+            <button id="btn-clear-selection" class="btn btn-sm btn-secondary">取消選取</button>
+            <div class="flex-spacer"></div>
+            <button id="btn-batch-delete" class="btn btn-sm btn-danger-solid"><i class="ti ti-trash"></i> 批次刪除</button>
+        </div>
+    </div>
+
+    <!-- ─── TABLE AREA ─── -->
+    <div class="table-wrap">
+        <div class="table-scroll custom-scroll">
+            <table>
+                <thead id="student-table-head">
                     <tr>
-                        <th class="w-10 px-4 py-3 text-center"><input type="checkbox" id="select-all" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"></th>
-                        <th class="px-4 py-3">學號</th>
-                        <th class="px-4 py-3">姓名</th>
-                        <th class="px-4 py-3">性別</th>
-                        <th class="px-4 py-3">國籍</th>
-                        <th class="px-4 py-3">學院</th>
-                        <th class="px-4 py-3">系所</th>
-                        <th class="w-24 px-4 py-3">狀態</th>
-                        <th class="col-actions w-24 px-4 py-3 text-center">操作</th>
+                        <th class="col-checkbox" style="width: 48px;">
+                            <div class="flex-center">
+                                <input type="checkbox" id="selectAll" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
+                            </div>
+                        </th>
+                        <th data-sort="college" class="col-college" style="width: 140px;">學院 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="department" class="col-department" style="width: 160px;">學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="student_id" class="col-student_id" style="width: 120px;">學號 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="name" class="col-name" style="width: 130px; text-align: left;">姓名 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="gender" class="col-gender" style="width: 80px;">性別 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th data-sort="nationality" class="col-nationality" style="width: 100px;">國籍 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                        <th class="col-actions" style="width: 90px;">操作</th>
                     </tr>
                 </thead>
-                <tbody id="table-body" class="divide-y divide-gray-200 bg-white">
-                    <!-- 資料由 JS 動態生成 -->
+                <tbody id="student-table-body"></tbody>
+                    <!-- JS 控制 -->
                 </tbody>
             </table>
         </div>
         
-        <!-- 分頁 -->
-        <div class="pagination p-4 border-t border-gray-200 flex items-center justify-between text-sm text-gray-500">
-            <div id="page-info" class="hidden md:block">
-                顯示第 <span id="page-start" class="font-medium text-gray-900">0</span> 到 <span id="page-end" class="font-medium text-gray-900">0</span> 筆，共 <span id="page-total" class="font-medium text-gray-900">0</span> 筆
-            </div>
-            <div id="pagination" class="flex gap-1">
-                <!-- 分頁按鈕由 JS 動態生成 -->
+        <div id="empty-state-container" class="empty-state" style="display: none;">
+            <i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i>
+            <div class="empty-text">資料載入中...</div>
+        </div>
+
+        <div class="pagination-bar">
+            <div class="pagination-info" id="pagination-info">共 0 筆</div>
+            <div class="pagination-bar-right">
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="font-size:12px; color:var(--text-muted)">每頁顯示</span>
+                    <select class="per-page-select" id="per-page-select">
+                        <option value="15">15 筆</option>
+                        <option value="25">25 筆</option>
+                        <option value="50">50 筆</option>
+                    </select>
+                </div>
+                <div class="pagination-controls" id="pagination-controls"></div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- 新增/編輯 Modal -->
-<div id="form-modal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
-        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-            <h3 id="modal-title" class="text-lg font-bold text-gray-900 flex items-center gap-2">
-                <i class="ti ti-user-plus text-blue-600"></i>
-                新增學生
-            </h3>
-            <button id="modal-close" class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1.5 rounded-lg transition-colors">
-                <i class="ti ti-x text-xl"></i>
-            </button>
-        </div>
-        
-        <div class="p-6 overflow-y-auto custom-scroll">
-            <form id="data-form" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">學號 <span class="text-red-500">*</span></label>
-                    <input type="text" id="f-student-id" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+    <!-- ─── MODAL ─── -->
+    <div id="data-modal" class="dialog-overlay">
+        <div class="dialog-box" style="max-width: 600px;">
+            <div class="dialog-header flex-col items-start p-0 border-none" style="flex-direction: column; align-items: flex-start; padding: 0; border: none;">
+                <div style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 20px 20px 16px;">
+                    <h3 id="modal-title" style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700;"><i class="ti ti-user-plus text-brand" style="font-size: 20px;"></i> 新增學生資料</h3>
+                    <button type="button" class="dialog-close" id="btn-close-modal-x"><i class="ti ti-x"></i></button>
                 </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">姓名 <span class="text-red-500">*</span></label>
-                    <input type="text" id="f-name" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">性別</label>
-                        <select id="f-gender" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                            <option value="男">男</option>
-                            <option value="女">女</option>
-                            <option value="其他">其他</option>
-                        </select>
+            </div>
+
+            <div class="dialog-body-container">
+                <form id="data-form" class="custom-scroll" style="display: flex; flex-direction: column; width: 100%; padding: 24px; overflow-y: auto;">
+                    <div class="form-section-title"><i class="ti ti-info-circle"></i> 學生基本資料</div>
+                    
+                    <div class="form-grid">
+                        <div class="field">
+                            <label class="field-label">所屬學院 <span class="req">*</span></label>
+                            <select id="input-college" required class="field-select">
+                                <option value="">請選擇學院...</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label class="field-label">所屬學系 <span class="req">*</span></label>
+                            <select id="input-department" required class="field-select">
+                                <option value="">請先選擇學院...</option>
+                            </select>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">國籍</label>
-                        <input type="text" id="f-nationality" value="本國籍" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+
+                    <div class="form-grid">
+                        <div class="field">
+                            <label class="field-label">學號 <span class="req">*</span></label>
+                            <input type="text" id="input-student-id" required placeholder="例如：S1101234" class="field-input" style="text-transform:uppercase;">
+                        </div>
+                        <div class="field">
+                            <label class="field-label">姓名 <span class="req">*</span></label>
+                            <input type="text" id="input-name" required placeholder="例如：王小明" class="field-input">
+                        </div>
                     </div>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">學院 <span class="text-red-500">*</span></label>
-                        <input type="text" id="f-college" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+
+                    <div class="form-grid">
+                        <div class="field">
+                            <label class="field-label">性別 <span class="req">*</span></label>
+                            <select id="input-gender" required class="field-select">
+                                <option value="男" selected>男</option>
+                                <option value="女">女</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label class="field-label">國籍 <span class="req">*</span></label>
+                            <select id="input-nationality" required class="field-select">
+                                <option value="本國籍" selected>本國籍</option>
+                                <option value="外籍生">外籍生</option>
+                            </select>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">系所 <span class="text-red-500">*</span></label>
-                        <input type="text" id="f-department" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                    </div>
-                </div>
-            </form>
-        </div>
-        
-        <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 rounded-b-xl">
-            <button type="button" id="btn-cancel" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 shadow-sm transition-colors">
-                取消
-            </button>
-            <button type="submit" form="data-form" id="btn-save" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 shadow-sm transition-colors flex items-center gap-2">
-                儲存
-            </button>
+                </form>
+            </div>
+            
+            <div class="dialog-footer">
+                <button type="button" class="btn btn-secondary" id="btn-cancel-modal">取消</button>
+                <button type="button" id="btn-submit" class="btn btn-primary"><i class="ti ti-check"></i> 確認儲存</button>
+            </div>
         </div>
     </div>
 </div>
