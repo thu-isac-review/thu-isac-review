@@ -10,25 +10,21 @@ function getDeptSortValue(deptName) {
     return dept ? (dept.sortOrder || 999) : 999;
 }
 
-// 🌟 [新增] 按照學號英文前綴進行權重解析 (S > G > F)
 function getStudentIdPrefixWeight(id) {
     const prefix = (id || '').charAt(0).toUpperCase();
-    if (prefix === 'S') return 1; // S 開頭優先
-    if (prefix === 'G') return 2; // 次之
-    if (prefix === 'F') return 3; // 再次之
-    return 4; // 其他
+    if (prefix === 'S') return 1; 
+    if (prefix === 'G') return 2; 
+    if (prefix === 'F') return 3; 
+    return 4; 
 }
 
-// 🌟 [新增] 學號排序對比邏輯
 function compareStudentId(aId, bId) {
     const prefA = getStudentIdPrefixWeight(aId);
     const prefB = getStudentIdPrefixWeight(bId);
     if (prefA !== prefB) return prefA - prefB;
-    // 前綴相同時，依據學號數字大小排序 (由小到大)
     return String(aId || '').localeCompare(String(bId || ''), 'en', { numeric: true });
 }
 
-// 🌟 [修改] 預設多層次排序邏輯 (學院 -> 學系 -> 學號)
 function defaultMultiLevelCompare(a, b) {
     const colA = getCollegeSortValue(a.college);
     const colB = getCollegeSortValue(b.college);
@@ -63,7 +59,15 @@ export function renderTable() {
         if (state.sortCol && state.sortCol !== 'default') {
             let diff = 0;
             if (state.sortCol === 'record_count') {
-                const getCount = d => state.allRecords.filter(r => r.student_id === d.id || r.student_id === d.student_id || r.studentId === d.id || r.studentId === d.student_id || r.student_doc_id === d.id).length;
+                const getCount = (d) => {
+                    const tDoc = String(d.id);
+                    const tSid = String(d.student_id).toUpperCase();
+                    return state.allRecords.filter(r => {
+                        const rSid = String(r.student_id || '').toUpperCase();
+                        const rDoc = String(r.student_doc_id || r.studentId || '').toUpperCase();
+                        return (rSid === tSid) || (rDoc === tDoc.toUpperCase()) || (r.student_ref && r.student_ref.id === tDoc);
+                    }).length;
+                };
                 diff = getCount(a) - getCount(b);
             } else if (state.sortCol === 'student_id') {
                 diff = compareStudentId(a.student_id, b.student_id);
@@ -79,7 +83,6 @@ export function renderTable() {
             if (diff !== 0) return state.sortDir === 'asc' ? diff : -diff;
         }
         
-        // 未指定排序或是排序對比結果相同時，使用預設的多層級排序防呆
         return defaultMultiLevelCompare(a, b);
     });
 
@@ -140,12 +143,17 @@ export function renderTable() {
         const deptDispName = deptObj && deptObj.shortName ? deptObj.shortName : data.department;
         const isChecked = state.selectedIds.includes(data.id) ? 'checked' : '';
         
-        // 🌟 [修正] 強化實習紀錄筆數的關聯比對，支援多種可能的外鍵命名格式
-        const recordCount = state.allRecords.filter(r => 
-            r.student_id === data.id || r.student_id === data.student_id || 
-            r.studentId === data.id || r.studentId === data.student_id || 
-            r.student_doc_id === data.id
-        ).length;
+        // 🌟 [修正] 強化實習紀錄數的比對邏輯
+        const targetDocId = String(data.id);
+        const targetStudentId = String(data.student_id).toUpperCase();
+        
+        const recordCount = state.allRecords.filter(r => {
+            const rSid = String(r.student_id || '').toUpperCase();
+            const rDocId = String(r.student_doc_id || r.studentId || '').toUpperCase();
+            return (rSid === targetStudentId) || 
+                   (rDocId === targetDocId.toUpperCase()) || 
+                   (r.student_ref && r.student_ref.id === targetDocId);
+        }).length;
 
         const actionHtml = state.isReadOnly ? '' : `
             <div class="row-actions">
