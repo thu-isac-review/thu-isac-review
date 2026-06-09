@@ -1,29 +1,20 @@
-// 這是供「管理員(Manage)」使用的頁面入口檔
-import { initStudentTable } from '../../../components/StudentTable/main.js';
+import { render as renderStudentTable } from '../../../components/StudentTable/main.js';
+import { resetStudentState } from '../../../components/StudentTable/state.js';
 
-// 配合 index.html SPA 路由，匯出 render 函式
-export const render = async (containerId, { db }) => {
+export async function render(containerId, context) {
+    // 1. 清空舊容器
     const container = document.getElementById(containerId);
-    if (!container) return;
+    if (container) container.innerHTML = '';
 
-    try {
-        // 動態載入 Template (路徑相對於 index.html)
-        const response = await fetch('./assets/templates/student.html');
-        if (!response.ok) throw new Error('找不到 Template');
-        const html = await response.text();
-        
-        container.innerHTML = html;
+    // 2. 重置狀態
+    resetStudentState();
 
-        // 將 Router 傳遞過來的 db 實體掛載到 window，供 data.js 使用
-        if (db && !window.db) {
-            window.db = db;
-        }
-
-        // 初始化為管理員模式 (具備新增/編輯/刪除/匯入匯出等功能)
-        await initStudentTable('manage');
-        
-    } catch (error) {
-        console.error('載入頁面失敗:', error);
-        container.innerHTML = '<div class="alert alert-danger" style="padding:20px; text-align:center; color:red;">頁面載入失敗</div>';
+    // 3. 釋放舊監聽器
+    if (window.studentUnsubscribe) {
+        try { window.studentUnsubscribe(); } catch(e) {}
+        window.studentUnsubscribe = null;
     }
-};
+
+    // 4. 開啟「管理員模式」：允許新增、編輯、刪除
+    await renderStudentTable(containerId, context, { isReadOnly: false });
+}
