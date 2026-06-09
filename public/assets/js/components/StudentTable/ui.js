@@ -1,79 +1,227 @@
-export const ui = {
-    tableBody: null,
-    pagination: null,
-    searchInput: null,
-    selectAllCheckbox: null,
-    btnBatchDelete: null,
-    selectedCountDisplay: null,
-    modal: null,
-    modalTitle: null,
-    form: null,
-    btnCancel: null,
-    modalClose: null,
-    btnAdd: null,
-    btnExport: null,
-    importCsv: null,
-    btnImport: null,
-    // 表單欄位
-    fStudentId: null,
-    fName: null,
-    fGender: null,
-    fNationality: null,
-    fCollege: null,
-    fDepartment: null,
+import { state } from './state.js';
+import * as Render from './render.js';
 
-    init() {
-        this.tableBody = document.getElementById('table-body');
-        this.pagination = document.getElementById('pagination');
-        this.searchInput = document.getElementById('search-input');
-        this.selectAllCheckbox = document.getElementById('select-all');
-        this.btnBatchDelete = document.getElementById('btn-batch-delete');
-        this.selectedCountDisplay = document.getElementById('selected-count');
-        this.modal = document.getElementById('form-modal');
-        this.modalTitle = document.getElementById('modal-title');
-        this.form = document.getElementById('data-form');
-        this.btnCancel = document.getElementById('btn-cancel');
-        this.modalClose = document.getElementById('modal-close');
-        this.btnAdd = document.getElementById('btn-add');
-        this.btnExport = document.getElementById('btn-export');
-        this.importCsv = document.getElementById('import-csv');
-        this.btnImport = document.getElementById('btn-import');
+export async function loadTemplate(containerId) {
+    const response = await fetch('./assets/templates/student.html');
+    const htmlString = await response.text();
+    document.getElementById(containerId).innerHTML = htmlString;
+}
 
-        this.fStudentId = document.getElementById('f-student-id');
-        this.fName = document.getElementById('f-name');
-        this.fGender = document.getElementById('f-gender');
-        this.fNationality = document.getElementById('f-nationality');
-        this.fCollege = document.getElementById('f-college');
-        this.fDepartment = document.getElementById('f-department');
-    },
-
-    openModal(isEdit = false) {
-        if(this.modalTitle) {
-            this.modalTitle.textContent = isEdit ? '編輯學生資料' : '新增學生';
-        }
-        if(this.modal) {
-            this.modal.classList.add('show');
-            this.modal.style.display = 'flex';
-        }
-    },
-
-    closeModal() {
-        if(this.modal) {
-            this.modal.classList.remove('show');
-            this.modal.style.display = 'none';
-        }
-        if(this.form) this.form.reset();
-    },
-
-    setLoading(buttonId, isLoading, originalHtml) {
-        const btn = document.getElementById(buttonId);
-        if (!btn) return;
-        if (isLoading) {
-            btn.innerHTML = `<i class="ti ti-loader" style="animation: spin 1s linear infinite;"></i> 處理中...`;
-            btn.disabled = true;
-        } else {
-            btn.innerHTML = originalHtml;
-            btn.disabled = false;
-        }
+export function applyReadOnlyMode() {
+    if (state.isReadOnly) {
+        const style = document.createElement('style');
+        style.textContent = `
+            #btn-import-trigger, 
+            #btn-create-student, 
+            .v-divider,
+            #batch-bar,
+            .col-checkbox, 
+            .col-actions {
+                display: none !important;
+            }
+        `;
+        document.getElementById('student-page-wrapper').appendChild(style);
     }
-};
+}
+
+export function toggleDropdown(type) {
+    const drop = document.getElementById(`drop-${type}`);
+    const wrap = document.getElementById(`pill-wrap-${type}`);
+    const isOpen = drop.classList.contains('show');
+    document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
+    document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
+    if (!isOpen) { drop.classList.add('show'); wrap.classList.add('open'); }
+}
+
+export function filterDropdownItems(inputElement, containerId) {
+    const term = inputElement.value.toLowerCase().trim();
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const labels = container.querySelectorAll('.filter-option');
+    let visibleCount = 0;
+
+    labels.forEach(lbl => {
+        const text = lbl.textContent.toLowerCase();
+        const isMatch = text.includes(term);
+        lbl.style.display = isMatch ? 'flex' : 'none';
+        if (isMatch) visibleCount++;
+    });
+
+    let emptyMsg = container.querySelector('.empty-filter-msg');
+    if (visibleCount === 0) {
+        if (!emptyMsg) {
+            emptyMsg = document.createElement('div');
+            emptyMsg.className = 'empty-filter-msg';
+            emptyMsg.style.cssText = 'color: #dc2626; font-weight: 700; padding: 12px; text-align: center; font-size: 13px;';
+            emptyMsg.textContent = '查無符合的選項';
+            container.appendChild(emptyMsg);
+        }
+    } else {
+        if (emptyMsg) emptyMsg.remove();
+    }
+}
+
+export function updatePillActive(type) {
+    const setMap = {
+        'college': state.filterCollegeSet, 'dept': state.filterDeptSet, 
+        'gender': state.filterGenderSet, 'nationality': state.filterNatSet
+    };
+    const nameMap = {
+        'college': '學院', 'dept': '學系', 
+        'gender': '性別', 'nationality': '國籍'
+    };
+    
+    const set = setMap[type];
+    const typeName = nameMap[type];
+    const pill = document.getElementById(`pill-${type}`);
+    
+    if (!pill) return;
+
+    if (set.size > 0) {
+        pill.classList.add('active');
+        pill.innerHTML = `${typeName} <span class="pill-count">${set.size}</span> <i class="ti ti-chevron-down"></i>`;
+    } else {
+        pill.classList.remove('active');
+        pill.innerHTML = `全部${typeName} <i class="ti ti-chevron-down"></i>`;
+    }
+}
+
+export function populateAllFiltersUI() {
+    // 渲染學院選項
+    const colleges = state.orderedColleges.length > 0 
+        ? state.orderedColleges 
+        : [...new Set(state.globalDepts.map(d => d.college))].filter(Boolean).map(c => ({name: c, shortName: c}));
+    
+    if(document.getElementById('college-options-container')) {
+        document.getElementById('college-options-container').innerHTML = colleges.map(c => `
+            <label class="filter-option">
+                <input type="checkbox" class="filter-chk-college" value="${c.name}"> 
+                <span>${c.shortName || c.name}</span>
+            </label>`).join('');
+    }
+    
+    if(document.getElementById('input-college')) {
+        document.getElementById('input-college').innerHTML = `<option value="">請選擇學院...</option>` + colleges.map(c => `<option value="${c.name}">${c.shortName || c.name}</option>`).join('');
+    }
+
+    // 渲染性別與國籍選項
+    const genders = ['男', '女'];
+    const nationalities = ['本國籍', '外籍生'];
+
+    const generateHtml = (arr, type) => arr.map(v => `
+        <label class="filter-option">
+            <input type="checkbox" class="filter-chk-${type}" value="${v}"> 
+            <span>${v}</span>
+        </label>`).join('');
+
+    if(document.getElementById('gender-options-container')) document.getElementById('gender-options-container').innerHTML = generateHtml(genders, 'gender');
+    if(document.getElementById('nationality-options-container')) document.getElementById('nationality-options-container').innerHTML = generateHtml(nationalities, 'nationality');
+
+    populateDeptFilterUI();
+    
+    ['college', 'dept', 'gender', 'nationality'].forEach(type => {
+        const setMap = { 'college': state.filterCollegeSet, 'dept': state.filterDeptSet, 'gender': state.filterGenderSet, 'nationality': state.filterNatSet };
+        document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = setMap[type].has(c.value));
+        updatePillActive(type);
+    });
+}
+
+export function populateDeptFilterUI() {
+    let deptsToShow = state.globalDepts;
+    if (state.filterCollegeSet.size > 0) deptsToShow = state.globalDepts.filter(d => state.filterCollegeSet.has(d.college));
+    
+    const validDeptNames = new Set(deptsToShow.map(d => d.name));
+    for (let dept of state.filterDeptSet) { if (!validDeptNames.has(dept)) state.filterDeptSet.delete(dept); }
+    
+    if(document.getElementById('dept-options-container')) {
+        document.getElementById('dept-options-container').innerHTML = deptsToShow.map(d => `
+            <label class="filter-option">
+                <input type="checkbox" class="filter-chk-dept" value="${d.name}"> 
+                <span>${d.shortName || d.name}</span>
+            </label>`).join('');
+    }
+    
+    document.querySelectorAll(`.filter-chk-dept`).forEach(c => c.checked = state.filterDeptSet.has(c.value));
+    updatePillActive('dept');
+
+    const searchInput = document.getElementById('search-dept-input');
+    if (searchInput && searchInput.value) filterDropdownItems(searchInput, 'dept-options-container');
+}
+
+export function updateFormDepts(preselectedValue = '') {
+    const selectedCol = document.getElementById('input-college')?.value;
+    const inputDept = document.getElementById('input-department');
+    if(!inputDept) return;
+    
+    let html = '<option value="">請選擇學系...</option>';
+    
+    if (selectedCol) {
+        const depts = state.globalDepts.filter(d => d.college === selectedCol);
+        depts.forEach(d => html += `<option value="${d.name}">${d.shortName || d.name}</option>`);
+    } else { 
+        html = '<option value="">請先選擇學院...</option>'; 
+    }
+    
+    inputDept.innerHTML = html;
+    if (preselectedValue) inputDept.value = preselectedValue;
+}
+
+export function updateBatchActionBar() {
+    const bar = document.getElementById('batch-bar');
+    const count = document.getElementById('selected-count');
+    const btnSelectAll = document.getElementById('btn-select-all-filtered');
+    
+    if (state.isReadOnly) {
+        if(bar) bar.classList.remove('visible');
+        return;
+    }
+    
+    if (state.selectedIds.length > 0) {
+        if(bar) bar.classList.add('visible');
+        if(count) count.innerText = state.selectedIds.length;
+        if(btnSelectAll) {
+            if (state.selectedIds.length < state.filteredData.length) {
+                btnSelectAll.style.display = 'inline-flex';
+                btnSelectAll.innerText = `選取全部符合條件 (${state.filteredData.length})`;
+            } else { 
+                btnSelectAll.style.display = 'none'; 
+            }
+        }
+    } else { 
+        if(bar) bar.classList.remove('visible'); 
+    }
+}
+
+export function closeModal() { 
+    document.getElementById('data-modal')?.classList.remove('open'); 
+    state.editingId = null; 
+}
+
+export function showNotification(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `fixed bottom-5 right-5 z-[9999] flex items-center gap-2.5 px-4 py-3.5 rounded-xl shadow-xl border transition-all duration-300 transform translate-y-5 opacity-0`;
+    
+    if (type === 'success') {
+        toast.className += ' bg-emerald-50 text-emerald-800 border-emerald-200';
+        toast.innerHTML = `<i class="ti ti-circle-check text-emerald-500 text-lg"></i><span class="font-semibold text-sm">${message}</span>`;
+    } else if (type === 'error') {
+        toast.className += ' bg-rose-50 text-rose-800 border-rose-200';
+        toast.innerHTML = `<i class="ti ti-alert-circle text-rose-500 text-lg"></i><span class="font-semibold text-sm">${message}</span>`;
+    } else {
+        toast.className += ' bg-blue-50 text-blue-800 border-blue-200';
+        toast.innerHTML = `<i class="ti ti-info-circle text-blue-500 text-lg"></i><span class="font-semibold text-sm">${message}</span>`;
+    }
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.remove('translate-y-5', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+    }, 50);
+    
+    setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-5', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
