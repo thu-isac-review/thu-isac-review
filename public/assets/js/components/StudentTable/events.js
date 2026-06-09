@@ -32,10 +32,12 @@ export function bindEvents(container) {
     container.querySelector('#btn-export-csv')?.addEventListener('click', () => {
         if (state.filteredData.length === 0) { UI.showNotification("沒有資料可供匯出！", "error"); return; }
         
-        // 🌟 [修改] 匯出的報表也要加上「實習紀錄數」的計算邏輯
+        // 🌟 [修改] 匯出的報表也要加上「實習紀錄數」的計算邏輯，並強化防呆匹配
         let csv = '\uFEFF學院,學系,學號,姓名,性別,國籍,實習紀錄數\n';
         state.filteredData.forEach(d => {
-            const recordCount = state.allRecords.filter(r => r.student_id === d.student_id).length;
+            const recordCount = state.allRecords.filter(r => 
+                r.student_id === d.id || r.student_id === d.student_id || r.studentId === d.id || r.studentId === d.student_id || r.student_doc_id === d.id
+            ).length;
             csv += [d.college, d.department, d.student_id, d.name, d.gender, d.nationality || '本國籍', recordCount].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
         });
         
