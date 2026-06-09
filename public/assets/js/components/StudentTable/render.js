@@ -142,18 +142,25 @@ export function renderTable() {
         const deptDispName = deptObj && deptObj.shortName ? deptObj.shortName : data.department;
         const isChecked = state.selectedIds.includes(data.id) ? 'checked' : '';
         
-        // 🌟 [修正] 針對 internship_records 的 student_raw (學號 - 姓名) 進行解析比對
         const targetStudentId = String(data.student_id).toUpperCase().trim();
         
         const recordCount = state.allRecords.filter(r => {
             if (!r.student_raw) return false;
-            // 解析 "S11910670 - 詹揚飛" -> 取得 "S11910670"
             const recordStudentId = String(r.student_raw).split('-')[0].trim().toUpperCase();
             return recordStudentId === targetStudentId;
         }).length;
 
-        const actionHtml = state.isReadOnly ? '' : `
+        // 🌟 [新增] 獨立的「查看紀錄」按鈕
+        const btnViewRecordsHtml = `<button data-studentid="${data.student_id}" class="btn btn-icon sm btn-row-view-records" style="color: var(--brand); border-color: var(--brand-border); background: var(--brand-light);" title="查看實習紀錄"><i class="ti ti-file-description"></i></button>`;
+
+        // 🌟 [修改] 不管是不是 isReadOnly 都要顯示「查看」按鈕
+        const actionHtml = state.isReadOnly ? `
             <div class="row-actions">
+                ${btnViewRecordsHtml}
+            </div>
+        ` : `
+            <div class="row-actions">
+                ${btnViewRecordsHtml}
                 <button data-id="${data.id}" class="btn btn-secondary btn-icon sm btn-row-edit" title="編輯"><i class="ti ti-edit"></i></button>
                 <button data-id="${data.id}" data-name="${data.name}" class="btn btn-danger btn-icon sm btn-row-delete" title="刪除"><i class="ti ti-trash"></i></button>
             </div>
