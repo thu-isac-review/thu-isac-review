@@ -1,97 +1,135 @@
-<div class="table-card" style="background:#fff; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); padding:20px; margin-top:20px;">
-    <!-- 工具列 -->
-    <div class="toolbar" style="display:flex; justify-content:space-between; margin-bottom:16px;">
-        <div class="search-box" style="position:relative; width:300px;">
-            <i class="ti ti-search text-muted" style="position:absolute; left:12px; top:10px;"></i>
-            <input type="text" id="search-input" placeholder="搜尋學號、姓名、系所..." style="width:100%; padding:8px 12px 8px 36px; border:1px solid var(--border); border-radius:6px;">
-        </div>
-        <div class="actions" style="display:flex; gap:10px;">
-            <button class="btn btn-danger" id="btn-batch-delete" style="display: none;">
-                <i class="ti ti-trash"></i> 批次刪除 (<span id="selected-count">0</span>)
-            </button>
-            <input type="file" id="import-csv" accept=".csv" style="display: none;">
-            <button class="btn btn-outline" id="btn-import" onclick="document.getElementById('import-csv').click();">
-                <i class="ti ti-upload"></i> 匯入 CSV
-            </button>
-            <button class="btn btn-outline" id="btn-export">
-                <i class="ti ti-download"></i> 匯出 CSV
-            </button>
-            <button class="btn btn-primary" id="btn-add">
-                <i class="ti ti-plus"></i> 新增學生
-            </button>
-        </div>
+<!-- public/assets/templates/student.html -->
+<div class="content-header p-4 md:p-6 pb-0 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <i class="ti ti-users text-blue-600"></i>
+            實習學生管理
+        </h1>
+        <p class="text-sm text-gray-500 mt-1">管理各系所實習學生基本資料與狀態</p>
     </div>
+</div>
 
-    <!-- 表格區塊 -->
-    <div class="table-responsive" style="overflow-x:auto;">
-        <table class="table" id="data-table" style="width:100%; border-collapse:collapse; text-align:left;">
-            <thead>
-                <tr style="border-bottom:2px solid var(--border); background:var(--bg);">
-                    <th width="40" style="padding:12px;"><input type="checkbox" id="select-all"></th>
-                    <th style="padding:12px;">學號</th>
-                    <th style="padding:12px;">姓名</th>
-                    <th style="padding:12px;">性別</th>
-                    <th style="padding:12px;">國籍</th>
-                    <th style="padding:12px;">學院</th>
-                    <th style="padding:12px;">系所</th>
-                    <th width="100" style="padding:12px;">狀態</th>
-                    <th width="120" class="col-actions" style="padding:12px;">操作</th>
-                </tr>
-            </thead>
-            <tbody id="table-body">
-                <!-- 資料由 JS 動態生成 -->
-            </tbody>
-        </table>
+<div class="p-4 md:p-6">
+    <div class="table-card bg-white rounded-lg shadow-sm border border-gray-200">
+        <!-- 頂部控制列 -->
+        <div class="toolbar p-4 border-b border-gray-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div class="search-box relative w-full md:w-72">
+                <i class="ti ti-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <input type="text" id="search-input" placeholder="搜尋學號、姓名、系所..." 
+                    class="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow">
+            </div>
+            
+            <div class="actions flex flex-wrap gap-2 w-full md:w-auto">
+                <button id="btn-batch-delete" class="btn hidden items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-md hover:bg-red-100 border border-red-200 transition-colors">
+                    <i class="ti ti-trash"></i> 批次刪除 (<span id="selected-count">0</span>)
+                </button>
+                <input type="file" id="import-csv" accept=".csv" class="hidden">
+                <button id="btn-import" onclick="document.getElementById('import-csv').click();" class="btn flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors shadow-sm">
+                    <i class="ti ti-upload"></i> 匯入 CSV
+                </button>
+                <button id="btn-export" class="btn flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors shadow-sm">
+                    <i class="ti ti-download"></i> 匯出 CSV
+                </button>
+                <button id="btn-add" class="btn flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors shadow-sm">
+                    <i class="ti ti-plus"></i> 新增學生
+                </button>
+            </div>
+        </div>
+
+        <!-- 表格區塊 -->
+        <div class="table-responsive overflow-x-auto">
+            <table id="data-table" class="w-full text-left text-sm text-gray-600">
+                <thead class="bg-gray-50 text-gray-700 font-medium border-b border-gray-200">
+                    <tr>
+                        <th class="w-10 px-4 py-3 text-center"><input type="checkbox" id="select-all" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"></th>
+                        <th class="px-4 py-3">學號</th>
+                        <th class="px-4 py-3">姓名</th>
+                        <th class="px-4 py-3">性別</th>
+                        <th class="px-4 py-3">國籍</th>
+                        <th class="px-4 py-3">學院</th>
+                        <th class="px-4 py-3">系所</th>
+                        <th class="w-24 px-4 py-3">狀態</th>
+                        <th class="col-actions w-24 px-4 py-3 text-center">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body" class="divide-y divide-gray-200 bg-white">
+                    <!-- 資料由 JS 動態生成 -->
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- 分頁 -->
+        <div class="pagination p-4 border-t border-gray-200 flex items-center justify-between text-sm text-gray-500">
+            <div id="page-info" class="hidden md:block">
+                顯示第 <span id="page-start" class="font-medium text-gray-900">0</span> 到 <span id="page-end" class="font-medium text-gray-900">0</span> 筆，共 <span id="page-total" class="font-medium text-gray-900">0</span> 筆
+            </div>
+            <div id="pagination" class="flex gap-1">
+                <!-- 分頁按鈕由 JS 動態生成 -->
+            </div>
+        </div>
     </div>
-    
-    <!-- 分頁 -->
-    <div class="pagination" id="pagination" style="display:flex; justify-content:center; margin-top:20px; gap:8px;"></div>
 </div>
 
 <!-- 新增/編輯 Modal -->
-<div class="modal" id="form-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:100; align-items:center; justify-content:center;">
-    <div class="modal-content" style="background:#fff; padding:24px; border-radius:8px; width:100%; max-width:500px;">
-        <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h3 class="modal-title" id="modal-title" style="margin:0;">新增學生</h3>
-            <button class="modal-close" id="modal-close" style="background:none; border:none; cursor:pointer; font-size:20px;"><i class="ti ti-x"></i></button>
+<div id="form-modal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+            <h3 id="modal-title" class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <i class="ti ti-user-plus text-blue-600"></i>
+                新增學生
+            </h3>
+            <button id="modal-close" class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1.5 rounded-lg transition-colors">
+                <i class="ti ti-x text-xl"></i>
+            </button>
         </div>
-        <form id="data-form">
-            <div class="form-group" style="margin-bottom:16px;">
-                <label class="form-label">學號 <span style="color:red;">*</span></label>
-                <input type="text" class="form-control" id="f-student-id" required style="width:100%; padding:8px; border:1px solid var(--border); border-radius:4px;">
-            </div>
-            <div class="form-group" style="margin-bottom:16px;">
-                <label class="form-label">姓名 <span style="color:red;">*</span></label>
-                <input type="text" class="form-control" id="f-name" required style="width:100%; padding:8px; border:1px solid var(--border); border-radius:4px;">
-            </div>
-            <div class="form-row" style="display:flex; gap:16px; margin-bottom:16px;">
-                <div class="form-group" style="flex:1;">
-                    <label class="form-label">性別</label>
-                    <select class="form-control" id="f-gender" style="width:100%; padding:8px; border:1px solid var(--border); border-radius:4px;">
-                        <option value="男">男</option>
-                        <option value="女">女</option>
-                        <option value="其他">其他</option>
-                    </select>
+        
+        <div class="p-6 overflow-y-auto custom-scroll">
+            <form id="data-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">學號 <span class="text-red-500">*</span></label>
+                    <input type="text" id="f-student-id" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                 </div>
-                <div class="form-group" style="flex:1;">
-                    <label class="form-label">國籍</label>
-                    <input type="text" class="form-control" id="f-nationality" value="本國籍" style="width:100%; padding:8px; border:1px solid var(--border); border-radius:4px;">
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">姓名 <span class="text-red-500">*</span></label>
+                    <input type="text" id="f-name" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                 </div>
-            </div>
-            <div class="form-row" style="display:flex; gap:16px; margin-bottom:20px;">
-                <div class="form-group" style="flex:1;">
-                    <label class="form-label">學院 <span style="color:red;">*</span></label>
-                    <input type="text" class="form-control" id="f-college" required style="width:100%; padding:8px; border:1px solid var(--border); border-radius:4px;">
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">性別</label>
+                        <select id="f-gender" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <option value="男">男</option>
+                            <option value="女">女</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">國籍</label>
+                        <input type="text" id="f-nationality" value="本國籍" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    </div>
                 </div>
-                <div class="form-group" style="flex:1;">
-                    <label class="form-label">系所 <span style="color:red;">*</span></label>
-                    <input type="text" class="form-control" id="f-department" required style="width:100%; padding:8px; border:1px solid var(--border); border-radius:4px;">
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">學院 <span class="text-red-500">*</span></label>
+                        <input type="text" id="f-college" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">系所 <span class="text-red-500">*</span></label>
+                        <input type="text" id="f-department" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    </div>
                 </div>
-            </div>
-            <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:12px;">
-                <button type="button" class="btn btn-outline" id="btn-cancel" style="padding:8px 16px; border:1px solid var(--border); background:#fff; cursor:pointer; border-radius:4px;">取消</button>
-                <button type="submit" class="btn btn-primary" id="btn-save" style="padding:8px 16px; border:none; background:var(--brand, #1a56db); color:#fff; cursor:pointer; border-radius:4px;">儲存</button>
-            </div>
-        </form>
+            </form>
+        </div>
+        
+        <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 rounded-b-xl">
+            <button type="button" id="btn-cancel" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 shadow-sm transition-colors">
+                取消
+            </button>
+            <button type="submit" form="data-form" id="btn-save" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 shadow-sm transition-colors flex items-center gap-2">
+                儲存
+            </button>
+        </div>
     </div>
 </div>
