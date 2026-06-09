@@ -1,31 +1,37 @@
 import { state } from './state.js';
-import { ui } from './ui.js';
-import { bindEvents } from './events.js';
-import { fetchData } from './data.js';
-import { renderTable } from './render.js';
+import * as UI from './ui.js';
+import * as Render from './render.js';
+import * as Events from './events.js';
+import * as Data from './data.js';
 
-export const initStudentTable = async (viewMode = 'manage') => {
-    state.viewMode = viewMode;
-    ui.init();
+/**
+ * 實習學生元件總初始化入口
+ * @param {string} containerId 渲染容器的 ID
+ * @param {object} context 包含 db 等全域注入的物件
+ * @param {object} options 元件選項 (例如 isReadOnly 權限控制)
+ */
+export async function render(containerId, context, options = { isReadOnly: false }) {
+    // 1. 寫入狀態與權限
+    state.db = context.db;
+    state.isReadOnly = options.isReadOnly;
     
-    // 唯讀模式的視圖調整 (隱藏工具列按鈕與 checkbox、操作列)
-    if (viewMode === 'view') {
-        const actions = document.querySelector('.actions');
-        if (actions) actions.style.display = 'none';
-        
-        const thead = document.querySelector('#data-table thead tr');
-        if (thead) {
-            thead.firstElementChild.remove(); // 移除 checkbox
-            thead.lastElementChild.remove();  // 移除操作欄
-        }
-    }
-
-    bindEvents();
+    // 2. 注入外部 HTML 模板
+    const container = document.getElementById(containerId);
+    await UI.loadTemplate(containerId);
     
-    try {
-        await fetchData();
-        renderTable();
-    } catch (error) {
-        console.error("載入學生資料失敗", error);
-    }
-};
+    // 3. 狀態重置 (確保頁面切換時狀態乾淨)
+    state.selectedIds = []; 
+    state.currentPage = 1; 
+    
+    // 4. UI 權限限制與事件綁定
+    UI.applyReadOnlyMode();
+    Events.bindEvents(container); 
+    
+    // 5. 抓取資料並渲染
+    await Data.fetchSettingsOnce();
+    await Data.fetchInitialDataOnce();
+    
+    UI.populateAllFiltersUI();
+    UI.updateBatchActionBar();
+    Render.renderTable();
+}
