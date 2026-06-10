@@ -146,8 +146,12 @@
             <div class="icon-box"><i class="ti ti-briefcase-2"></i></div>
             東海大學學生實習專區
         </div>
-        <div style="margin-left: auto;">
-            </div>
+        <div style="margin-left: auto; display: flex; align-items: center; gap: 16px;">
+            <span id="user-greeting" style="font-size: 13px; font-weight: 600; color: var(--text-secondary);"></span>
+            <button id="btn-logout" style="background: white; border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; font-size: 13px; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; transition: 0.2s;">
+                <i class="ti ti-logout"></i> 登出
+            </button>
+        </div>
     </nav>
 
     <main class="main-container">
@@ -183,8 +187,9 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // 🌟 新增引入 Auth 模組
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        // 1. 初始化 Firebase (直接帶入您專案的參數)
         const firebaseConfig = {
             apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY",
             authDomain: "thu-isac-review.firebaseapp.com",
@@ -193,23 +198,46 @@
             messagingSenderId: "453299876735",
             appId: "1:453299876735:web:1d8babca3315423161a04a"
         };
+        
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app); // 🌟 初始化驗證實體
 
-        // 2. 狀態管理
         let allInstitutions = [];
         let treeData = [];
 
-        // 3. 畫面元素
         const elGrid = document.getElementById('inst-grid');
         const elLoading = document.getElementById('loading-state');
         const elEmpty = document.getElementById('empty-state');
         const elSearch = document.getElementById('search-input');
 
-        // 初始化
-        async function init() {
+        // 🌟 1. 監聽使用者登入狀態
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // 已登入：顯示打招呼並開始抓取資料
+                const userName = localStorage.getItem('user_name') || '同學';
+                document.getElementById('user-greeting').textContent = `${userName}，您好！`;
+                
+                await fetchInstitutions();
+            } else {
+                // 未登入：強制踢回登入頁
+                window.location.replace('login.html');
+            }
+        });
+
+        // 🌟 2. 登出按鈕事件
+        document.getElementById('btn-logout').addEventListener('click', () => {
+            if (confirm("確定要登出系統嗎？")) {
+                signOut(auth).then(() => {
+                    localStorage.clear();
+                    window.location.replace('login.html');
+                });
+            }
+        });
+
+        // 3. 抓取資料主邏輯
+        async function fetchInstitutions() {
             try {
-                // 從資料庫抓取所有機構資料
                 const snapshot = await getDocs(collection(db, 'institutions'));
                 allInstitutions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
@@ -219,34 +247,36 @@
                 elLoading.style.display = 'none';
                 elGrid.style.display = 'grid';
 
-                // 綁定搜尋事件
                 elSearch.addEventListener('input', (e) => {
                     renderCards(e.target.value.trim().toLowerCase());
                 });
 
             } catch (error) {
                 console.error("讀取機構失敗:", error);
-                elLoading.innerHTML = `<div style="color: #ef4444;"><i class="ti ti-alert-circle text-4xl"></i><p class="mt-2 font-bold">資料載入失敗，請檢查網路連線</p></div>`;
+                // 針對權限錯誤給予明確提示
+                if(error.code === 'permission-denied') {
+                    elLoading.innerHTML = `<div style="color: #ef4444; text-align: center;"><i class="ti ti-lock text-4xl" style="font-size: 40px;"></i><p style="margin-top: 12px; font-weight: bold;">您的帳號權限不足，無法讀取機構資料。</p></div>`;
+                } else {
+                    elLoading.innerHTML = `<div style="color: #ef4444; text-align: center;"><i class="ti ti-alert-circle text-4xl" style="font-size: 40px;"></i><p style="margin-top: 12px; font-weight: bold;">資料載入失敗，請檢查網路連線。</p></div>`;
+                }
             }
         }
 
-        // 將扁平資料轉換為主/子結構
+        // 4. 將扁平資料轉換為主/子結構
         function buildTreeData() {
             const parents = allInstitutions.filter(d => !d.parent_id);
             const children = allInstitutions.filter(d => d.parent_id);
 
             treeData = parents.map(p => {
                 const branches = children.filter(c => c.parent_id === p.id);
-                // 排序分公司
                 branches.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'zh-TW'));
                 return { ...p, branches };
             });
 
-            // 排序主機構
             treeData.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'zh-TW'));
         }
 
-        // 渲染卡片
+        // 5. 渲染卡片
         function renderCards(searchTerm) {
             let filtered = treeData;
 
@@ -321,11 +351,9 @@
                 `;
             }).join('');
 
-            // 重新綁定點擊展開事件
             bindExpandEvents();
         }
 
-        // 綁定卡片點擊事件
         function bindExpandEvents() {
             document.querySelectorAll('.inst-card.has-branches .card-header').forEach(header => {
                 header.addEventListener('click', function() {
@@ -343,10 +371,6 @@
                 });
             });
         }
-
-        // 啟動應用
-        document.addEventListener('DOMContentLoaded', init);
-
     </script>
 </body>
 </html>
