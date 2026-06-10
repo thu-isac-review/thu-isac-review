@@ -1104,7 +1104,7 @@ input[type=number] { -moz-appearance: textfield; }
                 if (instMatch) {
                     if (instMatch.country) dynamicCountry = instMatch.country;
                     if (instMatch.place) dynamicPlace = instMatch.place;
-                } // 👈 這裡之前漏掉了這個右大括號，已補上！
+                } // 完美閉合
 
                 let proofBadge = 'badge-outline-gray';
                 if (data.proof_type === '合約') proofBadge = 'badge-outline-green';
@@ -1173,7 +1173,6 @@ input[type=number] { -moz-appearance: textfield; }
             link.download = `實習拆分明細表_${new Date().toISOString().split('T')[0]}.csv`; link.click();
         };
 
-        // --- 其餘常規搜尋與表單綁定邏輯 (均維持不變) ---
         window.setupGlobalListeners = setupGlobalListeners;
         function setupGlobalListeners() {
             const stuInput = document.getElementById('input-student'); const stuDropdown = document.getElementById('student-dropdown');
@@ -1205,9 +1204,9 @@ input[type=number] { -moz-appearance: textfield; }
             let html = '<option value="">請選擇負責填報系所...</option>';
             Array.from(deptsSet).forEach(d => {
                 const deptObj = globalDepts.find(x => x.name === d);
-                html += `<option value="${d}">${deptObj ? deptObj.shortName : d}</option>';
+                html += `<option value="${d}">${deptObj ? deptObj.shortName : d}</option>\``;
             });
-            selectEl.innerHTML = html;
+            selectEl.innerHTML = html.replace(/\`/g, '');
             if (preselectedValue) selectEl.value = preselectedValue;
         };
 
