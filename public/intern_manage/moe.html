@@ -669,7 +669,8 @@ input[type=number] { -moz-appearance: textfield; }
         
         let allRecords = [], allStudents = [], allInsts = [], allCourses = [], editingId = null, currentPage = 1, itemsPerPage = 15, selectedIds = [], filteredRecords = [], selectedCourseIds = [];
         let globalDepts = [], orderedColleges = [];
-
+        let sortCol = 'created_at'; let sortDir = 'desc'; // 加上這一行全域宣告
+      
         window.globalImportReportData = [];
 
         const formatCourseInfo = (c) => c ? `${c.academic_year}-${c.term}_${c.course_code}：${c.course_name}` : '';
