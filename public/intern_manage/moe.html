@@ -323,7 +323,7 @@ input[type=number] { -moz-appearance: textfield; }
 }
 .search-dropdown.show { display: block; }
 .search-item { padding: 10px 12px; border-bottom: 1px solid var(--bg); cursor: pointer; transition: background var(--transition); }
-.search-item:hover { background: var(--bg); }
+.search-item-hover { background: var(--bg); }
 .search-item:last-child { border-bottom: none; }
 .search-item-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
 .search-item-desc { font-size: 11px; color: var(--text-muted); font-weight: 500; }
@@ -440,7 +440,8 @@ input[type=number] { -moz-appearance: textfield; }
                             <th data-col="7" style="width: 7%;">實習時間</th>
                             <th data-sort="inst_country" data-col="8" style="width: 7%;">實習場所國別 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="inst_raw" data-col="9" style="width: 12%;">機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="inst_place" data-col="10" style="width: 8%;">實習場所 <i class="ti ti-arrows-sort sort-icon"></i></th> <th data-sort="course_name" data-col="11" style="width: 10%;">課程名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="inst_place" data-col="10" style="width: 8%;">實習場所 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="course_name" data-col="11" style="width: 10%;">課程名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="course_type" data-col="12" style="width: 6%;">課程屬性 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-col="13" style="width: 5%;">證明文件</th>
                             <th data-sort="hours" data-col="14" style="width: 5%;">分配時數 <i class="ti ti-arrows-sort sort-icon"></i></th>
@@ -669,8 +670,8 @@ input[type=number] { -moz-appearance: textfield; }
         
         let allRecords = [], allStudents = [], allInsts = [], allCourses = [], editingId = null, currentPage = 1, itemsPerPage = 15, selectedIds = [], filteredRecords = [], selectedCourseIds = [];
         let globalDepts = [], orderedColleges = [];
-        let sortCol = 'created_at'; let sortDir = 'desc'; // 加上這一行全域宣告
-      
+        let sortCol = 'created_at'; let sortDir = 'desc';
+        
         window.globalImportReportData = [];
 
         const formatCourseInfo = (c) => c ? `${c.academic_year}-${c.term}_${c.course_code}：${c.course_name}` : '';
@@ -686,16 +687,16 @@ input[type=number] { -moz-appearance: textfield; }
             { index: 7, label: '實習時間', visible: true },
             { index: 8, label: '實習場所國別', visible: true },
             { index: 9, label: '機構名稱', visible: true },
-            { index: 10, label: '實習場所', visible: true }
-            { index: 10, label: '課程名稱', visible: true },
-            { index: 11, label: '課程屬性', visible: true },
-            { index: 12, label: '證明文件', visible: true },
-            { index: 13, label: '分配時數', visible: true },
-            { index: 14, label: '學分', visible: true },
-            { index: 15, label: '實習起訖時間', visible: true },
-            { index: 16, label: '性別', visible: true },
-            { index: 17, label: '國籍(實習生)', visible: true },
-            { index: 18, label: '填報系所', visible: true }
+            { index: 10, label: '實習場所', visible: true },
+            { index: 11, label: '課程名稱', visible: true },
+            { index: 12, label: '課程屬性', visible: true },
+            { index: 13, label: '證明文件', visible: true },
+            { index: 14, label: '分配時數', visible: true },
+            { index: 15, label: '學分', visible: true },
+            { index: 16, label: '實習起訖時間', visible: true },
+            { index: 17, label: '性別', visible: true },
+            { index: 18, label: '國籍(實習生)', visible: true },
+            { index: 19, label: '填報系所', visible: true }
         ];
 
         window.toggleColumn = (index, isVisible) => {
@@ -796,24 +797,10 @@ input[type=number] { -moz-appearance: textfield; }
                     }
                 });
 
-                // 動態欄位提取篩選
-                if (key === 'academic_year' || key === 'inst_country') {
-                    allRecords.forEach(r => {
-                        if (r.courses) {
-                            r.courses.forEach(cid => {
-                                const c = allCourses.find(x => x.id === cid);
-                                if (c) yearsSet.add(c.academic_year);
-                            });
-                        }
-                        const iMatch = allInsts.find(i => i.id === r.inst_id || i.name === r.inst_raw);
-                        countriesSet.add(iMatch && iMatch.country ? iMatch.country : '臺灣');
-                    });
-                }
-
                 const container = document.getElementById(`${key}-options-container`);
                 if (container) {
                     container.querySelectorAll('.filter-option').forEach(lbl => {
-                        lbl.style.display = 'flex'; // 保留可見
+                        lbl.style.display = 'flex';
                     });
                 }
             });
@@ -1000,7 +987,6 @@ input[type=number] { -moz-appearance: textfield; }
             baseFiltered.forEach(d => {
                 const cList = Array.isArray(d.courses) ? d.courses : [];
                 
-                // 事前算好該筆實習的開課學分加總
                 let totalRecordCredits = 0;
                 cList.forEach(cid => {
                     const c = allCourses.find(x => x.id === cid);
@@ -1013,11 +999,9 @@ input[type=number] { -moz-appearance: textfield; }
                         const cObj = allCourses.find(x => x.id === cid);
                         let courseCredits = cObj && cObj.credits ? Number(cObj.credits) : 0;
                         
-                        // 動態權重依學分比例分攤計算
                         let assignedHours = 0;
                         if (d.hours && totalRecordCredits > 0) {
                             if (index === cList.length - 1) {
-                                // 最後一門課程：直接承接飽和補足剩餘時數
                                 assignedHours = Math.max(0, Number(d.hours) - accumulatedHours);
                             } else {
                                 assignedHours = Math.floor((Number(d.hours) / totalRecordCredits) * courseCredits);
@@ -1039,7 +1023,6 @@ input[type=number] { -moz-appearance: textfield; }
                         });
                     });
                 } else {
-                    // 若完全無設定關聯課程，依然建立一條虛擬空列避免掉單
                     virtualRows.push({
                         ...d,
                         virtualId: `${d.id}_none`,
@@ -1116,11 +1099,12 @@ input[type=number] { -moz-appearance: textfield; }
                 const stuNationality = stu ? (stu.nationality || '-') : '-';
 
                 let dynamicCountry = '臺灣';
-                let dynamicPlace = '-'; // 預設場所
+                let dynamicPlace = '-';
                 const instMatch = allInsts.find(i => i.id === data.inst_id || i.name === data.inst_raw);
                 if (instMatch) {
                     if (instMatch.country) dynamicCountry = instMatch.country;
                     if (instMatch.place) dynamicPlace = instMatch.place;
+                }
 
                 let proofBadge = 'badge-outline-gray';
                 if (data.proof_type === '合約') proofBadge = 'badge-outline-green';
@@ -1141,18 +1125,16 @@ input[type=number] { -moz-appearance: textfield; }
                     <td data-col="7" style="text-align: center;"><div class="cell-primary">${data.period_type || '-'}</div></td>
                     <td data-col="8" style="text-align: center;"><div class="cell-primary">${dynamicCountry}</div></td>
                     <td data-col="9" style="text-align: left;"><div class="cell-primary bold">${data.inst_raw}</div></td>
-                    <td data-col="10" style="text-align: left;"><div class="cell-primary">${dynamicPlace}</div></td> <td data-col="11" style="text-align: left;"><div class="cell-primary bold" style="color: var(--brand);">${data.courseNameText}</div></td>
-                    
-                    <td data-col="10" style="text-align: left;"><div class="cell-primary bold" style="color: var(--brand);">${data.courseNameText}</div></td>
-                    <td data-col="11" style="text-align: center;"><span class="badge badge-outline-purple">${data.courseTypeText}</span></td>
-                    
-                    <td data-col="12" style="text-align: center;"><div class="badge ${proofBadge}">${data.proof_type || '-'}</div></td>
-                    <td data-col="13" style="text-align: center;"><div class="cell-primary bold" style="color: var(--success);">${data.singleCourseHours}</div></td>
-                    <td data-col="14" style="text-align: center;"><div class="cell-primary font-weight:700;">${data.singleCourseCredits}</div></td>
-                    <td data-col="15" style="text-align: center;"><div class="cell-primary">${data.duration || '-'}</div></td>
-                    <td data-col="16" style="text-align: center;"><div class="cell-primary">${stuGender}</div></td>
-                    <td data-col="17" style="text-align: center;"><div class="cell-primary">${stuNationality}</div></td>
-                    <td data-col="18" style="text-align: center;"><div class="cell-primary">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</div></td>
+                    <td data-col="10" style="text-align: left;"><div class="cell-primary">${dynamicPlace}</div></td>
+                    <td data-col="11" style="text-align: left;"><div class="cell-primary bold" style="color: var(--brand);">${data.courseNameText}</div></td>
+                    <td data-col="12" style="text-align: center;"><span class="badge badge-outline-purple">${data.courseTypeText}</span></td>
+                    <td data-col="13" style="text-align: center;"><div class="badge ${proofBadge}">${data.proof_type || '-'}</div></td>
+                    <td data-col="14" style="text-align: center;"><div class="cell-primary bold" style="color: var(--success);">${data.singleCourseHours}</div></td>
+                    <td data-col="15" style="text-align: center;"><div class="cell-primary font-weight:700;">${data.singleCourseCredits}</div></td>
+                    <td data-col="16" style="text-align: center;"><div class="cell-primary">${data.duration || '-'}</div></td>
+                    <td data-col="17" style="text-align: center;"><div class="cell-primary">${stuGender}</div></td>
+                    <td data-col="18" style="text-align: center;"><div class="cell-primary">${stuNationality}</div></td>
+                    <td data-col="19" style="text-align: center;"><div class="cell-primary">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</div></td>
                     <td class="col-actions">
                         <div class="row-actions">
                             <button onclick="window.editData('${data.id}')" class="btn btn-secondary btn-icon sm" title="編輯整體實習"><i class="ti ti-edit"></i></button>
@@ -1167,7 +1149,6 @@ input[type=number] { -moz-appearance: textfield; }
 
         window.exportToCSV = () => {
             if (filteredRecords.length === 0) { alert("沒有資料可供匯出！"); return; }
-            // 修改標頭，加入課程屬性後的實習場所
             let csv = '\uFEFF學年度,學號,姓名,學院,學系,年級,實習時間,實習場所國別,機構名稱,實習場所,課程名稱,課程屬性,證明文件,分配時數,學分,實習起訖時間,性別,國籍(實習生),填報系所,備註\n';
             filteredRecords.forEach(v => {
                 const stuParts = (v.student_raw || '').split(' - ');
@@ -1224,7 +1205,7 @@ input[type=number] { -moz-appearance: textfield; }
             let html = '<option value="">請選擇負責填報系所...</option>';
             Array.from(deptsSet).forEach(d => {
                 const deptObj = globalDepts.find(x => x.name === d);
-                html += `<option value="${d}">${deptObj ? deptObj.shortName : d}</option>`;
+                html += `<option value="${d}">${deptObj ? deptObj.shortName : d}</option>';
             });
             selectEl.innerHTML = html;
             if (preselectedValue) selectEl.value = preselectedValue;
