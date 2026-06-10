@@ -1104,7 +1104,7 @@ input[type=number] { -moz-appearance: textfield; }
                 if (instMatch) {
                     if (instMatch.country) dynamicCountry = instMatch.country;
                     if (instMatch.place) dynamicPlace = instMatch.place;
-                }
+                } // 👈 這裡之前漏掉了這個右大括號，已補上！
 
                 let proofBadge = 'badge-outline-gray';
                 if (data.proof_type === '合約') proofBadge = 'badge-outline-green';
