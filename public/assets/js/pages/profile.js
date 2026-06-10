@@ -1,8 +1,5 @@
 /**
- * 個人資料頁面 (Profile) 核心邏輯 - 零 HTML 依賴版
- * * 使用方式：
- * 1. 在主頁面引入此檔案：<script type="module" src="assets/js/pages/profile.js"></script>
- * 2. 確保畫面中有容器：<div id="profile-container"></div>
+ * 個人資料頁面 (Profile) 核心邏輯 - 零 HTML 依賴版 (防呆掛載修正版)
  */
 
 const ProfileState = {
@@ -21,13 +18,11 @@ const ProfileState = {
 };
 
 const ProfileUI = {
+    isInitialized: false,
+
     async init(containerId = 'profile-container') {
         this.container = document.getElementById(containerId);
-        if (!this.container) {
-            console.warn(`Profile container #${containerId} not found.`);
-            return;
-        }
-
+        
         // 1. 動態建構 DOM 結構與專屬樣式
         this.renderSkeleton();
         
@@ -39,10 +34,12 @@ const ProfileUI = {
 
         // 4. 載入資料
         await this.loadUserData();
+
+        // 5. [防呆] 嘗試隱藏專案中可能存在的全域 Loading 遮罩
+        this.hideGlobalLoader();
     },
 
     renderSkeleton() {
-        // 注入確保樣式乾淨的 CSS（移除發光、螢光漸層效果，維持扁平實體色塊）
         const styleId = 'profile-clean-styles';
         if (!document.getElementById(styleId)) {
             const style = document.createElement('style');
@@ -65,7 +62,6 @@ const ProfileUI = {
             document.head.appendChild(style);
         }
 
-        // 產生完整 HTML 結構
         this.container.innerHTML = `
             <div id="profile-page-wrapper" style="font-family: 'Noto Sans TC', sans-serif; flex: 1; display: flex; flex-direction: column; background: var(--bg, #f8fafc); min-height: 100vh;">
                 <div class="toolbar" style="padding: 16px 24px; background: var(--surface, #ffffff); border-bottom: 1px solid var(--border, #e2e8f0); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
@@ -167,7 +163,6 @@ const ProfileUI = {
 
     async loadUserData() {
         try {
-            // 模擬 API 延遲
             const mockResponse = await new Promise(resolve => setTimeout(() => resolve({
                 id: 'U001',
                 name: '系統管理員',
@@ -191,13 +186,11 @@ const ProfileUI = {
     render() {
         const data = ProfileState.userData;
 
-        // 更新文字區塊
         if (this.fields.name.display) this.fields.name.display.textContent = data.name || '-';
         if (this.fields.email.display) this.fields.email.display.textContent = data.email || '-';
         if (this.fields.department.display) this.fields.department.display.textContent = data.department || '-';
         if (this.fields.role.display) this.fields.role.display.textContent = data.role || '-';
         
-        // 日期嚴格套用 YYYY/MM/DD 格式
         if (this.fields.created_at.display) {
             this.fields.created_at.display.textContent = this.formatDate(data.created_at);
         }
@@ -205,7 +198,6 @@ const ProfileUI = {
             this.fields.last_login.display.textContent = this.formatDate(data.last_login);
         }
 
-        // 更新輸入框初始值
         if (this.fields.name.input) this.fields.name.input.value = data.name || '';
         if (this.fields.email.input) this.fields.email.input.value = data.email || '';
         if (this.fields.department.input) this.fields.department.input.value = data.department || '';
@@ -255,7 +247,6 @@ const ProfileUI = {
             ProfileState.isSaving = true;
             this.setButtonLoadingState(this.btnSave, true);
 
-            // 模擬儲存 API 延遲
             await new Promise(resolve => setTimeout(resolve, 600));
 
             ProfileState.userData = { ...ProfileState.userData, ...updatedData };
@@ -278,11 +269,9 @@ const ProfileUI = {
         if (!dateString) return '-';
         const d = new Date(dateString);
         if (isNaN(d.getTime())) return '-';
-        
         const year = d.getFullYear();
         const month = String(d.getMonth() + 1).padStart(2, '0');
         const day = String(d.getDate()).padStart(2, '0');
-        
         return `${year}/${month}/${day}`;
     },
 
@@ -326,11 +315,47 @@ const ProfileUI = {
             toast.classList.add('translate-y-5', 'opacity-0');
             setTimeout(() => toast.remove(), 300);
         }, 3000);
+    },
+
+    hideGlobalLoader() {
+        // 嘗試解除專案全域可能的 Loading 遮罩
+        const possibleLoaders = ['loader', 'loading', 'global-loader', 'page-loader'];
+        possibleLoaders.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
+        document.querySelectorAll('.preloader').forEach(el => el.style.display = 'none');
     }
 };
 
-// 頁面載入後自動掛載
-document.addEventListener('DOMContentLoaded', () => {
-    // 您可以將 'profile-container' 替換為實際使用的 div ID
+// --- 啟動與掛載邏輯 (解決 SPA 或容器遺失問題) ---
+function mountProfile() {
+    if (ProfileUI.isInitialized) return;
+    
+    let container = document.getElementById('profile-container');
+    
+    // 解決方案 A：如果 HTML 中沒有手動建立容器，幫忙自動建立並掛載
+    if (!container) {
+        console.warn('⚠️ 找不到 #profile-container，系統已自動建立並附加至畫面中。');
+        container = document.createElement('div');
+        container.id = 'profile-container';
+        
+        // 優先找尋主內容區塊，若無則掛載於 body
+        const mainContent = document.querySelector('main') || document.querySelector('.content-area') || document.body;
+        mainContent.appendChild(container);
+    }
+
     ProfileUI.init('profile-container');
-});
+    ProfileUI.isInitialized = true;
+}
+
+// 解決方案 B：解決 SPA 網頁動態載入腳本時，DOMContentLoaded 已經觸發過導致程式不執行的問題
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', mountProfile);
+} else {
+    // 如果 DOM 已經載入完畢 (例如透過 Router 切換頁面或 module defer)，直接執行
+    mountProfile();
+}
+
+// 將其暴露到全域，方便其他 Router 或外部腳本手動呼叫重繪
+window.ProfileUI = ProfileUI;
