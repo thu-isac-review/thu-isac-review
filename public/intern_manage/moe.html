@@ -1167,19 +1167,24 @@ input[type=number] { -moz-appearance: textfield; }
 
         window.exportToCSV = () => {
             if (filteredRecords.length === 0) { alert("沒有資料可供匯出！"); return; }
-            let csv = '\uFEFF學年度,學號,姓名,學院,學系,年級,實習時間,實習場所國別,機構名稱,課程名稱,課程屬性,證明文件,分配時數,學分,實習起訖時間,性別,國籍(實習生),填報系所,備註\n';
+            // 修改標頭，加入課程屬性後的實習場所
+            let csv = '\uFEFF學年度,學號,姓名,學院,學系,年級,實習時間,實習場所國別,機構名稱,實習場所,課程名稱,課程屬性,證明文件,分配時數,學分,實習起訖時間,性別,國籍(實習生),填報系所,備註\n';
             filteredRecords.forEach(v => {
                 const stuParts = (v.student_raw || '').split(' - ');
                 const stuId = stuParts[0] || ''; const stuName = stuParts[1] || '';
                 const stu = allStudents.find(s => s.student_id === stuId);
                 
                 let dynamicCountry = '臺灣';
+                let dynamicPlace = '-';
                 const instMatch = allInsts.find(i => i.id === v.inst_id || i.name === v.inst_raw);
-                if (instMatch && instMatch.country) dynamicCountry = instMatch.country;
-
+                if (instMatch) {
+                    if (instMatch.country) dynamicCountry = instMatch.country;
+                    if (instMatch.place) dynamicPlace = instMatch.place;
+                }
+        
                 csv += [
                     v.academicYearText, stuId, stuName, stu ? stu.college : '', stu ? stu.department : '', v.grade || '', 
-                    v.period_type || '', dynamicCountry, v.inst_raw || '', v.courseNameText, v.courseTypeText, v.proof_type || '', 
+                    v.period_type || '', dynamicCountry, v.inst_raw || '', dynamicPlace, v.courseNameText, v.courseTypeText, v.proof_type || '', 
                     v.singleCourseHours, v.singleCourseCredits, v.duration || '', stu ? (stu.gender || '') : '', stu ? (stu.nationality || '') : '', v.resp_dept || '', v.notes || ''
                 ].map(x => `"${(x||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
             });
