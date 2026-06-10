@@ -97,16 +97,40 @@ tr:hover td.col-checkbox, tr:hover td.col-actions { background-color: #f3f6ff; }
 tr.selected { background-color: #eef2ff !important; }
 tr.selected td.col-checkbox, tr.selected td.col-actions { background-color: #eef2ff; }
 
-.col-checkbox { position: sticky; left: 0; width: 48px; text-align: center; z-index: 2; background-color: var(--surface); border-right: 1px solid var(--border); }
-th.col-checkbox { z-index: 3; background-color: var(--surface); }
+.col-checkbox {
+    position: sticky;
+    left: 0;
+    width: 48px;
+    text-align: center;
+    z-index: 2;
+    background-color: inherit;
+    border-right: none !important; /* 移除凍結框線 */
+}
+th.col-checkbox {
+    z-index: 3;
+    background-color: var(--surface);
+    border-right: none !important;
+}
 
 /* 🌟 [新增] 查看紀錄欄位設定 */
 .col-view_record { width: 100px; text-align: center; }
 th.col-view_record, td.col-view_record { text-align: center !important; }
 
 /* 🌟 [修改] 操作按鈕區域調回 90px (只剩兩顆按鈕) */
-.col-actions { position: sticky; right: 0; width: 90px; text-align: center; z-index: 2; background-color: var(--surface); border-left: 1px solid var(--border); }
-th.col-actions { z-index: 3; background-color: var(--surface); }
+.col-actions {
+    position: sticky;
+    right: 0;
+    width: 90px; /* 統一為 90px */
+    text-align: center;
+    z-index: 2;
+    background-color: inherit;
+    border-left: none !important; /* 移除凍結框線 */
+}
+th.col-actions {
+    z-index: 3;
+    background-color: var(--surface);
+    border-left: none !important;
+}
 
 .col-college, .col-department, .col-student_id, .col-name, .col-gender, .col-nationality { width: 130px; text-align: center; }
 th.col-college, th.col-department, th.col-student_id, th.col-name, th.col-gender, th.col-nationality,
@@ -162,7 +186,7 @@ select.field-select { cursor: pointer; appearance: none; background-image: url("
 
 @media (max-width: 768px) {
     .col-checkbox { position: static !important; width: 48px !important; border-right: none !important; }
-    .col-actions { position: static !important; width: 130px !important; border-left: none !important; }
+    .col-actions { position: static !important; width: 100px !important; border-left: none !important; }
     th.col-checkbox, th.col-actions { position: sticky !important; top: 0 !important; left: auto !important; right: auto !important; z-index: 2 !important; box-shadow: none !important; border-bottom: 1px solid var(--border) !important; }
     .filter-row { padding: 10px 16px; flex-wrap: nowrap; }
     .filters-scroll-area { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: none; padding-bottom: 2px; scrollbar-width: none; }
