@@ -118,8 +118,21 @@ th.col-checkbox {
     border-right: none !important;
 }
 
-.col-name { width: auto; }
-th.col-name { text-align: center; z-index: 1; } 
+.col-name { 
+    width: auto; 
+}
+
+/* 表頭強制置中 */
+th.col-name { 
+    text-align: center !important; 
+    z-index: 1; 
+}
+
+/* 內容強制靠左，並加上適當的左側內距保持美觀 */
+td.col-name { 
+    text-align: left !important; 
+    padding-left: 16px !important; 
+}
 
 .col-tax_id { width: 130px; }
 .col-industry { width: 110px; }
