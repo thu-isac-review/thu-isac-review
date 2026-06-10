@@ -238,7 +238,7 @@
         // 3. 抓取資料主邏輯
         async function fetchInstitutions() {
             try {
-                const snapshot = await getDocs(collection(db, 'institutions'));
+                const snapshot = await getDocs(collection(db, 'internship_institutions'));
                 allInstitutions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
                 buildTreeData();
