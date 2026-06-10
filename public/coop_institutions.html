@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>合作實習機構 - 東海大學實習專區</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+    
+    <style>
+        /* 基礎全域變數 (延續您的品牌色) */
+        :root {
+            --brand: #1a56db; 
+            --brand-hover: #1649c0; 
+            --brand-light: #eff4ff; 
+            --brand-border: #c3d2f9;
+            --bg: #f8f9fc; 
+            --surface: #ffffff; 
+            --border: #e5e7ef; 
+            --text-primary: #111827; 
+            --text-secondary: #4b5563; 
+            --text-muted: #9ca3af;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Noto Sans TC', sans-serif; 
+            background: var(--bg); 
+            color: var(--text-primary); 
+            -webkit-font-smoothing: antialiased;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* 頂部導覽列 */
+        .navbar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            height: 60px;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            color: var(--brand);
+            font-size: 18px;
+        }
+
+        .navbar-brand .icon-box {
+            width: 32px;
+            height: 32px;
+            background: var(--brand);
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 主要內容區 */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px;
+            width: 100%;
+            flex: 1;
+        }
+
+        /* 搜尋列 */
+        .header-section {
+            margin-bottom: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        @media (min-width: 768px) {
+            .header-section { flex-direction: row; justify-content: space-between; align-items: flex-end; }
+        }
+
+        .search-box {
+            position: relative;
+            max-width: 400px;
+            width: 100%;
+        }
+        .search-box i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+        .search-box input {
+            width: 100%; height: 44px; padding: 0 16px 0 40px; 
+            border: 1px solid var(--border); border-radius: 8px; 
+            outline: none; font-size: 15px; transition: 0.2s;
+            box-shadow: var(--shadow-sm);
+        }
+        .search-box input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-light); }
+
+        /* 卡片網格 */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        /* 機構卡片樣式 */
+        .inst-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; overflow: hidden; display: flex; flex-direction: column;
+            transition: all 0.2s ease;
+        }
+        .inst-card .card-header { padding: 20px; transition: 0.2s; }
+        
+        .inst-card.has-branches .card-header { cursor: pointer; }
+        .inst-card.has-branches .card-header:hover { background-color: #f8fafc; }
+        
+        .inst-card.expanded { border-color: var(--brand-border); box-shadow: var(--shadow-md); }
+        .inst-card.expanded .toggle-icon { transform: rotate(180deg); color: var(--brand); }
+
+        /* 狀態顯示 */
+        .state-container { display: flex; flex-direction: column; align-items: center; padding: 60px 20px; text-align: center; }
+        .spin-icon { animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        
+        /* 標籤 */
+        .badge {
+            font-size: 11px; padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;
+        }
+        .badge-gray { background: #f1f5f9; color: #475569; }
+        .badge-brand { background: var(--brand-light); color: var(--brand); font-weight: 700; margin-left: auto; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <div class="icon-box"><i class="ti ti-briefcase-2"></i></div>
+            東海大學學生實習專區
+        </div>
+        <div style="margin-left: auto;">
+            </div>
+    </nav>
+
+    <main class="main-container">
+        
+        <div class="header-section">
+            <div>
+                <h1 style="font-size: 24px; font-weight: 700; color: var(--text-primary);">合作實習機構一覽</h1>
+                <p style="font-size: 14px; color: var(--text-secondary); margin-top: 6px;">
+                    尋找適合您的實習機會。點擊卡片可展開查看該機構的分支據點。
+                </p>
+            </div>
+            <div class="search-box">
+                <i class="ti ti-search text-lg"></i>
+                <input type="text" id="search-input" placeholder="搜尋機構名稱、縣市或行業別...">
+            </div>
+        </div>
+
+        <div id="loading-state" class="state-container">
+            <i class="ti ti-loader-2 spin-icon" style="font-size: 40px; color: var(--brand);"></i>
+            <div style="margin-top: 16px; font-weight: 600; color: var(--text-secondary);">資料載入中，請稍候...</div>
+        </div>
+
+        <div id="empty-state" class="state-container" style="display: none;">
+            <i class="ti ti-building-skyscraper" style="font-size: 64px; color: var(--border);"></i>
+            <div style="margin-top: 16px; font-size: 16px; font-weight: 600; color: var(--text-secondary);">找不到符合的機構</div>
+            <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">請嘗試更換其他搜尋關鍵字</div>
+        </div>
+
+        <div id="inst-grid" class="grid-container" style="display: none;"></div>
+
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // 1. 初始化 Firebase (直接帶入您專案的參數)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY",
+            authDomain: "thu-isac-review.firebaseapp.com",
+            projectId: "thu-isac-review",
+            storageBucket: "thu-isac-review.firebasestorage.app",
+            messagingSenderId: "453299876735",
+            appId: "1:453299876735:web:1d8babca3315423161a04a"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // 2. 狀態管理
+        let allInstitutions = [];
+        let treeData = [];
+
+        // 3. 畫面元素
+        const elGrid = document.getElementById('inst-grid');
+        const elLoading = document.getElementById('loading-state');
+        const elEmpty = document.getElementById('empty-state');
+        const elSearch = document.getElementById('search-input');
+
+        // 初始化
+        async function init() {
+            try {
+                // 從資料庫抓取所有機構資料
+                const snapshot = await getDocs(collection(db, 'institutions'));
+                allInstitutions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                buildTreeData();
+                renderCards('');
+                
+                elLoading.style.display = 'none';
+                elGrid.style.display = 'grid';
+
+                // 綁定搜尋事件
+                elSearch.addEventListener('input', (e) => {
+                    renderCards(e.target.value.trim().toLowerCase());
+                });
+
+            } catch (error) {
+                console.error("讀取機構失敗:", error);
+                elLoading.innerHTML = `<div style="color: #ef4444;"><i class="ti ti-alert-circle text-4xl"></i><p class="mt-2 font-bold">資料載入失敗，請檢查網路連線</p></div>`;
+            }
+        }
+
+        // 將扁平資料轉換為主/子結構
+        function buildTreeData() {
+            const parents = allInstitutions.filter(d => !d.parent_id);
+            const children = allInstitutions.filter(d => d.parent_id);
+
+            treeData = parents.map(p => {
+                const branches = children.filter(c => c.parent_id === p.id);
+                // 排序分公司
+                branches.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'zh-TW'));
+                return { ...p, branches };
+            });
+
+            // 排序主機構
+            treeData.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'zh-TW'));
+        }
+
+        // 渲染卡片
+        function renderCards(searchTerm) {
+            let filtered = treeData;
+
+            if (searchTerm) {
+                filtered = treeData.filter(p => {
+                    const matchParent = (p.name || '').toLowerCase().includes(searchTerm) || 
+                                        (p.city || '').toLowerCase().includes(searchTerm) || 
+                                        (p.industry || '').toLowerCase().includes(searchTerm);
+                    
+                    const matchAnyBranch = p.branches.some(b => 
+                        (b.name || '').toLowerCase().includes(searchTerm) || 
+                        (b.city || '').toLowerCase().includes(searchTerm)
+                    );
+                    return matchParent || matchAnyBranch;
+                });
+            }
+
+            if (filtered.length === 0) {
+                elGrid.style.display = 'none';
+                elEmpty.style.display = 'flex';
+                return;
+            }
+
+            elEmpty.style.display = 'none';
+            elGrid.style.display = 'grid';
+
+            elGrid.innerHTML = filtered.map(inst => {
+                const hasBranches = inst.branches && inst.branches.length > 0;
+                
+                let branchesHtml = '';
+                if (hasBranches) {
+                    branchesHtml = `
+                        <div class="branches-wrapper" style="display: none; background: #fafafa; border-top: 1px dashed var(--border); padding: 12px;">
+                            ${inst.branches.map(b => `
+                                <div style="padding: 10px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 4px;">
+                                    <div style="font-size: 14px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+                                        <i class="ti ti-corner-down-right" style="color: var(--text-muted);"></i> ${b.name}
+                                    </div>
+                                    <div style="font-size: 13px; color: var(--text-secondary); margin-left: 20px;">
+                                        <i class="ti ti-map-pin"></i> ${b.city || ''} ${b.address || '無地址資訊'}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="inst-card ${hasBranches ? 'has-branches' : ''}">
+                        <div class="card-header">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+                                <div style="display: flex; gap: 12px; align-items: flex-start;">
+                                    <div style="width: 44px; height: 44px; border-radius: 10px; background: var(--brand-light); color: var(--brand); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;">
+                                        <i class="ti ti-building-skyscraper"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 16px; font-weight: 700; line-height: 1.4;">${inst.name}</div>
+                                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">${inst.industry || '未分類行業別'}</div>
+                                    </div>
+                                </div>
+                                ${hasBranches ? `<i class="ti ti-chevron-down toggle-icon" style="color: var(--text-muted); transition: 0.3s; font-size: 20px;"></i>` : ''}
+                            </div>
+                            
+                            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px;">
+                                ${inst.city ? `<span class="badge badge-gray"><i class="ti ti-map-pin"></i> ${inst.city}</span>` : ''}
+                                ${inst.venue_type ? `<span class="badge badge-gray"><i class="ti ti-tag"></i> ${inst.venue_type}</span>` : ''}
+                                ${hasBranches ? `<span class="badge badge-brand">${inst.branches.length} 間分支據點</span>` : ''}
+                            </div>
+                        </div>
+                        ${branchesHtml}
+                    </div>
+                `;
+            }).join('');
+
+            // 重新綁定點擊展開事件
+            bindExpandEvents();
+        }
+
+        // 綁定卡片點擊事件
+        function bindExpandEvents() {
+            document.querySelectorAll('.inst-card.has-branches .card-header').forEach(header => {
+                header.addEventListener('click', function() {
+                    const card = this.closest('.inst-card');
+                    const wrapper = card.querySelector('.branches-wrapper');
+                    const isExpanded = card.classList.contains('expanded');
+                    
+                    if (isExpanded) {
+                        wrapper.style.display = 'none';
+                        card.classList.remove('expanded');
+                    } else {
+                        wrapper.style.display = 'block';
+                        card.classList.add('expanded');
+                    }
+                });
+            });
+        }
+
+        // 啟動應用
+        document.addEventListener('DOMContentLoaded', init);
+
+    </script>
+</body>
+</html>
