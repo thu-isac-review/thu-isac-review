@@ -1,5 +1,5 @@
 /**
- * 個人資料頁面 (Profile) 核心邏輯 - 零 HTML 依賴版 (防呆掛載修正版)
+ * 個人資料頁面 (Profile) - SPA 路由標準版
  */
 
 const ProfileState = {
@@ -18,12 +18,13 @@ const ProfileState = {
 };
 
 const ProfileUI = {
-    isInitialized: false,
-
-    async init(containerId = 'profile-container') {
+    async init(containerId, db) {
         this.container = document.getElementById(containerId);
+        if (!this.container) return;
         
-        // 1. 動態建構 DOM 結構與專屬樣式
+        this.db = db; // 保留 Firebase DB 實體供後續擴充使用
+
+        // 1. 動態建構 DOM 結構
         this.renderSkeleton();
         
         // 2. 緩存 DOM 節點
@@ -34,9 +35,6 @@ const ProfileUI = {
 
         // 4. 載入資料
         await this.loadUserData();
-
-        // 5. [防呆] 嘗試隱藏專案中可能存在的全域 Loading 遮罩
-        this.hideGlobalLoader();
     },
 
     renderSkeleton() {
@@ -62,8 +60,9 @@ const ProfileUI = {
             document.head.appendChild(style);
         }
 
+        // 直接將內容寫入 SPA 提供的容器中
         this.container.innerHTML = `
-            <div id="profile-page-wrapper" style="font-family: 'Noto Sans TC', sans-serif; flex: 1; display: flex; flex-direction: column; background: var(--bg, #f8fafc); min-height: 100vh;">
+            <div id="profile-page-wrapper" style="font-family: 'Noto Sans TC', sans-serif; flex: 1; display: flex; flex-direction: column; background: var(--bg, #f8fafc); min-height: 100%;">
                 <div class="toolbar" style="padding: 16px 24px; background: var(--surface, #ffffff); border-bottom: 1px solid var(--border, #e2e8f0); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
                     <h2 style="font-size: 16px; font-weight: 700; color: var(--text-primary, #1e293b); margin: 0;">個人資料設定</h2>
                     <div class="toolbar-actions" style="display: flex; gap: 8px;">
@@ -134,18 +133,9 @@ const ProfileUI = {
         this.btnCancel = document.getElementById('btn-cancel-profile');
         
         this.fields = {
-            name: {
-                display: document.getElementById('display-name'),
-                input: document.getElementById('input-name')
-            },
-            email: {
-                display: document.getElementById('display-email'),
-                input: document.getElementById('input-email')
-            },
-            department: {
-                display: document.getElementById('display-department'),
-                input: document.getElementById('input-department')
-            },
+            name: { display: document.getElementById('display-name'), input: document.getElementById('input-name') },
+            email: { display: document.getElementById('display-email'), input: document.getElementById('input-email') },
+            department: { display: document.getElementById('display-department'), input: document.getElementById('input-department') },
             role: { display: document.getElementById('display-role') },
             created_at: { display: document.getElementById('display-created-at') },
             last_login: { display: document.getElementById('display-last-login') }
@@ -163,29 +153,36 @@ const ProfileUI = {
 
     async loadUserData() {
         try {
+            // 從 LocalStorage 獲取目前登入者的真實權限與名稱
+            const currentName = localStorage.getItem('user_name') || '使用者';
+            const currentRole = localStorage.getItem('user_role') || 'user';
+            const roleMap = { 'admin': '系統管理員', 'user': '一般使用者' };
+
+            // 模擬讀取 Firebase 的延遲 (實作時可改為 getDoc)
             const mockResponse = await new Promise(resolve => setTimeout(() => resolve({
                 id: 'U001',
-                name: '系統管理員',
-                email: 'admin@example.com',
-                department: '資訊中心',
-                role: 'Administrator',
+                name: currentName,
+                email: 'user@thu.edu.tw',
+                department: '預設單位',
+                role: roleMap[currentRole] || currentRole,
                 created_at: '2025-01-15T09:00:00Z',
                 last_login: new Date().toISOString()
-            }), 300));
+            }), 150));
             
             ProfileState.userData = { ...mockResponse };
             ProfileState.originalData = { ...mockResponse };
             
-            this.render();
+            this.renderData();
         } catch (error) {
-            console.error('Data loading error:', error);
+            console.error('資料載入失敗:', error);
             this.showNotification('資料載入失敗', 'error');
         }
     },
 
-    render() {
+    renderData() {
         const data = ProfileState.userData;
 
+        // 更新文字區塊
         if (this.fields.name.display) this.fields.name.display.textContent = data.name || '-';
         if (this.fields.email.display) this.fields.email.display.textContent = data.email || '-';
         if (this.fields.department.display) this.fields.department.display.textContent = data.department || '-';
@@ -198,6 +195,7 @@ const ProfileUI = {
             this.fields.last_login.display.textContent = this.formatDate(data.last_login);
         }
 
+        // 更新輸入框初始值
         if (this.fields.name.input) this.fields.name.input.value = data.name || '';
         if (this.fields.email.input) this.fields.email.input.value = data.email || '';
         if (this.fields.department.input) this.fields.department.input.value = data.department || '';
@@ -225,7 +223,7 @@ const ProfileUI = {
 
     restoreOriginalData() {
         ProfileState.userData = { ...ProfileState.originalData };
-        this.render();
+        this.renderData();
     },
 
     async handleSave(e) {
@@ -247,17 +245,23 @@ const ProfileUI = {
             ProfileState.isSaving = true;
             this.setButtonLoadingState(this.btnSave, true);
 
+            // 模擬寫入 Firebase 的延遲
             await new Promise(resolve => setTimeout(resolve, 600));
+
+            // 更新左下角選單的顯示名稱 (可選)
+            localStorage.setItem('user_name', updatedData.name);
+            const userTitleName = document.getElementById('userTitleName');
+            if(userTitleName) userTitleName.textContent = updatedData.name;
 
             ProfileState.userData = { ...ProfileState.userData, ...updatedData };
             ProfileState.originalData = { ...ProfileState.userData };
             
-            this.render();
+            this.renderData();
             this.toggleEditMode(false);
             this.showNotification('資料已成功更新', 'success');
 
         } catch (error) {
-            console.error('Save error:', error);
+            console.error('儲存失敗:', error);
             this.showNotification('儲存失敗，請檢查網路狀態', 'error');
         } finally {
             ProfileState.isSaving = false;
@@ -315,47 +319,10 @@ const ProfileUI = {
             toast.classList.add('translate-y-5', 'opacity-0');
             setTimeout(() => toast.remove(), 300);
         }, 3000);
-    },
-
-    hideGlobalLoader() {
-        // 嘗試解除專案全域可能的 Loading 遮罩
-        const possibleLoaders = ['loader', 'loading', 'global-loader', 'page-loader'];
-        possibleLoaders.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.style.display = 'none';
-        });
-        document.querySelectorAll('.preloader').forEach(el => el.style.display = 'none');
     }
 };
 
-// --- 啟動與掛載邏輯 (解決 SPA 或容器遺失問題) ---
-function mountProfile() {
-    if (ProfileUI.isInitialized) return;
-    
-    let container = document.getElementById('profile-container');
-    
-    // 解決方案 A：如果 HTML 中沒有手動建立容器，幫忙自動建立並掛載
-    if (!container) {
-        console.warn('⚠️ 找不到 #profile-container，系統已自動建立並附加至畫面中。');
-        container = document.createElement('div');
-        container.id = 'profile-container';
-        
-        // 優先找尋主內容區塊，若無則掛載於 body
-        const mainContent = document.querySelector('main') || document.querySelector('.content-area') || document.body;
-        mainContent.appendChild(container);
-    }
-
-    ProfileUI.init('profile-container');
-    ProfileUI.isInitialized = true;
+// 🌟 最關鍵的匯出：提供給 index.html 裡的 initPureSpaRouter 調用
+export async function render(containerId, { db }) {
+    await ProfileUI.init(containerId, db);
 }
-
-// 解決方案 B：解決 SPA 網頁動態載入腳本時，DOMContentLoaded 已經觸發過導致程式不執行的問題
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', mountProfile);
-} else {
-    // 如果 DOM 已經載入完畢 (例如透過 Router 切換頁面或 module defer)，直接執行
-    mountProfile();
-}
-
-// 將其暴露到全域，方便其他 Router 或外部腳本手動呼叫重繪
-window.ProfileUI = ProfileUI;
