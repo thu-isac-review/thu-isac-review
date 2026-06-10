@@ -56,22 +56,22 @@
             </div>
 
             <div class="filter-pill-wrap" id="pill-wrap-gender">
-                <button class="filter-pill" id="pill-gender">全部性別 <i class="ti ti-chevron-down"></i></button>
+                <button class="filter-pill" id="pill-gender" onclick="StudentUI.toggleDropdown('gender')">
+                    性別 <i class="ti ti-chevron-down"></i>
+                </button>
                 <div class="filter-dropdown" id="drop-gender">
-                    <div class="filter-dropdown-list custom-scroll" id="gender-options-container"></div>
-                    <div class="filter-dropdown-footer" style="padding: 6px 8px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end;">
-                        <button type="button" class="btn-clear-filter" data-type="gender" style="font-size: 11px; font-weight: 600; color: var(--danger); background: none; border: none; cursor: pointer; padding: 2px 4px; border-radius: var(--radius-sm);">清除此篩選</button>
-                    </div>
+                    <div class="filter-dropdown-list custom-scroll" id="gender-options-container">
+                        </div>
                 </div>
             </div>
-
+            
             <div class="filter-pill-wrap" id="pill-wrap-nationality">
-                <button class="filter-pill" id="pill-nationality">全部國籍 <i class="ti ti-chevron-down"></i></button>
+                <button class="filter-pill" id="pill-nationality" onclick="StudentUI.toggleDropdown('nationality')">
+                    國籍 <i class="ti ti-chevron-down"></i>
+                </button>
                 <div class="filter-dropdown" id="drop-nationality">
-                    <div class="filter-dropdown-list custom-scroll" id="nationality-options-container"></div>
-                    <div class="filter-dropdown-footer" style="padding: 6px 8px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end;">
-                        <button type="button" class="btn-clear-filter" data-type="nationality" style="font-size: 11px; font-weight: 600; color: var(--danger); background: none; border: none; cursor: pointer; padding: 2px 4px; border-radius: var(--radius-sm);">清除此篩選</button>
-                    </div>
+                    <div class="filter-dropdown-list custom-scroll" id="nationality-options-container">
+                        </div>
                 </div>
             </div>
         </div>
