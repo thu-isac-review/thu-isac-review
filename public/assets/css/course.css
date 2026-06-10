@@ -502,10 +502,12 @@ tr.selected {
     text-align: center;
     z-index: 2;
     background-color: inherit;
+    border-right: none !important; /* 移除凍結框線 */
 }
 th.col-checkbox {
     z-index: 3;
     background-color: var(--surface);
+    border-right: none !important;
 }
 
 .col-academic_year { width: 80px; text-align: center; }
@@ -530,14 +532,16 @@ td.col-course_name { text-align: left !important; }
 .col-actions {
     position: sticky;
     right: 0;
-    width: 90px;
+    width: 90px; /* 統一為 90px */
     text-align: center;
     z-index: 2;
     background-color: inherit;
+    border-left: none !important; /* 移除凍結框線 */
 }
 th.col-actions {
     z-index: 3;
     background-color: var(--surface);
+    border-left: none !important;
 }
 
 th[data-sort] {
