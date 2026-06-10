@@ -530,28 +530,12 @@ input[type=number] { -moz-appearance: textfield; }
                                     <button type="button" id="btn-info-student" class="btn-info-pop" onclick="window.showInfoPopup('student')" disabled title="查看學生詳情"><i class="ti ti-info-circle"></i></button>
                                 </div>
                             </div>
-                            <div class="field">
-                                <label class="field-label">學年度 <span class="req">*</span></label>
-                                <input type="number" id="input-academic-year" class="field-input" placeholder="例如：114" required>
-                            </div>
-                            <div class="field">
+                            <div class="field" style="grid-column: span 2;">
                                 <label class="field-label">當學年年級 <span class="req">*</span></label>
                                 <select id="input-grade" class="field-select" required>
                                     <option value="">請選擇</option>
                                     <option value="1">1 年級</option><option value="2">2 年級</option><option value="3">3 年級</option><option value="4">4 年級</option><option value="5">5 年級以上</option>
                                 </select>
-                            </div>
-                            <div class="field">
-                                <label class="field-label">性別 <span class="req">*</span></label>
-                                <select id="input-gender" class="field-select" required>
-                                    <option value="">請選擇</option>
-                                    <option value="男">男</option>
-                                    <option value="女">女</option>
-                                </select>
-                            </div>
-                            <div class="field">
-                                <label class="field-label">國籍(實習生) <span class="req">*</span></label>
-                                <input type="text" id="input-nationality" class="field-input" placeholder="例如：本國籍、馬來西亞" required>
                             </div>
                         </div>
                     </div>
@@ -568,10 +552,6 @@ input[type=number] { -moz-appearance: textfield; }
                                     </div>
                                     <button type="button" id="btn-info-inst" class="btn-info-pop" onclick="window.showInfoPopup('inst')" disabled title="查看機構詳情"><i class="ti ti-info-circle"></i></button>
                                 </div>
-                            </div>
-                            <div class="field" style="grid-column: span 2;">
-                                <label class="field-label">實習場所國別 <span class="req">*</span></label>
-                                <input type="text" id="input-inst-country" class="field-input" placeholder="例如：臺灣、日本、美國" required>
                             </div>
                             <div class="field z-index-fix" style="z-index: 10; grid-column: span 2;">
                                 <label class="field-label">搜尋並加入課程 <span class="req">*</span></label>
@@ -591,7 +571,7 @@ input[type=number] { -moz-appearance: textfield; }
                             <span id="selected-course-count" class="badge badge-outline-blue" style="font-size: 11px; padding: 4px 8px;">已選 0 門</span>
                         </div>
                         
-                        <div id="selected-courses-container" class="custom-scroll" style="display: flex; flex-direction: column; overflow-y: scroll; height: 120px; border: 1px solid var(--border); border-radius: var(--radius); padding: 0 8px; background: #f8f9fc;">
+                        <div id="selected-courses-container" class="custom-scroll" style="display: flex; flex-direction: column; overflow-y: scroll; height: 110px; border: 1px solid var(--border); border-radius: var(--radius); padding: 0 8px; background: #f8f9fc;">
                             <div class="empty-state" style="padding: 20px;"><div class="empty-text">尚未加入課程</div></div>
                         </div>
                     </div>
@@ -720,7 +700,7 @@ input[type=number] { -moz-appearance: textfield; }
 
         const formatCourseInfo = (c) => c ? `${c.academic_year}-${c.term}_${c.course_code}：${c.course_name}` : '';
 
-        // --- COLUMNS SETTING STATE (更新為全新順序) ---
+        // --- COLUMNS SETTING STATE ---
         window.tableColumns = [
             { index: 1, label: '學年度', visible: true },
             { index: 2, label: '學號', visible: true },
@@ -820,14 +800,30 @@ input[type=number] { -moz-appearance: textfield; }
                     const matchSearch = (d.student_raw || '').toLowerCase().includes(globalSearchTerm) || (d.inst_raw || '').toLowerCase().includes(globalSearchTerm);
                     let ok = matchSearch;
 
-                    if (key !== 'academic_year' && ok && filterSelections.academic_year.size > 0) ok = filterSelections.academic_year.has(d.academic_year);
+                    // 撈取動態資料以供篩選比對
+                    let dynamicYear = '-';
+                    if (d.courses && d.courses.length > 0) {
+                        const firstCourse = allCourses.find(c => c.id === d.courses[0]);
+                        if (firstCourse) dynamicYear = firstCourse.academic_year;
+                    }
+                    
+                    let dynamicCountry = '臺灣';
+                    if (d.inst_id) {
+                        const iMatch = allInsts.find(i => i.id === d.inst_id);
+                        if (iMatch && iMatch.country) dynamicCountry = iMatch.country;
+                    } else {
+                        const iMatch = allInsts.find(i => i.name === d.inst_raw);
+                        if (iMatch && iMatch.country) dynamicCountry = iMatch.country;
+                    }
+
+                    if (key !== 'academic_year' && ok && filterSelections.academic_year.size > 0) ok = filterSelections.academic_year.has(dynamicYear);
                     if (key !== 'dept' && ok && filterSelections.dept.size > 0) {
                         const stuId = (d.student_raw || '').split(' - ')[0];
                         const stu = allStudents.find(s => s.student_id === stuId);
                         ok = stu && filterSelections.dept.has(stu.department);
                     }
                     if (key !== 'grade' && ok && filterSelections.grade.size > 0) ok = filterSelections.grade.has(d.grade);
-                    if (key !== 'inst_country' && ok && filterSelections.inst_country.size > 0) ok = filterSelections.inst_country.has(d.inst_country);
+                    if (key !== 'inst_country' && ok && filterSelections.inst_country.size > 0) ok = filterSelections.inst_country.has(dynamicCountry);
                     if (key !== 'inst_raw' && ok && filterSelections.inst_raw.size > 0) ok = filterSelections.inst_raw.has(d.inst_raw);
                     if (key !== 'course' && ok && filterSelections.course.size > 0) {
                         ok = d.courses && d.courses.some(cid => filterSelections.course.has(cid));
@@ -838,7 +834,7 @@ input[type=number] { -moz-appearance: textfield; }
 
                     if (ok) {
                         if (key === 'academic_year') {
-                            if (d.academic_year) availableValues.add(d.academic_year);
+                            availableValues.add(dynamicYear);
                         } else if (key === 'dept') {
                             const stuId = (d.student_raw || '').split(' - ')[0];
                             const stu = allStudents.find(s => s.student_id === stuId);
@@ -846,7 +842,7 @@ input[type=number] { -moz-appearance: textfield; }
                         } else if (key === 'grade') {
                             if (d.grade) availableValues.add(d.grade);
                         } else if (key === 'inst_country') {
-                            if (d.inst_country) availableValues.add(d.inst_country);
+                            availableValues.add(dynamicCountry);
                         } else if (key === 'inst_raw') {
                             if (d.inst_raw) availableValues.add(d.inst_raw);
                         } else if (key === 'course') {
@@ -874,11 +870,8 @@ input[type=number] { -moz-appearance: textfield; }
                         const isAvailable = availableValues.has(val) || checkbox.checked;
                         const matchesLocalSearch = text.includes(localSearchTerm);
 
-                        if (isAvailable && matchesLocalSearch) {
-                            lbl.style.display = 'flex';
-                        } else {
-                            lbl.style.display = 'none';
-                        }
+                        if (isAvailable && matchesLocalSearch) lbl.style.display = 'flex';
+                        else lbl.style.display = 'none';
                     });
                 }
             });
@@ -895,11 +888,23 @@ input[type=number] { -moz-appearance: textfield; }
             }).filter(opt => opt.label !== opt.value);
             courseOptions.sort((a,b) => a.label.localeCompare(b.label));
 
+            // 計算動態的學年度與場所國別清單以供篩選
+            const yearsSet = new Set();
+            const countriesSet = new Set();
+            allRecords.forEach(r => {
+                if (r.courses && r.courses.length > 0) {
+                    const cMatch = allCourses.find(c => c.id === r.courses[0]);
+                    if (cMatch) yearsSet.add(cMatch.academic_year);
+                }
+                const iMatch = allInsts.find(i => i.id === r.inst_id || i.name === r.inst_raw);
+                countriesSet.add(iMatch && iMatch.country ? iMatch.country : '臺灣');
+            });
+
             const filterOptions = {
-                academic_year: [...new Set(allRecords.map(r=>r.academic_year))].filter(Boolean).sort().map(v=>({value:v, label:`${v}學年度`})),
+                academic_year: [...yearsSet].sort().map(v=>({value:v, label:`${v}學年度`})),
                 dept: uniqueSortedDepts.map(v=>({value:v, label: getDeptShort(v)})),
                 grade: ['1', '2', '3', '4', '5'].map(v=>({value:v, label: `${v} 年級${v==='5'?'以上':''}`})),
-                inst_country: [...new Set(allRecords.map(r=>r.inst_country))].filter(Boolean).sort().map(v=>({value:v, label:v})),
+                inst_country: [...countriesSet].sort().map(v=>({value:v, label:v})),
                 inst_raw: [...new Set(allRecords.map(r=>r.inst_raw))].filter(Boolean).sort().map(v=>({value:v, label:v})),
                 course: courseOptions,
                 resp_dept: uniqueSortedDepts.map(v=>({value:v, label: getDeptShort(v)})),
@@ -968,7 +973,6 @@ input[type=number] { -moz-appearance: textfield; }
             
             container.querySelectorAll('.filter-pill-wrap, .flex-spacer').forEach(el => el.remove());
             container.insertAdjacentHTML('afterbegin', html);
-            
             window.updateFilterVisibility();
         }
 
@@ -1045,26 +1049,8 @@ input[type=number] { -moz-appearance: textfield; }
 
             const handleFocus = (dropdown) => { dropdown.classList.add('show'); };
 
-            const checkBtn = (input, btnId, list, key) => {
-                const match = list.find(x => (x[key] === input.value || (x.student_id && input.value.startsWith(x.student_id))));
-                document.getElementById(btnId).disabled = !match;
-            };
-
             stuInput?.addEventListener('focus', () => { handleFocus(stuDropdown); renderStudentDropdown(allStudents, stuInput.value); });
-            stuInput?.addEventListener('input', () => { 
-                handleFocus(stuDropdown); 
-                renderStudentDropdown(allStudents, stuInput.value); 
-                checkBtn(stuInput, 'btn-info-student', allStudents, 'student_id'); 
-                window.updateRespDeptOptions(); 
-                
-                // 自動帶入學生主檔中已有的 性別 與 國籍
-                const stuId = stuInput.value.split(' - ')[0].trim().toUpperCase();
-                const matchedStu = allStudents.find(s => s.student_id.toUpperCase() === stuId);
-                if (matchedStu) {
-                    if (matchedStu.gender) document.getElementById('input-gender').value = matchedStu.gender;
-                    if (matchedStu.nationality) document.getElementById('input-nationality').value = matchedStu.nationality;
-                }
-            });
+            stuInput?.addEventListener('input', () => { handleFocus(stuDropdown); renderStudentDropdown(allStudents, stuInput.value); document.getElementById('btn-info-student').disabled = !allStudents.some(s => stuInput.value.startsWith(s.student_id)); window.updateRespDeptOptions(); });
             
             instInput?.addEventListener('focus', () => { handleFocus(instDropdown); renderInstDropdown(allInsts, instInput.value); });
             instInput?.addEventListener('input', (e) => { 
@@ -1134,20 +1120,18 @@ input[type=number] { -moz-appearance: textfield; }
             let html = '';
             filtered.slice(0, 30).forEach(s => {
                 html += `
-                <div class="search-item" onclick="window.selectStudent('${s.student_id}', '${s.name}', '${s.gender||''}', '${s.nationality||''}')">
+                <div class="search-item" onclick="window.selectStudent('${s.student_id}', '${s.name}')">
                     <div class="search-item-title">${s.student_id} - ${s.name}</div>
                     <div class="search-item-desc">${getColShort(s.college)} / ${getDeptShort(s.department)}</div>
                 </div>`;
             });
             dropdown.innerHTML = html;
         }
-        window.selectStudent = (id, name, gender, nationality) => { 
+        window.selectStudent = (id, name) => { 
             const stuIn = document.getElementById('input-student');
             stuIn.value = `${id} - ${name}`; 
             document.getElementById('student-dropdown').classList.remove('show');
             document.getElementById('btn-info-student').disabled = false;
-            if (gender) document.getElementById('input-gender').value = gender;
-            if (nationality) document.getElementById('input-nationality').value = nationality;
             window.updateRespDeptOptions(); 
         };
 
@@ -1160,18 +1144,17 @@ input[type=number] { -moz-appearance: textfield; }
             let html = '';
             filtered.slice(0, 30).forEach(i => {
                 html += `
-                <div class="search-item" onclick="window.selectInst('${i.id}', '${i.name}', '${i.country||'臺灣'}')">
+                <div class="search-item" onclick="window.selectInst('${i.id}', '${i.name}')">
                     <div class="search-item-title">${i.name}</div>
                     <div class="search-item-desc">${i.tax_id || '統編：無統一編號'} | ${i.address || ''}</div>
                 </div>`;
             });
             dropdown.innerHTML = html;
         }
-        window.selectInst = (id, name, country) => { 
+        window.selectInst = (id, name) => { 
             const instIn = document.getElementById('input-institution');
             instIn.value = name; 
             instIn.dataset.id = id; 
-            document.getElementById('input-inst-country').value = country;
             document.getElementById('institution-dropdown').classList.remove('show');
             document.getElementById('btn-info-inst').disabled = false;
         };
@@ -1258,21 +1241,14 @@ input[type=number] { -moz-appearance: textfield; }
                 html = `
                     <div class="info-item"><span class="info-item-label">學號</span><div class="info-item-value">${stu.student_id}</div></div>
                     <div class="info-item"><span class="info-item-label">姓名</span><div class="info-item-value">${stu.name}</div></div>
-                    <div class="info-item"><span class="info-item-label">性別</span><div class="info-item-value">${stu.gender || '未填'}</div></div>
-                    <div class="info-item"><span class="info-item-label">國籍</span><div class="info-item-value">${stu.nationality || '未填'}</div></div>
+                    <div class="info-item"><span class="info-item-label">性別</span><div class="info-item-value">${stu.gender || '未綁定主檔'}</div></div>
+                    <div class="info-item"><span class="info-item-label">國籍</span><div class="info-item-value">${stu.nationality || '未綁定主檔'}</div></div>
                     <div class="info-item"><span class="info-item-label">所屬系所</span><div class="info-item-value">${stu.department}</div></div>
                     <div class="info-item"><span class="info-item-label">所屬學院</span><div class="info-item-value">${stu.college}</div></div>
                 `;
             } else {
                 const instId = document.getElementById('input-institution').dataset.id;
-                let inst;
-                if (instId) {
-                    inst = allInsts.find(i => i.id === instId);
-                } else {
-                    const instName = document.getElementById('input-institution').value;
-                    inst = allInsts.find(i => i.name === instName);
-                }
-                
+                let inst = instId ? allInsts.find(i => i.id === instId) : allInsts.find(i => i.name === document.getElementById('input-institution').value);
                 if (!inst) return;
                 title.innerHTML = '<i class="ti ti-building-skyscraper" style="color:var(--success); margin-right:4px;"></i> 機構詳細資訊';
                 html = `
@@ -1315,14 +1291,10 @@ input[type=number] { -moz-appearance: textfield; }
         window.openModal = () => {
             if (!editingId) { 
                 document.getElementById('input-student').value = '';
-                document.getElementById('input-academic-year').value = new Date().getFullYear() - 1911; // 預設當前民國年
                 document.getElementById('input-grade').value = '';
-                document.getElementById('input-gender').value = '';
-                document.getElementById('input-nationality').value = '';
                 const instInput = document.getElementById('input-institution');
                 instInput.value = '';
                 instInput.dataset.id = ''; 
-                document.getElementById('input-inst-country').value = '臺灣';
                 document.getElementById('input-duration').value = '';
                 document.getElementById('input-hours').value = '';
                 document.getElementById('input-period-type').value = '';
@@ -1357,14 +1329,24 @@ input[type=number] { -moz-appearance: textfield; }
                 const matchSearch = (d.student_raw || '').toLowerCase().includes(searchTerm) || (d.inst_raw || '').toLowerCase().includes(searchTerm);
                 let ok = matchSearch;
                 
-                if (ok && filterSelections.academic_year.size > 0) ok = filterSelections.academic_year.has(d.academic_year);
+                // 動態撈取資料以過濾
+                let dynamicYear = '-';
+                if (d.courses && d.courses.length > 0) {
+                    const firstCourse = allCourses.find(c => c.id === d.courses[0]);
+                    if (firstCourse) dynamicYear = firstCourse.academic_year;
+                }
+                let dynamicCountry = '臺灣';
+                const iMatch = allInsts.find(i => i.id === d.inst_id || i.name === d.inst_raw);
+                if (iMatch && iMatch.country) dynamicCountry = iMatch.country;
+
+                if (ok && filterSelections.academic_year.size > 0) ok = filterSelections.academic_year.has(dynamicYear);
                 if (ok && filterSelections.dept.size > 0) {
                     const stuId = (d.student_raw || '').split(' - ')[0];
                     const stu = allStudents.find(s => s.student_id === stuId);
                     ok = stu && filterSelections.dept.has(stu.department);
                 }
                 if (ok && filterSelections.grade.size > 0) ok = filterSelections.grade.has(d.grade);
-                if (ok && filterSelections.inst_country.size > 0) ok = filterSelections.inst_country.has(d.inst_country);
+                if (ok && filterSelections.inst_country.size > 0) ok = filterSelections.inst_country.has(dynamicCountry);
                 if (ok && filterSelections.inst_raw.size > 0) ok = filterSelections.inst_raw.has(d.inst_raw);
                 if (ok && filterSelections.course.size > 0) {
                     ok = d.courses && d.courses.some(cid => filterSelections.course.has(cid));
@@ -1381,6 +1363,12 @@ input[type=number] { -moz-appearance: textfield; }
                 let valA = ''; let valB = '';
 
                 if (sortCol === 'created_at') { valA = getTime(a.created_at); valB = getTime(b.created_at); }
+                else if (sortCol === 'academic_year') {
+                    const cA = a.courses && a.courses.length > 0 ? allCourses.find(c => c.id === a.courses[0]) : null;
+                    valA = cA ? Number(cA.academic_year) : 0;
+                    const cB = b.courses && b.courses.length > 0 ? allCourses.find(c => c.id === b.courses[0]) : null;
+                    valB = cB ? Number(cB.academic_year) : 0;
+                }
                 else if (sortCol === 'student_id') {
                     valA = (a.student_raw || '').split(' - ')[0] || '';
                     valB = (b.student_raw || '').split(' - ')[0] || '';
@@ -1400,6 +1388,24 @@ input[type=number] { -moz-appearance: textfield; }
                     valA = stuA ? getDeptShort(stuA.department) : '';
                     const stuB = allStudents.find(s => s.student_id === (b.student_raw || '').split(' - ')[0]);
                     valB = stuB ? getDeptShort(stuB.department) : '';
+                }
+                else if (sortCol === 'inst_country') {
+                    const iA = allInsts.find(i => i.id === a.inst_id || i.name === a.inst_raw);
+                    valA = iA && iA.country ? iA.country : '臺灣';
+                    const iB = allInsts.find(i => i.id === b.inst_id || i.name === b.inst_raw);
+                    valB = iB && iB.country ? iB.country : '臺灣';
+                }
+                else if (sortCol === 'gender') {
+                    const stuA = allStudents.find(s => s.student_id === (a.student_raw || '').split(' - ')[0]);
+                    valA = stuA && stuA.gender ? stuA.gender : '';
+                    const stuB = allStudents.find(s => s.student_id === (b.student_raw || '').split(' - ')[0]);
+                    valB = stuB && stuB.gender ? stuB.gender : '';
+                }
+                else if (sortCol === 'nationality') {
+                    const stuA = allStudents.find(s => s.student_id === (a.student_raw || '').split(' - ')[0]);
+                    valA = stuA && stuA.nationality ? stuA.nationality : '';
+                    const stuB = allStudents.find(s => s.student_id === (b.student_raw || '').split(' - ')[0]);
+                    valB = stuB && stuB.nationality ? stuB.nationality : '';
                 }
                 else if (sortCol === 'resp_dept') {
                     valA = a.resp_dept ? getDeptShort(a.resp_dept) : '';
@@ -1448,17 +1454,28 @@ input[type=number] { -moz-appearance: textfield; }
                 const stuId = stuParts[0] || '';
                 const stuName = stuParts[1] || '';
                 
+                // 動態撈取關聯主檔欄位
                 const stu = allStudents.find(s => s.student_id === stuId);
                 const stuCollege = stu ? getColShort(stu.college) : '未知學院';
                 const stuDept = stu ? getDeptShort(stu.department) : '未綁定學系';
+                const stuGender = stu ? (stu.gender || '-') : '-';
+                const stuNationality = stu ? (stu.nationality || '-') : '-';
 
+                let dynamicYear = '-';
                 let totalCredits = 0;
                 if (data.courses && data.courses.length > 0) {
-                    data.courses.forEach(cid => {
+                    data.courses.forEach((cid, index) => {
                         const c = allCourses.find(x => x.id === cid);
-                        if (c && c.credits) totalCredits += Number(c.credits);
+                        if (c) {
+                            if (index === 0) dynamicYear = c.academic_year;
+                            if (c.credits) totalCredits += Number(c.credits);
+                        }
                     });
                 }
+
+                let dynamicCountry = '臺灣';
+                const instMatch = allInsts.find(i => i.id === data.inst_id || i.name === data.inst_raw);
+                if (instMatch && instMatch.country) dynamicCountry = instMatch.country;
 
                 let proofBadge = 'badge-outline-gray';
                 if (data.proof_type === '合約') proofBadge = 'badge-outline-green';
@@ -1470,21 +1487,21 @@ input[type=number] { -moz-appearance: textfield; }
                     <td class="col-checkbox" style="text-align: center;">
                         <input type="checkbox" value="${data.id}" onchange="window.toggleSelect('${data.id}')" ${selectedIds.includes(data.id)?'checked':''} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                     </td>
-                    <td data-col="1" style="text-align: center;"><div class="cell-primary">${data.academic_year || '-'}</div></td>
+                    <td data-col="1" style="text-align: center;"><div class="cell-primary">${dynamicYear}</div></td>
                     <td data-col="2" style="text-align: center;"><div class="cell-primary bold">${stuId}</div></td>
                     <td data-col="3" style="text-align: center;"><div class="cell-primary bold">${stuName}</div></td>
                     <td data-col="4" style="text-align: center;"><div class="cell-primary">${stuCollege}</div></td>
                     <td data-col="5" style="text-align: center;"><div class="cell-primary">${stuDept}</div></td>
                     <td data-col="6" style="text-align: center;"><div class="cell-primary">${data.grade || '-'}</div></td>
                     <td data-col="7" style="text-align: center;"><div class="cell-primary">${data.period_type || '-'}</div></td>
-                    <td data-col="8" style="text-align: center;"><div class="cell-primary">${data.inst_country || '臺灣'}</div></td>
+                    <td data-col="8" style="text-align: center;"><div class="cell-primary">${dynamicCountry}</div></td>
                     <td data-col="9" style="text-align: left;"><div class="cell-primary bold">${data.inst_raw}</div></td>
                     <td data-col="10" style="text-align: center;"><div class="badge ${proofBadge}">${data.proof_type || '-'}</div></td>
                     <td data-col="11" style="text-align: center;"><div class="cell-primary">${data.hours !== undefined && data.hours !== '' ? data.hours : '-'}</div></td>
                     <td data-col="12" style="text-align: center;"><div class="cell-primary">${totalCredits}</div></td>
                     <td data-col="13" style="text-align: center;"><div class="cell-primary bold">${data.duration || '-'}</div></td>
-                    <td data-col="14" style="text-align: center;"><div class="cell-primary">${data.gender || '-'}</div></td>
-                    <td data-col="15" style="text-align: center;"><div class="cell-primary">${data.nationality || '-'}</div></td>
+                    <td data-col="14" style="text-align: center;"><div class="cell-primary">${stuGender}</div></td>
+                    <td data-col="15" style="text-align: center;"><div class="cell-primary">${stuNationality}</div></td>
                     <td data-col="16" style="text-align: center;"><div class="cell-primary">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</div></td>
                     <td class="col-actions">
                         <div class="row-actions">
@@ -1495,20 +1512,22 @@ input[type=number] { -moz-appearance: textfield; }
                 </tr>`;
             });
             tbody.innerHTML = tHtml;
-          
             window.updateFilterVisibility();
         };
 
         window.exportToCSV = () => {
             if (filteredRecords.length === 0) { alert("沒有資料可供匯出！"); return; }
-            // 更新 CSV 標頭順序
             let csv = '\uFEFF學年度,學號,姓名,學院,學系,年級,實習時間,實習場所國別,機構名稱,證明文件,總時數,總學分,實習起訖時間,性別,國籍(實習生),填報系所,備註\n';
             filteredRecords.forEach(d => {
+                let dynamicYear = '-';
                 let totalCredits = 0;
-                if (d.courses) {
-                    d.courses.forEach(cid => { 
+                if (d.courses && d.courses.length > 0) {
+                    d.courses.forEach((cid, index) => { 
                         const c = allCourses.find(x => x.id === cid); 
-                        if (c && c.credits) totalCredits += Number(c.credits);
+                        if (c) {
+                            if (index === 0) dynamicYear = c.academic_year;
+                            if (c.credits) totalCredits += Number(c.credits);
+                        }
                     });
                 }
                 
@@ -1518,12 +1537,18 @@ input[type=number] { -moz-appearance: textfield; }
                 const stu = allStudents.find(s => s.student_id === stuId);
                 const stuCollege = stu ? stu.college : '';
                 const stuDept = stu ? stu.department : '';
+                const stuGender = stu ? (stu.gender || '') : '';
+                const stuNationality = stu ? (stu.nationality || '') : '';
+
+                let dynamicCountry = '臺灣';
+                const instMatch = allInsts.find(i => i.id === d.inst_id || i.name === d.inst_raw);
+                if (instMatch && instMatch.country) dynamicCountry = instMatch.country;
 
                 csv += [
-                    d.academic_year || '', stuId, stuName, stuCollege, stuDept, d.grade || '', 
-                    d.period_type || '', d.inst_country || '臺灣', d.inst_raw || '', d.proof_type || '', 
+                    dynamicYear, stuId, stuName, stuCollege, stuDept, d.grade || '', 
+                    d.period_type || '', dynamicCountry, d.inst_raw || '', d.proof_type || '', 
                     d.hours !== undefined && d.hours !== '' ? d.hours : '', totalCredits, 
-                    d.duration || '', d.gender || '', d.nationality || '', d.resp_dept || '', d.notes || ''
+                    d.duration || '', stuGender, stuNationality, d.resp_dept || '', d.notes || ''
                 ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
             });
             const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
@@ -1564,26 +1589,23 @@ input[type=number] { -moz-appearance: textfield; }
                         }
                         cols.push(currentVal.trim());
 
-                        // 配合新對齊順序解析欄位 (16個必備欄位 + 1個備註)
-                        if (cols.length >= 16) {
+                        // 配合 16 欄全新結構解析
+                        if (cols.length >= 14) {
                             const academic_year = cols[0];
                             const stuId = (cols[1] || '').trim().toUpperCase();
                             const stuName = (cols[2] || '').trim();
                             const grade = cols[5];
                             const period_type = cols[6];     
-                            const inst_country = cols[7] || '臺灣';
                             const inst_raw = cols[8];
                             const proof_type = cols[9];      
                             const hours = cols[10] ? Number(cols[10]) : ''; 
                             const duration = cols[12];        
-                            const gender = cols[13];
-                            const nationality = cols[14];
                             const resp_dept = cols[15] || ''; 
                             const notes = cols[16] || '';   
 
-                            if (!academic_year || !stuId || !inst_raw || !duration || !period_type || !proof_type || !grade || !gender || !nationality) {
+                            if (!academic_year || !stuId || !inst_raw || !duration || !period_type || !proof_type || !grade) {
                                 errorCount++;
-                                window.globalImportReportData.push({ status: '錯誤', rows: `第 ${i+1} 列`, student: stuName || '未知', message: '缺少必填欄位 (學年度、學號、機構、時間、年級、性別等)' });
+                                window.globalImportReportData.push({ status: '錯誤', rows: `第 ${i+1} 列`, student: stuName || '未知', message: '缺少必填欄位 (學年度、學號、機構、起訖時間、年級等)' });
                                 continue;
                             }
 
@@ -1591,8 +1613,8 @@ input[type=number] { -moz-appearance: textfield; }
 
                             if (!recordsMap.has(key)) {
                                 recordsMap.set(key, {
-                                    academic_year, student_raw: `${stuId} - ${stuName}`, stuId: stuId, stuName: stuName, grade, inst_raw, inst_country, duration, hours: hours !== '' ? hours : 0, 
-                                    period_type, proof_type, gender, nationality, notes, resp_dept, courseIds: [], sourceRows: [i+1] 
+                                    academic_year, student_raw: `${stuId} - ${stuName}`, stuId: stuId, stuName: stuName, grade, inst_raw, duration, hours: hours !== '' ? hours : 0, 
+                                    period_type, proof_type, notes, resp_dept, courseIds: [], sourceRows: [i+1] 
                                 });
                             } else if (hours !== '') {
                                 const groupRecord = recordsMap.get(key);
@@ -1601,7 +1623,7 @@ input[type=number] { -moz-appearance: textfield; }
                             }
                         } else {
                             errorCount++;
-                            window.globalImportReportData.push({ status: '錯誤', rows: `第 ${i+1} 列`, student: '-', message: '欄位數量不足，不符合新版結構' });
+                            window.globalImportReportData.push({ status: '錯誤', rows: `第 ${i+1} 列`, student: '-', message: '欄位格式數量不足' });
                         }
                     }
 
@@ -1614,19 +1636,19 @@ input[type=number] { -moz-appearance: textfield; }
                         const instMatch = allInsts.find(inst => inst.name === record.inst_raw);
                         if (!instMatch) rowWarnings.push("未綁定系統機構主檔");
 
-                        // 嘗試依照學生學年度自動綁定符合的實習課程
+                        // 自動關聯尋找符合該學年度與學生科系的課程
                         const matchedCourses = allCourses.filter(c => c.academic_year === record.academic_year && c.department === (studentMatch ? studentMatch.department : ''));
                         matchedCourses.forEach(c => record.courseIds.push(c.id));
 
-                        if (record.courseIds.length === 0) rowWarnings.push("無法自動關聯當學年開課，請事後手動補綁");
+                        if (record.courseIds.length === 0) rowWarnings.push("無法依據學年度自動配對開課，請事後手動補綁");
 
                         const payload = {
-                            academic_year: record.academic_year, student_raw: record.student_raw, grade: record.grade, 
-                            inst_raw: record.inst_raw, inst_country: record.inst_country,
+                            student_raw: record.student_raw, grade: record.grade, 
+                            inst_raw: record.inst_raw, 
                             inst_id: instMatch ? instMatch.id : '', 
                             courses: record.courseIds, duration: record.duration,
                             hours: record.hours, period_type: record.period_type, proof_type: record.proof_type,
-                            gender: record.gender, nationality: record.nationality, notes: record.notes, 
+                            notes: record.notes, 
                             resp_dept: record.resp_dept || (studentMatch ? studentMatch.department : ''), 
                             created_at: serverTimestamp()
                         };
@@ -1636,7 +1658,7 @@ input[type=number] { -moz-appearance: textfield; }
                             window.globalImportReportData.push({ status: '警告', rows: `合併列 [${record.sourceRows.join(',')}]`, student: `${record.stuId} - ${record.stuName}`, message: rowWarnings.join('、') });
                         } else {
                             successCount++;
-                            window.globalImportReportData.push({ status: '成功', rows: `合併列 [${record.sourceRows.join(',')}]`, student: `${record.stuId} - ${record.stuName}`, message: '完美匯入並綁定' });
+                            window.globalImportReportData.push({ status: '成功', rows: `合併列 [${record.sourceRows.join(',')}]`, student: `${record.stuId} - ${record.stuName}`, message: '成功綁定匯入' });
                         }
                         parsedRows.push(payload);
                     }
@@ -1688,14 +1710,10 @@ input[type=number] { -moz-appearance: textfield; }
             if (!respDeptInput) { alert("請選擇負責填報系所！"); return; }
 
             const payload = { 
-                academic_year: document.getElementById('input-academic-year').value.trim(),
                 student_raw: document.getElementById('input-student').value.trim(), 
                 grade: document.getElementById('input-grade').value,
-                gender: document.getElementById('input-gender').value,
-                nationality: document.getElementById('input-nationality').value.trim(),
                 inst_raw: instInput.value.trim(), 
                 inst_id: instInput.dataset.id || '', 
-                inst_country: document.getElementById('input-inst-country').value.trim(),
                 period_type: document.getElementById('input-period-type').value,
                 duration: durationInput, 
                 proof_type: document.getElementById('input-proof-type').value, 
@@ -1705,7 +1723,7 @@ input[type=number] { -moz-appearance: textfield; }
                 courses: selectedCourseIds
             };
 
-            if(!payload.academic_year || !payload.student_raw || !payload.inst_raw || !payload.duration || !payload.grade || !payload.period_type || !payload.proof_type || !payload.gender || !payload.nationality || !payload.inst_country || !payload.resp_dept) { alert("請完成所有包含 * 號之必填欄位設定！"); return; }
+            if(!payload.student_raw || !payload.inst_raw || !payload.duration || !payload.grade || !payload.period_type || !payload.proof_type || !payload.resp_dept) { alert("請完成所有包含 * 號之必填欄位設定！"); return; }
             
             btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 儲存中...';
             try {
@@ -1720,16 +1738,12 @@ input[type=number] { -moz-appearance: textfield; }
             const data = allRecords.find(d => d.id === id); if (!data) return;
             editingId = id;
             
-            document.getElementById('input-academic-year').value = data.academic_year || '';
             document.getElementById('input-student').value = data.student_raw || '';
             document.getElementById('input-grade').value = data.grade || '';
-            document.getElementById('input-gender').value = data.gender || '';
-            document.getElementById('input-nationality').value = data.nationality || '';
             
             const instInput = document.getElementById('input-institution');
             instInput.value = data.inst_raw || '';
             instInput.dataset.id = data.inst_id || ''; 
-            document.getElementById('input-inst-country').value = data.inst_country || '臺灣';
             
             document.getElementById('input-period-type').value = data.period_type || '';
             document.getElementById('input-proof-type').value = data.proof_type || '';
