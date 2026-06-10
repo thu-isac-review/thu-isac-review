@@ -440,15 +440,15 @@ input[type=number] { -moz-appearance: textfield; }
                             <th data-col="7" style="width: 7%;">實習時間</th>
                             <th data-sort="inst_country" data-col="8" style="width: 7%;">實習場所國別 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="inst_raw" data-col="9" style="width: 12%;">機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="course_name" data-col="10" style="width: 10%;">課程名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="course_type" data-col="11" style="width: 6%;">課程屬性 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-col="12" style="width: 5%;">證明文件</th>
-                            <th data-sort="hours" data-col="13" style="width: 5%;">分配時數 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-col="14" style="width: 4%;">學分 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="duration" data-col="15" style="width: 11%;">實習起訖時間 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="gender" data-col="16" style="width: 4%;">性別 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="nationality" data-col="17" style="width: 6%;">國籍(實習生) <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="resp_dept" data-col="18" style="width: 6%;">填報系所 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="inst_place" data-col="10" style="width: 8%;">實習場所 <i class="ti ti-arrows-sort sort-icon"></i></th> <th data-sort="course_name" data-col="11" style="width: 10%;">課程名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="course_type" data-col="12" style="width: 6%;">課程屬性 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-col="13" style="width: 5%;">證明文件</th>
+                            <th data-sort="hours" data-col="14" style="width: 5%;">分配時數 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-col="15" style="width: 4%;">學分 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="duration" data-col="16" style="width: 11%;">實習起訖時間 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="gender" data-col="17" style="width: 4%;">性別 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="nationality" data-col="18" style="width: 6%;">國籍(實習生) <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="resp_dept" data-col="19" style="width: 6%;">填報系所 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th class="col-actions" style="width: 5%;">操作</th>
                         </tr>
                     </thead>
@@ -686,6 +686,7 @@ input[type=number] { -moz-appearance: textfield; }
             { index: 7, label: '實習時間', visible: true },
             { index: 8, label: '實習場所國別', visible: true },
             { index: 9, label: '機構名稱', visible: true },
+            { index: 10, label: '實習場所', visible: true }
             { index: 10, label: '課程名稱', visible: true },
             { index: 11, label: '課程屬性', visible: true },
             { index: 12, label: '證明文件', visible: true },
@@ -1115,8 +1116,11 @@ input[type=number] { -moz-appearance: textfield; }
                 const stuNationality = stu ? (stu.nationality || '-') : '-';
 
                 let dynamicCountry = '臺灣';
+                let dynamicPlace = '-'; // 預設場所
                 const instMatch = allInsts.find(i => i.id === data.inst_id || i.name === data.inst_raw);
-                if (instMatch && instMatch.country) dynamicCountry = instMatch.country;
+                if (instMatch) {
+                    if (instMatch.country) dynamicCountry = instMatch.country;
+                    if (instMatch.place) dynamicPlace = instMatch.place;
 
                 let proofBadge = 'badge-outline-gray';
                 if (data.proof_type === '合約') proofBadge = 'badge-outline-green';
@@ -1137,6 +1141,7 @@ input[type=number] { -moz-appearance: textfield; }
                     <td data-col="7" style="text-align: center;"><div class="cell-primary">${data.period_type || '-'}</div></td>
                     <td data-col="8" style="text-align: center;"><div class="cell-primary">${dynamicCountry}</div></td>
                     <td data-col="9" style="text-align: left;"><div class="cell-primary bold">${data.inst_raw}</div></td>
+                    <td data-col="10" style="text-align: left;"><div class="cell-primary">${dynamicPlace}</div></td> <td data-col="11" style="text-align: left;"><div class="cell-primary bold" style="color: var(--brand);">${data.courseNameText}</div></td>
                     
                     <td data-col="10" style="text-align: left;"><div class="cell-primary bold" style="color: var(--brand);">${data.courseNameText}</div></td>
                     <td data-col="11" style="text-align: center;"><span class="badge badge-outline-purple">${data.courseTypeText}</span></td>
