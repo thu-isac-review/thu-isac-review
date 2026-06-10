@@ -103,8 +103,20 @@ tr:hover { background-color: #f3f6ff; }
 tr.selected { background-color: #eef2ff !important; }
 
 /* 🌟 [修正] 移除多餘的 border，維持乾淨的凍結效果 */
-.col-checkbox { position: sticky; left: 0; width: 48px; text-align: center; z-index: 2; background-color: inherit; }
-th.col-checkbox { z-index: 3; background-color: var(--surface); }
+.col-checkbox {
+    position: sticky;
+    left: 0;
+    width: 48px;
+    text-align: center;
+    z-index: 2;
+    background-color: inherit;
+    border-right: none !important; /* 移除凍結框線 */
+}
+th.col-checkbox {
+    z-index: 3;
+    background-color: var(--surface);
+    border-right: none !important;
+}
 
 .col-name { width: auto; }
 th.col-name { text-align: center; z-index: 1; } 
@@ -117,8 +129,20 @@ th.col-name { text-align: center; z-index: 1; }
 
 .col-address { width: auto; } 
 
-.col-actions { position: sticky; right: 0; width: 100px; text-align: center; z-index: 2; background-color: inherit; }
-th.col-actions { z-index: 3; background-color: var(--surface); }
+.col-actions {
+    position: sticky;
+    right: 0;
+    width: 90px; /* 統一為 90px */
+    text-align: center;
+    z-index: 2;
+    background-color: inherit;
+    border-left: none !important; /* 移除凍結框線 */
+}
+th.col-actions {
+    z-index: 3;
+    background-color: var(--surface);
+    border-left: none !important;
+}
 
 th[data-sort] { cursor: pointer; user-select: none; transition: color var(--transition); }
 th[data-sort]:hover { color: var(--text-secondary); }
