@@ -323,7 +323,7 @@ input[type=number] { -moz-appearance: textfield; }
 }
 .search-dropdown.show { display: block; }
 .search-item { padding: 10px 12px; border-bottom: 1px solid var(--bg); cursor: pointer; transition: background var(--transition); }
-.search-item-hover { background: var(--bg); }
+.search-item:hover { background: var(--bg); }
 .search-item:last-child { border-bottom: none; }
 .search-item-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
 .search-item-desc { font-size: 11px; color: var(--text-muted); font-weight: 500; }
@@ -384,6 +384,28 @@ input[type=number] { -moz-appearance: textfield; }
 
 @media (max-width: 1024px) {
   .split-layout { grid-template-columns: 1fr; gap: 40px; }
+}
+
+@media (max-width: 768px) {
+  .col-checkbox { display: none !important; }
+  #batch-bar { display: none !important; }
+  .toolbar { padding: 12px 16px; justify-content: flex-end; }
+  .search-wrap { flex: 0 0 100%; order: 1; margin-bottom: 8px; }
+  .toolbar .flex-spacer, .filter-row .flex-spacer { display: none; }
+  .toolbar-actions { order: 2; width: 100%; justify-content: space-between; display: flex; gap: 8px; }
+  .toolbar-actions .btn { flex: 1; padding: 0 4px; font-size: 11px; margin: 0; }
+  .v-divider { display: none; }
+  .form-grid { grid-template-columns: 1fr; }
+  .fs-topbar { padding: 0 16px; }
+  .fs-content { padding: 16px 16px 40px 16px; } 
+
+  .filter-row { flex-wrap: nowrap; overflow-x: auto; padding-right: 0; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .filter-pill-wrap { flex-shrink: 0; }
+  
+  #pill-wrap-col-toggle { position: sticky; right: 0; background: var(--bg); padding-left: 8px; padding-right: 16px; margin-left: auto; z-index: 50; }
+  #pill-wrap-col-toggle::before { content: ''; position: absolute; left: -16px; top: 0; bottom: 0; width: 16px; background: linear-gradient(to right, rgba(248,249,252,0), #f8f9fc); pointer-events: none; }
+  .filter-dropdown { position: fixed !important; top: 145px !important; left: 16px !important; right: 16px !important; width: auto !important; min-width: auto !important; box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important; }
 }
 </style>
 </head>
@@ -455,7 +477,7 @@ input[type=number] { -moz-appearance: textfield; }
                     </thead>
                     <tbody id="table-body">
                         <tr>
-                            <td colspan="20" class="empty-state">
+                            <td colspan="21" class="empty-state">
                                 <i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i>
                                 <div class="empty-text">資料載入與驗證中...</div>
                             </td>
@@ -1011,6 +1033,9 @@ input[type=number] { -moz-appearance: textfield; }
                             assignedHours = d.hours || '-';
                         }
 
+                        const iMatch = allInsts.find(i => i.id === d.inst_id || i.name === d.inst_raw);
+                        let assignedPlace = iMatch && iMatch.venue_type ? iMatch.venue_type : '-';
+
                         virtualRows.push({
                             ...d,
                             virtualId: `${d.id}_${cid}`,
@@ -1019,10 +1044,14 @@ input[type=number] { -moz-appearance: textfield; }
                             singleCourseHours: assignedHours,
                             courseNameText: cObj ? cObj.course_name : '-',
                             courseTypeText: cObj ? (cObj.course_type || '校外實習') : '-',
-                            academicYearText: cObj ? cObj.academic_year : '-'
+                            academicYearText: cObj ? cObj.academic_year : '-',
+                            instPlaceText: assignedPlace
                         });
                     });
                 } else {
+                    const iMatch = allInsts.find(i => i.id === d.inst_id || i.name === d.inst_raw);
+                    let assignedPlace = iMatch && iMatch.venue_type ? iMatch.venue_type : '-';
+
                     virtualRows.push({
                         ...d,
                         virtualId: `${d.id}_none`,
@@ -1031,7 +1060,8 @@ input[type=number] { -moz-appearance: textfield; }
                         singleCourseHours: d.hours || '-',
                         courseNameText: '-',
                         courseTypeText: '-',
-                        academicYearText: '-'
+                        academicYearText: '-',
+                        instPlaceText: assignedPlace
                     });
                 }
             });
@@ -1057,6 +1087,17 @@ input[type=number] { -moz-appearance: textfield; }
                 else if (sortCol === 'course_name') { valA = a.courseNameText; valB = b.courseNameText; }
                 else if (sortCol === 'course_type') { valA = a.courseTypeText; valB = b.courseTypeText; }
                 else if (sortCol === 'hours') { valA = Number(a.singleCourseHours) || 0; valB = Number(b.singleCourseHours) || 0; }
+                else if (sortCol === 'inst_place') { valA = a.instPlaceText || '-'; valB = b.instPlaceText || '-'; } 
+                else if (sortCol === 'inst_raw') { valA = a.inst_raw || ''; valB = b.inst_raw || ''; } 
+                else if (sortCol === 'dept' || sortCol === 'college') {
+                    const stuA = allStudents.find(s => s.student_id === (a.student_raw || '').split(' - ')[0]);
+                    const stuB = allStudents.find(s => s.student_id === (b.student_raw || '').split(' - ')[0]);
+                    if (sortCol === 'dept') {
+                        valA = stuA ? stuA.department : ''; valB = stuB ? stuB.department : '';
+                    } else {
+                        valA = stuA ? stuA.college : ''; valB = stuB ? stuB.college : '';
+                    }
+                }
                 else { valA = (a[sortCol] || '').toString().toLowerCase(); valB = (b[sortCol] || '').toString().toLowerCase(); }
 
                 if (valA < valB) return sortDir === 'asc' ? -1 : 1;
@@ -1085,7 +1126,7 @@ input[type=number] { -moz-appearance: textfield; }
             
             document.getElementById('selectAll').checked = items.length > 0 && items.every(i => selectedIds.includes(i.id));
 
-            if (total === 0) { tbody.innerHTML = `<tr><td colspan="20" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">找不到符合條件的紀錄。</div></td></tr>`; return; }
+            if (total === 0) { tbody.innerHTML = `<tr><td colspan="21" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">找不到符合條件的紀錄。</div></td></tr>`; return; }
 
             let tHtml = '';
             items.forEach(data => {
@@ -1103,8 +1144,8 @@ input[type=number] { -moz-appearance: textfield; }
                 const instMatch = allInsts.find(i => i.id === data.inst_id || i.name === data.inst_raw);
                 if (instMatch) {
                     if (instMatch.country) dynamicCountry = instMatch.country;
-                    if (instMatch.place) dynamicPlace = instMatch.place;
-                } // 完美閉合
+                    if (instMatch.venue_type) dynamicPlace = instMatch.venue_type;
+                }
 
                 let proofBadge = 'badge-outline-gray';
                 if (data.proof_type === '合約') proofBadge = 'badge-outline-green';
@@ -1160,7 +1201,7 @@ input[type=number] { -moz-appearance: textfield; }
                 const instMatch = allInsts.find(i => i.id === v.inst_id || i.name === v.inst_raw);
                 if (instMatch) {
                     if (instMatch.country) dynamicCountry = instMatch.country;
-                    if (instMatch.place) dynamicPlace = instMatch.place;
+                    if (instMatch.venue_type) dynamicPlace = instMatch.venue_type;
                 }
         
                 csv += [
@@ -1204,9 +1245,9 @@ input[type=number] { -moz-appearance: textfield; }
             let html = '<option value="">請選擇負責填報系所...</option>';
             Array.from(deptsSet).forEach(d => {
                 const deptObj = globalDepts.find(x => x.name === d);
-                html += `<option value="${d}">${deptObj ? deptObj.shortName : d}</option>\``;
+                html += `<option value="${d}">${deptObj ? deptObj.shortName : d}</option>`;
             });
-            selectEl.innerHTML = html.replace(/\`/g, '');
+            selectEl.innerHTML = html;
             if (preselectedValue) selectEl.value = preselectedValue;
         };
 
