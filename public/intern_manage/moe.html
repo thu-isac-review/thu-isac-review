@@ -136,9 +136,6 @@ html, body {
 .btn-info-pop:hover:not(:disabled) { background: var(--brand-light); border-color: var(--brand-border); }
 .btn-info-pop:disabled { opacity: 0.3; cursor: not-allowed; color: var(--text-muted); border-color: var(--border); background: var(--bg); }
 
-.more-badge { display: inline-flex; align-items: center; justify-content: center; height: 24px; padding: 0 8px; border-radius: 99px; background: var(--border); color: var(--text-secondary); font-size: 11px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-left: auto; flex-shrink: 0; border: none; outline: none; }
-.more-badge:hover { background: var(--border-strong); color: var(--text-primary); }
-
 /* ─── FILTER ROW & BATCH BAR ─── */
 .filter-row {
   padding: 10px 24px;
@@ -204,7 +201,7 @@ html, body {
 /* ─── TABLE ─── */
 .table-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-height: 0; position: relative; }
 .table-scroll { flex: 1; overflow-x: auto; overflow-y: auto; }
-table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; min-width: 2800px; }
+table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; min-width: 3200px; }
 
 th {
   padding: 12px 16px; text-align: center; 
@@ -233,10 +230,10 @@ tr.selected td { background: #f0f4ff; }
 /* Badges for Table */
 .badge { display: inline-flex; align-items: center; justify-content: center; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; }
 .badge-outline-blue { background: var(--brand-light); color: var(--brand); border: 1px solid var(--brand-border); }
+.badge-outline-purple { background: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; }
 .badge-outline-green { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
 .badge-outline-amber { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
 .badge-outline-red { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
-.badge-outline-indigo { background: var(--indigo-bg); color: var(--indigo); border: 1px solid var(--indigo-border); }
 .badge-outline-gray { background: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; }
 
 /* ─── PAGINATION ─── */
@@ -388,28 +385,6 @@ input[type=number] { -moz-appearance: textfield; }
 @media (max-width: 1024px) {
   .split-layout { grid-template-columns: 1fr; gap: 40px; }
 }
-
-@media (max-width: 768px) {
-  .col-checkbox { display: none !important; }
-  #batch-bar { display: none !important; }
-  .toolbar { padding: 12px 16px; justify-content: flex-end; }
-  .search-wrap { flex: 0 0 100%; order: 1; margin-bottom: 8px; }
-  .toolbar .flex-spacer, .filter-row .flex-spacer { display: none; }
-  .toolbar-actions { order: 2; width: 100%; justify-content: space-between; display: flex; gap: 8px; }
-  .toolbar-actions .btn { flex: 1; padding: 0 4px; font-size: 11px; margin: 0; }
-  .v-divider { display: none; }
-  .form-grid { grid-template-columns: 1fr; }
-  .fs-topbar { padding: 0 16px; }
-  .fs-content { padding: 16px 16px 40px 16px; } 
-
-  .filter-row { flex-wrap: nowrap; overflow-x: auto; padding-right: 0; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-  .filter-row::-webkit-scrollbar { display: none; }
-  .filter-pill-wrap { flex-shrink: 0; }
-  
-  #pill-wrap-col-toggle { position: sticky; right: 0; background: var(--bg); padding-left: 8px; padding-right: 16px; margin-left: auto; z-index: 50; }
-  #pill-wrap-col-toggle::before { content: ''; position: absolute; left: -16px; top: 0; bottom: 0; width: 16px; background: linear-gradient(to right, rgba(248,249,252,0), #f8f9fc); pointer-events: none; }
-  .filter-dropdown { position: fixed !important; top: 145px !important; left: 16px !important; right: 16px !important; width: auto !important; min-width: auto !important; box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important; }
-}
 </style>
 </head>
 <body>
@@ -464,20 +439,22 @@ input[type=number] { -moz-appearance: textfield; }
                             <th data-sort="grade" data-col="6" style="width: 5%;">年級 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-col="7" style="width: 7%;">實習時間</th>
                             <th data-sort="inst_country" data-col="8" style="width: 7%;">實習場所國別 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="inst_raw" data-col="9" style="width: 14%;">機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-col="10" style="width: 6%;">證明文件</th>
-                            <th data-sort="hours" data-col="11" style="width: 4%;">總時數 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-col="12" style="width: 4%;">總學分</th>
-                            <th data-sort="duration" data-col="13" style="width: 11%;">實習起訖時間 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="gender" data-col="14" style="width: 4%;">性別 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="nationality" data-col="15" style="width: 6%;">國籍(實習生) <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="resp_dept" data-col="16" style="width: 6%;">填報系所 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="inst_raw" data-col="9" style="width: 12%;">機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="course_name" data-col="10" style="width: 10%;">課程名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="course_type" data-col="11" style="width: 6%;">課程屬性 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-col="12" style="width: 5%;">證明文件</th>
+                            <th data-sort="hours" data-col="13" style="width: 5%;">分配時數 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-col="14" style="width: 4%;">學分 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="duration" data-col="15" style="width: 11%;">實習起訖時間 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="gender" data-col="16" style="width: 4%;">性別 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="nationality" data-col="17" style="width: 6%;">國籍(實習生) <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="resp_dept" data-col="18" style="width: 6%;">填報系所 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th class="col-actions" style="width: 5%;">操作</th>
                         </tr>
                     </thead>
                     <tbody id="table-body">
                         <tr>
-                            <td colspan="18" class="empty-state">
+                            <td colspan="20" class="empty-state">
                                 <i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i>
                                 <div class="empty-text">資料載入與驗證中...</div>
                             </td>
@@ -567,7 +544,7 @@ input[type=number] { -moz-appearance: textfield; }
                 <div class="split-col">
                     <div class="clean-section stretch-section" style="display: flex; flex-direction: column; margin-bottom: 24px !important;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px solid var(--brand-light); padding-bottom: 8px;">
-                            <div class="clean-section-title" style="border: none; padding: 0; margin: 0;"><i class="ti ti-album"></i> 修習課程明細</div>
+                            <div class="clean-section-title" style="border: none; padding: 0; margin: 0;"><i class="ti ti-album"></i> 修習課程明細 (點擊右側可編輯整筆實習的多門課程)</div>
                             <span id="selected-course-count" class="badge badge-outline-blue" style="font-size: 11px; padding: 4px 8px;">已選 0 門</span>
                         </div>
                         
@@ -598,7 +575,7 @@ input[type=number] { -moz-appearance: textfield; }
                                 <input type="text" id="input-duration" class="field-input" placeholder="YYY/MM/DD-YYY/MM/DD" required>
                             </div>
                             <div class="field">
-                                <label class="field-label">總時數</label>
+                                <label class="field-label">總時數 (會自動依各課程學分比例分配)</label>
                                 <input type="number" id="input-hours" class="field-input" placeholder="可留空 (待補)" min="0">
                             </div>
                         </div>
@@ -665,9 +642,6 @@ input[type=number] { -moz-appearance: textfield; }
                     <div id="report-details-container" class="custom-scroll" style="max-height: 240px; overflow-y: auto; font-size: 13px;">
                     </div>
                 </div>
-                <div style="font-size: 11px; color: var(--text-muted); margin-top: 12px; font-weight: 500;">
-                    <i class="ti ti-search" style="color: var(--brand);"></i> 提示：帶有「異常綁定」的資料依然會被匯入系統，您可以事後透過編輯功能或補齊主檔來修正。
-                </div>
             </div>
             <div class="dialog-footer">
                 <button type="button" class="btn btn-secondary" onclick="window.closeImportReportModal()">關閉視窗</button>
@@ -711,13 +685,15 @@ input[type=number] { -moz-appearance: textfield; }
             { index: 7, label: '實習時間', visible: true },
             { index: 8, label: '實習場所國別', visible: true },
             { index: 9, label: '機構名稱', visible: true },
-            { index: 10, label: '證明文件', visible: true },
-            { index: 11, label: '總時數', visible: true },
-            { index: 12, label: '總學分', visible: true },
-            { index: 13, label: '實習起訖時間', visible: true },
-            { index: 14, label: '性別', visible: true },
-            { index: 15, label: '國籍(實習生)', visible: true },
-            { index: 16, label: '填報系所', visible: true }
+            { index: 10, label: '課程名稱', visible: true },
+            { index: 11, label: '課程屬性', visible: true },
+            { index: 12, label: '證明文件', visible: true },
+            { index: 13, label: '分配時數', visible: true },
+            { index: 14, label: '學分', visible: true },
+            { index: 15, label: '實習起訖時間', visible: true },
+            { index: 16, label: '性別', visible: true },
+            { index: 17, label: '國籍(實習生)', visible: true },
+            { index: 18, label: '填報系所', visible: true }
         ];
 
         window.toggleColumn = (index, isVisible) => {
@@ -743,7 +719,7 @@ input[type=number] { -moz-appearance: textfield; }
         };
 
         const filterSelections = {
-            dept: new Set(), grade: new Set(), inst_raw: new Set(), course: new Set(), resp_dept: new Set(),
+            dept: new Set(), grade: new Set(), inst_raw: new Set(), resp_dept: new Set(),
             period: new Set(), proof: new Set(), academic_year: new Set(), inst_country: new Set()
         };
         const filterDefinitions = [
@@ -752,7 +728,6 @@ input[type=number] { -moz-appearance: textfield; }
             { key: 'grade', label: '年級', searchable: false },
             { key: 'inst_country', label: '實習場所國別', searchable: false },
             { key: 'inst_raw', label: '機構名稱', searchable: true },
-            { key: 'course', label: '修習課程', searchable: true },
             { key: 'resp_dept', label: '填報系所', searchable: true },
             { key: 'period', label: '實習時間', searchable: false },
             { key: 'proof', label: '證明文件', searchable: false }
@@ -800,53 +775,15 @@ input[type=number] { -moz-appearance: textfield; }
                     const matchSearch = (d.student_raw || '').toLowerCase().includes(globalSearchTerm) || (d.inst_raw || '').toLowerCase().includes(globalSearchTerm);
                     let ok = matchSearch;
 
-                    // 撈取動態資料以供篩選比對
-                    let dynamicYear = '-';
-                    if (d.courses && d.courses.length > 0) {
-                        const firstCourse = allCourses.find(c => c.id === d.courses[0]);
-                        if (firstCourse) dynamicYear = firstCourse.academic_year;
-                    }
-                    
-                    let dynamicCountry = '臺灣';
-                    if (d.inst_id) {
-                        const iMatch = allInsts.find(i => i.id === d.inst_id);
-                        if (iMatch && iMatch.country) dynamicCountry = iMatch.country;
-                    } else {
-                        const iMatch = allInsts.find(i => i.name === d.inst_raw);
-                        if (iMatch && iMatch.country) dynamicCountry = iMatch.country;
-                    }
-
-                    if (key !== 'academic_year' && ok && filterSelections.academic_year.size > 0) ok = filterSelections.academic_year.has(dynamicYear);
-                    if (key !== 'dept' && ok && filterSelections.dept.size > 0) {
-                        const stuId = (d.student_raw || '').split(' - ')[0];
-                        const stu = allStudents.find(s => s.student_id === stuId);
-                        ok = stu && filterSelections.dept.has(stu.department);
-                    }
-                    if (key !== 'grade' && ok && filterSelections.grade.size > 0) ok = filterSelections.grade.has(d.grade);
-                    if (key !== 'inst_country' && ok && filterSelections.inst_country.size > 0) ok = filterSelections.inst_country.has(dynamicCountry);
-                    if (key !== 'inst_raw' && ok && filterSelections.inst_raw.size > 0) ok = filterSelections.inst_raw.has(d.inst_raw);
-                    if (key !== 'course' && ok && filterSelections.course.size > 0) {
-                        ok = d.courses && d.courses.some(cid => filterSelections.course.has(cid));
-                    }
-                    if (key !== 'resp_dept' && ok && filterSelections.resp_dept.size > 0) ok = filterSelections.resp_dept.has(d.resp_dept);
-                    if (key !== 'period' && ok && filterSelections.period.size > 0) ok = filterSelections.period.has(d.period_type);
-                    if (key !== 'proof' && ok && filterSelections.proof.size > 0) ok = filterSelections.proof.has(d.proof_type);
-
                     if (ok) {
-                        if (key === 'academic_year') {
-                            availableValues.add(dynamicYear);
-                        } else if (key === 'dept') {
+                        if (key === 'dept') {
                             const stuId = (d.student_raw || '').split(' - ')[0];
                             const stu = allStudents.find(s => s.student_id === stuId);
                             if (stu && stu.department) availableValues.add(stu.department);
                         } else if (key === 'grade') {
                             if (d.grade) availableValues.add(d.grade);
-                        } else if (key === 'inst_country') {
-                            availableValues.add(dynamicCountry);
                         } else if (key === 'inst_raw') {
                             if (d.inst_raw) availableValues.add(d.inst_raw);
-                        } else if (key === 'course') {
-                            if (d.courses) d.courses.forEach(cid => availableValues.add(cid));
                         } else if (key === 'resp_dept') {
                             if (d.resp_dept) availableValues.add(d.resp_dept);
                         } else if (key === 'period') {
@@ -857,44 +794,43 @@ input[type=number] { -moz-appearance: textfield; }
                     }
                 });
 
+                // 動態欄位提取篩選
+                if (key === 'academic_year' || key === 'inst_country') {
+                    allRecords.forEach(r => {
+                        if (r.courses) {
+                            r.courses.forEach(cid => {
+                                const c = allCourses.find(x => x.id === cid);
+                                if (c) yearsSet.add(c.academic_year);
+                            });
+                        }
+                        const iMatch = allInsts.find(i => i.id === r.inst_id || i.name === r.inst_raw);
+                        countriesSet.add(iMatch && iMatch.country ? iMatch.country : '臺灣');
+                    });
+                }
+
                 const container = document.getElementById(`${key}-options-container`);
                 if (container) {
-                    const searchInputLocal = document.getElementById(`search-${key}-input`);
-                    const localSearchTerm = searchInputLocal ? searchInputLocal.value.toLowerCase().trim() : '';
-
                     container.querySelectorAll('.filter-option').forEach(lbl => {
-                        const checkbox = lbl.querySelector('input[type="checkbox"]');
-                        const val = checkbox.value;
-                        const text = lbl.querySelector('span').textContent.toLowerCase();
-                        
-                        const isAvailable = availableValues.has(val) || checkbox.checked;
-                        const matchesLocalSearch = text.includes(localSearchTerm);
-
-                        if (isAvailable && matchesLocalSearch) lbl.style.display = 'flex';
-                        else lbl.style.display = 'none';
+                        lbl.style.display = 'flex'; // 保留可見
                     });
                 }
             });
         };
 
+        const yearsSet = new Set();
+        const countriesSet = new Set();
+
         function renderFilterDropdowns() {
             const container = document.getElementById('filter-container');
             const uniqueSortedDepts = [...new Set(globalDepts.map(d=>d.name))];
             
-            const uniqueUsedCourses = [...new Set(allRecords.flatMap(r => r.courses || []))];
-            const courseOptions = uniqueUsedCourses.map(cid => {
-                const c = allCourses.find(x => x.id === cid);
-                return { value: cid, label: c ? formatCourseInfo(c) : cid };
-            }).filter(opt => opt.label !== opt.value);
-            courseOptions.sort((a,b) => a.label.localeCompare(b.label));
-
-            // 計算動態的學年度與場所國別清單以供篩選
-            const yearsSet = new Set();
-            const countriesSet = new Set();
+            yearsSet.clear(); countriesSet.clear();
             allRecords.forEach(r => {
-                if (r.courses && r.courses.length > 0) {
-                    const cMatch = allCourses.find(c => c.id === r.courses[0]);
-                    if (cMatch) yearsSet.add(cMatch.academic_year);
+                if (r.courses) {
+                    r.courses.forEach(cid => {
+                        const c = allCourses.find(x => x.id === cid);
+                        if (c) yearsSet.add(c.academic_year);
+                    });
                 }
                 const iMatch = allInsts.find(i => i.id === r.inst_id || i.name === r.inst_raw);
                 countriesSet.add(iMatch && iMatch.country ? iMatch.country : '臺灣');
@@ -906,7 +842,6 @@ input[type=number] { -moz-appearance: textfield; }
                 grade: ['1', '2', '3', '4', '5'].map(v=>({value:v, label: `${v} 年級${v==='5'?'以上':''}`})),
                 inst_country: [...countriesSet].sort().map(v=>({value:v, label:v})),
                 inst_raw: [...new Set(allRecords.map(r=>r.inst_raw))].filter(Boolean).sort().map(v=>({value:v, label:v})),
-                course: courseOptions,
                 resp_dept: uniqueSortedDepts.map(v=>({value:v, label: getDeptShort(v)})),
                 period: ['寒假實習', '暑假實習', '學期期間實習', '單一學期實習', '全學年'].map(v=>({value:v, label:v})),
                 proof: ['合約', '公函', '其他證明文件'].map(v=>({value:v, label:v}))
@@ -973,7 +908,6 @@ input[type=number] { -moz-appearance: textfield; }
             
             container.querySelectorAll('.filter-pill-wrap, .flex-spacer').forEach(el => el.remove());
             container.insertAdjacentHTML('afterbegin', html);
-            window.updateFilterVisibility();
         }
 
         window.toggleDropdown = (type) => {
@@ -988,7 +922,6 @@ input[type=number] { -moz-appearance: textfield; }
         window.toggleFilterCheck = (type, val) => {
             const set = filterSelections[type];
             if (set.has(val)) set.delete(val); else set.add(val);
-            document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
             currentPage = 1; window.updatePillActive(type); window.renderTable();
         };
 
@@ -996,7 +929,7 @@ input[type=number] { -moz-appearance: textfield; }
             const set = filterSelections[type];
             const def = filterDefinitions.find(d => d.key === type);
             if(!def) return;
-            const pill = document.getElementById(`pill-${type}`);
+            const pill = document.getElementById('pill-' + type);
             if (set.size > 0) {
                 pill.classList.add('active');
                 pill.innerHTML = `${def.label} <span class="pill-count">${set.size}</span> <i class="ti ti-chevron-down"></i>`;
@@ -1008,262 +941,10 @@ input[type=number] { -moz-appearance: textfield; }
 
         window.clearFilter = (type) => {
             filterSelections[type].clear();
-            document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = false);
-            const searchInput = document.getElementById(`search-${type}-input`);
-            if (searchInput) searchInput.value = '';
             currentPage = 1; window.updatePillActive(type); window.renderTable();
         };
-        
-        document.addEventListener('click', e => {
-            if (!e.target.closest('.filter-pill-wrap')) {
-                document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
-                document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
-            }
-        });
 
-        // ─── SORTING LOGIC ───
-        let sortCol = 'created_at'; let sortDir = 'desc';
-        document.querySelectorAll('th[data-sort]').forEach(th => {
-            th.onclick = () => {
-                const col = th.dataset.sort;
-                if (sortCol === col) { sortDir = sortDir === 'asc' ? 'desc' : 'asc'; } 
-                else { sortCol = col; sortDir = 'asc'; }
-                
-                document.querySelectorAll('th[data-sort]').forEach(t => {
-                    t.classList.remove('sort-asc', 'sort-desc');
-                    t.querySelector('.sort-icon').className = 'ti ti-arrows-sort sort-icon';
-                });
-                
-                th.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
-                th.querySelector('.sort-icon').className = `ti ti-sort-${sortDir === 'asc' ? 'ascending' : 'descending'} sort-icon`;
-                window.renderTable();
-            };
-        });
-
-        // ─── SEARCH DROPDOWNS (STUDENT, INST, COURSE) ───
-        function setupGlobalListeners() {
-            const stuInput = document.getElementById('input-student'); const stuDropdown = document.getElementById('student-dropdown');
-            const instInput = document.getElementById('input-institution'); const instDropdown = document.getElementById('institution-dropdown');
-            const courseInput = document.getElementById('input-course-search'); const courseDropdown = document.getElementById('course-dropdown');
-            const mainSearchInput = document.getElementById('search-input'); 
-
-            const handleFocus = (dropdown) => { dropdown.classList.add('show'); };
-
-            stuInput?.addEventListener('focus', () => { handleFocus(stuDropdown); renderStudentDropdown(allStudents, stuInput.value); });
-            stuInput?.addEventListener('input', () => { handleFocus(stuDropdown); renderStudentDropdown(allStudents, stuInput.value); document.getElementById('btn-info-student').disabled = !allStudents.some(s => stuInput.value.startsWith(s.student_id)); window.updateRespDeptOptions(); });
-            
-            instInput?.addEventListener('focus', () => { handleFocus(instDropdown); renderInstDropdown(allInsts, instInput.value); });
-            instInput?.addEventListener('input', (e) => { 
-                e.target.dataset.id = ''; 
-                document.getElementById('btn-info-inst').disabled = true;
-                handleFocus(instDropdown); 
-                renderInstDropdown(allInsts, instInput.value); 
-            });
-            
-            courseInput?.addEventListener('focus', () => { handleFocus(courseDropdown); renderCourseDropdown(allCourses, courseInput.value); });
-            courseInput?.addEventListener('input', () => { handleFocus(courseDropdown); renderCourseDropdown(allCourses, courseInput.value); });
-
-            mainSearchInput?.addEventListener('input', () => { currentPage = 1; window.renderTable(); });
-
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('#input-student') && !e.target.closest('#student-dropdown')) stuDropdown?.classList.remove('show');
-                if (!e.target.closest('#input-institution') && !e.target.closest('#institution-dropdown')) instDropdown?.classList.remove('show');
-                if (!e.target.closest('#input-course-search') && !e.target.closest('#course-dropdown')) courseDropdown?.classList.remove('show');
-            });
-        }
-
-        window.updateRespDeptOptions = (preselectedValue = '') => {
-            const selectEl = document.getElementById('input-resp-dept');
-            if (!selectEl) return;
-
-            const stuMatch = document.getElementById('input-student').value.split(' - ')[0];
-            const stu = allStudents.find(s => s.student_id === stuMatch);
-            const stuDept = stu ? stu.department : null;
-
-            const courseDepts = selectedCourseIds.map(cid => {
-                const c = allCourses.find(x => x.id === cid);
-                return c ? c.department : null;
-            }).filter(Boolean);
-
-            const deptsSet = new Set();
-            if (stuDept) deptsSet.add(stuDept);
-            courseDepts.forEach(d => deptsSet.add(d));
-
-            const uniqueDepts = Array.from(deptsSet);
-
-            if (uniqueDepts.length === 0) {
-                selectEl.innerHTML = '<option value="">請先選擇學生與關聯課程...</option>';
-                return;
-            }
-
-            const currentVal = preselectedValue || selectEl.value;
-            let html = '<option value="">請選擇負責填報系所...</option>';
-            uniqueDepts.forEach(d => {
-                const deptObj = globalDepts.find(x => x.name === d);
-                const dispName = deptObj && deptObj.shortName ? deptObj.shortName : d;
-                html += `<option value="${d}">${dispName}</option>`;
-            });
-
-            selectEl.innerHTML = html;
-            
-            if (uniqueDepts.includes(currentVal)) selectEl.value = currentVal;
-            else if (uniqueDepts.length === 1) selectEl.value = uniqueDepts[0]; 
-            else if (stuDept && uniqueDepts.includes(stuDept)) selectEl.value = stuDept; 
-        };
-
-        function renderStudentDropdown(list, term) {
-            const dropdown = document.getElementById('student-dropdown'); 
-            const val = term.split(' - ')[0].trim().toLowerCase(); 
-            const filtered = list.filter(s => s.student_id.toLowerCase().includes(val) || s.name.toLowerCase().includes(val));
-            if (filtered.length === 0) { dropdown.innerHTML = '<div style="padding:12px; text-align:center; font-size:11px; color:var(--text-muted);">查無相符學生</div>'; return; }
-            
-            let html = '';
-            filtered.slice(0, 30).forEach(s => {
-                html += `
-                <div class="search-item" onclick="window.selectStudent('${s.student_id}', '${s.name}')">
-                    <div class="search-item-title">${s.student_id} - ${s.name}</div>
-                    <div class="search-item-desc">${getColShort(s.college)} / ${getDeptShort(s.department)}</div>
-                </div>`;
-            });
-            dropdown.innerHTML = html;
-        }
-        window.selectStudent = (id, name) => { 
-            const stuIn = document.getElementById('input-student');
-            stuIn.value = `${id} - ${name}`; 
-            document.getElementById('student-dropdown').classList.remove('show');
-            document.getElementById('btn-info-student').disabled = false;
-            window.updateRespDeptOptions(); 
-        };
-
-        function renderInstDropdown(list, term) {
-            const dropdown = document.getElementById('institution-dropdown'); 
-            const val = term.trim().toLowerCase();
-            const filtered = list.filter(i => i.name.toLowerCase().includes(val) || (i.tax_id && i.tax_id.toLowerCase().includes(val)));
-            if (filtered.length === 0) { dropdown.innerHTML = '<div style="padding:12px; text-align:center; font-size:11px; color:var(--text-muted);">查無相符機構</div>'; return; }
-            
-            let html = '';
-            filtered.slice(0, 30).forEach(i => {
-                html += `
-                <div class="search-item" onclick="window.selectInst('${i.id}', '${i.name}')">
-                    <div class="search-item-title">${i.name}</div>
-                    <div class="search-item-desc">${i.tax_id || '統編：無統一編號'} | ${i.address || ''}</div>
-                </div>`;
-            });
-            dropdown.innerHTML = html;
-        }
-        window.selectInst = (id, name) => { 
-            const instIn = document.getElementById('input-institution');
-            instIn.value = name; 
-            instIn.dataset.id = id; 
-            document.getElementById('institution-dropdown').classList.remove('show');
-            document.getElementById('btn-info-inst').disabled = false;
-        };
-
-        function renderCourseDropdown(list, term) {
-            const dropdown = document.getElementById('course-dropdown'); 
-            const val = term.trim().toLowerCase();
-            const available = list.filter(c => !selectedCourseIds.includes(c.id));
-            
-            const filtered = available.filter(c => {
-                const deptShort = getDeptShort(c.department).toLowerCase();
-                return c.course_name.toLowerCase().includes(val) || 
-                       c.course_code.toLowerCase().includes(val) || 
-                       c.department.toLowerCase().includes(val) ||
-                       deptShort.includes(val); 
-            });
-            
-            if (filtered.length === 0) { dropdown.innerHTML = '<div style="padding:12px; text-align:center; font-size:11px; color:var(--text-muted);">查無相符或可選擇之課程</div>'; return; }
-
-            let html = '';
-            filtered.slice(0, 30).forEach(c => {
-                html += `
-                <div class="search-item" onclick="window.selectCourse('${c.id}')">
-                    <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
-                        <span style="font-size:13px; font-weight:700; color:var(--text-primary);">${c.academic_year}-${c.term}</span>
-                        <span style="font-size:10px; font-weight:700; background:var(--brand-light); color:var(--brand); padding:2px 4px; border-radius:4px;">${c.course_code}</span>
-                        <span style="font-size:13px; font-weight:700; color:var(--text-primary);">${c.course_name}</span>
-                    </div>
-                    <div class="search-item-desc">開課院系：${getColShort(c.college)} / ${getDeptShort(c.department)} | ${c.credits}學分</div>
-                </div>`;
-            });
-            dropdown.innerHTML = html;
-        }
-        window.selectCourse = (id) => { 
-            if (!selectedCourseIds.includes(id)) selectedCourseIds.push(id); 
-            document.getElementById('input-course-search').value = ''; 
-            document.getElementById('course-dropdown').classList.remove('show');
-            window.renderSelectedCourseChips(); 
-        };
-
-        window.renderSelectedCourseChips = (skipRespUpdate = false) => {
-            const container = document.getElementById('selected-courses-container'); 
-            document.getElementById('selected-course-count').innerText = `已選 ${selectedCourseIds.length} 門`;
-
-            if (selectedCourseIds.length === 0) { 
-                container.innerHTML = '<div class="empty-state" style="padding:20px;"><div class="empty-text">尚未加入課程</div></div>'; 
-                if (!skipRespUpdate) window.updateRespDeptOptions(); 
-                return; 
-            }
-            
-            let html = '';
-            selectedCourseIds.forEach(id => {
-                const c = allCourses.find(x => x.id === id); if (!c) return;
-                html += `
-                <div class="selected-course-item">
-                    <div class="selected-course-info">
-                        <div class="selected-course-top">
-                            <span class="selected-course-title">${c.academic_year}-${c.term}</span>
-                            <span class="selected-course-code">${c.course_code}</span>
-                            <span class="selected-course-title">${c.course_name}</span>
-                        </div>
-                        <div class="selected-course-desc">開課院系：${getColShort(c.college)} / ${getDeptShort(c.department)} | ${c.credits}學分</div>
-                    </div>
-                    <button type="button" class="btn-remove-course" onclick="window.removeCourse('${c.id}')"><i class="ti ti-x"></i></button>
-                </div>`;
-            });
-            container.innerHTML = html;
-            if (!skipRespUpdate) window.updateRespDeptOptions();
-        };
-        
-        window.removeCourse = (id) => { selectedCourseIds = selectedCourseIds.filter(cid => cid !== id); window.renderSelectedCourseChips(); };
-
-        // ─── 詳情彈窗邏輯 ───
-        window.showInfoPopup = (type) => {
-            const container = document.getElementById('info-popup-body');
-            const title = document.getElementById('info-popup-title');
-            let html = '';
-
-            if (type === 'student') {
-                const stuId = document.getElementById('input-student').value.split(' - ')[0];
-                const stu = allStudents.find(s => s.student_id === stuId);
-                if (!stu) return;
-                title.innerHTML = '<i class="ti ti-user" style="color:var(--brand); margin-right:4px;"></i> 學生詳細資訊';
-                html = `
-                    <div class="info-item"><span class="info-item-label">學號</span><div class="info-item-value">${stu.student_id}</div></div>
-                    <div class="info-item"><span class="info-item-label">姓名</span><div class="info-item-value">${stu.name}</div></div>
-                    <div class="info-item"><span class="info-item-label">性別</span><div class="info-item-value">${stu.gender || '未綁定主檔'}</div></div>
-                    <div class="info-item"><span class="info-item-label">國籍</span><div class="info-item-value">${stu.nationality || '未綁定主檔'}</div></div>
-                    <div class="info-item"><span class="info-item-label">所屬系所</span><div class="info-item-value">${stu.department}</div></div>
-                    <div class="info-item"><span class="info-item-label">所屬學院</span><div class="info-item-value">${stu.college}</div></div>
-                `;
-            } else {
-                const instId = document.getElementById('input-institution').dataset.id;
-                let inst = instId ? allInsts.find(i => i.id === instId) : allInsts.find(i => i.name === document.getElementById('input-institution').value);
-                if (!inst) return;
-                title.innerHTML = '<i class="ti ti-building-skyscraper" style="color:var(--success); margin-right:4px;"></i> 機構詳細資訊';
-                html = `
-                    <div class="info-item"><span class="info-item-label">機構名稱</span><div class="info-item-value">${inst.name}</div></div>
-                    <div class="info-item"><span class="info-item-label">場所國別</span><div class="info-item-value">${inst.country || '臺灣'}</div></div>
-                    <div class="info-item"><span class="info-item-label">統一編號</span><div class="info-item-value">${inst.tax_id || '無'}</div></div>
-                    <div class="info-item"><span class="info-item-label">通訊地址</span><div class="info-item-value">${inst.address || '無'}</div></div>
-                `;
-            }
-            container.innerHTML = html;
-            document.getElementById('info-popup').classList.add('open');
-        };
-        window.closeInfoPopup = () => document.getElementById('info-popup').classList.remove('open');
-
-        // ─── BATCH & TABLE LOGIC ───
+        // ─── BATCH & TABLE LOGIC (進階挑戰：虛擬分拆虛擬列扁平化) ───
         window.toggleSelectPage = (e) => {
             const isChecked = e.target.checked; const startIndex = (currentPage - 1) * itemsPerPage;
             const paginatedIds = filteredRecords.slice(startIndex, startIndex + itemsPerPage).map(d => d.id);
@@ -1273,84 +954,38 @@ input[type=number] { -moz-appearance: textfield; }
         };
 
         window.toggleSelect = (id) => { const idx = selectedIds.indexOf(id); if (idx === -1) selectedIds.push(id); else selectedIds.splice(idx, 1); window.updateBatchActionBar(); window.renderTable(); };
-        window.selectAllFiltered = () => { selectedIds = filteredRecords.map(d => d.id); window.updateBatchActionBar(); window.renderTable(); };
+        window.selectAllFiltered = () => { selectedIds = [...new Set(filteredRecords.map(d => d.id))]; window.updateBatchActionBar(); window.renderTable(); };
         window.clearSelection = () => { selectedIds = []; window.updateBatchActionBar(); window.renderTable(); };
         
         window.updateBatchActionBar = () => { 
             const bar = document.getElementById('batch-bar'); const count = document.getElementById('selected-count'); const btn = document.getElementById('btn-select-all-filtered'); 
+            const totalUnique = new Set(filteredRecords.map(d => d.id)).size;
             if (selectedIds.length > 0) { 
                 bar.classList.add('visible'); count.innerText = selectedIds.length; 
-                if (selectedIds.length < filteredRecords.length) { 
-                    btn.style.display = 'inline-flex'; btn.innerText = `選取全部符合條件 (${filteredRecords.length})`; 
+                if (selectedIds.length < totalUnique) { 
+                    btn.style.display = 'inline-flex'; btn.innerText = `選取全部符合條件 (${totalUnique})`; 
                 } else btn.style.display = 'none'; 
             } else bar.classList.remove('visible'); 
         };
 
-        window.batchDelete = async () => { if (!confirm(`確定刪除 ${selectedIds.length} 筆紀錄？`)) return; try { for (let id of selectedIds) await deleteDoc(doc(db, "internship_records", id)); selectedIds = []; window.updateBatchActionBar(); } catch (e) { alert(e.message); } };
-
-        window.openModal = () => {
-            if (!editingId) { 
-                document.getElementById('input-student').value = '';
-                document.getElementById('input-grade').value = '';
-                const instInput = document.getElementById('input-institution');
-                instInput.value = '';
-                instInput.dataset.id = ''; 
-                document.getElementById('input-duration').value = '';
-                document.getElementById('input-hours').value = '';
-                document.getElementById('input-period-type').value = '';
-                document.getElementById('input-proof-type').value = '';
-                document.getElementById('input-notes').value = '';
-                
-                document.getElementById('btn-info-student').disabled = true;
-                document.getElementById('btn-info-inst').disabled = true;
-
-                selectedCourseIds = []; window.renderSelectedCourseChips();
-                document.getElementById('input-resp-dept').innerHTML = '<option value="">請先選擇學生與關聯課程...</option>';
-                document.getElementById('modal-title').innerText = '新增實習紀錄';
-            }
-            document.getElementById('main-view').style.display = 'none'; 
-            document.getElementById('data-modal').classList.add('open'); 
-        };
-
-        window.closeModal = () => { 
-            document.getElementById('data-modal').classList.remove('open'); 
-            document.getElementById('main-view').style.display = 'flex'; 
-            editingId = null; 
-        };
-        
-        window.changePage = (p) => { currentPage = p; window.renderTable(); };
-        window.changePerPage = (val) => { itemsPerPage = Number(val); currentPage = 1; window.renderTable(); };
+        window.batchDelete = async () => { if (!confirm(`確定刪除選擇的 ${selectedIds.length} 筆完整實習紀錄？`)) return; try { for (let id of selectedIds) await deleteDoc(doc(db, "internship_records", id)); selectedIds = []; window.updateBatchActionBar(); } catch (e) { alert(e.message); } };
 
         window.renderTable = () => {
             const tbody = document.getElementById('table-body'); 
             const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
 
-            filteredRecords = allRecords.filter(d => {
+            // 1. 先做基本過濾過篩
+            let baseFiltered = allRecords.filter(d => {
                 const matchSearch = (d.student_raw || '').toLowerCase().includes(searchTerm) || (d.inst_raw || '').toLowerCase().includes(searchTerm);
                 let ok = matchSearch;
-                
-                // 動態撈取資料以過濾
-                let dynamicYear = '-';
-                if (d.courses && d.courses.length > 0) {
-                    const firstCourse = allCourses.find(c => c.id === d.courses[0]);
-                    if (firstCourse) dynamicYear = firstCourse.academic_year;
-                }
-                let dynamicCountry = '臺灣';
-                const iMatch = allInsts.find(i => i.id === d.inst_id || i.name === d.inst_raw);
-                if (iMatch && iMatch.country) dynamicCountry = iMatch.country;
 
-                if (ok && filterSelections.academic_year.size > 0) ok = filterSelections.academic_year.has(dynamicYear);
                 if (ok && filterSelections.dept.size > 0) {
                     const stuId = (d.student_raw || '').split(' - ')[0];
                     const stu = allStudents.find(s => s.student_id === stuId);
                     ok = stu && filterSelections.dept.has(stu.department);
                 }
                 if (ok && filterSelections.grade.size > 0) ok = filterSelections.grade.has(d.grade);
-                if (ok && filterSelections.inst_country.size > 0) ok = filterSelections.inst_country.has(dynamicCountry);
                 if (ok && filterSelections.inst_raw.size > 0) ok = filterSelections.inst_raw.has(d.inst_raw);
-                if (ok && filterSelections.course.size > 0) {
-                    ok = d.courses && d.courses.some(cid => filterSelections.course.has(cid));
-                }
                 if (ok && filterSelections.resp_dept.size > 0) ok = filterSelections.resp_dept.has(d.resp_dept);
                 if (ok && filterSelections.period.size > 0) ok = filterSelections.period.has(d.period_type);
                 if (ok && filterSelections.proof.size > 0) ok = filterSelections.proof.has(d.proof_type);
@@ -1358,63 +993,86 @@ input[type=number] { -moz-appearance: textfield; }
                 return ok;
             });
 
-            // Sorting
+            // 2. 【核心虛擬拆分邏輯】：將同筆紀錄中不同課程拆開成多列
+            let virtualRows = [];
+            baseFiltered.forEach(d => {
+                const cList = Array.isArray(d.courses) ? d.courses : [];
+                
+                // 事前算好該筆實習的開課學分加總
+                let totalRecordCredits = 0;
+                cList.forEach(cid => {
+                    const c = allCourses.find(x => x.id === cid);
+                    if (c && c.credits) totalRecordCredits += Number(c.credits);
+                });
+
+                if (cList.length > 0) {
+                    let accumulatedHours = 0;
+                    cList.forEach((cid, index) => {
+                        const cObj = allCourses.find(x => x.id === cid);
+                        let courseCredits = cObj && cObj.credits ? Number(cObj.credits) : 0;
+                        
+                        // 動態權重依學分比例分攤計算
+                        let assignedHours = 0;
+                        if (d.hours && totalRecordCredits > 0) {
+                            if (index === cList.length - 1) {
+                                // 最後一門課程：直接承接飽和補足剩餘時數
+                                assignedHours = Math.max(0, Number(d.hours) - accumulatedHours);
+                            } else {
+                                assignedHours = Math.floor((Number(d.hours) / totalRecordCredits) * courseCredits);
+                                accumulatedHours += assignedHours;
+                            }
+                        } else {
+                            assignedHours = d.hours || '-';
+                        }
+
+                        virtualRows.push({
+                            ...d,
+                            virtualId: `${d.id}_${cid}`,
+                            singleCourseId: cid,
+                            singleCourseCredits: courseCredits,
+                            singleCourseHours: assignedHours,
+                            courseNameText: cObj ? cObj.course_name : '-',
+                            courseTypeText: cObj ? (cObj.course_type || '校外實習') : '-',
+                            academicYearText: cObj ? cObj.academic_year : '-'
+                        });
+                    });
+                } else {
+                    // 若完全無設定關聯課程，依然建立一條虛擬空列避免掉單
+                    virtualRows.push({
+                        ...d,
+                        virtualId: `${d.id}_none`,
+                        singleCourseId: null,
+                        singleCourseCredits: 0,
+                        singleCourseHours: d.hours || '-',
+                        courseNameText: '-',
+                        courseTypeText: '-',
+                        academicYearText: '-'
+                    });
+                }
+            });
+
+            // 3. 次要篩選：針對拆開後帶有學年度及場所國別的進階過濾
+            filteredRecords = virtualRows.filter(v => {
+                let dynamicCountry = '臺灣';
+                const iMatch = allInsts.find(i => i.id === v.inst_id || i.name === v.inst_raw);
+                if (iMatch && iMatch.country) dynamicCountry = iMatch.country;
+
+                if (filterSelections.academic_year.size > 0 && !filterSelections.academic_year.has(v.academicYearText)) return false;
+                if (filterSelections.inst_country.size > 0 && !filterSelections.inst_country.has(dynamicCountry)) return false;
+                return true;
+            });
+
+            // 4. 針對扁平化後的資料進行 Sorting
             filteredRecords.sort((a, b) => {
                 let valA = ''; let valB = '';
-
                 if (sortCol === 'created_at') { valA = getTime(a.created_at); valB = getTime(b.created_at); }
-                else if (sortCol === 'academic_year') {
-                    const cA = a.courses && a.courses.length > 0 ? allCourses.find(c => c.id === a.courses[0]) : null;
-                    valA = cA ? Number(cA.academic_year) : 0;
-                    const cB = b.courses && b.courses.length > 0 ? allCourses.find(c => c.id === b.courses[0]) : null;
-                    valB = cB ? Number(cB.academic_year) : 0;
-                }
-                else if (sortCol === 'student_id') {
-                    valA = (a.student_raw || '').split(' - ')[0] || '';
-                    valB = (b.student_raw || '').split(' - ')[0] || '';
-                }
-                else if (sortCol === 'student_name') {
-                    valA = (a.student_raw || '').split(' - ')[1] || '';
-                    valB = (b.student_raw || '').split(' - ')[1] || '';
-                }
-                else if (sortCol === 'college') {
-                    const stuA = allStudents.find(s => s.student_id === (a.student_raw || '').split(' - ')[0]);
-                    valA = stuA ? getColShort(stuA.college) : '';
-                    const stuB = allStudents.find(s => s.student_id === (b.student_raw || '').split(' - ')[0]);
-                    valB = stuB ? getColShort(stuB.college) : '';
-                }
-                else if (sortCol === 'dept') {
-                    const stuA = allStudents.find(s => s.student_id === (a.student_raw || '').split(' - ')[0]);
-                    valA = stuA ? getDeptShort(stuA.department) : '';
-                    const stuB = allStudents.find(s => s.student_id === (b.student_raw || '').split(' - ')[0]);
-                    valB = stuB ? getDeptShort(stuB.department) : '';
-                }
-                else if (sortCol === 'inst_country') {
-                    const iA = allInsts.find(i => i.id === a.inst_id || i.name === a.inst_raw);
-                    valA = iA && iA.country ? iA.country : '臺灣';
-                    const iB = allInsts.find(i => i.id === b.inst_id || i.name === b.inst_raw);
-                    valB = iB && iB.country ? iB.country : '臺灣';
-                }
-                else if (sortCol === 'gender') {
-                    const stuA = allStudents.find(s => s.student_id === (a.student_raw || '').split(' - ')[0]);
-                    valA = stuA && stuA.gender ? stuA.gender : '';
-                    const stuB = allStudents.find(s => s.student_id === (b.student_raw || '').split(' - ')[0]);
-                    valB = stuB && stuB.gender ? stuB.gender : '';
-                }
-                else if (sortCol === 'nationality') {
-                    const stuA = allStudents.find(s => s.student_id === (a.student_raw || '').split(' - ')[0]);
-                    valA = stuA && stuA.nationality ? stuA.nationality : '';
-                    const stuB = allStudents.find(s => s.student_id === (b.student_raw || '').split(' - ')[0]);
-                    valB = stuB && stuB.nationality ? stuB.nationality : '';
-                }
-                else if (sortCol === 'resp_dept') {
-                    valA = a.resp_dept ? getDeptShort(a.resp_dept) : '';
-                    valB = b.resp_dept ? getDeptShort(b.resp_dept) : '';
-                }
-                else { 
-                    valA = (a[sortCol] || '').toString().toLowerCase(); 
-                    valB = (b[sortCol] || '').toString().toLowerCase(); 
-                }
+                else if (sortCol === 'academic_year') { valA = Number(a.academicYearText) || 0; valB = Number(b.academicYearText) || 0; }
+                else if (sortCol === 'student_id') { valA = (a.student_raw || '').split(' - ')[0]; valB = (b.student_raw || '').split(' - ')[0]; }
+                else if (sortCol === 'student_name') { valA = (a.student_raw || '').split(' - ')[1]; valB = (b.student_raw || '').split(' - ')[1]; }
+                else if (sortCol === 'course_name') { valA = a.courseNameText; valB = b.courseNameText; }
+                else if (sortCol === 'course_type') { valA = a.courseTypeText; valB = b.courseTypeText; }
+                else if (sortCol === 'hours') { valA = Number(a.singleCourseHours) || 0; valB = Number(b.singleCourseHours) || 0; }
+                else { valA = (a[sortCol] || '').toString().toLowerCase(); valB = (b[sortCol] || '').toString().toLowerCase(); }
 
                 if (valA < valB) return sortDir === 'asc' ? -1 : 1;
                 if (valA > valB) return sortDir === 'asc' ? 1 : -1;
@@ -1426,52 +1084,34 @@ input[type=number] { -moz-appearance: textfield; }
             const start = (currentPage - 1) * itemsPerPage; const items = filteredRecords.slice(start, start + itemsPerPage);
 
             if (total > 0) {
-                document.getElementById('pagination-info').innerHTML = `共 <strong>${total}</strong> 筆，顯示第 ${start + 1}–${Math.min(start + itemsPerPage, total)} 筆`;
+                document.getElementById('pagination-info').innerHTML = `共 <strong>${total}</strong> 門虛擬明細，顯示第 ${start + 1}–${Math.min(start + itemsPerPage, total)} 筆`;
             } else {
                 document.getElementById('pagination-info').innerHTML = `共 <strong>0</strong> 筆`;
             }
             
             let pHtml = `<button class="page-btn" onclick="window.changePage(${currentPage-1})" ${currentPage<=1?'disabled':''}><i class="ti ti-chevron-left"></i></button>`;
-            const pages = [];
             for (let p=1; p<=tPages; p++) {
-                if (p===1 || p===tPages || Math.abs(p-currentPage)<=1) pages.push(p);
-                else if (pages[pages.length-1] !== '…') pages.push('…');
+                if (p===1 || p===tPages || Math.abs(p-currentPage)<=1) {
+                    pHtml += `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="window.changePage(${p})">${p}</button>`;
+                }
             }
-            pages.forEach(p => {
-                if (p === '…') pHtml += `<span class="page-btn" style="cursor:default;border:none">…</span>`;
-                else pHtml += `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="window.changePage(${p})">${p}</button>`;
-            });
             pHtml += `<button class="page-btn" onclick="window.changePage(${currentPage+1})" ${currentPage>=tPages?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
             document.getElementById('pagination-controls').innerHTML = pHtml;
             
             document.getElementById('selectAll').checked = items.length > 0 && items.every(i => selectedIds.includes(i.id));
 
-            if (total === 0) { tbody.innerHTML = `<tr><td colspan="18" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">找不到符合條件的紀錄。</div></td></tr>`; return; }
+            if (total === 0) { tbody.innerHTML = `<tr><td colspan="20" class="empty-state"><div class="empty-icon"><i class="ti ti-inbox"></i></div><div class="empty-text">找不到符合條件的紀錄。</div></td></tr>`; return; }
 
             let tHtml = '';
             items.forEach(data => {
                 const stuParts = (data.student_raw || '').split(' - ');
-                const stuId = stuParts[0] || '';
-                const stuName = stuParts[1] || '';
+                const stuId = stuParts[0] || ''; const stuName = stuParts[1] || '';
                 
-                // 動態撈取關聯主檔欄位
                 const stu = allStudents.find(s => s.student_id === stuId);
                 const stuCollege = stu ? getColShort(stu.college) : '未知學院';
                 const stuDept = stu ? getDeptShort(stu.department) : '未綁定學系';
                 const stuGender = stu ? (stu.gender || '-') : '-';
                 const stuNationality = stu ? (stu.nationality || '-') : '-';
-
-                let dynamicYear = '-';
-                let totalCredits = 0;
-                if (data.courses && data.courses.length > 0) {
-                    data.courses.forEach((cid, index) => {
-                        const c = allCourses.find(x => x.id === cid);
-                        if (c) {
-                            if (index === 0) dynamicYear = c.academic_year;
-                            if (c.credits) totalCredits += Number(c.credits);
-                        }
-                    });
-                }
 
                 let dynamicCountry = '臺灣';
                 const instMatch = allInsts.find(i => i.id === data.inst_id || i.name === data.inst_raw);
@@ -1487,7 +1127,7 @@ input[type=number] { -moz-appearance: textfield; }
                     <td class="col-checkbox" style="text-align: center;">
                         <input type="checkbox" value="${data.id}" onchange="window.toggleSelect('${data.id}')" ${selectedIds.includes(data.id)?'checked':''} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                     </td>
-                    <td data-col="1" style="text-align: center;"><div class="cell-primary">${dynamicYear}</div></td>
+                    <td data-col="1" style="text-align: center;"><div class="cell-primary">${data.academicYearText}</div></td>
                     <td data-col="2" style="text-align: center;"><div class="cell-primary bold">${stuId}</div></td>
                     <td data-col="3" style="text-align: center;"><div class="cell-primary bold">${stuName}</div></td>
                     <td data-col="4" style="text-align: center;"><div class="cell-primary">${stuCollege}</div></td>
@@ -1496,284 +1136,207 @@ input[type=number] { -moz-appearance: textfield; }
                     <td data-col="7" style="text-align: center;"><div class="cell-primary">${data.period_type || '-'}</div></td>
                     <td data-col="8" style="text-align: center;"><div class="cell-primary">${dynamicCountry}</div></td>
                     <td data-col="9" style="text-align: left;"><div class="cell-primary bold">${data.inst_raw}</div></td>
-                    <td data-col="10" style="text-align: center;"><div class="badge ${proofBadge}">${data.proof_type || '-'}</div></td>
-                    <td data-col="11" style="text-align: center;"><div class="cell-primary">${data.hours !== undefined && data.hours !== '' ? data.hours : '-'}</div></td>
-                    <td data-col="12" style="text-align: center;"><div class="cell-primary">${totalCredits}</div></td>
-                    <td data-col="13" style="text-align: center;"><div class="cell-primary bold">${data.duration || '-'}</div></td>
-                    <td data-col="14" style="text-align: center;"><div class="cell-primary">${stuGender}</div></td>
-                    <td data-col="15" style="text-align: center;"><div class="cell-primary">${stuNationality}</div></td>
-                    <td data-col="16" style="text-align: center;"><div class="cell-primary">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</div></td>
+                    
+                    <td data-col="10" style="text-align: left;"><div class="cell-primary bold" style="color: var(--brand);">${data.courseNameText}</div></td>
+                    <td data-col="11" style="text-align: center;"><span class="badge badge-outline-purple">${data.courseTypeText}</span></td>
+                    
+                    <td data-col="12" style="text-align: center;"><div class="badge ${proofBadge}">${data.proof_type || '-'}</div></td>
+                    <td data-col="13" style="text-align: center;"><div class="cell-primary bold" style="color: var(--success);">${data.singleCourseHours}</div></td>
+                    <td data-col="14" style="text-align: center;"><div class="cell-primary font-weight:700;">${data.singleCourseCredits}</div></td>
+                    <td data-col="15" style="text-align: center;"><div class="cell-primary">${data.duration || '-'}</div></td>
+                    <td data-col="16" style="text-align: center;"><div class="cell-primary">${stuGender}</div></td>
+                    <td data-col="17" style="text-align: center;"><div class="cell-primary">${stuNationality}</div></td>
+                    <td data-col="18" style="text-align: center;"><div class="cell-primary">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</div></td>
                     <td class="col-actions">
                         <div class="row-actions">
-                            <button onclick="window.editData('${data.id}')" class="btn btn-secondary btn-icon sm" title="編輯"><i class="ti ti-edit"></i></button>
+                            <button onclick="window.editData('${data.id}')" class="btn btn-secondary btn-icon sm" title="編輯整體實習"><i class="ti ti-edit"></i></button>
                             <button onclick="window.deleteData('${data.id}', '${stuName}')" class="btn btn-icon sm" style="color:var(--danger); border-color:var(--danger-border);" title="刪除"><i class="ti ti-trash"></i></button>
                         </div>
                     </td>
                 </tr>`;
             });
             tbody.innerHTML = tHtml;
-            window.updateFilterVisibility();
+            window.updateBatchActionBar();
         };
 
         window.exportToCSV = () => {
             if (filteredRecords.length === 0) { alert("沒有資料可供匯出！"); return; }
-            let csv = '\uFEFF學年度,學號,姓名,學院,學系,年級,實習時間,實習場所國別,機構名稱,證明文件,總時數,總學分,實習起訖時間,性別,國籍(實習生),填報系所,備註\n';
-            filteredRecords.forEach(d => {
-                let dynamicYear = '-';
-                let totalCredits = 0;
-                if (d.courses && d.courses.length > 0) {
-                    d.courses.forEach((cid, index) => { 
-                        const c = allCourses.find(x => x.id === cid); 
-                        if (c) {
-                            if (index === 0) dynamicYear = c.academic_year;
-                            if (c.credits) totalCredits += Number(c.credits);
-                        }
-                    });
-                }
-                
-                const stuParts = (d.student_raw || '').split(' - ');
-                const stuId = stuParts[0] || '';
-                const stuName = stuParts[1] || '';
+            let csv = '\uFEFF學年度,學號,姓名,學院,學系,年級,實習時間,實習場所國別,機構名稱,課程名稱,課程屬性,證明文件,分配時數,學分,實習起訖時間,性別,國籍(實習生),填報系所,備註\n';
+            filteredRecords.forEach(v => {
+                const stuParts = (v.student_raw || '').split(' - ');
+                const stuId = stuParts[0] || ''; const stuName = stuParts[1] || '';
                 const stu = allStudents.find(s => s.student_id === stuId);
-                const stuCollege = stu ? stu.college : '';
-                const stuDept = stu ? stu.department : '';
-                const stuGender = stu ? (stu.gender || '') : '';
-                const stuNationality = stu ? (stu.nationality || '') : '';
-
+                
                 let dynamicCountry = '臺灣';
-                const instMatch = allInsts.find(i => i.id === d.inst_id || i.name === d.inst_raw);
+                const instMatch = allInsts.find(i => i.id === v.inst_id || i.name === v.inst_raw);
                 if (instMatch && instMatch.country) dynamicCountry = instMatch.country;
 
                 csv += [
-                    dynamicYear, stuId, stuName, stuCollege, stuDept, d.grade || '', 
-                    d.period_type || '', dynamicCountry, d.inst_raw || '', d.proof_type || '', 
-                    d.hours !== undefined && d.hours !== '' ? d.hours : '', totalCredits, 
-                    d.duration || '', stuGender, stuNationality, d.resp_dept || '', d.notes || ''
-                ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+                    v.academicYearText, stuId, stuName, stu ? stu.college : '', stu ? stu.department : '', v.grade || '', 
+                    v.period_type || '', dynamicCountry, v.inst_raw || '', v.courseNameText, v.courseTypeText, v.proof_type || '', 
+                    v.singleCourseHours, v.singleCourseCredits, v.duration || '', stu ? (stu.gender || '') : '', stu ? (stu.nationality || '') : '', v.resp_dept || '', v.notes || ''
+                ].map(x => `"${(x||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
             });
             const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-            link.download = `實習紀錄總表_${new Date().toISOString().split('T')[0]}.csv`; link.click();
+            link.download = `實習拆分明細表_${new Date().toISOString().split('T')[0]}.csv`; link.click();
         };
 
-        window.closeImportReportModal = () => { document.getElementById('import-report-modal').classList.remove('open'); };
-        window.downloadImportReport = () => {
-            if (!window.globalImportReportData || window.globalImportReportData.length === 0) return;
-            let csv = '\uFEFF狀態,Excel來源列,學號姓名,詳細說明\n';
-            window.globalImportReportData.forEach(r => csv += `"${r.status}","${r.rows}","${r.student}","${r.message}"\n`);
-            const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-            link.download = `批次匯入結果報告_${new Date().toISOString().split('T')[0]}.csv`; link.click();
+        // --- 其餘常規搜尋與表單綁定邏輯 (均維持不變) ---
+        window.setupGlobalListeners = setupGlobalListeners;
+        function setupGlobalListeners() {
+            const stuInput = document.getElementById('input-student'); const stuDropdown = document.getElementById('student-dropdown');
+            const instInput = document.getElementById('input-institution'); const instDropdown = document.getElementById('institution-dropdown');
+            const courseInput = document.getElementById('input-course-search'); const courseDropdown = document.getElementById('course-dropdown');
+            
+            stuInput?.addEventListener('focus', () => { stuDropdown.classList.add('show'); renderStudentDropdown(allStudents, stuInput.value); });
+            stuInput?.addEventListener('input', () => { renderStudentDropdown(allStudents, stuInput.value); window.updateRespDeptOptions(); });
+            instInput?.addEventListener('focus', () => { instDropdown.classList.add('show'); renderInstDropdown(allInsts, instInput.value); });
+            instInput?.addEventListener('input', () => { instInput.dataset.id = ''; renderInstDropdown(allInsts, instInput.value); });
+            courseInput?.addEventListener('focus', () => { courseDropdown.classList.add('show'); renderCourseDropdown(allCourses, courseInput.value); });
+            courseInput?.addEventListener('input', () => { renderCourseDropdown(allCourses, courseInput.value); });
+            
+            document.getElementById('search-input')?.addEventListener('input', () => { currentPage = 1; window.renderTable(); });
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('#input-student') && !e.target.closest('#student-dropdown')) stuDropdown?.classList.remove('show');
+                if (!e.target.closest('#input-institution') && !e.target.closest('#institution-dropdown')) instDropdown?.classList.remove('show');
+                if (!e.target.closest('#input-course-search') && !e.target.closest('#course-dropdown')) courseDropdown?.classList.remove('show');
+            });
+        }
+
+        window.updateRespDeptOptions = (preselectedValue = '') => {
+            const selectEl = document.getElementById('input-resp-dept'); if (!selectEl) return;
+            const stuMatch = document.getElementById('input-student').value.split(' - ')[0];
+            const stu = allStudents.find(s => s.student_id === stuMatch);
+            const deptsSet = new Set(); if (stu ? stu.department : null) deptsSet.add(stu.department);
+            selectedCourseIds.map(cid => allCourses.find(x => x.id === cid)).filter(Boolean).forEach(c => deptsSet.add(c.department));
+            
+            let html = '<option value="">請選擇負責填報系所...</option>';
+            Array.from(deptsSet).forEach(d => {
+                const deptObj = globalDepts.find(x => x.name === d);
+                html += `<option value="${d}">${deptObj ? deptObj.shortName : d}</option>`;
+            });
+            selectEl.innerHTML = html;
+            if (preselectedValue) selectEl.value = preselectedValue;
         };
 
-        window.handleImport = async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const btn = document.getElementById('btn-import');
-            const originalHtml = btn.innerHTML;
-            btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> <span class="btn-text">匯入中...</span>';
-            btn.disabled = true;
+        function renderStudentDropdown(list, term) {
+            const dropdown = document.getElementById('student-dropdown'); const val = term.split(' - ')[0].trim().toLowerCase(); 
+            const filtered = list.filter(s => s.student_id.toLowerCase().includes(val) || s.name.toLowerCase().includes(val));
+            dropdown.innerHTML = filtered.slice(0, 15).map(s => `
+                <div class="search-item" onclick="window.selectStudent('${s.student_id}', '${s.name}')">
+                    <div class="search-item-title">${s.student_id} - ${s.name}</div>
+                    <div class="search-item-desc">${getDeptShort(s.department)}</div>
+                </div>`).join('');
+        }
+        window.selectStudent = (id, name) => { document.getElementById('input-student').value = `${id} - ${name}`; document.getElementById('student-dropdown').classList.remove('show'); document.getElementById('btn-info-student').disabled = false; window.updateRespDeptOptions(); };
 
-            const reader = new FileReader();
-            reader.onload = async (event) => {
-                try {
-                    const rows = event.target.result.split('\n').map(row => row.trim()).filter(row => row);
-                    const recordsMap = new Map();
-                    window.globalImportReportData = []; 
-                    let successCount = 0; let warningCount = 0; let errorCount = 0;
-                    
-                    for (let i = 1; i < rows.length; i++) {
-                        let cols = []; let inQuotes = false; let currentVal = '';
-                        for (let char of rows[i]) {
-                            if (char === '"') { inQuotes = !inQuotes; }
-                            else if (char === ',' && !inQuotes) { cols.push(currentVal.trim()); currentVal = ''; }
-                            else { currentVal += char; }
-                        }
-                        cols.push(currentVal.trim());
+        function renderInstDropdown(list, term) {
+            const dropdown = document.getElementById('institution-dropdown'); const val = term.trim().toLowerCase();
+            const filtered = list.filter(i => i.name.toLowerCase().includes(val));
+            dropdown.innerHTML = filtered.slice(0, 15).map(i => `
+                <div class="search-item" onclick="window.selectInst('${i.id}', '${i.name}')">
+                    <div class="search-item-title">${i.name}</div>
+                </div>`).join('');
+        }
+        window.selectInst = (id, name) => { const el = document.getElementById('input-institution'); el.value = name; el.dataset.id = id; document.getElementById('institution-dropdown').classList.remove('show'); document.getElementById('btn-info-inst').disabled = false; };
 
-                        // 配合 16 欄全新結構解析
-                        if (cols.length >= 14) {
-                            const academic_year = cols[0];
-                            const stuId = (cols[1] || '').trim().toUpperCase();
-                            const stuName = (cols[2] || '').trim();
-                            const grade = cols[5];
-                            const period_type = cols[6];     
-                            const inst_raw = cols[8];
-                            const proof_type = cols[9];      
-                            const hours = cols[10] ? Number(cols[10]) : ''; 
-                            const duration = cols[12];        
-                            const resp_dept = cols[15] || ''; 
-                            const notes = cols[16] || '';   
+        function renderCourseDropdown(list, term) {
+            const dropdown = document.getElementById('course-dropdown'); const val = term.trim().toLowerCase();
+            const filtered = list.filter(c => !selectedCourseIds.includes(c.id) && (c.course_name.toLowerCase().includes(val) || c.course_code.includes(val)));
+            dropdown.innerHTML = filtered.slice(0, 15).map(c => `
+                <div class="search-item" onclick="window.selectCourse('${c.id}')">
+                    <div class="search-item-title">${c.academic_year}-${c.term} [${c.course_code}] ${c.course_name} (${c.credits}學分)</div>
+                </div>`).join('');
+        }
+        window.selectCourse = (id) => { selectedCourseIds.push(id); document.getElementById('input-course-search').value = ''; document.getElementById('course-dropdown').classList.remove('show'); window.renderSelectedCourseChips(); };
 
-                            if (!academic_year || !stuId || !inst_raw || !duration || !period_type || !proof_type || !grade) {
-                                errorCount++;
-                                window.globalImportReportData.push({ status: '錯誤', rows: `第 ${i+1} 列`, student: stuName || '未知', message: '缺少必填欄位 (學年度、學號、機構、起訖時間、年級等)' });
-                                continue;
-                            }
-
-                            const key = `${academic_year}|${stuId}|${inst_raw}|${duration}|${grade}|${period_type}|${proof_type}`;
-
-                            if (!recordsMap.has(key)) {
-                                recordsMap.set(key, {
-                                    academic_year, student_raw: `${stuId} - ${stuName}`, stuId: stuId, stuName: stuName, grade, inst_raw, duration, hours: hours !== '' ? hours : 0, 
-                                    period_type, proof_type, notes, resp_dept, courseIds: [], sourceRows: [i+1] 
-                                });
-                            } else if (hours !== '') {
-                                const groupRecord = recordsMap.get(key);
-                                groupRecord.hours += hours; 
-                                groupRecord.sourceRows.push(i+1);
-                            }
-                        } else {
-                            errorCount++;
-                            window.globalImportReportData.push({ status: '錯誤', rows: `第 ${i+1} 列`, student: '-', message: '欄位格式數量不足' });
-                        }
-                    }
-
-                    let parsedRows = [];
-                    for (const [key, record] of recordsMap.entries()) {
-                        let rowWarnings = [];
-                        const studentMatch = allStudents.find(s => s.student_id.toUpperCase() === record.stuId);
-                        if (!studentMatch) rowWarnings.push("未綁定系統學生主檔");
-                        
-                        const instMatch = allInsts.find(inst => inst.name === record.inst_raw);
-                        if (!instMatch) rowWarnings.push("未綁定系統機構主檔");
-
-                        // 自動關聯尋找符合該學年度與學生科系的課程
-                        const matchedCourses = allCourses.filter(c => c.academic_year === record.academic_year && c.department === (studentMatch ? studentMatch.department : ''));
-                        matchedCourses.forEach(c => record.courseIds.push(c.id));
-
-                        if (record.courseIds.length === 0) rowWarnings.push("無法依據學年度自動配對開課，請事後手動補綁");
-
-                        const payload = {
-                            student_raw: record.student_raw, grade: record.grade, 
-                            inst_raw: record.inst_raw, 
-                            inst_id: instMatch ? instMatch.id : '', 
-                            courses: record.courseIds, duration: record.duration,
-                            hours: record.hours, period_type: record.period_type, proof_type: record.proof_type,
-                            notes: record.notes, 
-                            resp_dept: record.resp_dept || (studentMatch ? studentMatch.department : ''), 
-                            created_at: serverTimestamp()
-                        };
-
-                        if (rowWarnings.length > 0) {
-                            warningCount++;
-                            window.globalImportReportData.push({ status: '警告', rows: `合併列 [${record.sourceRows.join(',')}]`, student: `${record.stuId} - ${record.stuName}`, message: rowWarnings.join('、') });
-                        } else {
-                            successCount++;
-                            window.globalImportReportData.push({ status: '成功', rows: `合併列 [${record.sourceRows.join(',')}]`, student: `${record.stuId} - ${record.stuName}`, message: '成功綁定匯入' });
-                        }
-                        parsedRows.push(payload);
-                    }
-
-                    for (let payload of parsedRows) { await addDoc(recordsCol, payload); }
-
-                    document.getElementById('report-success-count').innerText = successCount;
-                    document.getElementById('report-warning-count').innerText = warningCount;
-                    document.getElementById('report-error-count').innerText = errorCount;
-
-                    const detailsContainer = document.getElementById('report-details-container');
-                    let detailsHtml = '';
-                    window.globalImportReportData.forEach(item => {
-                        let statusColor = item.status === '成功' ? 'var(--success)' : (item.status === '警告' ? 'var(--warning)' : 'var(--danger)');
-                        let statusBg = item.status === '成功' ? 'var(--success-bg)' : (item.status === '警告' ? 'var(--warning-bg)' : 'var(--danger-bg)');
-
-                        detailsHtml += `
-                            <div style="display: grid; grid-template-columns: 15% 15% 25% 45%; padding: 10px 12px; border-bottom: 1px solid var(--border); align-items: center;">
-                                <div><span style="background:${statusBg}; color:${statusColor}; padding:2px 6px; border-radius:4px; font-weight:700; font-size:10px;">${item.status}</span></div>
-                                <div style="font-family:monospace; color:var(--text-muted);">${item.rows}</div>
-                                <div style="font-weight:700; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.student}</div>
-                                <div style="color:var(--text-secondary);">${item.message}</div>
-                            </div>
-                        `;
-                    });
-                    detailsContainer.innerHTML = detailsHtml;
-                    document.getElementById('import-report-modal').classList.add('open');
-
-                } catch (error) { 
-                    alert("解析匯入檔時發生錯誤：\n" + error.message); 
-                } finally { 
-                    btn.innerHTML = originalHtml; btn.disabled = false; e.target.value = ''; 
-                }
-            };
-            reader.readAsText(file);
+        window.renderSelectedCourseChips = (skipRespUpdate = false) => {
+            const container = document.getElementById('selected-courses-container');
+            document.getElementById('selected-course-count').innerText = `已選 ${selectedCourseIds.length} 門`;
+            if (selectedCourseIds.length === 0) { container.innerHTML = '<div class="empty-state" style="padding:20px;"><div class="empty-text">尚未加入課程</div></div>'; return; }
+            container.innerHTML = selectedCourseIds.map(id => {
+                const c = allCourses.find(x => x.id === id); if (!c) return '';
+                return `
+                <div class="selected-course-item">
+                    <div class="selected-course-info">
+                        <div class="selected-course-top"><span class="selected-course-title">${c.academic_year}-${c.term}</span> <span class="selected-course-code">${c.course_code}</span> <span class="selected-course-title">${c.course_name}</span></div>
+                    </div>
+                    <button type="button" class="btn-remove-course" onclick="window.removeCourse('${c.id}')"><i class="ti ti-x"></i></button>
+                </div>`;
+            }).join('');
+            if (!skipRespUpdate) window.updateRespDeptOptions();
         };
+        window.removeCourse = (id) => { selectedCourseIds = selectedCourseIds.filter(cid => cid !== id); window.renderSelectedCourseChips(); };
+
+        window.showInfoPopup = (type) => {
+            const container = document.getElementById('info-popup-body'); const title = document.getElementById('info-popup-title');
+            if (type === 'student') {
+                const stu = allStudents.find(s => s.student_id === document.getElementById('input-student').value.split(' - ')[0]);
+                if (!stu) return; title.innerText = '學生詳情';
+                container.innerHTML = `<div class="info-item"><span class="info-item-label">姓名</span><div class="info-item-value">${stu.name} (${stu.gender || '未知'})</div></div><div class="info-item"><span class="info-item-label">國籍</span><div class="info-item-value">${stu.nationality || '本國籍'}</div></div>`;
+            } else {
+                const inst = allInsts.find(i => i.id === document.getElementById('input-institution').dataset.id);
+                if (!inst) return; title.innerText = '機構詳情';
+                container.innerHTML = `<div class="info-item"><span class="info-item-label">名稱</span><div class="info-item-value">${inst.name}</div></div><div class="info-item"><span class="info-item-label">所在地國別</span><div class="info-item-value">${inst.country || '臺灣'}</div></div>`;
+            }
+            document.getElementById('info-popup').classList.add('open');
+        };
+        window.closeInfoPopup = () => document.getElementById('info-popup').classList.remove('open');
+        window.closeImportReportModal = () => document.getElementById('import-report-modal').classList.remove('open');
+
+        window.openModal = () => {
+            editingId = null; document.getElementById('input-student').value = ''; document.getElementById('input-institution').value = '';
+            document.getElementById('input-institution').dataset.id = ''; document.getElementById('input-duration').value = '';
+            document.getElementById('input-hours').value = ''; selectedCourseIds = []; window.renderSelectedCourseChips();
+            document.getElementById('main-view').style.display = 'none'; document.getElementById('data-modal').classList.add('open');
+        };
+        window.closeModal = () => { document.getElementById('data-modal').classList.remove('open'); document.getElementById('main-view').style.display = 'flex'; window.renderTable(); };
 
         window.submitForm = async () => {
-            const btn = document.getElementById('btn-submit');
-            const durationInput = document.getElementById('input-duration').value.trim();
-            const respDeptInput = document.getElementById('input-resp-dept').value;
-            const hoursVal = document.getElementById('input-hours').value.trim();
             const instInput = document.getElementById('input-institution');
-            
-            const regex = /^\d{2,3}\/\d{2}\/\d{2}-\d{2,3}\/\d{2}\/\d{2}$/;
-            
-            if (!regex.test(durationInput)) { alert("時間格式錯誤！格式應為：YYY/MM/DD-YYY/MM/DD (例如：114/07/01-114/08/31)"); return; }
-            if (selectedCourseIds.length === 0) { alert("請至少選擇一門關聯實習課程！"); return; }
-            if (!respDeptInput) { alert("請選擇負責填報系所！"); return; }
-
             const payload = { 
                 student_raw: document.getElementById('input-student').value.trim(), 
                 grade: document.getElementById('input-grade').value,
-                inst_raw: instInput.value.trim(), 
-                inst_id: instInput.dataset.id || '', 
+                inst_raw: instInput.value.trim(), inst_id: instInput.dataset.id || '', 
                 period_type: document.getElementById('input-period-type').value,
-                duration: durationInput, 
+                duration: document.getElementById('input-duration').value.trim(), 
                 proof_type: document.getElementById('input-proof-type').value, 
-                hours: hoursVal === '' ? '' : Number(hoursVal), 
-                resp_dept: respDeptInput, 
+                hours: document.getElementById('input-hours').value ? Number(document.getElementById('input-hours').value) : '', 
+                resp_dept: document.getElementById('input-resp-dept').value, 
                 notes: document.getElementById('input-notes').value.trim(), 
                 courses: selectedCourseIds
             };
-
-            if(!payload.student_raw || !payload.inst_raw || !payload.duration || !payload.grade || !payload.period_type || !payload.proof_type || !payload.resp_dept) { alert("請完成所有包含 * 號之必填欄位設定！"); return; }
-            
-            btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 儲存中...';
-            try {
-                if (editingId) await updateDoc(doc(db, "internship_records", editingId), { ...payload, updated_at: serverTimestamp() });
-                else await addDoc(recordsCol, { ...payload, created_at: serverTimestamp() });
-                window.closeModal();
-            } catch (err) { alert("儲存發生錯誤：" + err.message); } 
-            finally { btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> 儲存紀錄'; }
+            if(!payload.student_raw || !payload.inst_raw || !payload.duration || selectedCourseIds.length === 0) { alert('請填妥必填欄位並選取課程！'); return; }
+            if (editingId) await updateDoc(doc(db, "internship_records", editingId), payload);
+            else await addDoc(recordsCol, { ...payload, created_at: serverTimestamp() });
+            window.closeModal();
         };
 
         window.editData = (id) => {
             const data = allRecords.find(d => d.id === id); if (!data) return;
             editingId = id;
-            
             document.getElementById('input-student').value = data.student_raw || '';
             document.getElementById('input-grade').value = data.grade || '';
-            
-            const instInput = document.getElementById('input-institution');
-            instInput.value = data.inst_raw || '';
-            instInput.dataset.id = data.inst_id || ''; 
-            
+            const instIn = document.getElementById('input-institution');
+            instIn.value = data.inst_raw || ''; instIn.dataset.id = data.inst_id || '';
             document.getElementById('input-period-type').value = data.period_type || '';
             document.getElementById('input-proof-type').value = data.proof_type || '';
             document.getElementById('input-duration').value = data.duration || '';
-            document.getElementById('input-hours').value = data.hours !== undefined && data.hours !== '' ? data.hours : '';
+            document.getElementById('input-hours').value = data.hours || '';
             document.getElementById('input-notes').value = data.notes || '';
             
-            document.getElementById('btn-info-student').disabled = false;
-            if (data.inst_id) {
-                document.getElementById('btn-info-inst').disabled = false;
-            } else {
-                const exists = allInsts.some(i => i.name === data.inst_raw);
-                document.getElementById('btn-info-inst').disabled = !exists;
-            }
-
             selectedCourseIds = Array.isArray(data.courses) ? [...data.courses] : [];
             window.renderSelectedCourseChips(true);
             window.updateRespDeptOptions(data.resp_dept);
-
-            document.getElementById('modal-title').innerText = '編輯實習紀錄';
-            document.getElementById('main-view').style.display = 'none';
-            document.getElementById('data-modal').classList.add('open');
+            
+            document.getElementById('btn-info-student').disabled = false; document.getElementById('btn-info-inst').disabled = !data.inst_id;
+            document.getElementById('modal-title').innerText = '編輯整體實習紀錄明細';
+            document.getElementById('main-view').style.display = 'none'; document.getElementById('data-modal').classList.add('open');
         };
 
-        window.deleteData = async (id, name) => {
-            if (confirm(`警告：確定要刪除「${name}」的這筆實習紀錄嗎？\n此操作無法復原。`)) {
-                await deleteDoc(doc(db, "internship_records", id));
-                window.renderTable();
-            }
-        };
+        window.deleteData = async (id, name) => { if (confirm(`確定要刪除「${name}」的整筆實習紀錄嗎？`)) { await deleteDoc(doc(db, "internship_records", id)); window.renderTable(); } };
+        window.changePage = (p) => { currentPage = p; window.renderTable(); };
+        window.changePerPage = (val) => { itemsPerPage = Number(val); currentPage = 1; window.renderTable(); };
     </script>
 </body>
 </html>
