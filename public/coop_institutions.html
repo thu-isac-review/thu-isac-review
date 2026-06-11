@@ -39,7 +39,7 @@
             font-family: 'Noto Sans TC', sans-serif;
             background-color: #F8FAFC;
             -webkit-font-smoothing: antialiased;
-            overflow-x: hidden; /* 防止手機版意外左右晃動 */
+            overflow-x: hidden;
         }
         ::-webkit-scrollbar {
             width: 5px;
@@ -51,6 +51,16 @@
         ::-webkit-scrollbar-thumb {
             background: #CBD5E1;
             border-radius: 20px;
+        }
+        /* 手機版抽屜動畫 */
+        @media (max-width: 1023px) {
+            .filter-drawer {
+                transform: translateY(100%);
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .filter-drawer.open {
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
@@ -66,81 +76,105 @@
     <div id="view-dashboard" class="hidden flex-1 flex flex-col min-h-screen w-full">
         
         <!-- 【首頁滿版】：左側搜尋篩選、右側卡片列表 -->
-        <main id="view-list" class="max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-10 flex-1 flex flex-col lg:flex-row gap-6 sm:gap-8">
+        <main id="view-list" class="max-w-6xl w-full mx-auto px-4 sm:px-6 py-4 sm:py-10 flex-1 flex flex-col lg:flex-row gap-6 sm:gap-8">
             
-            <!-- 左側控制面板 (在手機上會置頂優先顯示，加大點擊熱區) -->
+            <!-- 左側控制面板 -->
             <div class="w-full lg:w-80 flex-shrink-0 flex flex-col gap-4 sm:gap-6">
                 
                 <!-- 1. 系統識別與帳號狀態 -->
-                <div class="bg-white border border-slate-100 rounded-2xl p-5 sm:p-6 shadow-premium">
-                    <div class="flex items-center gap-3.5 mb-4 sm:mb-5">
-                        <div class="w-11 h-11 bg-gradient-to-tr from-thu-deep to-thu-blue text-white rounded-xl flex items-center justify-center text-xl flex-shrink-0 shadow-sm shadow-slate-100">
-                            <i class="ti ti-briefcase"></i>
+                <div class="bg-white border border-slate-100 rounded-2xl p-4 sm:p-6 shadow-premium">
+                    <div class="flex items-center justify-between lg:justify-start lg:gap-3.5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 sm:w-11 sm:h-11 bg-gradient-to-tr from-thu-deep to-thu-blue text-white rounded-xl flex items-center justify-center text-lg sm:text-xl flex-shrink-0 shadow-sm shadow-slate-100">
+                                <i class="ti ti-briefcase"></i>
+                            </div>
+                            <div>
+                                <h1 class="font-bold text-slate-800 text-xs sm:text-sm tracking-wider">東海大學實習專區</h1>
+                                <p class="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Internship Portal</p>
+                            </div>
                         </div>
-                        <div>
-                            <h1 class="font-bold text-slate-800 text-sm sm:text-base tracking-wider">東海大學實習專區</h1>
-                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Internship Portal</p>
-                        </div>
+                        <!-- 手機版登出小按鈕 -->
+                        <button id="btn-logout-mobile" class="lg:hidden text-slate-400 hover:text-slate-600 p-2"><i class="ti ti-logout text-lg"></i></button>
                     </div>
                     
-                    <div class="border-t border-slate-100 pt-4 flex flex-col gap-3">
+                    <!-- 電腦版帳號狀態 -->
+                    <div class="hidden lg:flex border-t border-slate-100 pt-4 flex-col gap-3">
                         <div class="flex items-center gap-2 px-1">
                             <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
                             <span id="user-greeting" class="text-xs font-semibold text-slate-600">同學，您好！</span>
                         </div>
-                        <button id="btn-logout" class="w-full bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/50 py-3 sm:py-2.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 active:scale-[0.97]">
+                        <button id="btn-logout" class="w-full bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/50 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 active:scale-[0.97]">
                             <i class="ti ti-logout text-sm text-slate-400"></i> 登出系統
                         </button>
                     </div>
                 </div>
 
-                <!-- 2. 搜尋與直向篩選面板 (全面強化手機操作) -->
-                <div class="bg-white border border-slate-100 rounded-2xl p-5 sm:p-6 shadow-premium space-y-4 sm:space-y-5">
-                    <div class="flex items-center justify-between border-b border-slate-50 pb-2.5">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                            <i class="ti ti-adjustments-horizontal text-sm"></i> 條件篩選面板
-                        </h3>
+                <!-- 手機版搜尋列與篩選按鈕並排區 (桌機隱藏) -->
+                <div class="flex lg:hidden gap-2 w-full">
+                    <div class="relative flex-1 group">
+                        <i class="ti ti-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-base"></i>
+                        <input type="text" id="search-input-mobile" placeholder="搜尋機構名稱..." class="w-full pl-10 pr-3 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-thu-blue/10 focus:border-thu-blue text-xs font-medium placeholder-slate-400 shadow-premium">
                     </div>
-                    
-                    <!-- 關鍵字搜尋 (放大手機點擊與觸控邊框) -->
-                    <div class="relative w-full group">
-                        <i class="ti ti-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-thu-blue text-base transition-colors"></i>
-                        <input type="text" id="search-input" placeholder="搜尋機構名稱..." class="w-full pl-10 pr-3 py-3 sm:py-2.5 bg-slate-50 border border-slate-200/70 rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-thu-blue/5 focus:border-thu-blue transition-all text-xs font-medium placeholder-slate-400">
-                    </div>
+                    <button id="btn-toggle-filter" class="bg-thu-blue hover:bg-thu-deep text-white px-4 rounded-xl flex items-center gap-1.5 text-xs font-bold shadow-sm active:scale-[0.95] transition-all">
+                        <i class="ti ti-adjustments-horizontal text-base"></i> 篩選
+                    </button>
+                </div>
 
-                    <!-- 垂直排列的篩選器 (高度加高至 py-3，極易點選) -->
-                    <div class="flex flex-col gap-3">
-                        <div class="relative">
-                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><i class="ti ti-world text-sm"></i></span>
-                            <select id="filter-country" class="w-full pl-9 pr-10 py-3 sm:py-2.5 bg-slate-50 border border-slate-200/70 rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-thu-blue/5 focus:border-thu-blue transition-all text-xs font-semibold appearance-none cursor-pointer text-slate-600">
-                                <option value="">全部國別</option>
-                            </select>
-                            <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                <!-- 2. 篩選面板 (手機版改為底部彈出抽屜，電腦版維持原生側邊欄) -->
+                <div id="filter-wrapper" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden lg:z-0 lg:backdrop-blur-none lg:bg-transparent lg:static lg:block">
+                    <div id="filter-drawer" class="filter-drawer fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 space-y-4 shadow-2xl lg:shadow-premium lg:static lg:rounded-2xl lg:border lg:border-slate-100 max-h-[85vh] overflow-y-auto lg:overflow-visible">
+                        
+                        <!-- 抽屜頂部把手與標題 (桌機隱藏) -->
+                        <div class="flex items-center justify-between border-b border-slate-50 pb-3 lg:mb-2">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                                <i class="ti ti-adjustments-horizontal text-sm"></i> 條件篩選面板
+                            </h3>
+                            <button id="btn-close-filter" class="lg:hidden text-slate-400 hover:text-slate-600 p-1"><i class="ti ti-x text-base"></i></button>
+                        </div>
+                        
+                        <!-- 關鍵字搜尋 (桌機專用，手機版移到外面了) -->
+                        <div class="hidden lg:relative lg:block group">
+                            <i class="ti ti-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-thu-blue text-base transition-colors"></i>
+                            <input type="text" id="search-input" placeholder="搜尋機構名稱..." class="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200/70 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-thu-blue/10 focus:border-thu-blue transition-all text-xs font-medium placeholder-slate-400">
                         </div>
 
-                        <div class="relative">
-                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><i class="ti ti-map-pin text-sm"></i></span>
-                            <select id="filter-city" class="w-full pl-9 pr-10 py-3 sm:py-2.5 bg-slate-50 border border-slate-200/70 rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-thu-blue/5 focus:border-thu-blue transition-all text-xs font-semibold appearance-none cursor-pointer text-slate-600">
-                                <option value="">全部縣市</option>
-                            </select>
-                            <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                        <!-- 篩選下拉選單組 -->
+                        <div class="flex flex-col gap-3.5">
+                            <div class="relative">
+                                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><i class="ti ti-world text-sm"></i></span>
+                                <select id="filter-country" class="w-full pl-9 pr-10 py-3 sm:py-2.5 bg-slate-50 border border-slate-200/70 rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-thu-blue/5 text-xs font-semibold appearance-none cursor-pointer text-slate-600">
+                                    <option value="">全部國別</option>
+                                </select>
+                                <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                            </div>
+
+                            <div class="relative">
+                                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><i class="ti ti-map-pin text-sm"></i></span>
+                                <select id="filter-city" class="w-full pl-9 pr-10 py-3 sm:py-2.5 bg-slate-50 border border-slate-200/70 rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-thu-blue/5 text-xs font-semibold appearance-none cursor-pointer text-slate-600">
+                                    <option value="">全部縣市</option>
+                                </select>
+                                <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                            </div>
+
+                            <div class="relative">
+                                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><i class="ti ti-building-community text-sm"></i></span>
+                                <select id="filter-venue-type" class="w-full pl-9 pr-10 py-3 sm:py-2.5 bg-slate-50 border border-slate-200/70 rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-thu-blue/5 text-xs font-semibold appearance-none cursor-pointer text-slate-600">
+                                    <option value="">全部實習場所</option>
+                                </select>
+                                <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                            </div>
+
+                            <div class="relative">
+                                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><i class="ti ti-category text-sm"></i></span>
+                                <select id="filter-industry" class="w-full pl-9 pr-10 py-3 sm:py-2.5 bg-slate-50 border border-slate-200/70 rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-thu-blue/5 text-xs font-semibold appearance-none cursor-pointer text-slate-600">
+                                    <option value="">全部行業別</option>
+                                </select>
+                                <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                            </div>
                         </div>
 
-                        <div class="relative">
-                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><i class="ti ti-building-community text-sm"></i></span>
-                            <select id="filter-venue-type" class="w-full pl-9 pr-10 py-3 sm:py-2.5 bg-slate-50 border border-slate-200/70 rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-thu-blue/5 focus:border-thu-blue transition-all text-xs font-semibold appearance-none cursor-pointer text-slate-600">
-                                <option value="">全部實習場所</option>
-                            </select>
-                            <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
-                        </div>
-
-                        <div class="relative">
-                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><i class="ti ti-category text-sm"></i></span>
-                            <select id="filter-industry" class="w-full pl-9 pr-10 py-3 sm:py-2.5 bg-slate-50 border border-slate-200/70 rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-thu-blue/5 focus:border-thu-blue transition-all text-xs font-semibold appearance-none cursor-pointer text-slate-600">
-                                <option value="">全部行業別</option>
-                            </select>
-                            <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
-                        </div>
+                        <!-- 手機版確定按鈕 (桌機隱藏) -->
+                        <button id="btn-apply-filter" class="w-full lg:hidden bg-thu-blue text-white py-3 rounded-xl font-bold text-xs tracking-wider active:scale-[0.98] transition-all">確認篩選</button>
                     </div>
                 </div>
             </div>
@@ -162,32 +196,23 @@
                         <h3 class="text-xs font-bold text-slate-700">未尋找到符合條件的合作機構</h3>
                     </div>
 
-                    <!-- 機構卡片列表 (手機單欄、平板以上雙欄，調整間距) -->
-                    <div id="inst-list" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5"></div>
+                    <!-- 機構卡片列表 -->
+                    <div id="inst-list" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
                 </div>
 
-                <!-- 智慧分頁器 (手機版特化加大點擊熱區) -->
+                <!-- 智慧分頁器 -->
                 <div id="pagination-panel" class="hidden flex items-center justify-center gap-1.5 mt-10 mb-6"></div>
             </div>
         </main>
 
         <!-- 個別機構詳情頁面 -->
-        <main id="view-detail" class="hidden max-w-3xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-10 flex-1">
-            
+        <main id="view-detail" class="hidden max-w-3xl w-full mx-auto px-4 sm:px-6 py-4 sm:py-10 flex-1">
             <div class="flex items-center justify-between gap-4 mb-5">
                 <button id="btn-back" class="inline-flex items-center gap-1.5 text-thu-blue hover:text-thu-deep font-bold text-xs bg-white border border-slate-200/80 px-4 py-3 sm:py-2.5 rounded-xl transition-all shadow-sm active:scale-[0.95]">
                     <i class="ti ti-chevron-left text-sm"></i> 返回列表
                 </button>
-                
-                <div class="flex items-center gap-3">
-                    <span id="user-greeting-detail" class="hidden sm:inline text-xs font-semibold text-slate-500">同學，您好！</span>
-                    <button id="btn-logout-detail" class="bg-white text-slate-500 border border-slate-200/80 px-3.5 py-2.5 rounded-xl text-xs font-bold shadow-sm">
-                        登出
-                    </button>
-                </div>
+                <button id="btn-logout-detail" class="bg-white text-slate-500 border border-slate-200/80 px-3.5 py-2.5 rounded-xl text-xs font-bold shadow-sm">登出</button>
             </div>
-
-            <!-- 詳情整合生成區 -->
             <div id="detail-content" class="space-y-5"></div>
         </main>
     </div>
@@ -204,7 +229,7 @@
         </div>
     </div>
 
-    <!-- Toast 輕提示容器 (置頂，不阻擋手機操作) -->
+    <!-- Toast 輕提示容器 -->
     <div id="toast-container" class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 pointer-events-none w-[90%] sm:w-auto"></div>
 
 
@@ -256,18 +281,40 @@
         const elDetailContent = document.getElementById('detail-content');
         
         const inputSearch = document.getElementById('search-input');
+        const inputSearchMobile = document.getElementById('search-input-mobile');
         const selectCountry = document.getElementById('filter-country');
         const selectCity = document.getElementById('filter-city');
         const selectVenue = document.getElementById('filter-venue-type');
         const selectIndustry = document.getElementById('filter-industry');
+
+        // 手機版 Drawer 控制元素
+        const filterWrapper = document.getElementById('filter-wrapper');
+        const filterDrawer = document.getElementById('filter-drawer');
+        const btnToggleFilter = document.getElementById('btn-toggle-filter');
+        const btnCloseFilter = document.getElementById('btn-close-filter');
+        const btnApplyFilter = document.getElementById('btn-apply-filter');
+
+        // 手機版抽屜開啟關閉機制
+        function openFilterDrawer() {
+            filterWrapper.classList.remove('hidden');
+            setTimeout(() => filterDrawer.classList.add('open'), 10);
+        }
+        function closeFilterDrawer() {
+            filterDrawer.classList.remove('open');
+            setTimeout(() => filterWrapper.classList.add('hidden'), 300);
+        }
+        btnToggleFilter.addEventListener('click', openFilterDrawer);
+        btnCloseFilter.addEventListener('click', closeFilterDrawer);
+        btnApplyFilter.addEventListener('click', closeFilterDrawer);
+        filterWrapper.addEventListener('click', (e) => {
+            if (e.target === filterWrapper) closeFilterDrawer();
+        });
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 viewLoading.classList.add('hidden');
                 viewDashboard.classList.remove('hidden');
                 const displayName = user.email ? user.email.split('@')[0] : '授權人員';
-                document.getElementById('user-greeting').textContent = `${displayName}，您好！`;
-                document.getElementById('user-greeting-detail').textContent = `${displayName}，您好！`;
                 setupDropdowns();
                 loadData();
             } else {
@@ -292,6 +339,7 @@
             });
         };
         document.getElementById('btn-logout').addEventListener('click', handleLogout);
+        document.getElementById('btn-logout-mobile').addEventListener('click', handleLogout);
         document.getElementById('btn-logout-detail').addEventListener('click', handleLogout);
 
         document.getElementById('btn-back').addEventListener('click', () => {
@@ -325,7 +373,10 @@
                 buildTreeStructure(allData);
                 elLoading.classList.add('hidden');
 
-                inputSearch.addEventListener('input', () => { currentPage = 1; renderList(); });
+                // 綁定雙向搜尋輸入框
+                inputSearch.addEventListener('input', (e) => { inputSearchMobile.value = e.target.value; currentPage = 1; renderList(); });
+                inputSearchMobile.addEventListener('input', (e) => { inputSearch.value = e.target.value; currentPage = 1; renderList(); });
+                
                 selectCountry.addEventListener('change', handleCountryChange);
                 selectCity.addEventListener('change', () => { currentPage = 1; renderList(); });
                 selectVenue.addEventListener('change', () => { currentPage = 1; renderList(); });
@@ -406,7 +457,7 @@
                     let displayName = (isOverseas && inst.nameTranslated) ? inst.nameTranslated : inst.name;
 
                     listHtml += `
-                        <div class="bg-white border border-slate-100 rounded-2xl p-4 sm:p-5 shadow-premium flex flex-col justify-between cursor-pointer min-h-[155px] sm:min-h-[165px] transition-all duration-200 lg:hover:-translate-y-0.5 lg:hover:shadow-premium-hover active:scale-[0.98]" onclick="openDetail('${inst.id}')">
+                        <div class="bg-white border border-slate-100 rounded-2xl p-4 shadow-premium flex flex-col justify-between cursor-pointer min-h-[155px] sm:min-h-[165px] transition-all duration-200 lg:hover:-translate-y-0.5 lg:hover:shadow-premium-hover active:scale-[0.98]" onclick="openDetail('${inst.id}')">
                             <div class="flex items-start gap-3 w-full">
                                 <div class="w-11 h-11 bg-slate-50 border border-slate-100 text-slate-400 flex items-center justify-center text-base flex-shrink-0 rounded-xl">
                                     <i class="ti ti-building"></i>
@@ -443,7 +494,7 @@
                 </button>
             `;
 
-            const maxPageButtons = 3; // 手機版縮小顯示的按鈕數量，防止破版
+            const maxPageButtons = 3; 
             let startPage = Math.max(1, currentPage - 1);
             let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
             if (endPage - startPage < maxPageButtons - 1) startPage = Math.max(1, endPage - maxPageButtons + 1);
