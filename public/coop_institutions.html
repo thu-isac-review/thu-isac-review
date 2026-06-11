@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>合作實習機構 - 東海大學實習專區</title>
     
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -13,19 +12,22 @@
                 extend: {
                     colors: {
                         thu: {
-                            deep: '#2E4053',      // 莫蘭迪深藍
-                            blue: '#4A607A',      // 莫蘭迪石墨藍
-                            accent: '#8FA4B5',    // 莫蘭迪粉藍
-                            light: '#E5ECF4',     // 莫蘭迪極柔灰藍
-                            bg: '#F4F6F8'         // 莫蘭迪淺背景
+                            deep: '#233142',      // 深沉石墨藍（增強對比）
+                            blue: '#455A64',      // 經典莫蘭迪藍綠
+                            accent: '#78909C',    // 質感灰藍
+                            light: '#ECEFF1',     // 極柔和底色
+                            bg: '#F8FAFC'         // 乾淨輕奢背景色
                         }
+                    },
+                    boxShadow: {
+                        'premium': '0 8px 30px rgb(0, 0, 0, 0.03)',
+                        'premium-hover': '0 20px 40px rgb(0, 0, 0, 0.07)'
                     }
                 }
             }
         }
     </script>
     
-    <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
@@ -33,114 +35,108 @@
     <style>
         body {
             font-family: 'Noto Sans TC', sans-serif;
-            background-color: #F4F6F8;
+            background-color: #F8FAFC;
             -webkit-font-smoothing: antialiased;
         }
-        /* 莫蘭迪滾動條 */
+        /* 莫蘭迪優雅滾動條 */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
         }
         ::-webkit-scrollbar-track {
-            background: #E5ECF4;
+            background: #F1F5F9;
         }
         ::-webkit-scrollbar-thumb {
-            background: #8FA4B5;
-            border-radius: 3px;
+            background: #CBD5E1;
+            border-radius: 20px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #4A607A;
+            background: #94A3B8;
         }
         .glass {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-        }
-        .glow-hover {
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .glow-hover:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 24px -10px rgba(74, 96, 122, 0.15);
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col text-slate-700">
+<body class="min-h-screen flex flex-col text-slate-700 bg-thu-bg">
 
-    <!-- 驗證等待中遮罩 -->
-    <div id="view-loading" class="flex-1 flex flex-col items-center justify-center p-4 min-h-[calc(100vh-60px)] bg-[#F4F6F8]">
-        <div class="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 border-t-[#4A607A]"></div>
-        <p class="text-xs text-slate-400 mt-4 tracking-wider">正在安全驗證帳戶身分，請稍候...</p>
+    <div id="view-loading" class="flex-1 flex flex-col items-center justify-center p-4 min-h-[calc(100vh-60px)] bg-thu-bg">
+        <div class="relative flex items-center justify-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-4 border-slate-100 border-t-thu-blue"></div>
+        </div>
+        <p class="text-xs text-slate-400 mt-5 tracking-widest font-medium">正在安全驗證帳戶身分，請稍候...</p>
     </div>
 
-    <!-- 主版面系統介面 -->
     <div id="view-dashboard" class="hidden flex-1 flex flex-col min-h-screen">
         
-        <!-- 【首頁滿版】：左側搜尋篩選、右側卡片列表與分頁控制 -->
-        <main id="view-list" class="max-w-6xl w-full mx-auto px-4 sm:px-8 py-10 flex-1 flex flex-col lg:flex-row gap-8">
+        <main id="view-list" class="max-w-6xl w-full mx-auto px-4 sm:px-6 py-10 flex-1 flex flex-col lg:flex-row gap-8">
             
-            <!-- 左側搜尋與篩選側邊欄 (Sidebar Control Panel) -->
             <div class="w-full lg:w-80 flex-shrink-0 flex flex-col gap-6">
                 
-                <!-- 1. 系統識別與帳號狀態 (整合原 Navbar 角色) -->
-                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 bg-gradient-to-tr from-thu-deep to-[#5D6D7E] text-white rounded-xl flex items-center justify-center text-xl flex-shrink-0 shadow-sm">
+                <div class="bg-white border border-slate-100 rounded-2xl p-6 shadow-premium">
+                    <div class="flex items-center gap-3.5 mb-5">
+                        <div class="w-11 h-11 bg-gradient-to-tr from-thu-deep to-thu-blue text-white rounded-xl flex items-center justify-center text-xl flex-shrink-0 shadow-md shadow-slate-200">
                             <i class="ti ti-briefcase"></i>
                         </div>
                         <div>
                             <h1 class="font-bold text-slate-800 text-sm tracking-wider">東海大學實習專區</h1>
-                            <p class="text-[10px] text-slate-400 font-medium">Internship Portal</p>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Internship Portal</p>
                         </div>
                     </div>
                     
-                    <div class="border-t border-slate-100 pt-3 flex flex-col gap-2">
-                        <span id="user-greeting" class="text-xs font-semibold text-slate-500">同學，您好！</span>
-                        <button id="btn-logout" class="w-full bg-slate-100 hover:bg-[#E5ECF4] text-[#4A607A] border border-slate-200/80 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1">
-                            <i class="ti ti-logout text-xs"></i> 登出系統
+                    <div class="border-t border-slate-100 pt-4 flex flex-col gap-2.5">
+                        <div class="flex items-center gap-2 px-1">
+                            <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                            <span id="user-greeting" class="text-xs font-semibold text-slate-600">同學，您好！</span>
+                        </div>
+                        <button id="btn-logout" class="w-full bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/60 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 active:scale-[0.98]">
+                            <i class="ti ti-logout text-sm text-slate-400"></i> 登出系統
                         </button>
                     </div>
                 </div>
 
-                <!-- 2. 搜尋與直向篩選面板 -->
-                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">搜尋與篩選</h3>
+                <div class="bg-white border border-slate-100 rounded-2xl p-6 shadow-premium space-y-5">
+                    <div class="flex items-center justify-between border-b border-slate-50 pb-3">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                            <i class="ti ti-adjustments-horizontal text-sm"></i> 搜尋與篩選
+                        </h3>
+                    </div>
                     
-                    <!-- 關鍵字搜尋 -->
-                    <div class="relative w-full">
-                        <i class="ti ti-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base"></i>
-                        <input type="text" id="search-input" placeholder="關鍵字搜尋..." class="w-full pl-9 pr-3 py-2.5 bg-[#F4F6F8] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#4A607A] focus:border-transparent transition-all text-xs font-medium">
+                    <div class="relative w-full group">
+                        <i class="ti ti-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-thu-blue text-base transition-colors"></i>
+                        <input type="text" id="search-input" placeholder="輸入機構名稱關鍵字..." class="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200/70 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-thu-blue/10 focus:border-thu-blue transition-all text-xs font-medium placeholder-slate-400">
                     </div>
 
-                    <!-- 垂直排列的篩選器 -->
-                    <div class="flex flex-col gap-3">
-                        <!-- 1. 國別 -->
+                    <div class="flex flex-col gap-3.5">
                         <div class="relative">
-                            <select id="filter-country" class="w-full pl-4 pr-10 py-2.5 bg-[#F4F6F8] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#4A607A] focus:border-transparent transition-all text-xs font-semibold appearance-none cursor-pointer text-slate-600">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><i class="ti ti-world text-sm"></i></span>
+                            <select id="filter-country" class="w-full pl-9 pr-10 py-2.5 bg-slate-50 border border-slate-200/70 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-thu-blue/10 focus:border-thu-blue transition-all text-xs font-semibold appearance-none cursor-pointer text-slate-600">
                                 <option value="">全部國別</option>
                             </select>
                             <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
                         </div>
 
-                        <!-- 2. 縣市別 -->
                         <div class="relative">
-                            <select id="filter-city" class="w-full pl-4 pr-10 py-2.5 bg-[#F4F6F8] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#4A607A] focus:border-transparent transition-all text-xs font-semibold appearance-none cursor-pointer text-slate-600">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><i class="ti ti-map-pin text-sm"></i></span>
+                            <select id="filter-city" class="w-full pl-9 pr-10 py-2.5 bg-slate-50 border border-slate-200/70 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-thu-blue/10 focus:border-thu-blue transition-all text-xs font-semibold appearance-none cursor-pointer text-slate-600">
                                 <option value="">全部縣市</option>
                             </select>
                             <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
                         </div>
 
-                        <!-- 3. 實習場所 -->
                         <div class="relative">
-                            <select id="filter-venue-type" class="w-full pl-4 pr-10 py-2.5 bg-[#F4F6F8] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#4A607A] focus:border-transparent transition-all text-xs font-semibold appearance-none cursor-pointer text-slate-600">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><i class="ti ti-building-community text-sm"></i></span>
+                            <select id="filter-venue-type" class="w-full pl-9 pr-10 py-2.5 bg-slate-50 border border-slate-200/70 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-thu-blue/10 focus:border-thu-blue transition-all text-xs font-semibold appearance-none cursor-pointer text-slate-600">
                                 <option value="">全部實習場所</option>
                             </select>
                             <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
                         </div>
 
-                        <!-- 4. 行業別 -->
                         <div class="relative">
-                            <select id="filter-industry" class="w-full pl-4 pr-10 py-2.5 bg-[#F4F6F8] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#4A607A] focus:border-transparent transition-all text-xs font-semibold appearance-none cursor-pointer text-slate-600">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><i class="ti ti-category text-sm"></i></span>
+                            <select id="filter-industry" class="w-full pl-9 pr-10 py-2.5 bg-slate-50 border border-slate-200/70 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-thu-blue/10 focus:border-thu-blue transition-all text-xs font-semibold appearance-none cursor-pointer text-slate-600">
                                 <option value="">全部行業別</option>
                             </select>
                             <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
@@ -149,74 +145,65 @@
                 </div>
             </div>
 
-            <!-- 右側主要卡片呈現區 (雙欄排列) -->
             <div class="flex-1 flex flex-col justify-between min-h-[500px]">
                 <div class="w-full">
-                    <!-- 加載中 -->
-                    <div id="loading-state" class="py-20 flex flex-col items-center justify-center text-center">
-                        <div class="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 border-t-[#4A607A]"></div>
-                        <h3 class="mt-4 text-sm font-bold text-slate-600">資料加載中，請稍候...</h3>
+                    <div id="loading-state" class="py-24 flex flex-col items-center justify-center text-center">
+                        <div class="animate-spin rounded-full h-9 w-9 border-2 border-slate-200 border-t-thu-blue"></div>
+                        <h3 class="mt-4 text-xs font-bold text-slate-500 tracking-wider">資料同步中，請稍候...</h3>
                     </div>
 
-                    <!-- 空狀態 -->
-                    <div id="empty-state" class="hidden py-16 flex flex-col items-center justify-center text-center p-8">
-                        <div class="w-16 h-16 bg-slate-200/50 text-slate-400 rounded-full flex items-center justify-center mb-4">
-                            <i class="ti ti-search-off text-3xl"></i>
+                    <div id="empty-state" class="hidden py-20 flex flex-col items-center justify-center text-center p-8 bg-white border border-slate-100 rounded-2xl shadow-premium">
+                        <div class="w-14 h-14 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center mb-4 border border-slate-100">
+                            <i class="ti ti-search-off text-2xl"></i>
                         </div>
-                        <h3 class="text-base font-bold text-slate-700">未尋找到符合條件的合作機構</h3>
-                        <p class="text-slate-400 text-xs mt-1">請嘗試調整您的篩選組合或縮減關鍵字。</p>
+                        <h3 class="text-sm font-bold text-slate-700">找不到符合條件的合作機構</h3>
+                        <p class="text-slate-400 text-xs mt-1.5">請嘗試調整您的篩選組合或更換搜尋關鍵字。</p>
                     </div>
 
-                    <!-- 機構卡片列表 -->
-                    <div id="inst-list" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-5"></div>
+                    <div id="inst-list" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-6"></div>
                 </div>
 
-                <!-- 莫蘭迪分頁器控制面板 -->
                 <div id="pagination-panel" class="hidden flex items-center justify-center gap-2 mt-12"></div>
             </div>
         </main>
 
-        <!-- 個別機構詳情頁面 -->
-        <main id="view-detail" class="hidden max-w-6xl w-full mx-auto px-4 sm:px-8 py-10 flex-1">
+        <main id="view-detail" class="hidden max-w-4xl w-full mx-auto px-4 sm:px-6 py-10 flex-1">
             
-            <!-- 回上一頁與登出狀態列 -->
             <div class="flex items-center justify-between gap-4 mb-6">
-                <!-- 莫蘭迪圓角返回按鈕 -->
-                <button id="btn-back" class="inline-flex items-center gap-2 text-[#4A607A] hover:text-[#2E4053] font-bold text-sm bg-white hover:bg-[#E5ECF4] border border-slate-200 hover:border-[#8FA4B5]/50 px-5 py-2.5 rounded-xl transition-all duration-300 shadow-sm hover:shadow active:scale-95">
-                    <i class="ti ti-chevron-left text-base"></i> 返回機構列表
+                <button id="btn-back" class="inline-flex items-center gap-2 text-thu-blue hover:text-thu-deep font-bold text-xs bg-white border border-slate-200/80 px-4 py-2.5 rounded-xl transition-all duration-200 shadow-sm hover:shadow active:scale-[0.97]">
+                    <i class="ti ti-chevron-left text-sm"></i> 返回機構列表
                 </button>
                 
-                <!-- 帳號與登出 (詳情頁面專屬) -->
                 <div class="flex items-center gap-3">
                     <span id="user-greeting-detail" class="hidden sm:inline text-xs font-semibold text-slate-500">同學，您好！</span>
-                    <button id="btn-logout-detail" class="bg-white hover:bg-[#E5ECF4] text-[#4A607A] border border-slate-200/80 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm">
+                    <button id="btn-logout-detail" class="bg-white hover:bg-slate-50 text-slate-500 border border-slate-200/80 px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-sm">
                         登出
                     </button>
                 </div>
             </div>
 
-            <!-- 詳情整合生成區 -->
             <div id="detail-content" class="space-y-6"></div>
         </main>
     </div>
 
-    <!-- 全域 Modal 控制 -->
-    <div id="confirm-modal" class="fixed inset-0 bg-[#2E4053]/20 backdrop-blur-sm z-[90] hidden items-center justify-center p-4">
-        <div class="bg-white rounded-xl border border-slate-200 shadow-2xl max-w-sm w-full p-6 animate-in fade-in zoom-in-95 duration-200">
-            <h4 class="text-base font-bold text-slate-800 text-center" id="confirm-title">確認動作</h4>
-            <p class="text-xs text-slate-400 text-center mt-2 leading-relaxed" id="confirm-desc">確定要執行此操作嗎？</p>
+    <div id="confirm-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[90] hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-2xl max-w-sm w-full p-6 transition-all transform animate-in fade-in zoom-in-95 duration-200">
+            <div class="w-11 h-11 bg-slate-50 border border-slate-100 text-slate-500 rounded-full flex items-center justify-center mx-auto mb-3.5">
+                <i class="ti ti-help-circle text-xl"></i>
+            </div>
+            <h4 class="text-sm font-bold text-slate-800 text-center" id="confirm-title">確認動作</h4>
+            <p class="text-xs text-slate-400 text-center mt-2 leading-relaxed px-2" id="confirm-desc">確定要執行此操作嗎？</p>
             <div class="grid grid-cols-2 gap-3 mt-6">
-                <button id="confirm-btn-cancel" class="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl text-xs transition-all">
+                <button id="confirm-btn-cancel" class="py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold rounded-xl text-xs transition-all border border-slate-200/40">
                     取消
                 </button>
-                <button id="confirm-btn-ok" class="py-2.5 bg-[#4A607A] hover:bg-[#2E4053] text-white font-bold rounded-xl text-xs transition-all shadow-sm">
+                <button id="confirm-btn-ok" class="py-2.5 bg-thu-blue hover:bg-thu-deep text-white font-bold rounded-xl text-xs transition-all shadow-sm">
                     確定
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Toast 輕提示容器 -->
     <div id="toast-container" class="fixed top-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-3 pointer-events-none"></div>
 
 
@@ -269,12 +256,12 @@
         let treeData = [];
         let filteredData = [];
         let currentPage = 1;
-        const itemsPerPage = 8; // 修改為每頁固定顯示 8 家機構
+        const itemsPerPage = 8; 
 
         // 當前詳情分支機構的縣市篩選狀態與分頁狀態
         let activeBranchCityFilter = '全部';
         let currentBranchPage = 1;
-        const branchItemsPerPage = 5; // 分支機構每頁固定顯示 5 個
+        const branchItemsPerPage = 5; 
 
         const viewLoading = document.getElementById('view-loading');
         const viewDashboard = document.getElementById('view-dashboard');
@@ -295,20 +282,16 @@
         // ================== Auth 驗證與跳轉 ==================
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // 已登入，顯示系統
                 viewLoading.classList.add('hidden');
                 viewDashboard.classList.remove('hidden');
                 const displayName = user.email ? user.email.split('@')[0] : '授權人員';
                 
-                // 同步更新兩個視圖中的問候語
                 document.getElementById('user-greeting').textContent = `${displayName}，您好！`;
                 document.getElementById('user-greeting-detail').textContent = `${displayName}，您好！`;
                 
-                // 啟動加載
                 setupDropdowns();
                 loadData();
             } else {
-                // 未登入，重導向至登入頁面
                 window.location.replace('login.html');
             }
         });
@@ -325,7 +308,6 @@
             industriesList.forEach(i => selectIndustry.add(new Option(i, i)));
         }
 
-        // 登出流程 (兩個登出按鈕皆導向此)
         const handleLogout = () => {
             showConfirm("登出確認", "您確定要登出系統嗎？", async () => {
                 await signOut(auth);
@@ -334,14 +316,12 @@
         document.getElementById('btn-logout').addEventListener('click', handleLogout);
         document.getElementById('btn-logout-detail').addEventListener('click', handleLogout);
 
-        // 返回
         document.getElementById('btn-back').addEventListener('click', () => {
             viewDetail.classList.add('hidden');
             viewList.classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
-        // 欄位標準化對照
         function normalizeItem(d) {
             return {
                 id: d.id,
@@ -356,7 +336,6 @@
             };
         }
 
-        // ================== 資料讀取流程 ==================
         async function loadData() {
             elLoading.classList.remove('hidden');
             elList.classList.add('hidden');
@@ -369,10 +348,8 @@
                 const allData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
                 buildTreeStructure(allData);
-                
                 elLoading.classList.add('hidden');
 
-                // 註冊篩選聯動
                 inputSearch.addEventListener('input', () => { currentPage = 1; renderList(); });
                 selectCountry.addEventListener('change', handleCountryChange);
                 selectCity.addEventListener('change', () => { currentPage = 1; renderList(); });
@@ -384,10 +361,10 @@
             } catch (error) {
                 console.error("載入失敗:", error);
                 elLoading.innerHTML = `
-                    <div class="text-slate-600 py-8 flex flex-col items-center">
-                        <i class="ti ti-alert-triangle text-3xl mb-3 text-rose-500"></i>
-                        <h4 class="font-bold text-sm">連線暫時中斷</h4>
-                        <p class="text-slate-400 text-xs mt-1">無法成功連接 Firebase 資料庫，請檢查您的網路狀態或系統權限設定。</p>
+                    <div class="text-slate-500 py-12 flex flex-col items-center">
+                        <i class="ti ti-alert-triangle text-3xl mb-3 text-rose-400"></i>
+                        <h4 class="font-bold text-sm">服務暫時無法連線</h4>
+                        <p class="text-slate-400 text-xs mt-1">請檢查網路連線狀態或系統存取權限。</p>
                     </div>
                 `;
             }
@@ -407,37 +384,32 @@
             treeData.sort((a, b) => (a.name).localeCompare(b.name, 'zh-TW'));
         }
 
-        // ================== 篩選聯動交互 (國別切換，其餘重設並強制海外規則) ==================
         function handleCountryChange() {
             const countryVal = selectCountry.value;
             currentPage = 1;
             
-            // 每次切換國別，立刻重設其他三個篩選器
             selectCity.value = '';
             selectVenue.value = '';
             selectIndustry.value = '';
             
             if (countryVal && countryVal !== '中華民國') {
-                // 海外鎖定邏輯
                 selectCity.disabled = true;
-                selectCity.classList.add('bg-slate-200/50', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
+                selectCity.classList.add('bg-slate-100', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
                 
                 selectVenue.value = '其他機構';
                 selectVenue.disabled = true;
-                selectVenue.classList.add('bg-slate-200/50', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
+                selectVenue.classList.add('bg-slate-100', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
             } else {
-                // 恢復國內 / 全部狀態
                 selectCity.disabled = false;
-                selectCity.classList.remove('bg-slate-200/50', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
+                selectCity.classList.remove('bg-slate-100', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
                 
                 selectVenue.disabled = false;
-                selectVenue.classList.remove('bg-slate-200/50', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
+                selectVenue.classList.remove('bg-slate-100', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
             }
             
             renderList();
         }
 
-        // ================== 分頁與列表渲染邏輯 ==================
         function renderList() {
             const term = inputSearch.value.trim().toLowerCase();
             const filterCountry = selectCountry.value;
@@ -485,42 +457,38 @@
                 if (inst) {
                     const isOverseas = inst.country && inst.country !== '中華民國';
                     
-                    // 境外機構首頁不顯示原名，只顯示譯名
                     let displayName = inst.name;
                     if (isOverseas && inst.nameTranslated) {
                         displayName = inst.nameTranslated;
                     }
 
                     listHtml += `
-                        <div class="glow-hover bg-white border border-slate-200/80 rounded-xl p-6 shadow-sm flex flex-col justify-between cursor-pointer min-h-[160px]" onclick="openDetail('${inst.id}')">
+                        <div class="bg-white border border-slate-100/80 rounded-2xl p-5 shadow-premium flex flex-col justify-between cursor-pointer min-h-[165px] transition-all duration-300 hover:-translate-y-1 hover:shadow-premium-hover group" onclick="openDetail('${inst.id}')">
                             <div>
-                                <!-- LOGO大小固定為正方形，對齊名稱，名稱太長可自動換行 -->
-                                <div class="flex items-start gap-4 mb-3">
-                                    <div class="w-14 h-14 bg-[#E5ECF4] text-[#4A607A] flex items-center justify-center text-xl flex-shrink-0 rounded-xl">
+                                <div class="flex items-start gap-3.5 mb-3">
+                                    <div class="w-12 h-12 bg-slate-50 border border-slate-100 text-slate-400 group-hover:bg-thu-light/40 group-hover:text-thu-blue flex items-center justify-center text-lg flex-shrink-0 rounded-xl transition-colors">
                                         <i class="ti ti-building"></i>
                                     </div>
                                     <div class="flex-1 min-w-0 py-0.5">
-                                        <h4 class="font-bold text-slate-800 text-sm sm:text-base leading-snug break-words whitespace-normal hover:text-[#4A607A] transition-colors">${displayName}</h4>
+                                        <h4 class="font-bold text-slate-700 text-sm sm:text-base leading-snug break-words whitespace-normal group-hover:text-thu-blue transition-colors duration-200">${displayName}</h4>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- 標籤改移到箭頭的最左側，去除據點數及底層分隔線 -->
-                            <div class="flex items-center justify-between gap-2 mt-auto pt-3 border-t border-slate-100/60">
+                            <div class="flex items-center justify-between gap-2 mt-auto pt-3 border-t border-slate-50">
                                 <div class="flex flex-wrap gap-1.5 max-w-[85%]">
-                                    ${inst.industry ? `<span class="bg-[#E5ECF4] text-[#4A607A] text-[10px] font-semibold px-2.5 py-0.5 rounded">${inst.industry}</span>` : ''}
-                                    ${inst.venueType ? `<span class="bg-[#EBF3F5] text-[#2E5B44] text-[10px] font-semibold px-2.5 py-0.5 rounded">${inst.venueType}</span>` : ''}
+                                    ${inst.industry ? `<span class="bg-slate-100 text-slate-600 text-[10px] font-semibold px-2.5 py-0.5 rounded-md">${inst.industry}</span>` : ''}
+                                    ${inst.venueType ? `<span class="bg-emerald-50 text-emerald-700 text-[10px] font-semibold px-2.5 py-0.5 rounded-md">${inst.venueType}</span>` : ''}
                                 </div>
-                                <div class="text-slate-300 flex-shrink-0 ml-auto">
-                                    <i class="ti ti-chevron-right text-lg"></i>
+                                <div class="text-slate-300 group-hover:text-thu-blue transform group-hover:translate-x-0.5 transition-all flex-shrink-0 ml-auto">
+                                    <i class="ti ti-chevron-right text-base font-bold"></i>
                                 </div>
                             </div>
                         </div>
                     `;
                 } else {
-                    // 補齊透明的卡片骨架，維持首頁頁面高度絕對固定，不因資料不足而縮水
                     listHtml += `
-                        <div class="opacity-0 pointer-events-none min-h-[160px] border border-transparent"></div>
+                        <div class="opacity-0 pointer-events-none min-h-[165px] border border-transparent"></div>
                     `;
                 }
             }
@@ -529,7 +497,6 @@
             renderPaginationControls(totalPages);
         }
 
-        // ================== 分頁器：限定鄰近頁碼，防止過多時破圖 ==================
         function renderPaginationControls(totalPages) {
             const panel = document.getElementById('pagination-panel');
             if (totalPages <= 1) {
@@ -540,15 +507,13 @@
 
             let html = '';
             
-            // 上一頁
             html += `
-                <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} class="px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-[#4A607A] hover:bg-[#E5ECF4] transition-all disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed text-xs font-bold flex items-center gap-1">
-                    <i class="ti ti-chevron-left"></i>
+                <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} class="px-3 py-2 rounded-xl border border-slate-200/70 bg-white text-slate-500 hover:bg-slate-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed text-xs font-bold flex items-center">
+                    <i class="ti ti-chevron-left text-sm"></i>
                 </button>
             `;
 
-            // 智慧截斷型頁碼生成邏輯
-            const maxPageButtons = 5; // 最大同時顯示的頁碼按鈕數
+            const maxPageButtons = 5; 
             let startPage = Math.max(1, currentPage - 2);
             let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
 
@@ -556,47 +521,43 @@
                 startPage = Math.max(1, endPage - maxPageButtons + 1);
             }
 
-            // 首頁
             if (startPage > 1) {
                 html += `
-                    <button onclick="changePage(1)" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[#4A607A] hover:bg-[#E5ECF4] text-xs font-bold transition-all">1</button>
+                    <button onclick="changePage(1)" class="w-8 h-8 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 text-xs font-bold transition-all">1</button>
                 `;
                 if (startPage > 2) {
-                    html += `<span class="text-slate-400 text-xs px-1">...</span>`;
+                    html += `<span class="text-slate-300 text-xs px-0.5">...</span>`;
                 }
             }
 
-            // 區間頁碼
             for (let i = startPage; i <= endPage; i++) {
                 if (i === currentPage) {
                     html += `
-                        <button class="px-3.5 py-2 rounded-xl bg-[#4A607A] text-white font-bold text-xs shadow-sm transition-all">
+                        <button class="w-8 h-8 rounded-xl bg-thu-blue text-white font-bold text-xs shadow-sm transition-all">
                             ${i}
                         </button>
                     `;
                 } else {
                     html += `
-                        <button onclick="changePage(${i})" class="px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-[#4A607A] hover:bg-[#E5ECF4] font-bold text-xs transition-all">
+                        <button onclick="changePage(${i})" class="w-8 h-8 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 font-bold text-xs transition-all">
                             ${i}
                         </button>
                     `;
                 }
             }
 
-            // 尾頁
             if (endPage < totalPages) {
                 if (endPage < totalPages - 1) {
-                    html += `<span class="text-slate-400 text-xs px-1">...</span>`;
+                    html += `<span class="text-slate-300 text-xs px-0.5">...</span>`;
                 }
                 html += `
-                    <button onclick="changePage(${totalPages})" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[#4A607A] hover:bg-[#E5ECF4] text-xs font-bold transition-all">${totalPages}</button>
+                    <button onclick="changePage(${totalPages})" class="w-8 h-8 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 text-xs font-bold transition-all">${totalPages}</button>
                 `;
             }
 
-            // 下一頁
             html += `
-                <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} class="px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-[#4A607A] hover:bg-[#E5ECF4] transition-all disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed text-xs font-bold flex items-center gap-1">
-                    <i class="ti ti-chevron-right"></i>
+                <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} class="px-3 py-2 rounded-xl border border-slate-200/70 bg-white text-slate-500 hover:bg-slate-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed text-xs font-bold flex items-center">
+                    <i class="ti ti-chevron-right text-sm"></i>
                 </button>
             `;
 
@@ -606,14 +567,12 @@
         window.changePage = function(page) {
             currentPage = page;
             renderPage();
-            // 平滑滾動至下半部列表起始處
             const listSection = document.getElementById('view-list');
             if (listSection) {
                 listSection.scrollIntoView({ behavior: 'smooth' });
             }
         };
 
-        // ================== 個別頁面：詳情與分支機構控制 ==================
         window.openDetail = function(instId) {
             const inst = treeData.find(d => d.id === instId);
             if (!inst) return;
@@ -622,7 +581,7 @@
             viewDetail.classList.remove('hidden');
 
             activeBranchCityFilter = '全部';
-            currentBranchPage = 1; // 每次打開詳情，重設分支機構分頁
+            currentBranchPage = 1; 
             renderDetailView(inst);
         };
 
@@ -630,24 +589,21 @@
             const isOverseas = inst.country && inst.country !== '中華民國';
 
             let displayNameText = inst.name;
-            // 海外機構：中文譯名（原始名稱）
             if (isOverseas && inst.nameTranslated) {
-                displayNameText = `${inst.nameTranslated}（${inst.name}）`;
+                displayNameText = `${inst.nameTranslated} <span class="text-slate-400 font-normal text-sm block sm:inline sm:ml-2">（${inst.name}）</span>`;
             }
 
-            // 提取子機構的獨特縣市
             const uniqueCities = [...new Set(inst.branches.map(b => b.city).filter(Boolean))].sort();
 
-            // 縣市篩選 Pills 按鈕 (國內機構專屬)
             let cityFiltersHtml = '';
             if (!isOverseas && inst.branches.length > 0 && uniqueCities.length > 0) {
                 cityFiltersHtml = `
-                    <div class="flex flex-wrap gap-2 mb-5">
-                        <button id="pill-all" onclick="filterBranchCity('全部', '${inst.id}')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all ${activeBranchCityFilter === '全部' ? 'bg-[#4A607A] text-white shadow-sm' : 'bg-[#E5ECF4] text-[#4A607A] hover:bg-[#8FA4B5]/20'}">
+                    <div class="flex flex-wrap gap-1.5 mb-5 bg-slate-50 p-1.5 rounded-xl border border-slate-100">
+                        <button id="pill-all" onclick="filterBranchCity('全部', '${inst.id}')" class="px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all ${activeBranchCityFilter === '全部' ? 'bg-thu-blue text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}">
                             全部
                         </button>
                         ${uniqueCities.map(city => `
-                            <button id="pill-${city}" onclick="filterBranchCity('${city}', '${inst.id}')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all ${activeBranchCityFilter === city ? 'bg-[#4A607A] text-white shadow-sm' : 'bg-[#E5ECF4] text-[#4A607A] hover:bg-[#8FA4B5]/20'}">
+                            <button id="pill-${city}" onclick="filterBranchCity('${city}', '${inst.id}')" class="px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all ${activeBranchCityFilter === city ? 'bg-thu-blue text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}">
                                 ${city}
                             </button>
                         `).join('')}
@@ -656,86 +612,68 @@
             }
 
             elDetailContent.innerHTML = `
-                <!-- 1. 上方總機構橫向面版 (圓角修正為 rounded-xl) -->
-                <div class="bg-white border border-slate-200 rounded-xl p-6 sm:p-8 shadow-sm">
+                <div class="bg-white border border-slate-100 rounded-2xl p-6 sm:p-8 shadow-premium relative overflow-hidden">
+                    <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-thu-blue to-thu-accent"></div>
+                    
                     <div class="flex flex-col md:flex-row items-center md:items-stretch gap-6">
-                        
-                        <!-- 左側莫蘭迪藍 Office 容器 (與右側三行等高) -->
-                        <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-xl bg-gradient-to-tr from-thu-deep to-[#5D6D7E] text-white flex items-center justify-center text-3xl flex-shrink-0 shadow-sm">
+                        <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-tr from-thu-deep to-thu-blue text-white flex items-center justify-center text-3xl flex-shrink-0 shadow-md shadow-slate-100">
                             <i class="ti ti-building"></i>
                         </div>
 
-                        <!-- 右側機構資訊 (標籤與地址字級進行調小微調) -->
-                        <div class="flex-1 flex flex-col justify-between py-1 space-y-2.5 text-center md:text-left min-w-0">
-                            <!-- 第一行：機構名稱 -->
-                            <div>
-                                <h2 class="text-lg sm:text-xl font-bold text-slate-800 tracking-tight leading-snug">${displayNameText}</h2>
-                            </div>
+                        <div class="flex-1 flex flex-col justify-center py-0.5 text-center md:text-left min-w-0">
+                            <h2 class="text-base sm:text-lg font-bold text-slate-800 tracking-tight leading-snug mb-2.5">${displayNameText}</h2>
 
-                            <!-- 第二行：標籤組 (微調縮小為 text-xs sm:text-sm) -->
-                            <div class="flex flex-wrap justify-center md:justify-start gap-2">
+                            <div class="flex flex-wrap justify-center md:justify-start gap-1.5 mb-3.5">
                                 ${inst.venueType ? `
-                                    <span class="inline-flex bg-[#EBF3F5] text-[#2E5B44] text-xs sm:text-sm font-semibold px-2.5 py-0.5 rounded-md">
+                                    <span class="inline-flex bg-emerald-50 text-emerald-700 text-[11px] font-semibold px-2.5 py-0.5 rounded-md">
                                         ${inst.venueType}
                                     </span>
                                 ` : ''}
-
                                 ${inst.industry ? `
-                                    <span class="inline-flex bg-[#E5ECF4] text-[#4A607A] text-xs sm:text-sm font-semibold px-2.5 py-0.5 rounded-md">
+                                    <span class="inline-flex bg-slate-100 text-slate-600 text-[11px] font-semibold px-2.5 py-0.5 rounded-md">
                                         ${inst.industry}
                                     </span>
                                 ` : ''}
                             </div>
 
-                            <!-- 第三行：地址資訊列 (微調縮小為 text-xs sm:text-sm) -->
-                            <div class="flex flex-wrap items-center justify-center md:justify-start gap-2 text-slate-500 text-xs sm:text-sm">
-                                <i class="ti ti-map-pin text-[#8FA4B5] text-sm sm:text-base"></i>
-                                
-                                <!-- 國別標籤置於 Icon 正後方 (微調縮小為 text-xs sm:text-sm) -->
+                            <div class="flex flex-wrap items-center justify-center md:justify-start gap-1.5 text-slate-400 text-xs">
+                                <i class="ti ti-map-pin text-slate-400 text-sm"></i>
                                 ${isOverseas ? `
-                                    <span class="inline-flex bg-[#F5EBEB] text-[#A66C6C] text-xs sm:text-sm font-semibold px-2.5 py-0.5 rounded-md">
+                                    <span class="inline-flex bg-rose-50 text-rose-700 text-[10px] font-bold px-1.5 py-0.5 rounded">
                                         ${inst.country}
                                     </span>
                                 ` : ''}
-                                
-                                <span class="font-medium text-slate-600 truncate max-w-full" title="${inst.address || ''}">
-                                    ${inst.address || '無登記主地址'}
+                                <span class="font-medium text-slate-500 truncate max-w-[80%]" title="${inst.address || ''}">
+                                    ${inst.address || '無登記主要地址'}
                                 </span>
                                 ${inst.address ? `
-                                    <button onclick="copyAddress('${inst.address}')" class="p-1 hover:bg-slate-100 text-slate-400 hover:text-slate-800 rounded transition-colors" title="複製地址">
+                                    <button onclick="copyAddress('${inst.address}')" class="p-1 hover:bg-slate-100 text-slate-400 hover:text-slate-700 rounded-md transition-colors" title="複製地址">
                                         <i class="ti ti-copy text-xs"></i>
                                     </button>
                                 ` : ''}
                             </div>
-
                         </div>
                     </div>
                 </div>
 
-                <!-- 2. 下方分支機構/分所列表 (高度一律固定為 5 個據點高度，約 250px) -->
-                <div class="bg-white border border-slate-200 rounded-xl p-6 sm:p-8 shadow-sm">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-5">
-                        <h3 class="font-bold text-slate-800 text-sm sm:text-base">
-                            分支機構列表
+                <div class="bg-white border border-slate-100 rounded-2xl p-6 sm:p-8 shadow-premium">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
+                        <h3 class="font-bold text-slate-800 text-sm sm:text-base flex items-center gap-2">
+                            <i class="ti ti-git-branch text-thu-blue"></i> 分支機構據點
                         </h3>
-                        <span id="branch-total-count" class="bg-[#E5ECF4] text-[#4A607A] font-bold px-3 py-1 rounded-xl text-xs">
+                        <span id="branch-total-count" class="bg-slate-50 text-slate-500 border border-slate-100 font-bold px-2.5 py-0.5 rounded-lg text-[10px]">
                             共 0 處
                         </span>
                     </div>
 
-                    <!-- 國內縣市篩選 Pills -->
                     ${cityFiltersHtml}
 
-                    <!-- 分支機構固定 5 行高度的容器 (就算無據點，高度也固定在 250px) -->
                     <div class="flex flex-col justify-between min-h-[300px]">
-                        <div id="branches-list-wrapper" class="divide-y divide-slate-100 flex-1">
-                            <!-- JS 動態生成分支項目 -->
-                        </div>
+                        <div id="branches-list-wrapper" class="divide-y divide-slate-100/70 flex-1">
+                            </div>
                         
-                        <!-- 分支局部換頁器 -->
                         <div id="branch-local-pagination" class="flex justify-between items-center pt-4 border-t border-slate-100 mt-4">
-                            <!-- JS 動態生成上一頁/下一頁按鈕 -->
-                        </div>
+                            </div>
                     </div>
                 </div>
             `;
@@ -743,88 +681,78 @@
             renderBranchesContainer(inst);
         }
 
-        // ================== 分支機構列表分頁與固定高度核心 ==================
         function renderBranchesContainer(inst) {
             const isOverseas = inst.country && inst.country !== '中華民國';
             
-            // 依據篩選值過濾分支
             let displayBranches = inst.branches || [];
             if (activeBranchCityFilter !== '全部') {
                 displayBranches = inst.branches.filter(b => b.city === activeBranchCityFilter);
             }
 
-            // 更新分支數量標籤
             document.getElementById('branch-total-count').textContent = `共 ${displayBranches.length} 處`;
 
             const branchesWrapper = document.getElementById('branches-list-wrapper');
             const paginationWrapper = document.getElementById('branch-local-pagination');
 
             if (displayBranches.length === 0) {
-                // 無資料狀態：完全移除虛線框與任何卡片包覆，保留固定 250px 高度之極簡居中提示
                 branchesWrapper.innerHTML = `
-                    <div class="h-[250px] flex items-center justify-center text-center bg-transparent">
-                        <p class="text-slate-400 text-xs font-bold">該機構暫無其他分支機構</p>
+                    <div class="h-[250px] flex flex-col items-center justify-center text-center bg-transparent">
+                        <p class="text-slate-400 text-xs font-medium">該機構暫無其他分支據點登錄</p>
                     </div>
                 `;
                 paginationWrapper.innerHTML = '';
                 return;
             }
 
-            // 分支分頁計算
             const totalBranchPages = Math.ceil(displayBranches.length / branchItemsPerPage);
             if (currentBranchPage > totalBranchPages) currentBranchPage = totalBranchPages || 1;
 
             const startIndex = (currentBranchPage - 1) * branchItemsPerPage;
             const slicedBranches = displayBranches.slice(startIndex, startIndex + branchItemsPerPage);
 
-            // 生成分支項目 (固定單個高度，確保不滿 5 個時使用透明佔位槽補齊高度，確保高度固定)
             let listHtml = '';
             for (let i = 0; i < branchItemsPerPage; i++) {
                 const branch = slicedBranches[i];
                 if (branch) {
-                    // 第一個項目不要顯示上方邊框
-                    const borderClass = i === 0 ? 'border-t-0 pt-1' : 'border-t border-slate-100 pt-3';
+                    const borderClass = i === 0 ? 'border-t-0 pt-1' : 'border-t border-slate-100/70 pt-3';
                     const domesticCityTag = (!isOverseas && branch.city) 
-                        ? `<span class="bg-[#E5ECF4] text-[#4A607A] text-[11px] font-bold px-2.5 py-0.5 rounded mr-3 flex-shrink-0">${branch.city}</span>` 
+                        ? `<span class="bg-thu-light/50 text-thu-blue text-[10px] font-bold px-2 py-0.5 rounded border border-thu-light/20 mr-3 flex-shrink-0">${branch.city}</span>` 
                         : '';
                     listHtml += `
-                        <div class="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 h-[50px] ${borderClass}">
+                        <div class="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 h-[52px] ${borderClass}">
                             <div class="flex items-center min-w-0">
                                 ${domesticCityTag}
                                 <span class="font-semibold text-slate-700 text-xs sm:text-sm truncate">${branch.name}</span>
                             </div>
-                            <span class="text-[11px] sm:text-xs text-slate-400 break-all truncate max-w-xs sm:max-w-md">${branch.address || '無詳細通訊地址'}</span>
+                            <span class="text-[11px] sm:text-xs text-slate-400 truncate max-w-xs sm:max-w-md">${branch.address || '無詳細地址登記'}</span>
                         </div>
                     `;
                 } else {
-                    // 佔位項目：維持純白透明，確保高度穩定，第一個項目依然不要邊框
                     const borderClass = i === 0 ? 'border-t-0' : 'border-t border-transparent';
                     listHtml += `
-                        <div class="py-3 h-[50px] ${borderClass} opacity-0 pointer-events-none"></div>
+                        <div class="py-3 h-[52px] ${borderClass} opacity-0 pointer-events-none"></div>
                     `;
                 }
             }
             branchesWrapper.innerHTML = listHtml;
 
-            // 分支換頁按鈕 (若總頁數 > 1 時顯示)
             if (totalBranchPages > 1) {
                 paginationWrapper.innerHTML = `
-                    <button onclick="changeBranchPage(${currentBranchPage - 1}, '${inst.id}')" ${currentBranchPage === 1 ? 'disabled' : ''} class="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-[#4A607A] hover:bg-[#E5ECF4] transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                    <button onclick="changeBranchPage(${currentBranchPage - 1}, '${inst.id}')" ${currentBranchPage === 1 ? 'disabled' : ''} class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-500 hover:bg-slate-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed">
                         上一頁
                     </button>
-                    <span class="text-xs text-slate-400 font-bold">${currentBranchPage} / ${totalBranchPages}</span>
-                    <button onclick="changeBranchPage(${currentBranchPage + 1}, '${inst.id}')" ${currentBranchPage === totalBranchPages ? 'disabled' : ''} class="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-[#4A607A] hover:bg-[#E5ECF4] transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                    <span class="text-xs text-slate-400 font-bold tracking-wider">${currentBranchPage} / ${totalBranchPages}</span>
+                    <button onclick="changeBranchPage(${currentBranchPage + 1}, '${inst.id}')" ${currentBranchPage === totalBranchPages ? 'disabled' : ''} class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-500 hover:bg-slate-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed">
                         下一頁
                     </button>
                 `;
             } else {
                 paginationWrapper.innerHTML = `
-                    <div class="text-xs text-slate-300 font-medium">單頁分支據點</div>
+                    <div class="text-[11px] text-slate-300 font-medium tracking-wide">已顯示全部分支據點</div>
                 `;
             }
         }
 
-        // 分支機構換頁事件
         window.changeBranchPage = function(targetPage, instId) {
             currentBranchPage = targetPage;
             const inst = treeData.find(d => d.id === instId);
@@ -833,17 +761,15 @@
             }
         };
 
-        // 詳情內的分支縣市過濾動態重新整理
         window.filterBranchCity = function(city, instId) {
             activeBranchCityFilter = city;
-            currentBranchPage = 1; // 縣市篩選切換時自動回到第一頁
+            currentBranchPage = 1; 
             const inst = treeData.find(d => d.id === instId);
             if (inst) {
                 renderDetailView(inst);
             }
         };
 
-        // 地址複製
         window.copyAddress = function(text) {
             const tempInput = document.createElement('textarea');
             tempInput.value = text;
@@ -851,37 +777,32 @@
             tempInput.select();
             try {
                 document.execCommand('copy');
-                showToast("地址複製成功！", "success");
+                showToast("地址已複製到剪貼簿", "success");
             } catch (err) {
-                showToast("複製失敗，請手動複製", "error");
+                showToast("複製失敗，請手動選取複製", "error");
             }
             document.body.removeChild(tempInput);
         };
 
-        // ================== Toast 與 Modal 互動 ==================
         window.showToast = function(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             
             let bgClass = 'bg-white text-slate-800 border-slate-100';
-            let iconClass = 'ti-circle-check text-slate-600';
+            let iconClass = 'ti-circle-check text-slate-500';
             
             if (type === 'success') {
-                bgClass = 'bg-[#E5ECF4] text-[#4A607A] border-transparent';
-                iconClass = 'ti-circle-check text-[#4A607A]';
+                bgClass = 'bg-slate-900 text-white border-transparent';
+                iconClass = 'ti-circle-check-filled text-emerald-400';
             } else if (type === 'error') {
                 bgClass = 'bg-rose-50 text-rose-900 border-rose-100';
-                iconClass = 'ti-circle-x text-rose-600';
-            } else if (type === 'info') {
-                bgClass = 'bg-slate-100 text-slate-700 border-slate-200';
-                iconClass = 'ti-info-circle text-slate-600';
+                iconClass = 'ti-circle-x-filled text-rose-500';
             }
 
-            toast.className = `flex items-center gap-3 px-4 py-2.5 rounded-xl border shadow-lg ${bgClass} transition-all duration-300 transform translate-y-4 opacity-0 pointer-events-auto max-w-sm w-72 sm:w-auto`;
-            toast.style.padding = '10px 16px';
+            toast.className = `flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-xl ${bgClass} transition-all duration-300 transform translate-y-4 opacity-0 pointer-events-auto max-w-sm`;
             toast.innerHTML = `
                 <i class="ti ${iconClass} text-base flex-shrink-0"></i>
-                <span class="text-xs font-semibold leading-normal">${message}</span>
+                <span class="text-xs font-semibold tracking-wide">${message}</span>
             `;
 
             container.appendChild(toast);
@@ -892,10 +813,8 @@
 
             setTimeout(() => {
                 toast.classList.add('translate-y-[-10px]', 'opacity-0');
-                setTimeout(() => {
-                    toast.remove();
-                }, 300);
-            }, 2500);
+                setTimeout(() => { toast.remove(); }, 300);
+            }, 2200);
         };
 
         window.showConfirm = function(title, desc, onConfirm) {
