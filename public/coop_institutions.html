@@ -70,15 +70,13 @@
 </head>
 <body class="min-h-screen flex flex-col text-slate-700">
 
+    <!-- 內部聲明橫幅：移除關閉按鈕，限制無法關閉 -->
     <div id="warning-banner" class="bg-amber-50 border-b border-amber-100 text-amber-900 px-4 py-3 text-xs sm:text-sm flex items-center justify-center gap-2 relative z-50 transition-all duration-300">
         <i class="ti ti-shield-lock text-amber-600 text-lg flex-shrink-0 animate-pulse"></i>
         <span class="font-medium text-center leading-relaxed">
             <strong class="font-bold text-amber-700">內部安全聲明：</strong>
             本系統所列之合作機構資料僅限校內授權人員與實習生瀏覽。嚴禁截圖、轉載或散布。
         </span>
-        <button onclick="document.getElementById('warning-banner').remove()" class="absolute right-3 hover:bg-amber-100 p-1 rounded-full transition-colors hidden sm:block">
-            <i class="ti ti-x text-sm text-amber-700"></i>
-        </button>
     </div>
 
     <!-- 驗證等待中遮罩 -->
@@ -90,8 +88,8 @@
     <!-- 主版面系統介面 -->
     <div id="view-dashboard" class="hidden flex-1 flex flex-col">
         
-        <!-- 【首頁滿版一】：上半部 Hero & 搜尋篩選區 (修正為 h-screen 或 min-h-[calc(100vh-60px)] 達到兩頁滿版切分) -->
-        <header id="dashboard-hero" class="hero-gradient text-white relative min-h-[calc(100vh-48px)] flex flex-col justify-between px-6 sm:px-8 overflow-hidden">
+        <!-- 【首頁滿版一】：上半部 Hero 區塊 (保持視覺大氣清爽) -->
+        <header id="dashboard-hero" class="hero-gradient text-white relative min-h-[50vh] flex flex-col justify-between px-6 sm:px-8 overflow-hidden pt-12 pb-16">
             
             <!-- 原 Navbar 的登出與 greeting 元素 -->
             <div class="w-full max-w-6xl mx-auto pt-6 flex items-center justify-end z-30">
@@ -105,9 +103,9 @@
                 </div>
             </div>
 
-            <!-- 置中核心主副標題與篩選控制面板 -->
-            <div class="max-w-6xl w-full mx-auto relative z-10 flex flex-col items-center my-auto">
-                <div class="max-w-3xl text-center space-y-4 mb-12">
+            <!-- 置中核心主副標題 (無搜尋控制面板) -->
+            <div class="max-w-6xl w-full mx-auto relative z-10 flex flex-col items-center my-auto text-center px-4">
+                <div class="max-w-3xl space-y-4">
                     <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight text-white">
                         開創未來航道，探索頂尖合作機構
                     </h2>
@@ -115,9 +113,23 @@
                         東海大學與全球卓越企業、非營利組織、政府機關展開長期深度合作，為您鋪墊最扎實的職涯銜接之路。
                     </p>
                 </div>
+            </div>
 
-                <!-- 搜尋與篩選控制面板 (圓角修正為 rounded-xl) -->
-                <div class="w-full bg-white border border-slate-200 rounded-xl p-6 shadow-2xl relative z-20 space-y-4 text-slate-700">
+            <!-- 向下滾動導引 (Scroll Down Indicator) -->
+            <div class="w-full flex flex-col items-center justify-center pb-4 z-25 text-slate-300">
+                <a href="#view-list" class="flex flex-col items-center gap-1.5 text-xs font-bold hover:text-white transition-colors tracking-widest uppercase">
+                    <span>向下探索合作機構</span>
+                    <i class="ti ti-chevron-down text-lg animate-bounce"></i>
+                </a>
+            </div>
+        </header>
+
+        <!-- 【首頁滿版二】：下半部搜尋、篩選控制、卡片列表區與分頁控制 -->
+        <main id="view-list" class="max-w-6xl w-full mx-auto px-4 sm:px-8 py-16 min-h-screen flex flex-col justify-between">
+            <div class="w-full">
+                
+                <!-- 搜尋與篩選控制面板 (由 Hero 移至下半部起始端) -->
+                <div class="w-full bg-white border border-slate-200 rounded-xl p-6 shadow-md mb-8 space-y-4 text-slate-700">
                     <!-- 關鍵字搜尋 -->
                     <div class="relative w-full">
                         <i class="ti ti-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl"></i>
@@ -159,27 +171,14 @@
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- 向下滾動導引 (Scroll Down Indicator) -->
-            <div class="w-full flex flex-col items-center justify-center pb-8 z-25 text-slate-300">
-                <a href="#view-list" class="flex flex-col items-center gap-1.5 text-xs font-bold hover:text-white transition-colors tracking-widest uppercase">
-                    <span>向下探索合作機構</span>
-                    <i class="ti ti-chevron-down text-lg animate-bounce"></i>
-                </a>
-            </div>
-        </header>
-
-        <!-- 【首頁滿版二】：下半部卡片列表區與分頁控制 (獨立 min-h-screen 實現滿版切分) -->
-        <main id="view-list" class="max-w-6xl w-full mx-auto px-4 sm:px-8 py-16 min-h-screen flex flex-col justify-between">
-            <div class="w-full">
                 <!-- 加載中 -->
                 <div id="loading-state" class="py-20 flex flex-col items-center justify-center text-center">
                     <div class="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 border-t-[#4A607A]"></div>
                     <h3 class="mt-4 text-sm font-bold text-slate-600">資料加載中，請稍候...</h3>
                 </div>
 
-                <!-- 空狀態 (移除外框卡片包覆，維持清爽直敘) -->
+                <!-- 空狀態 (無卡片包覆，維持清爽直敘) -->
                 <div id="empty-state" class="hidden py-16 flex flex-col items-center justify-center text-center p-8">
                     <div class="w-16 h-16 bg-slate-200/50 text-slate-400 rounded-full flex items-center justify-center mb-4">
                         <i class="ti ti-search-off text-3xl"></i>
@@ -188,7 +187,7 @@
                     <p class="text-slate-400 text-xs mt-1">請嘗試調整您的篩選組合或縮減關鍵字。</p>
                 </div>
 
-                <!-- 機構卡片列表 (修改為一排三個的 grid Layout: lg:grid-cols-3) -->
+                <!-- 機構卡片列表 (固定 1 頁 9 家：lg:grid-cols-3) -->
                 <div id="inst-list" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
             </div>
 
@@ -277,7 +276,7 @@
         let treeData = [];
         let filteredData = [];
         let currentPage = 1;
-        const itemsPerPage = 15; // 改為每頁顯示 15 家機構
+        const itemsPerPage = 9; // 修改為每頁顯示 9 家機構
 
         // 當前詳情分支機構的縣市篩選狀態與分頁狀態
         let activeBranchCityFilter = '全部';
@@ -493,28 +492,26 @@
                 }
 
                 return `
-                    <div class="glow-hover bg-white border border-slate-200/80 rounded-xl p-6 shadow-sm flex flex-col justify-between cursor-pointer min-h-[175px]" onclick="openDetail('${inst.id}')">
+                    <div class="glow-hover bg-white border border-slate-200/80 rounded-xl p-6 shadow-sm flex flex-col justify-between cursor-pointer min-h-[160px]" onclick="openDetail('${inst.id}')">
                         <div>
-                            <!-- LOGO與兩行資訊（名稱、標籤組）高度等高 -->
-                            <div class="flex items-stretch gap-4 mb-3">
-                                <div class="w-14 bg-[#E5ECF4] text-[#4A607A] flex items-center justify-center text-xl flex-shrink-0 rounded-xl">
+                            <!-- LOGO大小固定為正方形，對齊名稱，名稱太長可自動換行 -->
+                            <div class="flex items-start gap-4 mb-3">
+                                <div class="w-14 h-14 bg-[#E5ECF4] text-[#4A607A] flex items-center justify-center text-xl flex-shrink-0 rounded-xl">
                                     <i class="ti ti-building"></i>
                                 </div>
-                                <div class="flex-1 flex flex-col justify-between py-0.5 min-w-0">
-                                    <h4 class="font-bold text-slate-800 text-sm sm:text-base leading-snug truncate hover:text-[#4A607A] transition-colors">${displayName}</h4>
-                                    
-                                    <!-- 標籤對齊機構名稱，放置在名稱正下方 -->
-                                    <div class="flex flex-wrap gap-1.5">
-                                        ${inst.industry ? `<span class="bg-[#E5ECF4] text-[#4A607A] text-[10px] font-semibold px-2.5 py-0.5 rounded">${inst.industry}</span>` : ''}
-                                        ${inst.venueType ? `<span class="bg-[#EBF3F5] text-[#2E5B44] text-[10px] font-semibold px-2.5 py-0.5 rounded">${inst.venueType}</span>` : ''}
-                                    </div>
+                                <div class="flex-1 min-w-0 py-0.5">
+                                    <h4 class="font-bold text-slate-800 text-sm sm:text-base leading-snug break-words whitespace-normal hover:text-[#4A607A] transition-colors">${displayName}</h4>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- 底部：去除分隔線、去除據點數，僅保留右側進入指示 -->
-                        <div class="flex items-center justify-end mt-auto text-xs">
-                            <div class="flex items-center gap-1 text-slate-300">
+                        <!-- 標籤改移到箭頭的最左側，去除據點數及底層分隔線 -->
+                        <div class="flex items-center justify-between gap-2 mt-auto pt-3 border-t border-slate-100/60">
+                            <div class="flex flex-wrap gap-1.5 max-w-[85%]">
+                                ${inst.industry ? `<span class="bg-[#E5ECF4] text-[#4A607A] text-[10px] font-semibold px-2.5 py-0.5 rounded">${inst.industry}</span>` : ''}
+                                ${inst.venueType ? `<span class="bg-[#EBF3F5] text-[#2E5B44] text-[10px] font-semibold px-2.5 py-0.5 rounded">${inst.venueType}</span>` : ''}
+                            </div>
+                            <div class="text-slate-300 flex-shrink-0 ml-auto">
                                 <i class="ti ti-chevron-right text-lg"></i>
                             </div>
                         </div>
@@ -669,28 +666,28 @@
                                 <h2 class="text-lg sm:text-xl font-bold text-slate-800 tracking-tight leading-snug">${displayNameText}</h2>
                             </div>
 
-                            <!-- 第二行：標籤組 (調大一號：text-sm) -->
+                            <!-- 第二行：標籤組 (字元調大一號：text-sm sm:text-base) -->
                             <div class="flex flex-wrap justify-center md:justify-start gap-2">
                                 ${inst.venueType ? `
-                                    <span class="inline-flex bg-[#EBF3F5] text-[#2E5B44] text-xs sm:text-sm font-bold px-3 py-1 rounded-lg">
+                                    <span class="inline-flex bg-[#EBF3F5] text-[#2E5B44] text-sm sm:text-base font-bold px-3 py-1 rounded-lg">
                                         ${inst.venueType}
                                     </span>
                                 ` : ''}
 
                                 ${inst.industry ? `
-                                    <span class="inline-flex bg-[#E5ECF4] text-[#4A607A] text-xs sm:text-sm font-bold px-3 py-1 rounded-lg">
+                                    <span class="inline-flex bg-[#E5ECF4] text-[#4A607A] text-sm sm:text-base font-bold px-3 py-1 rounded-lg">
                                         ${inst.industry}
                                     </span>
                                 ` : ''}
                             </div>
 
-                            <!-- 第三行：地址資訊列 (調大一號：text-sm / text-base) -->
-                            <div class="flex flex-wrap items-center justify-center md:justify-start gap-2 text-slate-500 text-sm sm:text-base">
-                                <i class="ti ti-map-pin text-[#8FA4B5] text-base"></i>
+                            <!-- 第三行：地址資訊列 (字元調大一號：text-base sm:text-lg) -->
+                            <div class="flex flex-wrap items-center justify-center md:justify-start gap-2 text-slate-500 text-base sm:text-lg">
+                                <i class="ti ti-map-pin text-[#8FA4B5] text-lg"></i>
                                 
-                                <!-- 國別標籤置於 Icon 正後方 -->
+                                <!-- 國別標籤置於 Icon 正後方 (字元調大一號：text-sm sm:text-base) -->
                                 ${isOverseas ? `
-                                    <span class="inline-flex bg-[#F5EBEB] text-[#A66C6C] text-xs sm:text-sm font-bold px-3 py-1 rounded-lg">
+                                    <span class="inline-flex bg-[#F5EBEB] text-[#A66C6C] text-sm sm:text-base font-bold px-3 py-1 rounded-lg">
                                         ${inst.country}
                                     </span>
                                 ` : ''}
@@ -709,7 +706,7 @@
                     </div>
                 </div>
 
-                <!-- 2. 下方分支機構/分所列表 (固定 5 個項目高度) -->
+                <!-- 2. 下方分支機構/分所列表 (高度一律固定為 5 個據點高度，約 250px) -->
                 <div class="bg-white border border-slate-200 rounded-xl p-6 sm:p-8 shadow-sm">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-5">
                         <h3 class="font-bold text-slate-800 text-sm sm:text-base">
@@ -723,7 +720,7 @@
                     <!-- 國內縣市篩選 Pills -->
                     ${cityFiltersHtml}
 
-                    <!-- 分支機構固定 5 行高度的容器 (避免頁面長度顛簸，並於內部進行分支局部換頁) -->
+                    <!-- 分支機構固定 5 行高度的容器 (就算無據點，高度也固定在 250px) -->
                     <div class="flex flex-col justify-between min-h-[300px]">
                         <div id="branches-list-wrapper" class="divide-y divide-slate-100 flex-1">
                             <!-- JS 動態生成分支項目 -->
@@ -757,9 +754,9 @@
             const paginationWrapper = document.getElementById('branch-local-pagination');
 
             if (displayBranches.length === 0) {
-                // 無資料狀態：完全移除虛線框，置中並保留固定高度空間
+                // 無資料狀態：完全移除虛線框與任何卡片包覆，保留固定 250px 高度之極簡居中提示
                 branchesWrapper.innerHTML = `
-                    <div class="h-[250px] flex items-center justify-center text-center">
+                    <div class="h-[250px] flex items-center justify-center text-center bg-transparent">
                         <p class="text-slate-400 text-xs font-bold">該機構暫無其他分支機構</p>
                     </div>
                 `;
@@ -774,7 +771,7 @@
             const startIndex = (currentBranchPage - 1) * branchItemsPerPage;
             const slicedBranches = displayBranches.slice(startIndex, startIndex + branchItemsPerPage);
 
-            // 生成分支項目 (固定單個高度，確保不滿 5 個時使用佔位槽補齊高度)
+            // 生成分支項目 (固定單個高度，確保不滿 5 個時使用透明佔位槽補齊高度，確保高度固定)
             let listHtml = '';
             for (let i = 0; i < branchItemsPerPage; i++) {
                 const branch = slicedBranches[i];
