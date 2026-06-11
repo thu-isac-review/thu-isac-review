@@ -76,8 +76,8 @@
     <!-- 主版面系統介面 -->
     <div id="view-dashboard" class="hidden flex-1 flex flex-col min-h-screen">
         
-        <!-- 【首頁滿版】：左側搜尋篩選、右側卡片列表與分頁控制 (緊湊無上下滑動比例調整) -->
-        <main id="view-list" class="max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 flex-1 flex flex-col lg:flex-row gap-8">
+        <!-- 【首頁滿版】：左側搜尋篩選、右側卡片列表與分頁控制 (增加 lg:items-center 與 lg:justify-center 實現垂直與水平完美置中) -->
+        <main id="view-list" class="max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 flex-1 flex flex-col lg:flex-row gap-8 lg:items-center lg:justify-center">
             
             <!-- 左側搜尋與篩選側邊欄 (Sidebar Control Panel) -->
             <div class="w-full lg:w-72 flex-shrink-0 flex flex-col gap-5">
@@ -532,7 +532,7 @@
             let middleButtonsHtml = '';
             let rightButtonsHtml = '';
 
-            // 左側鎖定區：第一頁與上一頁 (增加內距與尺寸，點擊更舒適)
+            // 左側鎖定區：第一頁與上一頁 (設定固定大小 w-9 h-9)
             leftButtonsHtml += `
                 <button onclick="changePage(1)" ${currentPage === 1 ? 'disabled' : ''} class="w-9 h-9 rounded-xl border border-slate-100 bg-white text-[#3A78A4] hover:bg-[#E5ECF4] transition-all disabled:opacity-30 disabled:hover:bg-white disabled:cursor-not-allowed text-xs font-bold flex items-center justify-center flex-shrink-0" title="第一頁">
                     <i class="ti ti-chevrons-left"></i>
@@ -542,7 +542,7 @@
                 </button>
             `;
 
-            // 中間自適應頁碼 (使用 gap-1.5 與固定大小)
+            // 中間自適應頁碼 (全面修正 w-8.5 -> w-9 h-9，確保與其他按鈕大小一致，完美解決擁擠擠壓問題)
             const maxPageButtons = 5;
             let startPage = Math.max(1, currentPage - 2);
             let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
@@ -553,23 +553,23 @@
 
             if (startPage > 1) {
                 middleButtonsHtml += `
-                    <button onclick="changePage(1)" class="w-8.5 h-8.5 rounded-xl border border-slate-100 bg-white text-xs font-bold text-[#3A78A4] hover:bg-[#E5ECF4] transition-all flex items-center justify-center">1</button>
+                    <button onclick="changePage(1)" class="w-9 h-9 rounded-xl border border-slate-100 bg-white text-xs font-bold text-[#3A78A4] hover:bg-[#E5ECF4] transition-all flex items-center justify-center flex-shrink-0">1</button>
                 `;
                 if (startPage > 2) {
-                    middleButtonsHtml += `<span class="text-slate-400 text-xs px-1.5 flex items-center">...</span>`;
+                    middleButtonsHtml += `<span class="text-slate-400 text-xs px-1.5 flex items-center h-9 justify-center">...</span>`;
                 }
             }
 
             for (let i = startPage; i <= endPage; i++) {
                 if (i === currentPage) {
                     middleButtonsHtml += `
-                        <button class="w-8.5 h-8.5 rounded-xl bg-[#3A78A4] text-white font-bold text-xs shadow-sm flex items-center justify-center">
+                        <button class="w-9 h-9 rounded-xl bg-[#3A78A4] text-white font-bold text-xs shadow-sm flex items-center justify-center flex-shrink-0">
                             ${i}
                         </button>
                     `;
                 } else {
                     middleButtonsHtml += `
-                        <button onclick="changePage(${i})" class="w-8.5 h-8.5 rounded-xl border border-slate-100 bg-white text-[#3A78A4] hover:bg-[#E5ECF4] font-bold text-xs transition-all flex items-center justify-center">
+                        <button onclick="changePage(${i})" class="w-9 h-9 rounded-xl border border-slate-100 bg-white text-[#3A78A4] hover:bg-[#E5ECF4] font-bold text-xs transition-all flex items-center justify-center flex-shrink-0">
                             ${i}
                         </button>
                     `;
@@ -578,10 +578,10 @@
 
             if (endPage < totalPages) {
                 if (endPage < totalPages - 1) {
-                    middleButtonsHtml += `<span class="text-slate-400 text-xs px-1.5 flex items-center">...</span>`;
+                    middleButtonsHtml += `<span class="text-slate-400 text-xs px-1.5 flex items-center h-9 justify-center">...</span>`;
                 }
                 middleButtonsHtml += `
-                    <button onclick="changePage(${totalPages})" class="w-8.5 h-8.5 rounded-xl border border-slate-100 bg-white text-xs font-bold text-[#3A78A4] hover:bg-[#E5ECF4] transition-all flex items-center justify-center">${totalPages}</button>
+                    <button onclick="changePage(${totalPages})" class="w-9 h-9 rounded-xl border border-slate-100 bg-white text-xs font-bold text-[#3A78A4] hover:bg-[#E5ECF4] transition-all flex items-center justify-center flex-shrink-0">${totalPages}</button>
                 `;
             }
 
@@ -664,7 +664,7 @@
             }
 
             elDetailContent.innerHTML = `
-                <!-- 1. 上方總機構橫向面版 (淡化為 border-slate-100) -->
+                <!-- 1. 上方總機構橫向面版 -->
                 <div class="bg-white border border-slate-100 rounded-xl p-6 sm:p-8 shadow-sm">
                     <div class="flex flex-col md:flex-row items-center md:items-stretch gap-6">
                         
