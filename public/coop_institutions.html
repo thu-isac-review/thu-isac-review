@@ -76,11 +76,75 @@
     <!-- 主版面系統介面 -->
     <div id="view-dashboard" class="hidden flex-1 flex flex-col min-h-screen">
         
-        <!-- 【首頁滿版】：左側搜尋篩選、右側卡片列表與分頁控制 (增加 lg:items-center 與 lg:justify-center 實現垂直與水平完美置中) -->
+        <!-- ================== 手機版專屬：頁首導覽列 (Navbar) ================== -->
+        <nav class="lg:hidden sticky top-0 z-40 bg-white border-b border-slate-100 px-4 py-3 flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-gradient-to-tr from-thu-deep to-[#5D6D7E] text-white rounded-lg flex items-center justify-center text-sm flex-shrink-0 shadow-sm">
+                    <i class="ti ti-briefcase"></i>
+                </div>
+                <span class="font-bold text-slate-800 text-xs sm:text-sm tracking-wider">東海大學實習專區</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+                <span id="user-greeting-mobile" class="text-[10px] font-semibold text-slate-500">同學，您好！</span>
+                <button id="btn-logout-mobile" class="bg-slate-100 hover:bg-[#E5ECF4] text-[#3A78A4] px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all">登出</button>
+            </div>
+        </nav>
+
+        <!-- ================== 手機版專屬：搜尋置頂與篩選按鈕列 (Sticky) ================== -->
+        <div class="lg:hidden sticky top-[53px] z-30 bg-slate-50/90 backdrop-blur-md px-4 py-3 border-b border-slate-100 flex gap-2">
+            <div class="relative flex-1">
+                <i class="ti ti-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                <input type="text" id="search-input-mobile" placeholder="搜尋機構、主據點關鍵字..." class="w-full pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#3A78A4] text-xs font-medium">
+            </div>
+            <button id="btn-toggle-filters" class="px-4 bg-white border border-slate-200 text-[#3A78A4] rounded-xl flex items-center justify-center gap-1 text-xs font-bold active:scale-95 transition-all">
+                <i class="ti ti-adjustments-horizontal text-sm"></i>
+                <span>篩選</span>
+            </button>
+        </div>
+
+        <!-- ================== 手機版專屬：折疊式篩選面板 (手風琴效果) ================== -->
+        <div id="mobile-filters-panel" class="hidden lg:hidden bg-white border-b border-slate-100 px-4 py-4 space-y-3.5 shadow-inner">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">條件篩選</h3>
+            <div class="flex flex-col gap-2.5">
+                <!-- 1. 國別 -->
+                <div class="relative">
+                    <select id="filter-country-mobile" class="w-full pl-3 pr-8 py-2 bg-[#F4F7FA] border border-slate-100 rounded-xl focus:outline-none text-xs font-semibold appearance-none cursor-pointer text-slate-600">
+                        <option value="">全部國別</option>
+                    </select>
+                    <i class="ti ti-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                </div>
+
+                <!-- 2. 縣市別 -->
+                <div class="relative">
+                    <select id="filter-city-mobile" class="w-full pl-3 pr-8 py-2 bg-[#F4F7FA] border border-slate-100 rounded-xl focus:outline-none text-xs font-semibold appearance-none cursor-pointer text-slate-600">
+                        <option value="">全部縣市</option>
+                    </select>
+                    <i class="ti ti-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                </div>
+
+                <!-- 3. 實習場所 -->
+                <div class="relative">
+                    <select id="filter-venue-type-mobile" class="w-full pl-3 pr-8 py-2 bg-[#F4F7FA] border border-slate-100 rounded-xl focus:outline-none text-xs font-semibold appearance-none cursor-pointer text-slate-600">
+                        <option value="">全部實習場所</option>
+                    </select>
+                    <i class="ti ti-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                </div>
+
+                <!-- 4. 行業別 -->
+                <div class="relative">
+                    <select id="filter-industry-mobile" class="w-full pl-3 pr-8 py-2 bg-[#F4F7FA] border border-slate-100 rounded-xl focus:outline-none text-xs font-semibold appearance-none cursor-pointer text-slate-600">
+                        <option value="">全部行業別</option>
+                    </select>
+                    <i class="ti ti-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================== 【首頁】：左側搜尋篩選、右側卡片列表與分頁控制 (電腦版完美垂直置中) ================== -->
         <main id="view-list" class="max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 flex-1 flex flex-col lg:flex-row gap-8 lg:items-center lg:justify-center">
             
-            <!-- 左側搜尋與篩選側邊欄 (Sidebar Control Panel) -->
-            <div class="w-full lg:w-72 flex-shrink-0 flex flex-col gap-5">
+            <!-- 【電腦版專屬】左側搜尋與篩選側邊欄 (側邊欄在手機版上隱藏) -->
+            <div class="hidden lg:flex w-72 flex-shrink-0 flex-col gap-5">
                 
                 <!-- 1. 系統識別與帳號狀態 -->
                 <div class="bg-white border border-slate-100 rounded-xl p-5 shadow-sm">
@@ -102,9 +166,9 @@
                     </div>
                 </div>
 
-                <!-- 2. 條件篩選面板 (搜尋框在標題上面) -->
+                <!-- 2. 條件篩選面板 (搜尋框在篩選標題上方) -->
                 <div class="bg-white border border-slate-100 rounded-xl p-5 shadow-sm space-y-4">
-                    <!-- 搜尋框移至最上方 -->
+                    <!-- 搜尋框 -->
                     <div class="relative w-full">
                         <i class="ti ti-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
                         <input type="text" id="search-input" placeholder="關鍵字搜尋..." class="w-full pl-8 pr-3 py-2 bg-[#F4F7FA] border border-slate-100 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#3A78A4] focus:border-transparent transition-all text-xs font-medium">
@@ -170,10 +234,10 @@
                     </div>
 
                     <!-- 機構卡片列表 -->
-                    <div id="inst-list" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-5"></div>
+                    <div id="inst-list" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-5 animate-fade-in"></div>
                 </div>
 
-                <!-- 莫蘭迪分頁器控制面板 -->
+                <!-- 莫蘭迪分頁器控制面板 (左右鍵鎖定定位) -->
                 <div id="pagination-panel" class="hidden flex items-center justify-center mt-4"></div>
             </div>
         </main>
@@ -278,11 +342,18 @@
         const elEmpty = document.getElementById('empty-state');
         const elDetailContent = document.getElementById('detail-content');
         
+        // 綁定桌機與手機雙端 DOM 元素
         const inputSearch = document.getElementById('search-input');
         const selectCountry = document.getElementById('filter-country');
         const selectCity = document.getElementById('filter-city');
         const selectVenue = document.getElementById('filter-venue-type');
         const selectIndustry = document.getElementById('filter-industry');
+
+        const inputSearchMobile = document.getElementById('search-input-mobile');
+        const selectCountryMobile = document.getElementById('filter-country-mobile');
+        const selectCityMobile = document.getElementById('filter-city-mobile');
+        const selectVenueMobile = document.getElementById('filter-venue-type-mobile');
+        const selectIndustryMobile = document.getElementById('filter-industry-mobile');
 
         // ================== Auth 驗證與跳轉 ==================
         onAuthStateChanged(auth, (user) => {
@@ -292,8 +363,9 @@
                 viewDashboard.classList.remove('hidden');
                 const displayName = user.email ? user.email.split('@')[0] : '授權人員';
                 
-                // 更新首頁問候語
+                // 同步更新首頁桌機與手機版的問候語
                 document.getElementById('user-greeting').textContent = `${displayName}，您好！`;
+                document.getElementById('user-greeting-mobile').textContent = `${displayName}，您好！`;
                 
                 // 啟動加載
                 setupDropdowns();
@@ -305,6 +377,7 @@
         });
 
         function setupDropdowns() {
+            // 清空並配置桌機選單
             selectCountry.innerHTML = '<option value="">全部國別</option>';
             selectCity.innerHTML = '<option value="">全部縣市</option>';
             selectVenue.innerHTML = '<option value="">全部實習場所</option>';
@@ -314,21 +387,39 @@
             citiesList.forEach(c => selectCity.add(new Option(c, c)));
             venueTypesList.forEach(v => selectVenue.add(new Option(v, v)));
             industriesList.forEach(i => selectIndustry.add(new Option(i, i)));
+
+            // 清空並配置手機版折疊選單
+            selectCountryMobile.innerHTML = '<option value="">全部國別</option>';
+            selectCityMobile.innerHTML = '<option value="">全部縣市</option>';
+            selectVenueMobile.innerHTML = '<option value="">全部實習場所</option>';
+            selectIndustryMobile.innerHTML = '<option value="">全部行業別</option>';
+
+            countriesList.forEach(c => selectCountryMobile.add(new Option(c, c)));
+            citiesList.forEach(c => selectCityMobile.add(new Option(c, c)));
+            venueTypesList.forEach(v => selectVenueMobile.add(new Option(v, v)));
+            industriesList.forEach(i => selectIndustryMobile.add(new Option(i, i)));
         }
 
-        // 登出流程
+        // 登出流程 (桌機與手機按鈕)
         const handleLogout = () => {
             showConfirm("登出確認", "您確定要登出系統嗎？", async () => {
                 await signOut(auth);
             });
         };
         document.getElementById('btn-logout').addEventListener('click', handleLogout);
+        document.getElementById('btn-logout-mobile').addEventListener('click', handleLogout);
 
         // 返回
         document.getElementById('btn-back').addEventListener('click', () => {
             viewDetail.classList.add('hidden');
             viewList.classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // 手機版折疊篩選面板開合邏輯
+        document.getElementById('btn-toggle-filters').addEventListener('click', () => {
+            const panel = document.getElementById('mobile-filters-panel');
+            panel.classList.toggle('hidden');
         });
 
         // 欄位標準化對照
@@ -346,7 +437,7 @@
             };
         }
 
-        // ================== 資料讀取流程 ==================
+        // ================== 資料讀取與事件雙端即時同步綁定 ==================
         async function loadData() {
             elLoading.classList.remove('hidden');
             elList.classList.add('hidden');
@@ -359,15 +450,59 @@
                 const allData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
                 buildTreeStructure(allData);
-                
                 elLoading.classList.add('hidden');
 
-                // 註冊篩選聯動
-                inputSearch.addEventListener('input', () => { currentPage = 1; renderList(); });
-                selectCountry.addEventListener('change', handleCountryChange);
-                selectCity.addEventListener('change', () => { currentPage = 1; renderList(); });
-                selectVenue.addEventListener('change', () => { currentPage = 1; renderList(); });
-                selectIndustry.addEventListener('change', () => { currentPage = 1; renderList(); });
+                // 綁定桌機事件 (同步變更手機的值)
+                inputSearch.addEventListener('input', () => {
+                    inputSearchMobile.value = inputSearch.value;
+                    currentPage = 1;
+                    renderList();
+                });
+                selectCountry.addEventListener('change', () => {
+                    selectCountryMobile.value = selectCountry.value;
+                    handleCountryChange(selectCountry);
+                });
+                selectCity.addEventListener('change', () => {
+                    selectCityMobile.value = selectCity.value;
+                    currentPage = 1;
+                    renderList();
+                });
+                selectVenue.addEventListener('change', () => {
+                    selectVenueMobile.value = selectVenue.value;
+                    currentPage = 1;
+                    renderList();
+                });
+                selectIndustry.addEventListener('change', () => {
+                    selectIndustryMobile.value = selectIndustry.value;
+                    currentPage = 1;
+                    renderList();
+                });
+
+                // 綁定手機事件 (同步變更桌機的值)
+                inputSearchMobile.addEventListener('input', () => {
+                    inputSearch.value = inputSearchMobile.value;
+                    currentPage = 1;
+                    renderList();
+                });
+                selectCountryMobile.addEventListener('change', () => {
+                    selectCountry.value = selectCountryMobile.value;
+                    handleCountryChange(selectCountryMobile);
+                });
+                selectCityMobile.addEventListener('change', () => {
+                    selectCity.value = selectCityMobile.value;
+                    currentPage = 1;
+                    renderList();
+                });
+                selectVenueMobile.addEventListener('change', () => {
+                    selectVenue.value = selectVenueMobile.value;
+                    currentPage = 1;
+                    renderList();
+                });
+                selectIndustryMobile.addEventListener('change', () => {
+                    selectIndustry.value = selectIndustryMobile.value;
+                    currentPage = 1;
+                    renderList();
+                });
 
                 renderList();
 
@@ -397,31 +532,45 @@
             treeData.sort((a, b) => (a.name).localeCompare(b.name, 'zh-TW'));
         }
 
-        // ================== 篩選聯動交互 (國別切換，其餘重設並強制海外規則) ==================
-        function handleCountryChange() {
-            const countryVal = selectCountry.value;
+        // ================== 篩選聯動交互 (同步重製、凍結桌機與手機版元件) ==================
+        function handleCountryChange(sourceSelect) {
+            const countryVal = sourceSelect.value;
             currentPage = 1;
             
-            // 每次切換國別，立刻重設其他三個篩選器
+            // 雙端數值徹底一致同步
+            selectCountry.value = countryVal;
+            selectCountryMobile.value = countryVal;
+
             selectCity.value = '';
+            selectCityMobile.value = '';
             selectVenue.value = '';
+            selectVenueMobile.value = '';
             selectIndustry.value = '';
+            selectIndustryMobile.value = '';
             
             if (countryVal && countryVal !== '中華民國') {
-                // 海外鎖定邏輯
-                selectCity.disabled = true;
-                selectCity.classList.add('bg-slate-200/50', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
+                // 桌機與手機全部進入海外凍結與重設
+                [selectCity, selectCityMobile].forEach(el => {
+                    el.disabled = true;
+                    el.classList.add('bg-slate-200/50', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
+                });
                 
-                selectVenue.value = '其他機構';
-                selectVenue.disabled = true;
-                selectVenue.classList.add('bg-slate-200/50', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
+                [selectVenue, selectVenueMobile].forEach(el => {
+                    el.value = '其他機構';
+                    el.disabled = true;
+                    el.classList.add('bg-slate-200/50', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
+                });
             } else {
-                // 恢復國內 / 全部狀態
-                selectCity.disabled = false;
-                selectCity.classList.remove('bg-slate-200/50', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
+                // 恢復解凍
+                [selectCity, selectCityMobile].forEach(el => {
+                    el.disabled = false;
+                    el.classList.remove('bg-slate-200/50', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
+                });
                 
-                selectVenue.disabled = false;
-                selectVenue.classList.remove('bg-slate-200/50', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
+                [selectVenue, selectVenueMobile].forEach(el => {
+                    el.disabled = false;
+                    el.classList.remove('bg-slate-200/50', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
+                });
             }
             
             renderList();
@@ -495,7 +644,7 @@
                                 </div>
                             </div>
 
-                            <!-- 實習場所與行業別標籤 (淡化邊框、高質感背景) -->
+                            <!-- 實習場所與行業別標籤互換 (場所在左，行業在右) -->
                             <div class="flex items-center justify-between gap-2 mt-auto pt-2.5 border-t border-slate-100/60">
                                 <div class="flex flex-wrap gap-1.5 max-w-[85%]">
                                     ${inst.venueType ? `<span class="bg-[#EAF7EE] text-[#1E6B3E] text-[10px] font-semibold px-2 py-0.5 rounded">${inst.venueType}</span>` : ''}
@@ -508,7 +657,7 @@
                         </div>
                     `;
                 } else {
-                    // 補齊透明卡片骨架
+                    // 補齊透明卡片骨架維持 100% 滿版高度不跳動
                     listHtml += `
                         <div class="opacity-0 pointer-events-none min-h-[125px] border border-transparent"></div>
                     `;
@@ -519,7 +668,7 @@
             renderPaginationControls(totalPages);
         }
 
-        // ================== 分頁器：左右控制鍵完全鎖定在兩端，中間頁碼維持舒適寬度 ==================
+        // ================== 分頁器：兩端按鈕固定，數字於中間自適應 (w-9 h-9 標準無縫間距) ==================
         function renderPaginationControls(totalPages) {
             const panel = document.getElementById('pagination-panel');
             if (totalPages <= 1) {
@@ -532,7 +681,7 @@
             let middleButtonsHtml = '';
             let rightButtonsHtml = '';
 
-            // 左側鎖定區：第一頁與上一頁 (設定固定大小 w-9 h-9)
+            // 左側鎖定區
             leftButtonsHtml += `
                 <button onclick="changePage(1)" ${currentPage === 1 ? 'disabled' : ''} class="w-9 h-9 rounded-xl border border-slate-100 bg-white text-[#3A78A4] hover:bg-[#E5ECF4] transition-all disabled:opacity-30 disabled:hover:bg-white disabled:cursor-not-allowed text-xs font-bold flex items-center justify-center flex-shrink-0" title="第一頁">
                     <i class="ti ti-chevrons-left"></i>
@@ -542,7 +691,7 @@
                 </button>
             `;
 
-            // 中間自適應頁碼 (全面修正 w-8.5 -> w-9 h-9，確保與其他按鈕大小一致，完美解決擁擠擠壓問題)
+            // 中間數字頁碼自適應
             const maxPageButtons = 5;
             let startPage = Math.max(1, currentPage - 2);
             let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
@@ -585,7 +734,7 @@
                 `;
             }
 
-            // 右側鎖定區：下一頁與最後一頁
+            // 右側鎖定區
             rightButtonsHtml += `
                 <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} class="w-9 h-9 rounded-xl border border-slate-100 bg-white text-[#3A78A4] hover:bg-[#E5ECF4] transition-all disabled:opacity-30 disabled:hover:bg-white disabled:cursor-not-allowed text-xs font-bold flex items-center justify-center flex-shrink-0" title="下一頁">
                     <i class="ti ti-chevron-right"></i>
@@ -595,7 +744,7 @@
                 </button>
             `;
 
-            // 大氣、加寬、絕不擁擠之莫蘭迪分頁欄 (寬度最大限制拉寬至 max-w-xl 576px，增設 gap 釋放呼吸空間)
+            // 大氣加寬，寬度最大限制拉寬至 max-w-xl
             panel.innerHTML = `
                 <div class="flex items-center justify-between w-full max-w-xl mx-auto bg-white border border-slate-100 rounded-xl p-2 shadow-sm gap-2">
                     <div class="flex items-center gap-2 flex-shrink-0">
@@ -614,7 +763,7 @@
         window.changePage = function(page) {
             currentPage = page;
             renderPage();
-            // 平滑滾動至下半部列表起始處
+            // 平滑滾動
             const listSection = document.getElementById('view-list');
             if (listSection) {
                 listSection.scrollIntoView({ behavior: 'smooth' });
@@ -630,7 +779,7 @@
             viewDetail.classList.remove('hidden');
 
             activeBranchCityFilter = '全部';
-            currentBranchPage = 1; // 每次打開詳情，重設分支機構分頁
+            currentBranchPage = 1; // 每次打開詳情重製分頁
             renderDetailView(inst);
         };
 
@@ -638,15 +787,12 @@
             const isOverseas = inst.country && inst.country !== '中華民國';
 
             let displayNameText = inst.name;
-            // 海外機構：中文譯名（原始名稱）
             if (isOverseas && inst.nameTranslated) {
                 displayNameText = `${inst.nameTranslated}（${inst.name}）`;
             }
 
-            // 提取子機構的獨特縣市
             const uniqueCities = [...new Set(inst.branches.map(b => b.city).filter(Boolean))].sort();
 
-            // 縣市篩選 Pills 按鈕 (國內機構專屬)
             let cityFiltersHtml = '';
             if (!isOverseas && inst.branches.length > 0 && uniqueCities.length > 0) {
                 cityFiltersHtml = `
@@ -664,7 +810,7 @@
             }
 
             elDetailContent.innerHTML = `
-                <!-- 1. 上方總機構橫向面版 -->
+                <!-- 1. 上方總機構橫向面版 (淡化為 border-slate-100) -->
                 <div class="bg-white border border-slate-100 rounded-xl p-6 sm:p-8 shadow-sm">
                     <div class="flex flex-col md:flex-row items-center md:items-stretch gap-6">
                         
@@ -673,7 +819,7 @@
                             <i class="ti ti-building"></i>
                         </div>
 
-                        <!-- 右側機構資訊 (標籤與地址字元微調縮小，避免臃腫) -->
+                        <!-- 右側機構資訊 (標籤與地址精緻微縮微調：text-xs sm:text-sm) -->
                         <div class="flex-1 flex flex-col justify-between py-1 space-y-2.5 text-center md:text-left min-w-0">
                             <!-- 第一行：機構名稱 -->
                             <div>
@@ -805,7 +951,7 @@
                         </div>
                     `;
                 } else {
-                    // 佔位項目：維持純白透明，確保高度穩定，第一個項目依然不要邊框
+                    // 佔位項目維持純白透明
                     const borderClass = i === 0 ? 'border-t-0' : 'border-t border-transparent';
                     listHtml += `
                         <div class="py-3 h-[50px] ${borderClass} opacity-0 pointer-events-none"></div>
@@ -814,7 +960,7 @@
             }
             branchesWrapper.innerHTML = listHtml;
 
-            // 分支換頁按鈕 (若總頁數 > 1 時顯示)
+            // 分支換頁按鈕
             if (totalBranchPages > 1) {
                 paginationWrapper.innerHTML = `
                     <button onclick="changeBranchPage(${currentBranchPage - 1}, '${inst.id}')" ${currentBranchPage === 1 ? 'disabled' : ''} class="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-[#3A78A4] hover:bg-[#E5ECF4] transition-all disabled:opacity-30 disabled:cursor-not-allowed">
