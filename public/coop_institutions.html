@@ -19,9 +19,6 @@
                             light: '#E5ECF4',     // 莫蘭迪極柔灰藍
                             bg: '#F4F6F8'         // 莫蘭迪淺背景
                         }
-                    },
-                    borderRadius: {
-                        '3xl': '24px'
                     }
                 }
             }
@@ -92,32 +89,35 @@
 
     <!-- 主版面系統介面 -->
     <div id="view-dashboard" class="hidden flex-1 flex flex-col">
-        <!-- 整合式經典橫幅：提供置中標題與上方預留空間 -->
-        <header id="dashboard-hero" class="hero-gradient text-white relative pt-28 pb-24 px-6 sm:px-8 overflow-hidden">
+        
+        <!-- 【首頁滿版一】：上半部 Hero & 搜尋篩選區 (修正為 h-screen 或 min-h-[calc(100vh-60px)] 達到兩頁滿版切分) -->
+        <header id="dashboard-hero" class="hero-gradient text-white relative min-h-[calc(100vh-48px)] flex flex-col justify-between px-6 sm:px-8 overflow-hidden">
             
-            <!-- 原 Navbar 的登出與 greeting 元素優雅地嵌入 Hero 右上方 -->
-            <div class="absolute top-4 right-4 sm:top-6 sm:right-8 z-30 flex items-center gap-3">
-                <div class="hidden sm:flex items-center gap-2 bg-white/10 border border-white/10 pl-3 pr-4 py-1 rounded-xl backdrop-blur-md">
-                    <span id="user-greeting" class="text-xs font-semibold text-slate-200">同學，您好！</span>
-                    <span id="env-badge" class="bg-[#E5ECF4] text-[#4A607A] text-[9px] px-2 py-0.5 rounded-md font-bold">正式版</span>
+            <!-- 原 Navbar 的登出與 greeting 元素 -->
+            <div class="w-full max-w-6xl mx-auto pt-6 flex items-center justify-end z-30">
+                <div class="flex items-center gap-3">
+                    <div class="hidden sm:flex items-center gap-2 bg-white/10 border border-white/10 pl-3 pr-4 py-1.5 rounded-xl backdrop-blur-md">
+                        <span id="user-greeting" class="text-xs font-semibold text-slate-200">同學，您好！</span>
+                    </div>
+                    <button id="btn-logout" class="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all backdrop-blur-md">
+                        登出
+                    </button>
                 </div>
-                <button id="btn-logout" class="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-3.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all backdrop-blur-md">
-                    登出
-                </button>
             </div>
 
-            <div class="max-w-6xl w-full mx-auto relative z-10 flex flex-col items-center">
-                <div class="max-w-3xl text-center space-y-4 mb-10">
-                    <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight text-white">
+            <!-- 置中核心主副標題與篩選控制面板 -->
+            <div class="max-w-6xl w-full mx-auto relative z-10 flex flex-col items-center my-auto">
+                <div class="max-w-3xl text-center space-y-4 mb-12">
+                    <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight text-white">
                         開創未來航道，探索頂尖合作機構
                     </h2>
-                    <p class="text-sm sm:text-base text-slate-200/90 leading-relaxed max-w-2xl mx-auto font-light">
+                    <p class="text-sm sm:text-lg text-slate-200/90 leading-relaxed max-w-2xl mx-auto font-light">
                         東海大學與全球卓越企業、非營利組織、政府機關展開長期深度合作，為您鋪墊最扎實的職涯銜接之路。
                     </p>
                 </div>
 
                 <!-- 搜尋與篩選控制面板 (圓角修正為 rounded-xl) -->
-                <div class="w-full bg-white border border-slate-200 rounded-xl p-6 shadow-xl relative z-20 space-y-4 text-slate-700">
+                <div class="w-full bg-white border border-slate-200 rounded-xl p-6 shadow-2xl relative z-20 space-y-4 text-slate-700">
                     <!-- 關鍵字搜尋 -->
                     <div class="relative w-full">
                         <i class="ti ti-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl"></i>
@@ -160,34 +160,44 @@
                     </div>
                 </div>
             </div>
+
+            <!-- 向下滾動導引 (Scroll Down Indicator) -->
+            <div class="w-full flex flex-col items-center justify-center pb-8 z-25 text-slate-300">
+                <a href="#view-list" class="flex flex-col items-center gap-1.5 text-xs font-bold hover:text-white transition-colors tracking-widest uppercase">
+                    <span>向下探索合作機構</span>
+                    <i class="ti ti-chevron-down text-lg animate-bounce"></i>
+                </a>
+            </div>
         </header>
 
-        <main id="view-list" class="max-w-6xl w-full mx-auto px-4 sm:px-8 py-8 flex-1">
-            <div class="mt-4">
+        <!-- 【首頁滿版二】：下半部卡片列表區與分頁控制 (獨立 min-h-screen 實現滿版切分) -->
+        <main id="view-list" class="max-w-6xl w-full mx-auto px-4 sm:px-8 py-16 min-h-screen flex flex-col justify-between">
+            <div class="w-full">
                 <!-- 加載中 -->
                 <div id="loading-state" class="py-20 flex flex-col items-center justify-center text-center">
                     <div class="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 border-t-[#4A607A]"></div>
                     <h3 class="mt-4 text-sm font-bold text-slate-600">資料加載中，請稍候...</h3>
                 </div>
 
-                <!-- 空狀態 (圓角修正為 rounded-xl) -->
-                <div id="empty-state" class="hidden py-16 flex flex-col items-center justify-center text-center bg-white border border-slate-200 rounded-xl p-8">
-                    <div class="w-16 h-16 bg-[#F4F6F8] text-slate-300 rounded-full flex items-center justify-center mb-4">
+                <!-- 空狀態 (移除外框卡片包覆，維持清爽直敘) -->
+                <div id="empty-state" class="hidden py-16 flex flex-col items-center justify-center text-center p-8">
+                    <div class="w-16 h-16 bg-slate-200/50 text-slate-400 rounded-full flex items-center justify-center mb-4">
                         <i class="ti ti-search-off text-3xl"></i>
                     </div>
                     <h3 class="text-base font-bold text-slate-700">未尋找到符合條件的合作機構</h3>
                     <p class="text-slate-400 text-xs mt-1">請嘗試調整您的篩選組合或縮減關鍵字。</p>
                 </div>
 
-                <!-- 機構卡片列表 -->
-                <div id="inst-list" class="hidden grid grid-cols-1 md:grid-cols-2 gap-5"></div>
-
-                <!-- 莫蘭迪分頁器控制面板 -->
-                <div id="pagination-panel" class="hidden flex items-center justify-center gap-2 mt-8"></div>
+                <!-- 機構卡片列表 (修改為一排三個的 grid Layout: lg:grid-cols-3) -->
+                <div id="inst-list" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
             </div>
+
+            <!-- 莫蘭迪分頁器控制面板 -->
+            <div id="pagination-panel" class="hidden flex items-center justify-center gap-2 mt-12"></div>
         </main>
 
-        <main id="view-detail" class="hidden max-w-6xl w-full mx-auto px-4 sm:px-8 py-8 flex-1">
+        <!-- 個別機構詳情頁面 -->
+        <main id="view-detail" class="hidden max-w-6xl w-full mx-auto px-4 sm:px-8 py-16 flex-1">
             <!-- 莫蘭迪圓角返回按鈕 -->
             <button id="btn-back" class="inline-flex items-center gap-2 text-[#4A607A] hover:text-[#2E4053] font-bold text-sm bg-white hover:bg-[#E5ECF4] border border-slate-200 hover:border-[#8FA4B5]/50 px-5 py-2.5 rounded-xl transition-all duration-300 shadow-sm hover:shadow active:scale-95 mb-6">
                 <i class="ti ti-chevron-left text-base"></i> 返回機構列表
@@ -198,6 +208,7 @@
         </main>
     </div>
 
+    <!-- 全域 Modal 控制 -->
     <div id="confirm-modal" class="fixed inset-0 bg-[#2E4053]/20 backdrop-blur-sm z-[90] hidden items-center justify-center p-4">
         <div class="bg-white rounded-xl border border-slate-200 shadow-2xl max-w-sm w-full p-6 animate-in fade-in zoom-in-95 duration-200">
             <h4 class="text-base font-bold text-slate-800 text-center" id="confirm-title">確認動作</h4>
@@ -266,10 +277,12 @@
         let treeData = [];
         let filteredData = [];
         let currentPage = 1;
-        const itemsPerPage = 8; // 每頁顯示數量
+        const itemsPerPage = 15; // 改為每頁顯示 15 家機構
 
-        // 當前詳情分支機構的縣市篩選狀態
+        // 當前詳情分支機構的縣市篩選狀態與分頁狀態
         let activeBranchCityFilter = '全部';
+        let currentBranchPage = 1;
+        const branchItemsPerPage = 5; // 分支機構每頁固定顯示 5 個
 
         const viewLoading = document.getElementById('view-loading');
         const viewDashboard = document.getElementById('view-dashboard');
@@ -306,7 +319,6 @@
         });
 
         function setupDropdowns() {
-            // 清空舊選項以防重複 append
             selectCountry.innerHTML = '<option value="">全部國別</option>';
             selectCity.innerHTML = '<option value="">全部縣市</option>';
             selectVenue.innerHTML = '<option value="">全部實習場所</option>';
@@ -399,13 +411,18 @@
             treeData.sort((a, b) => (a.name).localeCompare(b.name, 'zh-TW'));
         }
 
-        // ================== 篩選聯動交互 (海外鎖定，不含提示) ==================
+        // ================== 篩選聯動交互 (國別切換，其餘重設並強制海外規則) ==================
         function handleCountryChange() {
             const countryVal = selectCountry.value;
             currentPage = 1;
             
+            // 每次切換國別，立刻重設其他三個篩選器
+            selectCity.value = '';
+            selectVenue.value = '';
+            selectIndustry.value = '';
+            
             if (countryVal && countryVal !== '中華民國') {
-                selectCity.value = '';
+                // 海外鎖定邏輯
                 selectCity.disabled = true;
                 selectCity.classList.add('bg-slate-200/50', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
                 
@@ -413,6 +430,7 @@
                 selectVenue.disabled = true;
                 selectVenue.classList.add('bg-slate-200/50', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
             } else {
+                // 恢復國內 / 全部狀態
                 selectCity.disabled = false;
                 selectCity.classList.remove('bg-slate-200/50', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
                 
@@ -466,51 +484,38 @@
             const pageItems = filteredData.slice(startIndex, startIndex + itemsPerPage);
 
             elList.innerHTML = pageItems.map(inst => {
-                const branchCount = inst.branches.length;
                 const isOverseas = inst.country && inst.country !== '中華民國';
                 
+                // 境外機構首頁不顯示原名，只顯示譯名
                 let displayName = inst.name;
                 if (isOverseas && inst.nameTranslated) {
-                    displayName = `${inst.nameTranslated}（${inst.name}）`;
+                    displayName = inst.nameTranslated;
                 }
 
                 return `
-                    <div class="glow-hover bg-white border border-slate-200/80 rounded-xl p-6 shadow-sm flex flex-col justify-between cursor-pointer" onclick="openDetail('${inst.id}')">
+                    <div class="glow-hover bg-white border border-slate-200/80 rounded-xl p-6 shadow-sm flex flex-col justify-between cursor-pointer min-h-[175px]" onclick="openDetail('${inst.id}')">
                         <div>
-                            <div class="flex items-start justify-between gap-3 mb-4">
-                                <div class="w-11 h-11 rounded-xl bg-[#E5ECF4] text-[#4A607A] flex items-center justify-center text-lg flex-shrink-0">
-                                    <i class="ti ti-building-skyscraper"></i>
+                            <!-- LOGO與兩行資訊（名稱、標籤組）高度等高 -->
+                            <div class="flex items-stretch gap-4 mb-3">
+                                <div class="w-14 bg-[#E5ECF4] text-[#4A607A] flex items-center justify-center text-xl flex-shrink-0 rounded-xl">
+                                    <i class="ti ti-building"></i>
                                 </div>
-                                <div class="flex-1 min-w-0">
+                                <div class="flex-1 flex flex-col justify-between py-0.5 min-w-0">
                                     <h4 class="font-bold text-slate-800 text-sm sm:text-base leading-snug truncate hover:text-[#4A607A] transition-colors">${displayName}</h4>
+                                    
+                                    <!-- 標籤對齊機構名稱，放置在名稱正下方 -->
+                                    <div class="flex flex-wrap gap-1.5">
+                                        ${inst.industry ? `<span class="bg-[#E5ECF4] text-[#4A607A] text-[10px] font-semibold px-2.5 py-0.5 rounded">${inst.industry}</span>` : ''}
+                                        ${inst.venueType ? `<span class="bg-[#EBF3F5] text-[#2E5B44] text-[10px] font-semibold px-2.5 py-0.5 rounded">${inst.venueType}</span>` : ''}
+                                    </div>
                                 </div>
-                            </div>
-
-                            <div class="flex flex-wrap gap-1.5 mb-4">
-                                ${inst.industry ? `<span class="bg-[#E5ECF4] text-[#4A607A] text-[10px] font-semibold px-2.5 py-0.5 rounded">${inst.industry}</span>` : ''}
-                                ${inst.venueType ? `<span class="bg-[#EBF3F5] text-[#2E5B44] text-[10px] font-semibold px-2.5 py-0.5 rounded">${inst.venueType}</span>` : ''}
-                                ${isOverseas ? `<span class="bg-[#F5EBEB] text-[#A66C6C] text-[10px] font-semibold px-2.5 py-0.5 rounded">${inst.country}</span>` : ''}
                             </div>
                         </div>
 
-                        <div class="flex items-center justify-between pt-4 border-t border-slate-100 mt-auto text-xs">
-                            <div class="flex items-center gap-1 text-slate-400 font-semibold">
-                                ${!isOverseas ? '' : `
-                                    <i class="ti ti-world text-sm"></i>
-                                    <span>境外機構</span>
-                                `}
-                            </div>
-                            <div class="flex items-center gap-1 text-slate-400">
-                                ${branchCount > 0 ? `
-                                    <span class="bg-slate-100 text-slate-500 font-bold px-2.5 py-1 rounded text-[10px]">
-                                        ${branchCount} 個分所據點
-                                    </span>
-                                ` : `
-                                    <span class="bg-slate-100/60 text-slate-400 font-medium px-2.5 py-1 rounded text-[10px]">
-                                        單一據點
-                                    </span>
-                                `}
-                                <i class="ti ti-chevron-right text-slate-300 text-base"></i>
+                        <!-- 底部：去除分隔線、去除據點數，僅保留右側進入指示 -->
+                        <div class="flex items-center justify-end mt-auto text-xs">
+                            <div class="flex items-center gap-1 text-slate-300">
+                                <i class="ti ti-chevron-right text-lg"></i>
                             </div>
                         </div>
                     </div>
@@ -520,7 +525,7 @@
             renderPaginationControls(totalPages);
         }
 
-        // 渲染分頁器
+        // ================== 分頁器：限定鄰近頁碼，防止過多時破圖 ==================
         function renderPaginationControls(totalPages) {
             const panel = document.getElementById('pagination-panel');
             if (totalPages <= 1) {
@@ -533,32 +538,61 @@
             
             // 上一頁
             html += `
-                <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[#4A607A] hover:bg-[#E5ECF4] transition-all disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed text-xs font-bold flex items-center gap-1">
-                    <i class="ti ti-chevron-left"></i> 上一頁
+                <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} class="px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-[#4A607A] hover:bg-[#E5ECF4] transition-all disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed text-xs font-bold flex items-center gap-1">
+                    <i class="ti ti-chevron-left"></i>
                 </button>
             `;
 
-            // 頁數按鈕
-            for (let i = 1; i <= totalPages; i++) {
+            // 智慧截斷型頁碼生成邏輯
+            const maxPageButtons = 5; // 最大同時顯示的頁碼按鈕數
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
+
+            if (endPage - startPage < maxPageButtons - 1) {
+                startPage = Math.max(1, endPage - maxPageButtons + 1);
+            }
+
+            // 首頁
+            if (startPage > 1) {
+                html += `
+                    <button onclick="changePage(1)" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[#4A607A] hover:bg-[#E5ECF4] text-xs font-bold transition-all">1</button>
+                `;
+                if (startPage > 2) {
+                    html += `<span class="text-slate-400 text-xs px-1">...</span>`;
+                }
+            }
+
+            // 區間頁碼
+            for (let i = startPage; i <= endPage; i++) {
                 if (i === currentPage) {
                     html += `
-                        <button class="px-3 py-1.5 rounded-xl bg-[#4A607A] text-white font-bold text-xs shadow-sm transition-all">
+                        <button class="px-3.5 py-2 rounded-xl bg-[#4A607A] text-white font-bold text-xs shadow-sm transition-all">
                             ${i}
                         </button>
                     `;
                 } else {
                     html += `
-                        <button onclick="changePage(${i})" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[#4A607A] hover:bg-[#E5ECF4] font-bold text-xs transition-all">
+                        <button onclick="changePage(${i})" class="px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-[#4A607A] hover:bg-[#E5ECF4] font-bold text-xs transition-all">
                             ${i}
                         </button>
                     `;
                 }
             }
 
+            // 尾頁
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    html += `<span class="text-slate-400 text-xs px-1">...</span>`;
+                }
+                html += `
+                    <button onclick="changePage(${totalPages})" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[#4A607A] hover:bg-[#E5ECF4] text-xs font-bold transition-all">${totalPages}</button>
+                `;
+            }
+
             // 下一頁
             html += `
-                <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[#4A607A] hover:bg-[#E5ECF4] transition-all disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed text-xs font-bold flex items-center gap-1">
-                    下一頁 <i class="ti ti-chevron-right"></i>
+                <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} class="px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-[#4A607A] hover:bg-[#E5ECF4] transition-all disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed text-xs font-bold flex items-center gap-1">
+                    <i class="ti ti-chevron-right"></i>
                 </button>
             `;
 
@@ -568,10 +602,14 @@
         window.changePage = function(page) {
             currentPage = page;
             renderPage();
-            window.scrollTo({ top: 350, behavior: 'smooth' });
+            // 平滑滾動至下半部列表起始處
+            const listSection = document.getElementById('view-list');
+            if (listSection) {
+                listSection.scrollIntoView({ behavior: 'smooth' });
+            }
         };
 
-        // ================== 詳情頁分支機構展示 (含市級篩選與排版優化) ==================
+        // ================== 個別頁面：詳情與分支機構控制 ==================
         window.openDetail = function(instId) {
             const inst = treeData.find(d => d.id === instId);
             if (!inst) return;
@@ -581,6 +619,7 @@
             viewDetail.classList.remove('hidden');
 
             activeBranchCityFilter = '全部';
+            currentBranchPage = 1; // 每次打開詳情，重設分支機構分頁
             renderDetailView(inst);
         };
 
@@ -588,23 +627,24 @@
             const isOverseas = inst.country && inst.country !== '中華民國';
 
             let displayNameText = inst.name;
+            // 海外機構：中文譯名（原始名稱）
             if (isOverseas && inst.nameTranslated) {
                 displayNameText = `${inst.nameTranslated}（${inst.name}）`;
             }
 
-            // 收集所有子機構縣市別來動態生成篩選按鈕
+            // 提取子機構的獨特縣市
             const uniqueCities = [...new Set(inst.branches.map(b => b.city).filter(Boolean))].sort();
 
-            // 生成縣市篩選 Pills 按鈕
+            // 縣市篩選 Pills 按鈕 (國內機構專屬)
             let cityFiltersHtml = '';
             if (!isOverseas && inst.branches.length > 0 && uniqueCities.length > 0) {
                 cityFiltersHtml = `
                     <div class="flex flex-wrap gap-2 mb-5">
-                        <button id="pill-all" onclick="filterBranchCity('全部', '${inst.id}')" class="px-3 py-1.5 text-xs font-bold rounded-xl transition-all ${activeBranchCityFilter === '全部' ? 'bg-[#4A607A] text-white shadow-sm' : 'bg-[#E5ECF4] text-[#4A607A] hover:bg-[#8FA4B5]/20'}">
+                        <button id="pill-all" onclick="filterBranchCity('全部', '${inst.id}')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all ${activeBranchCityFilter === '全部' ? 'bg-[#4A607A] text-white shadow-sm' : 'bg-[#E5ECF4] text-[#4A607A] hover:bg-[#8FA4B5]/20'}">
                             全部
                         </button>
                         ${uniqueCities.map(city => `
-                            <button id="pill-${city}" onclick="filterBranchCity('${city}', '${inst.id}')" class="px-3 py-1.5 text-xs font-bold rounded-xl transition-all ${activeBranchCityFilter === city ? 'bg-[#4A607A] text-white shadow-sm' : 'bg-[#E5ECF4] text-[#4A607A] hover:bg-[#8FA4B5]/20'}">
+                            <button id="pill-${city}" onclick="filterBranchCity('${city}', '${inst.id}')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all ${activeBranchCityFilter === city ? 'bg-[#4A607A] text-white shadow-sm' : 'bg-[#E5ECF4] text-[#4A607A] hover:bg-[#8FA4B5]/20'}">
                                 ${city}
                             </button>
                         `).join('')}
@@ -612,83 +652,45 @@
                 `;
             }
 
-            // 分支過濾渲染
-            let displayBranches = inst.branches || [];
-            if (activeBranchCityFilter !== '全部') {
-                displayBranches = inst.branches.filter(b => b.city === activeBranchCityFilter);
-            }
-
-            let branchesHtml = '';
-            if (displayBranches.length > 0) {
-                branchesHtml = `
-                    <div class="divide-y divide-slate-100 border-t border-b border-slate-100 my-4">
-                        ${displayBranches.map((b, idx) => {
-                            // 第一個分支不顯示 border-t，完美實作第 8 點
-                            const borderClass = idx === 0 ? 'border-t-0 pt-2' : 'border-t border-slate-100 pt-4';
-                            
-                            const domesticCityTag = (!isOverseas && b.city) 
-                                ? `<span class="bg-[#E5ECF4] text-[#4A607A] text-[11px] font-bold px-2.5 py-0.5 rounded mr-3 flex-shrink-0">${b.city}</span>` 
-                                : '';
-                            return `
-                                <div class="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${borderClass}">
-                                    <div class="flex items-center min-w-0">
-                                        ${domesticCityTag}
-                                        <span class="font-bold text-slate-700 text-sm sm:text-base truncate">${b.name}</span>
-                                    </div>
-                                    <span class="text-xs sm:text-sm text-slate-500 break-all">${b.address || '無詳細通訊地址'}</span>
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
-                `;
-            } else {
-                // 機構若無資料
-                branchesHtml = `
-                    <div class="flex flex-col items-center justify-center p-12 border border-dashed border-slate-200 rounded-xl bg-slate-50 text-center">
-                        <p class="text-slate-400 text-xs font-bold">該機構暫無合作的分支機構</p>
-                    </div>
-                `;
-            }
-
             elDetailContent.innerHTML = `
-                <!-- 1. 上方總機構橫向面版 -->
+                <!-- 1. 上方總機構橫向面版 (圓角修正為 rounded-xl) -->
                 <div class="bg-white border border-slate-200 rounded-xl p-6 sm:p-8 shadow-sm">
                     <div class="flex flex-col md:flex-row items-center md:items-stretch gap-6">
                         
-                        <!-- 左側莫蘭迪藍 Office 容器 (與右側三行完美對齊等高) -->
-                        <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-xl bg-gradient-to-tr from-thu-deep to-[#5D6D7E] text-white flex items-center justify-center text-3xl flex-shrink-0 shadow-md">
+                        <!-- 左側莫蘭迪藍 Office 容器 (與右側三行等高) -->
+                        <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-xl bg-gradient-to-tr from-thu-deep to-[#5D6D7E] text-white flex items-center justify-center text-3xl flex-shrink-0 shadow-sm">
                             <i class="ti ti-building"></i>
                         </div>
 
-                        <!-- 右側機構核心資料 (藉由 justify-between 與 items-stretch 達到均勻高度) -->
-                        <div class="flex-1 flex flex-col justify-between py-1 space-y-2 text-center md:text-left min-w-0">
+                        <!-- 右側機構資訊 (標籤與地址字元調大一號) -->
+                        <div class="flex-1 flex flex-col justify-between py-1 space-y-2.5 text-center md:text-left min-w-0">
                             <!-- 第一行：機構名稱 -->
                             <div>
                                 <h2 class="text-lg sm:text-xl font-bold text-slate-800 tracking-tight leading-snug">${displayNameText}</h2>
                             </div>
 
-                            <!-- 第二行：標籤組 (無外框與 ICON) -->
-                            <div class="flex flex-wrap justify-center md:justify-start gap-1.5">
+                            <!-- 第二行：標籤組 (調大一號：text-sm) -->
+                            <div class="flex flex-wrap justify-center md:justify-start gap-2">
                                 ${inst.venueType ? `
-                                    <span class="inline-flex bg-[#EBF3F5] text-[#2E5B44] text-[11px] font-bold px-3 py-0.5 rounded">
+                                    <span class="inline-flex bg-[#EBF3F5] text-[#2E5B44] text-xs sm:text-sm font-bold px-3 py-1 rounded-lg">
                                         ${inst.venueType}
                                     </span>
                                 ` : ''}
 
                                 ${inst.industry ? `
-                                    <span class="inline-flex bg-[#E5ECF4] text-[#4A607A] text-[11px] font-bold px-3 py-0.5 rounded">
+                                    <span class="inline-flex bg-[#E5ECF4] text-[#4A607A] text-xs sm:text-sm font-bold px-3 py-1 rounded-lg">
                                         ${inst.industry}
                                     </span>
                                 ` : ''}
                             </div>
 
-                            <!-- 第三行：國別標籤移至 Icon 後方，無 "地址:" 字樣 -->
-                            <div class="flex flex-wrap items-center justify-center md:justify-start gap-2 text-slate-500 text-xs">
-                                <i class="ti ti-map-pin text-[#8FA4B5] text-sm"></i>
+                            <!-- 第三行：地址資訊列 (調大一號：text-sm / text-base) -->
+                            <div class="flex flex-wrap items-center justify-center md:justify-start gap-2 text-slate-500 text-sm sm:text-base">
+                                <i class="ti ti-map-pin text-[#8FA4B5] text-base"></i>
                                 
-                                <!-- 國別標籤 (僅海外機構顯示國別，置於 Icon 後方) -->
+                                <!-- 國別標籤置於 Icon 正後方 -->
                                 ${isOverseas ? `
-                                    <span class="inline-flex bg-[#F5EBEB] text-[#A66C6C] text-[11px] font-bold px-3 py-0.5 rounded">
+                                    <span class="inline-flex bg-[#F5EBEB] text-[#A66C6C] text-xs sm:text-sm font-bold px-3 py-1 rounded-lg">
                                         ${inst.country}
                                     </span>
                                 ` : ''}
@@ -698,7 +700,7 @@
                                 </span>
                                 ${inst.address ? `
                                     <button onclick="copyAddress('${inst.address}')" class="p-1 hover:bg-slate-100 text-slate-400 hover:text-slate-800 rounded transition-colors" title="複製地址">
-                                        <i class="ti ti-copy text-xs"></i>
+                                        <i class="ti ti-copy text-sm"></i>
                                     </button>
                                 ` : ''}
                             </div>
@@ -707,32 +709,131 @@
                     </div>
                 </div>
 
-                <!-- 2. 下方分支機構/分所列表 -->
+                <!-- 2. 下方分支機構/分所列表 (固定 5 個項目高度) -->
                 <div class="bg-white border border-slate-200 rounded-xl p-6 sm:p-8 shadow-sm">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-5">
-                        <div>
-                            <h3 class="font-bold text-slate-800 text-sm sm:text-base">
-                                分支機構列表
-                            </h3>
-                        </div>
-                        <span class="bg-[#E5ECF4] text-[#4A607A] font-bold px-3 py-1 rounded-xl text-xs align-self-start sm:align-self-auto">
-                            共 ${inst.branches ? inst.branches.length : 0} 處
+                        <h3 class="font-bold text-slate-800 text-sm sm:text-base">
+                            分支機構列表
+                        </h3>
+                        <span id="branch-total-count" class="bg-[#E5ECF4] text-[#4A607A] font-bold px-3 py-1 rounded-xl text-xs">
+                            共 0 處
                         </span>
                     </div>
 
-                    <!-- 縣市篩選按鈕列 -->
+                    <!-- 國內縣市篩選 Pills -->
                     ${cityFiltersHtml}
 
-                    <div id="branches-render-container">
-                        ${branchesHtml}
+                    <!-- 分支機構固定 5 行高度的容器 (避免頁面長度顛簸，並於內部進行分支局部換頁) -->
+                    <div class="flex flex-col justify-between min-h-[300px]">
+                        <div id="branches-list-wrapper" class="divide-y divide-slate-100 flex-1">
+                            <!-- JS 動態生成分支項目 -->
+                        </div>
+                        
+                        <!-- 分支局部換頁器 -->
+                        <div id="branch-local-pagination" class="flex justify-between items-center pt-4 border-t border-slate-100 mt-4">
+                            <!-- JS 動態生成上一頁/下一頁按鈕 -->
+                        </div>
                     </div>
                 </div>
             `;
+
+            renderBranchesContainer(inst);
         }
+
+        // ================== 分支機構列表分頁與固定高度核心 ==================
+        function renderBranchesContainer(inst) {
+            const isOverseas = inst.country && inst.country !== '中華民國';
+            
+            // 依據篩選值過濾分支
+            let displayBranches = inst.branches || [];
+            if (activeBranchCityFilter !== '全部') {
+                displayBranches = inst.branches.filter(b => b.city === activeBranchCityFilter);
+            }
+
+            // 更新分支數量標籤
+            document.getElementById('branch-total-count').textContent = `共 ${displayBranches.length} 處`;
+
+            const branchesWrapper = document.getElementById('branches-list-wrapper');
+            const paginationWrapper = document.getElementById('branch-local-pagination');
+
+            if (displayBranches.length === 0) {
+                // 無資料狀態：完全移除虛線框，置中並保留固定高度空間
+                branchesWrapper.innerHTML = `
+                    <div class="h-[250px] flex items-center justify-center text-center">
+                        <p class="text-slate-400 text-xs font-bold">該機構暫無其他分支機構</p>
+                    </div>
+                `;
+                paginationWrapper.innerHTML = '';
+                return;
+            }
+
+            // 分支分頁計算
+            const totalBranchPages = Math.ceil(displayBranches.length / branchItemsPerPage);
+            if (currentBranchPage > totalBranchPages) currentBranchPage = totalBranchPages || 1;
+
+            const startIndex = (currentBranchPage - 1) * branchItemsPerPage;
+            const slicedBranches = displayBranches.slice(startIndex, startIndex + branchItemsPerPage);
+
+            // 生成分支項目 (固定單個高度，確保不滿 5 個時使用佔位槽補齊高度)
+            let listHtml = '';
+            for (let i = 0; i < branchItemsPerPage; i++) {
+                const branch = slicedBranches[i];
+                if (branch) {
+                    // 第一個項目不要顯示上方邊框
+                    const borderClass = i === 0 ? 'border-t-0 pt-1' : 'border-t border-slate-100 pt-3';
+                    const domesticCityTag = (!isOverseas && branch.city) 
+                        ? `<span class="bg-[#E5ECF4] text-[#4A607A] text-[11px] font-bold px-2.5 py-0.5 rounded mr-3 flex-shrink-0">${branch.city}</span>` 
+                        : '';
+                    listHtml += `
+                        <div class="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 h-[50px] ${borderClass}">
+                            <div class="flex items-center min-w-0">
+                                ${domesticCityTag}
+                                <span class="font-semibold text-slate-700 text-xs sm:text-sm truncate">${branch.name}</span>
+                            </div>
+                            <span class="text-[11px] sm:text-xs text-slate-400 break-all truncate max-w-xs sm:max-w-md">${branch.address || '無詳細通訊地址'}</span>
+                        </div>
+                    `;
+                } else {
+                    // 佔位項目：維持純白透明，確保高度穩定，第一個項目依然不要邊框
+                    const borderClass = i === 0 ? 'border-t-0' : 'border-t border-transparent';
+                    listHtml += `
+                        <div class="py-3 h-[50px] ${borderClass} opacity-0 pointer-events-none"></div>
+                    `;
+                }
+            }
+            branchesWrapper.innerHTML = listHtml;
+
+            // 分支換頁按鈕 (若總頁數 > 1 時顯示)
+            if (totalBranchPages > 1) {
+                paginationWrapper.innerHTML = `
+                    <button onclick="changeBranchPage(${currentBranchPage - 1}, '${inst.id}')" ${currentBranchPage === 1 ? 'disabled' : ''} class="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-[#4A607A] hover:bg-[#E5ECF4] transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                        上一頁
+                    </button>
+                    <span class="text-xs text-slate-400 font-bold">${currentBranchPage} / ${totalBranchPages}</span>
+                    <button onclick="changeBranchPage(${currentBranchPage + 1}, '${inst.id}')" ${currentBranchPage === totalBranchPages ? 'disabled' : ''} class="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-[#4A607A] hover:bg-[#E5ECF4] transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                        下一頁
+                    </button>
+                `;
+            } else {
+                paginationWrapper.innerHTML = `
+                    <div class="text-xs text-slate-300 font-medium">單頁分支據點</div>
+                `;
+            }
+        }
+
+        // 分支機構換頁事件
+        window.changeBranchPage = function(targetPage, instId) {
+            currentBranchPage = targetPage;
+            const inst = treeData.find(d => d.id === instId);
+            if (inst) {
+                renderBranchesContainer(inst);
+            }
+        };
 
         // 詳情內的分支縣市過濾動態重新整理
         window.filterBranchCity = function(city, instId) {
             activeBranchCityFilter = city;
+            currentBranchPage = 1; // 縣市篩選切換時自動回到第一頁
             const inst = treeData.find(d => d.id === instId);
             if (inst) {
                 renderDetailView(inst);
@@ -749,16 +850,9 @@
                 document.execCommand('copy');
                 showToast("地址複製成功！", "success");
             } catch (err) {
-                showToast("複製失敗，請手動圈選", "error");
+                showToast("複製失敗，請手動複製", "error");
             }
             document.body.removeChild(tempInput);
-        };
-
-        // 控制面板收合
-        window.toggleDevPanel = function() {
-            const panel = document.getElementById('dev-panel');
-            panel.classList.toggle('hidden');
-            panel.classList.toggle('flex');
         };
 
         // ================== Toast 與 Modal 互動 ==================
