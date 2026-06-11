@@ -1,391 +1,220 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>合作實習機構 - 東海大學實習專區</title>
     
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        thu: {
+                            deep: '#2E4053',      // 莫蘭迪深藍
+                            blue: '#4A607A',      // 莫蘭迪石墨藍
+                            accent: '#8FA4B5',    // 莫蘭迪粉藍
+                            light: '#E5ECF4',     // 莫蘭迪極柔灰藍
+                            bg: '#F4F6F8'         // 莫蘭迪淺背景
+                        }
+                    },
+                    borderRadius: {
+                        '3xl': '24px'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
     
     <style>
-        :root {
-            --brand: #1a56db; 
-            --brand-hover: #1649c0; 
-            --brand-light: #eff4ff; 
-            --bg: #f8f9fc; 
-            --surface: #ffffff; 
-            --border: #e5e7ef; 
-            --text-primary: #111827; 
-            --text-secondary: #4b5563; 
-            --text-muted: #9ca3af;
-            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08);
-            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.04), 0 4px 6px -2px rgba(0,0,0,0.02);
-            --radius-lg: 16px;
-            --radius-md: 12px;
-        }
-
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { 
-            font-family: 'Noto Sans TC', sans-serif; 
-            background: var(--bg); 
-            color: var(--text-primary); 
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #F4F6F8;
             -webkit-font-smoothing: antialiased;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-y: scroll;
         }
-
-        /* 導覽列 */
-        .navbar {
-            background: var(--surface);
-            border-bottom: 1px solid var(--border);
-            height: 60px;
-            display: flex;
-            align-items: center;
-            padding: 0 24px;
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            box-shadow: var(--shadow-sm);
+        /* 莫蘭迪滾動條 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
         }
-        .navbar-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--brand); font-size: 18px; }
-        .navbar-brand .icon-box { width: 32px; height: 32px; background: var(--brand); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-        .btn-logout { background: white; border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; font-size: 13px; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; transition: 0.2s; }
-        .btn-logout:hover { background: #f1f5f9; color: var(--text-primary); }
-
-        /* 視圖切換容器 */
-        .view-container { display: none; flex: 1; width: 100%; max-width: 1000px; margin: 0 auto; padding: 32px 24px; animation: fadeIn 0.3s ease-out forwards; }
-        .view-container.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* ------------------ 列表視圖樣式 ------------------ */
-        .filter-bar {
-            display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;
+        ::-webkit-scrollbar-track {
+            background: #E5ECF4;
         }
-        @media (min-width: 768px) { .filter-bar { flex-direction: row; align-items: center; } }
-        
-        .search-box { position: relative; flex: 1; }
-        .search-box i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
-        .search-box input {
-            width: 100%; height: 44px; padding: 0 16px 0 40px; 
-            border: 1px solid var(--border); border-radius: 8px; 
-            outline: none; font-size: 15px; transition: 0.2s; background: var(--surface);
+        ::-webkit-scrollbar-thumb {
+            background: #8FA4B5;
+            border-radius: 3px;
         }
-        .search-box input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-light); }
-
-        .select-box {
-            height: 44px; padding: 0 36px 0 16px; border: 1px solid var(--border); 
-            border-radius: 8px; outline: none; font-size: 14px; background: var(--surface);
-            color: var(--text-primary); cursor: pointer; appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-            background-repeat: no-repeat; background-position: right 12px center; min-width: 160px;
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4A607A;
         }
-
-        .list-wrapper { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; }
-        .list-row {
-            display: flex; align-items: center; padding: 20px 24px; border-bottom: 1px solid var(--border);
-            text-decoration: none; color: inherit; cursor: pointer; transition: all 0.2s ease;
+        .glass {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
         }
-        .list-row:last-child { border-bottom: none; }
-        .list-row:hover { background: #f8fafc; }
-        .list-row:hover .row-arrow { transform: translateX(4px); color: var(--brand); }
-        
-        .row-icon { width: 48px; height: 48px; border-radius: 12px; background: var(--brand-light); color: var(--brand); display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; margin-right: 16px; }
-        .row-content { flex: 1; min-width: 0; }
-        .row-title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .row-meta { display: flex; gap: 12px; font-size: 13px; color: var(--text-secondary); align-items: center; }
-        .row-meta span { display: inline-flex; align-items: center; gap: 4px; }
-        
-        .row-tags { display: flex; gap: 8px; align-items: center; margin-left: 16px; }
-        .badge { font-size: 12px; padding: 4px 10px; border-radius: 99px; font-weight: 500; white-space: nowrap; }
-        .badge-gray { background: #f1f5f9; color: #475569; }
-        .badge-brand { background: var(--brand-light); color: var(--brand); font-weight: 700; }
-        .row-arrow { color: var(--text-muted); font-size: 20px; transition: 0.2s; margin-left: 16px; }
-
-        /* ------------------ 優化後的滿版詳情視圖樣式 ------------------ */
-        .btn-back {
-            display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600;
-            color: var(--text-secondary); background: none; border: none; cursor: pointer;
-            padding: 8px 0; margin-bottom: 24px; transition: 0.2s;
+        .hero-gradient {
+            background: linear-gradient(135deg, #2E4053 0%, #4A607A 50%, #5D6D7E 100%);
         }
-        .btn-back:hover { color: var(--brand); transform: translateX(-4px); }
-
-        /* 總機構面板 */
-        .detail-hero-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 32px;
-            box-shadow: var(--shadow-lg);
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-            margin-bottom: 28px;
-            position: relative;
-            overflow: hidden;
+        .glow-hover {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        @media (min-width: 768px) {
-            .detail-hero-card {
-                flex-direction: row;
-                align-items: center;
-                padding: 40px;
-                gap: 32px;
-            }
-        }
-
-        /* 左側機構 Logo 區塊 */
-        .hero-logo-wrapper {
-            width: 96px;
-            height: 96px;
-            border-radius: 24px;
-            background: linear-gradient(135deg, var(--brand-light) 0%, #e0eaff 100%);
-            color: var(--brand);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 44px;
-            flex-shrink: 0;
-            box-shadow: 0 8px 20px -4px rgba(26, 86, 219, 0.18);
-            border: 1px solid rgba(26, 86, 219, 0.1);
-        }
-
-        /* 右側詳細資訊區塊 */
-        .hero-details {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .hero-company-name {
-            font-size: 26px;
-            font-weight: 700;
-            color: var(--text-primary);
-            line-height: 1.3;
-            letter-spacing: -0.01em;
-        }
-        .hero-company-subname {
-            font-size: 15px;
-            color: var(--text-secondary);
-            font-weight: 500;
-            margin-top: -6px;
-            font-style: italic;
-        }
-
-        /* 標籤容器 */
-        .hero-badge-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 4px;
-        }
-
-        /* 高級反白標籤樣式 (文字反白 Solid badge) */
-        .tag-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 12px;
-            font-weight: 600;
-            padding: 6px 14px;
-            border-radius: 8px;
-            color: #ffffff; /* 文字反白 */
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
-            transition: all 0.2s;
-            border: 1px solid transparent;
-        }
-        .tag-pill i {
-            font-size: 13px;
-        }
-        /* 實習場所：綠色漸層 */
-        .tag-pill-venue { 
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
-            border-color: #047857;
-        } 
-        /* 行業別：皇家藍漸層 */
-        .tag-pill-industry { 
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); 
-            border-color: #1e40af;
-        } 
-        /* 國別：玫瑰紅漸層 */
-        .tag-pill-country { 
-            background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%); 
-            border-color: #9f1239;
-        }
-
-        /* 改版：主據點地址專屬樣式區 (非標籤) */
-        .hero-address-info {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            margin-top: 14px;
-            padding-top: 14px;
-            border-top: 1px dashed var(--border);
-        }
-        .address-icon {
-            width: 32px;
-            height: 32px;
-            background: var(--brand-light);
-            color: var(--brand);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            flex-shrink: 0;
-        }
-        .address-text {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-        .address-label {
-            font-size: 11px;
-            color: var(--text-muted);
-            font-weight: 700;
-            letter-spacing: 0.05em;
-        }
-        .address-value {
-            font-size: 14px;
-            color: var(--text-secondary);
-            font-weight: 500;
-            line-height: 1.4;
-        }
-
-        /* 區塊標題 */
-        .section-title { 
-            font-size: 18px; 
-            font-weight: 700; 
-            color: var(--text-primary); 
-            margin: 32px 0 16px; 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-        }
-        .section-title i {
-            color: var(--brand);
-            background: var(--brand-light);
-            padding: 6px;
-            border-radius: 8px;
-            font-size: 18px;
-        }
-        
-        .branch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
-        .branch-card {
-            background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px;
-            box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 8px;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .branch-card:hover {
+        .glow-hover:hover {
             transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-        .branch-name { font-size: 15px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px; }
-        .branch-addr { font-size: 13px; color: var(--text-secondary); display: flex; align-items: flex-start; gap: 6px; line-height: 1.5; }
-
-        /* 狀態顯示 */
-        .state-container { display: flex; flex-direction: column; align-items: center; padding: 80px 20px; text-align: center; }
-        .spin-icon { animation: spin 1s linear infinite; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        /* 機密警告橫幅 */
-        .warning-banner {
-            background-color: #fffbeb;
-            border-bottom: 1px solid #fde68a;
-            color: #92400e;
-            padding: 12px 24px;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            position: sticky;
-            top: 60px; /* 貼齊在 navbar 下方 */
-            z-index: 40;
-        }
-        
-        .warning-banner i {
-            font-size: 18px;
-            flex-shrink: 0;
-            color: #d97706;
-        }
-        
-        .warning-banner .warning-text {
-            font-weight: 500;
-            line-height: 1.5;
-        }
-
-        .warning-banner strong {
-            font-weight: 700;
-            margin-right: 4px;
+            box-shadow: 0 12px 24px -10px rgba(74, 96, 122, 0.15);
         }
     </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col text-slate-700">
 
-    <nav class="navbar">
-        <div class="navbar-brand">
-            <div class="icon-box"><i class="ti ti-briefcase-2"></i></div>
-            東海大學實習專區
-        </div>
-        <div style="margin-left: auto; display: flex; align-items: center; gap: 16px;">
-            <span id="user-greeting" style="font-size: 13px; font-weight: 600; color: var(--text-secondary);"></span>
-            <button id="btn-logout" class="btn-logout">
-                <i class="ti ti-logout"></i> 登出
-            </button>
-        </div>
-    </nav>
-    
-    <div class="warning-banner">
-        <i class="ti ti-shield-lock"></i>
-        <span class="warning-text">
-            <strong>內部機密聲明：</strong>本系統所列之合作機構資料僅限校內實習承辦單位與授權人員瀏覽使用。請遵守保密原則，嚴禁截圖、轉載或對外公開散布。
+    <div id="warning-banner" class="bg-amber-50 border-b border-amber-100 text-amber-900 px-4 py-3 text-xs sm:text-sm flex items-center justify-center gap-2 relative z-50 transition-all duration-300">
+        <i class="ti ti-shield-lock text-amber-600 text-lg flex-shrink-0 animate-pulse"></i>
+        <span class="font-medium text-center leading-relaxed">
+            <strong class="font-bold text-amber-700">內部安全聲明：</strong>
+            本系統所列之合作機構資料僅限校內授權人員與實習生瀏覽。嚴禁截圖、轉載或散布。
         </span>
+        <button onclick="document.getElementById('warning-banner').remove()" class="absolute right-3 hover:bg-amber-100 p-1 rounded-full transition-colors hidden sm:block">
+            <i class="ti ti-x text-sm text-amber-700"></i>
+        </button>
     </div>
 
-    <main id="view-list" class="view-container active">
-        <div style="margin-bottom: 24px;">
-            <h1 style="font-size: 24px; font-weight: 700; color: var(--text-primary);">合作實習機構一覽</h1>
-            <p style="font-size: 14px; color: var(--text-secondary); margin-top: 6px;">
-                尋找並探索適合您的實習機會，點擊機構即可查看詳細的據點資訊。
-            </p>
-        </div>
+    <!-- 驗證等待中遮罩 -->
+    <div id="view-loading" class="flex-1 flex flex-col items-center justify-center p-4 min-h-[calc(100vh-60px)] bg-[#F4F6F8]">
+        <div class="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 border-t-[#4A607A]"></div>
+        <p class="text-xs text-slate-400 mt-4 tracking-wider">正在安全驗證帳戶身分，請稍候...</p>
+    </div>
 
-        <div class="filter-bar">
-            <div class="search-box">
-                <i class="ti ti-search text-lg"></i>
-                <input type="text" id="search-input" placeholder="搜尋機構名稱...">
+    <!-- 主版面系統介面 -->
+    <div id="view-dashboard" class="hidden flex-1 flex flex-col">
+        <!-- 整合式經典橫幅：提供置中標題與上方預留空間 -->
+        <header id="dashboard-hero" class="hero-gradient text-white relative pt-28 pb-24 px-6 sm:px-8 overflow-hidden">
+            
+            <!-- 原 Navbar 的登出與 greeting 元素優雅地嵌入 Hero 右上方 -->
+            <div class="absolute top-4 right-4 sm:top-6 sm:right-8 z-30 flex items-center gap-3">
+                <div class="hidden sm:flex items-center gap-2 bg-white/10 border border-white/10 pl-3 pr-4 py-1 rounded-xl backdrop-blur-md">
+                    <span id="user-greeting" class="text-xs font-semibold text-slate-200">同學，您好！</span>
+                    <span id="env-badge" class="bg-[#E5ECF4] text-[#4A607A] text-[9px] px-2 py-0.5 rounded-md font-bold">正式版</span>
+                </div>
+                <button id="btn-logout" class="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-3.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all backdrop-blur-md">
+                    登出
+                </button>
             </div>
-            <select id="filter-industry" class="select-box">
-                <option value="">全部行業別</option>
-            </select>
-            <select id="filter-city" class="select-box">
-                <option value="">全部縣市</option>
-            </select>
+
+            <div class="max-w-6xl w-full mx-auto relative z-10 flex flex-col items-center">
+                <div class="max-w-3xl text-center space-y-4 mb-10">
+                    <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight text-white">
+                        開創未來航道，探索頂尖合作機構
+                    </h2>
+                    <p class="text-sm sm:text-base text-slate-200/90 leading-relaxed max-w-2xl mx-auto font-light">
+                        東海大學與全球卓越企業、非營利組織、政府機關展開長期深度合作，為您鋪墊最扎實的職涯銜接之路。
+                    </p>
+                </div>
+
+                <!-- 搜尋與篩選控制面板 (圓角修正為 rounded-xl) -->
+                <div class="w-full bg-white border border-slate-200 rounded-xl p-6 shadow-xl relative z-20 space-y-4 text-slate-700">
+                    <!-- 關鍵字搜尋 -->
+                    <div class="relative w-full">
+                        <i class="ti ti-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl"></i>
+                        <input type="text" id="search-input" placeholder="搜尋機構名稱、主據點或海外中文譯名關鍵字..." class="w-full pl-12 pr-4 py-3.5 bg-[#F4F6F8] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#4A607A] focus:border-transparent transition-all text-sm font-medium">
+                    </div>
+
+                    <!-- 四欄並排篩選器：國別、縣市、實習場所、行業別 -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                        <!-- 1. 國別 -->
+                        <div class="relative">
+                            <select id="filter-country" class="w-full px-4 py-3 bg-[#F4F6F8] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#4A607A] focus:border-transparent transition-all text-sm font-semibold appearance-none cursor-pointer text-slate-600">
+                                <option value="">全部國別</option>
+                            </select>
+                            <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                        </div>
+
+                        <!-- 2. 縣市別 -->
+                        <div class="relative">
+                            <select id="filter-city" class="w-full px-4 py-3 bg-[#F4F6F8] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#4A607A] focus:border-transparent transition-all text-sm font-semibold appearance-none cursor-pointer text-slate-600">
+                                <option value="">全部縣市</option>
+                            </select>
+                            <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                        </div>
+
+                        <!-- 3. 實習場所 -->
+                        <div class="relative">
+                            <select id="filter-venue-type" class="w-full px-4 py-3 bg-[#F4F6F8] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#4A607A] focus:border-transparent transition-all text-sm font-semibold appearance-none cursor-pointer text-slate-600">
+                                <option value="">全部實習場所</option>
+                            </select>
+                            <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                        </div>
+
+                        <!-- 4. 行業別 -->
+                        <div class="relative">
+                            <select id="filter-industry" class="w-full px-4 py-3 bg-[#F4F6F8] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#4A607A] focus:border-transparent transition-all text-sm font-semibold appearance-none cursor-pointer text-slate-600">
+                                <option value="">全部行業別</option>
+                            </select>
+                            <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main id="view-list" class="max-w-6xl w-full mx-auto px-4 sm:px-8 py-8 flex-1">
+            <div class="mt-4">
+                <!-- 加載中 -->
+                <div id="loading-state" class="py-20 flex flex-col items-center justify-center text-center">
+                    <div class="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 border-t-[#4A607A]"></div>
+                    <h3 class="mt-4 text-sm font-bold text-slate-600">資料加載中，請稍候...</h3>
+                </div>
+
+                <!-- 空狀態 (圓角修正為 rounded-xl) -->
+                <div id="empty-state" class="hidden py-16 flex flex-col items-center justify-center text-center bg-white border border-slate-200 rounded-xl p-8">
+                    <div class="w-16 h-16 bg-[#F4F6F8] text-slate-300 rounded-full flex items-center justify-center mb-4">
+                        <i class="ti ti-search-off text-3xl"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-700">未尋找到符合條件的合作機構</h3>
+                    <p class="text-slate-400 text-xs mt-1">請嘗試調整您的篩選組合或縮減關鍵字。</p>
+                </div>
+
+                <!-- 機構卡片列表 -->
+                <div id="inst-list" class="hidden grid grid-cols-1 md:grid-cols-2 gap-5"></div>
+
+                <!-- 莫蘭迪分頁器控制面板 -->
+                <div id="pagination-panel" class="hidden flex items-center justify-center gap-2 mt-8"></div>
+            </div>
+        </main>
+
+        <main id="view-detail" class="hidden max-w-6xl w-full mx-auto px-4 sm:px-8 py-8 flex-1">
+            <!-- 莫蘭迪圓角返回按鈕 -->
+            <button id="btn-back" class="inline-flex items-center gap-2 text-[#4A607A] hover:text-[#2E4053] font-bold text-sm bg-white hover:bg-[#E5ECF4] border border-slate-200 hover:border-[#8FA4B5]/50 px-5 py-2.5 rounded-xl transition-all duration-300 shadow-sm hover:shadow active:scale-95 mb-6">
+                <i class="ti ti-chevron-left text-base"></i> 返回機構列表
+            </button>
+
+            <!-- 詳情整合生成區 -->
+            <div id="detail-content" class="space-y-6"></div>
+        </main>
+    </div>
+
+    <div id="confirm-modal" class="fixed inset-0 bg-[#2E4053]/20 backdrop-blur-sm z-[90] hidden items-center justify-center p-4">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-2xl max-w-sm w-full p-6 animate-in fade-in zoom-in-95 duration-200">
+            <h4 class="text-base font-bold text-slate-800 text-center" id="confirm-title">確認動作</h4>
+            <p class="text-xs text-slate-400 text-center mt-2 leading-relaxed" id="confirm-desc">確定要執行此操作嗎？</p>
+            <div class="grid grid-cols-2 gap-3 mt-6">
+                <button id="confirm-btn-cancel" class="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl text-xs transition-all">
+                    取消
+                </button>
+                <button id="confirm-btn-ok" class="py-2.5 bg-[#4A607A] hover:bg-[#2E4053] text-white font-bold rounded-xl text-xs transition-all shadow-sm">
+                    確定
+                </button>
+            </div>
         </div>
+    </div>
 
-        <div id="loading-state" class="state-container">
-            <i class="ti ti-loader-2 spin-icon" style="font-size: 40px; color: var(--brand);"></i>
-            <div style="margin-top: 16px; font-weight: 600; color: var(--text-secondary);">資料載入中，請稍候...</div>
-        </div>
-
-        <div id="empty-state" class="state-container" style="display: none;">
-            <i class="ti ti-building-skyscraper" style="font-size: 64px; color: var(--border);"></i>
-            <div style="margin-top: 16px; font-size: 16px; font-weight: 600; color: var(--text-secondary);">找不到符合條件的機構</div>
-            <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">請嘗試清除篩選條件或更換搜尋關鍵字</div>
-        </div>
-
-        <div id="inst-list" class="list-wrapper" style="display: none;"></div>
-    </main>
-
-    <main id="view-detail" class="view-container">
-        <button id="btn-back" class="btn-back"><i class="ti ti-arrow-left"></i> 返回機構列表</button>
-        
-        <div id="detail-content"></div>
-    </main>
+    <!-- Toast 輕提示容器 -->
+    <div id="toast-container" class="fixed top-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-3 pointer-events-none"></div>
 
 
     <script type="module">
@@ -393,6 +222,7 @@
         import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
+        // Firebase 預配置
         const firebaseConfig = {
             apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY",
             authDomain: "thu-isac-review.firebaseapp.com",
@@ -402,258 +232,598 @@
             appId: "1:453299876735:web:1d8babca3315423161a04a"
         };
         
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
+        let app, db, auth;
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+        } catch (e) {
+            console.error("Firebase 初始化失敗:", e);
+        }
 
+        // ================== 定義各欄位下拉數值 ==================
+        const countriesList = [
+            "中華民國", "大陸地區", "日本", "美國", "越南", "泰國", "澳大利亞", "香港", "澳門", "馬來西亞", 
+            "菲律賓", "印尼", "印度", "孟加拉", "緬甸", "柬埔寨", "黎巴嫩", "蒙古", "巴西", "巴拉圭", "秘魯"
+        ];
+
+        const citiesList = [
+            "臺北市", "新北市", "基隆市", "桃園市", "新竹縣", "新竹市", "苗栗縣", "臺中市", "彰化縣", 
+            "南投縣", "雲林縣", "嘉義縣", "嘉義市", "臺南市", "高雄市", "屏東縣", "宜蘭縣", "花蓮縣", 
+            "臺東縣", "澎湖縣", "金門縣", "連江縣"
+        ];
+
+        const industriesList = [
+            "農、林、漁、牧業", "礦業及土石採取業", "製造業", "電力及燃氣供應業", "用水供應及污染整治業", 
+            "營建工程業", "批發及零售業", "運輸及儲儲業", "住宿及餐飲業", "出版及影音等內容傳播業", 
+            "電信及資訊服務業", "金融及保險業", "不動產業", "專業、科學及技術服務業", "支援服務業", 
+            "公共行政及國防；強制性社會安全", "教育業", "醫療保健及社會工作服務業", "藝術、運動及休閒服務業", "其他服務業"
+        ];
+
+        const venueTypesList = ["企業機構", "政府機構", "其他機構"];
+
+        // 全域狀態變數
         let treeData = [];
+        let filteredData = [];
+        let currentPage = 1;
+        const itemsPerPage = 8; // 每頁顯示數量
 
-        // DOM 元素快取
+        // 當前詳情分支機構的縣市篩選狀態
+        let activeBranchCityFilter = '全部';
+
+        const viewLoading = document.getElementById('view-loading');
+        const viewDashboard = document.getElementById('view-dashboard');
         const viewList = document.getElementById('view-list');
         const viewDetail = document.getElementById('view-detail');
+        
         const elList = document.getElementById('inst-list');
         const elLoading = document.getElementById('loading-state');
         const elEmpty = document.getElementById('empty-state');
         const elDetailContent = document.getElementById('detail-content');
         
         const inputSearch = document.getElementById('search-input');
-        const selectIndustry = document.getElementById('filter-industry');
+        const selectCountry = document.getElementById('filter-country');
         const selectCity = document.getElementById('filter-city');
+        const selectVenue = document.getElementById('filter-venue-type');
+        const selectIndustry = document.getElementById('filter-industry');
 
-        // 1. 權限驗證
-        onAuthStateChanged(auth, async (user) => {
+        // ================== Auth 驗證與跳轉 ==================
+        onAuthStateChanged(auth, (user) => {
             if (user) {
-                const userName = localStorage.getItem('user_name') || '同學';
-                document.getElementById('user-greeting').textContent = `${userName}，您好！`;
-                await fetchInstitutions();
+                // 已登入，顯示系統
+                viewLoading.classList.add('hidden');
+                viewDashboard.classList.remove('hidden');
+                const displayName = user.email ? user.email.split('@')[0] : '授權人員';
+                document.getElementById('user-greeting').textContent = `${displayName}，您好！`;
+                
+                // 啟動加載
+                setupDropdowns();
+                loadData();
             } else {
+                // 未登入，重導向至登入頁面
                 window.location.replace('login.html');
             }
         });
 
+        function setupDropdowns() {
+            // 清空舊選項以防重複 append
+            selectCountry.innerHTML = '<option value="">全部國別</option>';
+            selectCity.innerHTML = '<option value="">全部縣市</option>';
+            selectVenue.innerHTML = '<option value="">全部實習場所</option>';
+            selectIndustry.innerHTML = '<option value="">全部行業別</option>';
+
+            countriesList.forEach(c => selectCountry.add(new Option(c, c)));
+            citiesList.forEach(c => selectCity.add(new Option(c, c)));
+            venueTypesList.forEach(v => selectVenue.add(new Option(v, v)));
+            industriesList.forEach(i => selectIndustry.add(new Option(i, i)));
+        }
+
+        // 登出
         document.getElementById('btn-logout').addEventListener('click', () => {
-            if (confirm("確定要登出系統嗎？")) {
-                signOut(auth).then(() => {
-                    localStorage.clear();
-                    window.location.replace('login.html');
-                });
-            }
+            showConfirm("登出確認", "您確定要登出系統嗎？", async () => {
+                await signOut(auth);
+            });
         });
 
-        // 返回按鈕邏輯
+        // 返回
         document.getElementById('btn-back').addEventListener('click', () => {
-            viewDetail.classList.remove('active');
-            viewList.classList.add('active');
+            viewDetail.classList.add('hidden');
+            viewList.classList.remove('hidden');
+            document.getElementById('dashboard-hero').classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
-        // 2. 獲取並處理資料
-        async function fetchInstitutions() {
+        // 欄位標準化對照
+        function normalizeItem(d) {
+            return {
+                id: d.id,
+                name: d["input-name"] || d.name || d.input_name || '',
+                nameTranslated: d["input-name-translated"] || d.name_translated || d.input_name_translated || '',
+                country: d["input-country"] || d.country || d.input_country || '中華民國',
+                city: d["input-city"] || d.city || d.input_city || '',
+                address: d["input-address"] || d.address || d.input_address || '',
+                industry: d["input-industry"] || d.industry || d.input_industry || '',
+                venueType: d["input-venue-type"] || d.venue_type || d.input_venue_type || '',
+                parentSearchInput: d["parent-search-input"] || d.parent_id || d.parent_search_input || null
+            };
+        }
+
+        // ================== 資料讀取流程 ==================
+        async function loadData() {
+            elLoading.classList.remove('hidden');
+            elList.classList.add('hidden');
+            elEmpty.classList.add('hidden');
+            document.getElementById('pagination-panel').classList.add('hidden');
+
             try {
+                if (!db) throw new Error("Firestore 未加載成功");
                 const snapshot = await getDocs(collection(db, 'internship_institutions'));
                 const allData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
-                buildTreeAndFilters(allData);
-                renderList();
+                buildTreeStructure(allData);
                 
-                elLoading.style.display = 'none';
+                elLoading.classList.add('hidden');
 
-                // 綁定篩選器事件
-                inputSearch.addEventListener('input', renderList);
-                selectIndustry.addEventListener('change', renderList);
-                selectCity.addEventListener('change', renderList);
+                // 註冊篩選聯動
+                inputSearch.addEventListener('input', () => { currentPage = 1; renderList(); });
+                selectCountry.addEventListener('change', handleCountryChange);
+                selectCity.addEventListener('change', () => { currentPage = 1; renderList(); });
+                selectVenue.addEventListener('change', () => { currentPage = 1; renderList(); });
+                selectIndustry.addEventListener('change', () => { currentPage = 1; renderList(); });
+
+                renderList();
 
             } catch (error) {
-                console.error("讀取機構失敗:", error);
-                elLoading.innerHTML = `<div style="color: #ef4444; text-align: center;"><i class="ti ti-alert-circle text-4xl" style="font-size: 40px;"></i><p style="margin-top: 12px; font-weight: bold;">資料載入失敗，請確認您的權限或網路。</p></div>`;
+                console.error("載入失敗:", error);
+                elLoading.innerHTML = `
+                    <div class="text-slate-600 py-8 flex flex-col items-center">
+                        <i class="ti ti-alert-triangle text-3xl mb-3 text-rose-500"></i>
+                        <h4 class="font-bold text-sm">連線暫時中斷</h4>
+                        <p class="text-slate-400 text-xs mt-1">無法成功連接 Firebase 資料庫，請檢查您的網路狀態或系統權限設定。</p>
+                    </div>
+                `;
             }
         }
 
-        // 3. 建構樹狀結構與提取下拉選單選項
-        function buildTreeAndFilters(allData) {
-            const parents = allData.filter(d => !d.parent_id);
-            const children = allData.filter(d => d.parent_id);
-            const industries = new Set();
-            const cities = new Set();
+        function buildTreeStructure(rawItems) {
+            const normalized = rawItems.map(normalizeItem);
+            const parents = normalized.filter(d => !d.parentSearchInput);
+            const children = normalized.filter(d => d.parentSearchInput);
 
             treeData = parents.map(p => {
-                const branches = children.filter(c => c.parent_id === p.id);
-                branches.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'zh-TW'));
-                
-                if (p.industry) industries.add(p.industry);
-                if (p.city) cities.add(p.city);
-                branches.forEach(b => {
-                    if (b.city) cities.add(b.city);
-                });
-
+                const branches = children.filter(c => c.parentSearchInput === p.id);
+                branches.sort((a, b) => (a.name).localeCompare(b.name, 'zh-TW'));
                 return { ...p, branches };
             });
 
-            treeData.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'zh-TW'));
-
-            // 填充下拉選單
-            Array.from(industries).sort().forEach(ind => {
-                selectIndustry.add(new Option(ind, ind));
-            });
-            Array.from(cities).sort().forEach(city => {
-                selectCity.add(new Option(city, city));
-            });
+            treeData.sort((a, b) => (a.name).localeCompare(b.name, 'zh-TW'));
         }
 
-        // 4. 渲染列表
+        // ================== 篩選聯動交互 (海外鎖定，不含提示) ==================
+        function handleCountryChange() {
+            const countryVal = selectCountry.value;
+            currentPage = 1;
+            
+            if (countryVal && countryVal !== '中華民國') {
+                selectCity.value = '';
+                selectCity.disabled = true;
+                selectCity.classList.add('bg-slate-200/50', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
+                
+                selectVenue.value = '其他機構';
+                selectVenue.disabled = true;
+                selectVenue.classList.add('bg-slate-200/50', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
+            } else {
+                selectCity.disabled = false;
+                selectCity.classList.remove('bg-slate-200/50', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
+                
+                selectVenue.disabled = false;
+                selectVenue.classList.remove('bg-slate-200/50', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
+            }
+            
+            renderList();
+        }
+
+        // ================== 分頁與列表渲染邏輯 ==================
         function renderList() {
             const term = inputSearch.value.trim().toLowerCase();
-            const filterInd = selectIndustry.value;
+            const filterCountry = selectCountry.value;
             const filterCity = selectCity.value;
+            const filterVenue = selectVenue.value;
+            const filterIndustry = selectIndustry.value;
 
-            const filtered = treeData.filter(p => {
-                // 檢查關鍵字
+            filteredData = treeData.filter(p => {
                 const matchTerm = !term || 
-                                  (p.name || '').toLowerCase().includes(term) || 
-                                  p.branches.some(b => (b.name || '').toLowerCase().includes(term));
-                // 檢查行業別 (只看主機構)
-                const matchInd = !filterInd || p.industry === filterInd;
+                                  p.name.toLowerCase().includes(term) || 
+                                  p.nameTranslated.toLowerCase().includes(term) || 
+                                  p.branches.some(b => b.name.toLowerCase().includes(term));
                 
-                // 檢查縣市 (主機構或任一分公司有符合即可)
-                const matchCity = !filterCity || p.city === filterCity || p.branches.some(b => b.city === filterCity);
+                const matchCountry = !filterCountry || p.country === filterCountry || p.branches.some(b => b.country === filterCountry);
+                const matchCity = selectCity.disabled || !filterCity || p.city === filterCity || p.branches.some(b => b.city === filterCity);
+                const matchVenue = !filterVenue || p.venueType === filterVenue;
+                const matchIndustry = !filterIndustry || p.industry === filterIndustry;
 
-                return matchTerm && matchInd && matchCity;
+                return matchTerm && matchCountry && matchCity && matchVenue && matchIndustry;
             });
 
-            if (filtered.length === 0) {
-                elList.style.display = 'none';
-                elEmpty.style.display = 'flex';
+            if (filteredData.length === 0) {
+                elList.classList.add('hidden');
+                document.getElementById('pagination-panel').classList.add('hidden');
+                elEmpty.classList.remove('hidden');
                 return;
             }
 
-            elEmpty.style.display = 'none';
-            elList.style.display = 'block';
+            elEmpty.classList.add('hidden');
+            elList.classList.remove('hidden');
 
-            elList.innerHTML = filtered.map(inst => {
+            renderPage();
+        }
+
+        function renderPage() {
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            if (currentPage > totalPages) currentPage = totalPages || 1;
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const pageItems = filteredData.slice(startIndex, startIndex + itemsPerPage);
+
+            elList.innerHTML = pageItems.map(inst => {
                 const branchCount = inst.branches.length;
+                const isOverseas = inst.country && inst.country !== '中華民國';
+                
+                let displayName = inst.name;
+                if (isOverseas && inst.nameTranslated) {
+                    displayName = `${inst.nameTranslated}（${inst.name}）`;
+                }
+
                 return `
-                    <div class="list-row" onclick="window.openDetail('${inst.id}')">
-                        <div class="row-icon"><i class="ti ti-building-skyscraper"></i></div>
-                        <div class="row-content">
-                            <div class="row-title">${inst.name}</div>
-                            <div class="row-meta">
-                                <span><i class="ti ti-tag"></i> ${inst.industry || '未分類行業'}</span>
-                                ${inst.city ? `<span><i class="ti ti-map-pin"></i> ${inst.city}</span>` : ''}
+                    <div class="glow-hover bg-white border border-slate-200/80 rounded-xl p-6 shadow-sm flex flex-col justify-between cursor-pointer" onclick="openDetail('${inst.id}')">
+                        <div>
+                            <div class="flex items-start justify-between gap-3 mb-4">
+                                <div class="w-11 h-11 rounded-xl bg-[#E5ECF4] text-[#4A607A] flex items-center justify-center text-lg flex-shrink-0">
+                                    <i class="ti ti-building-skyscraper"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-bold text-slate-800 text-sm sm:text-base leading-snug truncate hover:text-[#4A607A] transition-colors">${displayName}</h4>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-wrap gap-1.5 mb-4">
+                                ${inst.industry ? `<span class="bg-[#E5ECF4] text-[#4A607A] text-[10px] font-semibold px-2.5 py-0.5 rounded">${inst.industry}</span>` : ''}
+                                ${inst.venueType ? `<span class="bg-[#EBF3F5] text-[#2E5B44] text-[10px] font-semibold px-2.5 py-0.5 rounded">${inst.venueType}</span>` : ''}
+                                ${isOverseas ? `<span class="bg-[#F5EBEB] text-[#A66C6C] text-[10px] font-semibold px-2.5 py-0.5 rounded">${inst.country}</span>` : ''}
                             </div>
                         </div>
-                        <div class="row-tags hidden md:flex">
-                            ${branchCount > 0 ? `<span class="badge badge-brand">${branchCount} 個分支據點</span>` : `<span class="badge badge-gray">單一據點</span>`}
+
+                        <div class="flex items-center justify-between pt-4 border-t border-slate-100 mt-auto text-xs">
+                            <div class="flex items-center gap-1 text-slate-400 font-semibold">
+                                ${!isOverseas ? '' : `
+                                    <i class="ti ti-world text-sm"></i>
+                                    <span>境外機構</span>
+                                `}
+                            </div>
+                            <div class="flex items-center gap-1 text-slate-400">
+                                ${branchCount > 0 ? `
+                                    <span class="bg-slate-100 text-slate-500 font-bold px-2.5 py-1 rounded text-[10px]">
+                                        ${branchCount} 個分所據點
+                                    </span>
+                                ` : `
+                                    <span class="bg-slate-100/60 text-slate-400 font-medium px-2.5 py-1 rounded text-[10px]">
+                                        單一據點
+                                    </span>
+                                `}
+                                <i class="ti ti-chevron-right text-slate-300 text-base"></i>
+                            </div>
                         </div>
-                        <i class="ti ti-chevron-right row-arrow"></i>
                     </div>
                 `;
             }).join('');
+
+            renderPaginationControls(totalPages);
         }
 
-        // 5. 打開詳情頁
+        // 渲染分頁器
+        function renderPaginationControls(totalPages) {
+            const panel = document.getElementById('pagination-panel');
+            if (totalPages <= 1) {
+                panel.classList.add('hidden');
+                return;
+            }
+            panel.classList.remove('hidden');
+
+            let html = '';
+            
+            // 上一頁
+            html += `
+                <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[#4A607A] hover:bg-[#E5ECF4] transition-all disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed text-xs font-bold flex items-center gap-1">
+                    <i class="ti ti-chevron-left"></i> 上一頁
+                </button>
+            `;
+
+            // 頁數按鈕
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentPage) {
+                    html += `
+                        <button class="px-3 py-1.5 rounded-xl bg-[#4A607A] text-white font-bold text-xs shadow-sm transition-all">
+                            ${i}
+                        </button>
+                    `;
+                } else {
+                    html += `
+                        <button onclick="changePage(${i})" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[#4A607A] hover:bg-[#E5ECF4] font-bold text-xs transition-all">
+                            ${i}
+                        </button>
+                    `;
+                }
+            }
+
+            // 下一頁
+            html += `
+                <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[#4A607A] hover:bg-[#E5ECF4] transition-all disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed text-xs font-bold flex items-center gap-1">
+                    下一頁 <i class="ti ti-chevron-right"></i>
+                </button>
+            `;
+
+            panel.innerHTML = html;
+        }
+
+        window.changePage = function(page) {
+            currentPage = page;
+            renderPage();
+            window.scrollTo({ top: 350, behavior: 'smooth' });
+        };
+
+        // ================== 詳情頁分支機構展示 (含市級篩選與排版優化) ==================
         window.openDetail = function(instId) {
             const inst = treeData.find(d => d.id === instId);
             if (!inst) return;
 
-            // 產生分公司 HTML
-            let branchesHtml = `<div style="padding: 32px; text-align: center; color: var(--text-muted); background: var(--surface); border: 1px solid var(--border); border-radius: 12px;">此機構目前無其他分支據點。</div>`;
-            
-            if (inst.branches && inst.branches.length > 0) {
-                branchesHtml = `
-                    <div class="branch-grid">
-                        ${inst.branches.map(b => `
-                            <div class="branch-card">
-                                <div class="branch-name"><i class="ti ti-building" style="color: var(--brand);"></i> ${b.name}</div>
-                                <div class="branch-addr">
-                                    <i class="ti ti-map-pin" style="margin-top: 2px; color: var(--text-muted);"></i> 
-                                    <span>${b.city || ''} ${b.address || '無地址資訊'}</span>
-                                </div>
-                            </div>
+            viewList.classList.add('hidden');
+            document.getElementById('dashboard-hero').classList.add('hidden');
+            viewDetail.classList.remove('hidden');
+
+            activeBranchCityFilter = '全部';
+            renderDetailView(inst);
+        };
+
+        function renderDetailView(inst) {
+            const isOverseas = inst.country && inst.country !== '中華民國';
+
+            let displayNameText = inst.name;
+            if (isOverseas && inst.nameTranslated) {
+                displayNameText = `${inst.nameTranslated}（${inst.name}）`;
+            }
+
+            // 收集所有子機構縣市別來動態生成篩選按鈕
+            const uniqueCities = [...new Set(inst.branches.map(b => b.city).filter(Boolean))].sort();
+
+            // 生成縣市篩選 Pills 按鈕
+            let cityFiltersHtml = '';
+            if (!isOverseas && inst.branches.length > 0 && uniqueCities.length > 0) {
+                cityFiltersHtml = `
+                    <div class="flex flex-wrap gap-2 mb-5">
+                        <button id="pill-all" onclick="filterBranchCity('全部', '${inst.id}')" class="px-3 py-1.5 text-xs font-bold rounded-xl transition-all ${activeBranchCityFilter === '全部' ? 'bg-[#4A607A] text-white shadow-sm' : 'bg-[#E5ECF4] text-[#4A607A] hover:bg-[#8FA4B5]/20'}">
+                            全部
+                        </button>
+                        ${uniqueCities.map(city => `
+                            <button id="pill-${city}" onclick="filterBranchCity('${city}', '${inst.id}')" class="px-3 py-1.5 text-xs font-bold rounded-xl transition-all ${activeBranchCityFilter === city ? 'bg-[#4A607A] text-white shadow-sm' : 'bg-[#E5ECF4] text-[#4A607A] hover:bg-[#8FA4B5]/20'}">
+                                ${city}
+                            </button>
                         `).join('')}
                     </div>
                 `;
             }
 
-            // 處理國別標籤邏輯
-            const country = inst.country ? inst.country.trim() : '';
-            const hideCountry = !country || country === '中華民國' || country === '台灣' || country === 'Taiwan' || country === 'R.O.C' || country === 'ROC';
-            
-            // 處理海外機構名稱顯示邏輯
-            let displayName = inst.name || '';
-            let englishSubNameHtml = '';
-
-            if (!hideCountry) {
-                if (inst.english_name) {
-                    englishSubNameHtml = `<div class="hero-company-subname">(${inst.english_name})</div>`;
-                } else if (displayName.includes('(') && displayName.endsWith(')')) {
-                    const match = displayName.match(/^([^(]+)\(([^)]+)\)$/);
-                    if (match) {
-                        displayName = match[1].trim();
-                        englishSubNameHtml = `<div class="hero-company-subname">(${match[2].trim()})</div>`;
-                    }
-                }
+            // 分支過濾渲染
+            let displayBranches = inst.branches || [];
+            if (activeBranchCityFilter !== '全部') {
+                displayBranches = inst.branches.filter(b => b.city === activeBranchCityFilter);
             }
 
-            // 填充全新重構之詳情面板
-            elDetailContent.innerHTML = `
-                <div class="detail-hero-card">
-                    <!-- 左側機構 Logo/Icon -->
-                    <div class="hero-logo-wrapper">
-                        <i class="ti ti-building-skyscraper"></i>
+            let branchesHtml = '';
+            if (displayBranches.length > 0) {
+                branchesHtml = `
+                    <div class="divide-y divide-slate-100 border-t border-b border-slate-100 my-4">
+                        ${displayBranches.map((b, idx) => {
+                            // 第一個分支不顯示 border-t，完美實作第 8 點
+                            const borderClass = idx === 0 ? 'border-t-0 pt-2' : 'border-t border-slate-100 pt-4';
+                            
+                            const domesticCityTag = (!isOverseas && b.city) 
+                                ? `<span class="bg-[#E5ECF4] text-[#4A607A] text-[11px] font-bold px-2.5 py-0.5 rounded mr-3 flex-shrink-0">${b.city}</span>` 
+                                : '';
+                            return `
+                                <div class="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${borderClass}">
+                                    <div class="flex items-center min-w-0">
+                                        ${domesticCityTag}
+                                        <span class="font-bold text-slate-700 text-sm sm:text-base truncate">${b.name}</span>
+                                    </div>
+                                    <span class="text-xs sm:text-sm text-slate-500 break-all">${b.address || '無詳細通訊地址'}</span>
+                                </div>
+                            `;
+                        }).join('')}
                     </div>
+                `;
+            } else {
+                // 機構若無資料
+                branchesHtml = `
+                    <div class="flex flex-col items-center justify-center p-12 border border-dashed border-slate-200 rounded-xl bg-slate-50 text-center">
+                        <p class="text-slate-400 text-xs font-bold">該機構暫無合作的分支機構</p>
+                    </div>
+                `;
+            }
 
-                    <!-- 右側詳細資訊 -->
-                    <div class="hero-details">
-                        <h1 class="hero-company-name">${displayName}</h1>
-                        ${englishSubNameHtml}
+            elDetailContent.innerHTML = `
+                <!-- 1. 上方總機構橫向面版 -->
+                <div class="bg-white border border-slate-200 rounded-xl p-6 sm:p-8 shadow-sm">
+                    <div class="flex flex-col md:flex-row items-center md:items-stretch gap-6">
                         
-                        <!-- 標籤容器 (文字反白實色化) -->
-                        <div class="hero-badge-container">
-                            <!-- 實習場所標籤 -->
-                            ${inst.venue_type ? `
-                                <span class="tag-pill tag-pill-venue">
-                                    <i class="ti ti-compass"></i> ${inst.venue_type}
-                                </span>
-                            ` : ''}
-
-                            <!-- 行業別標籤 -->
-                            <span class="tag-pill tag-pill-industry">
-                                <i class="ti ti-tag"></i> ${inst.industry || '未分類行業'}
-                            </span>
-
-                            <!-- 國別標籤 (境外機構才顯示) -->
-                            ${!hideCountry ? `
-                                <span class="tag-pill tag-pill-country">
-                                    <i class="ti ti-world"></i> ${country}
-                                </span>
-                            ` : ''}
+                        <!-- 左側莫蘭迪藍 Office 容器 (與右側三行完美對齊等高) -->
+                        <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-xl bg-gradient-to-tr from-thu-deep to-[#5D6D7E] text-white flex items-center justify-center text-3xl flex-shrink-0 shadow-md">
+                            <i class="ti ti-building"></i>
                         </div>
 
-                        <!-- 地址專用資訊列 (去除標籤設計，結構化文字展現) -->
-                        ${inst.address ? `
-                            <div class="hero-address-info">
-                                <div class="address-icon">
-                                    <i class="ti ti-map-pin"></i>
-                                </div>
-                                <div class="address-text">
-                                    <span class="address-label">總部 / 主據點地址</span>
-                                    <span class="address-value">${inst.address}</span>
-                                </div>
+                        <!-- 右側機構核心資料 (藉由 justify-between 與 items-stretch 達到均勻高度) -->
+                        <div class="flex-1 flex flex-col justify-between py-1 space-y-2 text-center md:text-left min-w-0">
+                            <!-- 第一行：機構名稱 -->
+                            <div>
+                                <h2 class="text-lg sm:text-xl font-bold text-slate-800 tracking-tight leading-snug">${displayNameText}</h2>
                             </div>
-                        ` : ''}
+
+                            <!-- 第二行：標籤組 (無外框與 ICON) -->
+                            <div class="flex flex-wrap justify-center md:justify-start gap-1.5">
+                                ${inst.venueType ? `
+                                    <span class="inline-flex bg-[#EBF3F5] text-[#2E5B44] text-[11px] font-bold px-3 py-0.5 rounded">
+                                        ${inst.venueType}
+                                    </span>
+                                ` : ''}
+
+                                ${inst.industry ? `
+                                    <span class="inline-flex bg-[#E5ECF4] text-[#4A607A] text-[11px] font-bold px-3 py-0.5 rounded">
+                                        ${inst.industry}
+                                    </span>
+                                ` : ''}
+                            </div>
+
+                            <!-- 第三行：國別標籤移至 Icon 後方，無 "地址:" 字樣 -->
+                            <div class="flex flex-wrap items-center justify-center md:justify-start gap-2 text-slate-500 text-xs">
+                                <i class="ti ti-map-pin text-[#8FA4B5] text-sm"></i>
+                                
+                                <!-- 國別標籤 (僅海外機構顯示國別，置於 Icon 後方) -->
+                                ${isOverseas ? `
+                                    <span class="inline-flex bg-[#F5EBEB] text-[#A66C6C] text-[11px] font-bold px-3 py-0.5 rounded">
+                                        ${inst.country}
+                                    </span>
+                                ` : ''}
+                                
+                                <span class="font-medium text-slate-600 truncate max-w-full" title="${inst.address || ''}">
+                                    ${inst.address || '無登記主地址'}
+                                </span>
+                                ${inst.address ? `
+                                    <button onclick="copyAddress('${inst.address}')" class="p-1 hover:bg-slate-100 text-slate-400 hover:text-slate-800 rounded transition-colors" title="複製地址">
+                                        <i class="ti ti-copy text-xs"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+
+                        </div>
                     </div>
                 </div>
 
-                <div class="section-title">
-                    <i class="ti ti-sitemap"></i> 旗下分支據點 / 實習場所
+                <!-- 2. 下方分支機構/分所列表 -->
+                <div class="bg-white border border-slate-200 rounded-xl p-6 sm:p-8 shadow-sm">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-5">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-sm sm:text-base">
+                                分支機構列表
+                            </h3>
+                        </div>
+                        <span class="bg-[#E5ECF4] text-[#4A607A] font-bold px-3 py-1 rounded-xl text-xs align-self-start sm:align-self-auto">
+                            共 ${inst.branches ? inst.branches.length : 0} 處
+                        </span>
+                    </div>
+
+                    <!-- 縣市篩選按鈕列 -->
+                    ${cityFiltersHtml}
+
+                    <div id="branches-render-container">
+                        ${branchesHtml}
+                    </div>
                 </div>
-                ${branchesHtml}
+            `;
+        }
+
+        // 詳情內的分支縣市過濾動態重新整理
+        window.filterBranchCity = function(city, instId) {
+            activeBranchCityFilter = city;
+            const inst = treeData.find(d => d.id === instId);
+            if (inst) {
+                renderDetailView(inst);
+            }
+        };
+
+        // 地址複製
+        window.copyAddress = function(text) {
+            const tempInput = document.createElement('textarea');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            try {
+                document.execCommand('copy');
+                showToast("地址複製成功！", "success");
+            } catch (err) {
+                showToast("複製失敗，請手動圈選", "error");
+            }
+            document.body.removeChild(tempInput);
+        };
+
+        // 控制面板收合
+        window.toggleDevPanel = function() {
+            const panel = document.getElementById('dev-panel');
+            panel.classList.toggle('hidden');
+            panel.classList.toggle('flex');
+        };
+
+        // ================== Toast 與 Modal 互動 ==================
+        window.showToast = function(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let bgClass = 'bg-white text-slate-800 border-slate-100';
+            let iconClass = 'ti-circle-check text-slate-600';
+            
+            if (type === 'success') {
+                bgClass = 'bg-[#E5ECF4] text-[#4A607A] border-transparent';
+                iconClass = 'ti-circle-check text-[#4A607A]';
+            } else if (type === 'error') {
+                bgClass = 'bg-rose-50 text-rose-900 border-rose-100';
+                iconClass = 'ti-circle-x text-rose-600';
+            } else if (type === 'info') {
+                bgClass = 'bg-slate-100 text-slate-700 border-slate-200';
+                iconClass = 'ti-info-circle text-slate-600';
+            }
+
+            toast.className = `flex items-center gap-3 px-4 py-2.5 rounded-xl border shadow-lg ${bgClass} transition-all duration-300 transform translate-y-4 opacity-0 pointer-events-auto max-w-sm w-72 sm:w-auto`;
+            toast.style.padding = '10px 16px';
+            toast.innerHTML = `
+                <i class="ti ${iconClass} text-base flex-shrink-0"></i>
+                <span class="text-xs font-semibold leading-normal">${message}</span>
             `;
 
-            // 切換視圖
-            viewList.classList.remove('active');
-            viewDetail.classList.add('active');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-4', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-[-10px]', 'opacity-0');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 2500);
+        };
+
+        window.showConfirm = function(title, desc, onConfirm) {
+            const modal = document.getElementById('confirm-modal');
+            const elTitle = document.getElementById('confirm-title');
+            const elDesc = document.getElementById('confirm-desc');
+            const btnCancel = document.getElementById('confirm-btn-cancel');
+            const btnOk = document.getElementById('confirm-btn-ok');
+
+            elTitle.textContent = title;
+            elDesc.textContent = desc;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            const close = () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            };
+
+            btnCancel.onclick = close;
+            btnOk.onclick = () => {
+                onConfirm();
+                close();
+            };
         };
 
     </script>
