@@ -149,7 +149,7 @@
                 </div>
             </div>
 
-            <!-- 右側主要卡片呈現區 (1 頁 9 家：雙欄排列，極具呼吸感) -->
+            <!-- 右側主要卡片呈現區 (雙欄排列) -->
             <div class="flex-1 flex flex-col justify-between min-h-[500px]">
                 <div class="w-full">
                     <!-- 加載中 -->
@@ -198,15 +198,6 @@
             <!-- 詳情整合生成區 -->
             <div id="detail-content" class="space-y-6"></div>
         </main>
-
-        <!-- 內部聲明橫幅：移動並錨定在系統頁面的最底部 -->
-        <div id="warning-banner" class="bg-amber-50 border-t border-amber-100 text-amber-900 px-4 py-3.5 text-xs sm:text-sm flex items-center justify-center gap-2 relative z-30 transition-all duration-300 mt-auto">
-            <i class="ti ti-shield-lock text-amber-600 text-lg flex-shrink-0 animate-pulse"></i>
-            <span class="font-medium text-center leading-relaxed">
-                <strong class="font-bold text-amber-700">內部安全聲明：</strong>
-                本系統所列之合作機構資料僅限校內授權人員與實習生瀏覽。嚴禁截圖、轉載或散布。
-            </span>
-        </div>
     </div>
 
     <!-- 全域 Modal 控制 -->
@@ -278,7 +269,7 @@
         let treeData = [];
         let filteredData = [];
         let currentPage = 1;
-        const itemsPerPage = 9; // 每頁顯示 9 家機構
+        const itemsPerPage = 8; // 修改為每頁固定顯示 8 家機構
 
         // 當前詳情分支機構的縣市篩選狀態與分頁狀態
         let activeBranchCityFilter = '全部';
@@ -488,43 +479,53 @@
             const startIndex = (currentPage - 1) * itemsPerPage;
             const pageItems = filteredData.slice(startIndex, startIndex + itemsPerPage);
 
-            elList.innerHTML = pageItems.map(inst => {
-                const isOverseas = inst.country && inst.country !== '中華民國';
-                
-                // 境外機構首頁不顯示原名，只顯示譯名
-                let displayName = inst.name;
-                if (isOverseas && inst.nameTranslated) {
-                    displayName = inst.nameTranslated;
+            let listHtml = '';
+            for (let i = 0; i < itemsPerPage; i++) {
+                const inst = pageItems[i];
+                if (inst) {
+                    const isOverseas = inst.country && inst.country !== '中華民國';
+                    
+                    // 境外機構首頁不顯示原名，只顯示譯名
+                    let displayName = inst.name;
+                    if (isOverseas && inst.nameTranslated) {
+                        displayName = inst.nameTranslated;
+                    }
+
+                    listHtml += `
+                        <div class="glow-hover bg-white border border-slate-200/80 rounded-xl p-6 shadow-sm flex flex-col justify-between cursor-pointer min-h-[160px]" onclick="openDetail('${inst.id}')">
+                            <div>
+                                <!-- LOGO大小固定為正方形，對齊名稱，名稱太長可自動換行 -->
+                                <div class="flex items-start gap-4 mb-3">
+                                    <div class="w-14 h-14 bg-[#E5ECF4] text-[#4A607A] flex items-center justify-center text-xl flex-shrink-0 rounded-xl">
+                                        <i class="ti ti-building"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0 py-0.5">
+                                        <h4 class="font-bold text-slate-800 text-sm sm:text-base leading-snug break-words whitespace-normal hover:text-[#4A607A] transition-colors">${displayName}</h4>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 標籤改移到箭頭的最左側，去除據點數及底層分隔線 -->
+                            <div class="flex items-center justify-between gap-2 mt-auto pt-3 border-t border-slate-100/60">
+                                <div class="flex flex-wrap gap-1.5 max-w-[85%]">
+                                    ${inst.industry ? `<span class="bg-[#E5ECF4] text-[#4A607A] text-[10px] font-semibold px-2.5 py-0.5 rounded">${inst.industry}</span>` : ''}
+                                    ${inst.venueType ? `<span class="bg-[#EBF3F5] text-[#2E5B44] text-[10px] font-semibold px-2.5 py-0.5 rounded">${inst.venueType}</span>` : ''}
+                                </div>
+                                <div class="text-slate-300 flex-shrink-0 ml-auto">
+                                    <i class="ti ti-chevron-right text-lg"></i>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // 補齊透明的卡片骨架，維持首頁頁面高度絕對固定，不因資料不足而縮水
+                    listHtml += `
+                        <div class="opacity-0 pointer-events-none min-h-[160px] border border-transparent"></div>
+                    `;
                 }
-
-                return `
-                    <div class="glow-hover bg-white border border-slate-200/80 rounded-xl p-6 shadow-sm flex flex-col justify-between cursor-pointer min-h-[160px]" onclick="openDetail('${inst.id}')">
-                        <div>
-                            <!-- LOGO大小固定為正方形，對齊名稱，名稱太長可自動換行 -->
-                            <div class="flex items-start gap-4 mb-3">
-                                <div class="w-14 h-14 bg-[#E5ECF4] text-[#4A607A] flex items-center justify-center text-xl flex-shrink-0 rounded-xl">
-                                    <i class="ti ti-building"></i>
-                                </div>
-                                <div class="flex-1 min-w-0 py-0.5">
-                                    <h4 class="font-bold text-slate-800 text-sm sm:text-base leading-snug break-words whitespace-normal hover:text-[#4A607A] transition-colors">${displayName}</h4>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 標籤改移到箭頭的最左側，去除據點數及底層分隔線 -->
-                        <div class="flex items-center justify-between gap-2 mt-auto pt-3 border-t border-slate-100/60">
-                            <div class="flex flex-wrap gap-1.5 max-w-[85%]">
-                                ${inst.industry ? `<span class="bg-[#E5ECF4] text-[#4A607A] text-[10px] font-semibold px-2.5 py-0.5 rounded">${inst.industry}</span>` : ''}
-                                ${inst.venueType ? `<span class="bg-[#EBF3F5] text-[#2E5B44] text-[10px] font-semibold px-2.5 py-0.5 rounded">${inst.venueType}</span>` : ''}
-                            </div>
-                            <div class="text-slate-300 flex-shrink-0 ml-auto">
-                                <i class="ti ti-chevron-right text-lg"></i>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
+            }
+            
+            elList.innerHTML = listHtml;
             renderPaginationControls(totalPages);
         }
 
