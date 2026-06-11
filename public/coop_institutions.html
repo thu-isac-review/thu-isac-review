@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>合作實習機構 - 東海大學實習專區</title>
     
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -12,22 +13,19 @@
                 extend: {
                     colors: {
                         thu: {
-                            deep: '#233142',      
-                            blue: '#455A64',      
-                            accent: '#78909C',    
-                            light: '#ECEFF1',     
-                            bg: '#F8FAFC'         
+                            deep: '#2C5E7A',      // 亮莫蘭迪海空藍
+                            blue: '#3A78A4',      // 亮莫蘭迪石墨藍
+                            accent: '#6EA4CA',    // 莫蘭迪粉藍
+                            light: '#F0F6FA',     // 莫蘭迪冰川灰藍
+                            bg: '#F4F7FA'         // 明亮柔和背景
                         }
-                    },
-                    boxShadow: {
-                        'premium': '0 8px 30px rgb(0, 0, 0, 0.02)',
-                        'premium-hover': '0 16px 36px rgb(0, 0, 0, 0.06)'
                     }
                 }
             }
         }
     </script>
     
+    <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
@@ -35,195 +33,183 @@
     <style>
         body {
             font-family: 'Noto Sans TC', sans-serif;
-            background-color: #F8FAFC;
+            background-color: #F4F7FA;
             -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
         }
+        /* 莫蘭迪滾動條 */
         ::-webkit-scrollbar {
-            width: 5px;
-            height: 5px;
+            width: 6px;
+            height: 6px;
         }
         ::-webkit-scrollbar-track {
-            background: #F1F5F9;
+            background: #F0F6FA;
         }
         ::-webkit-scrollbar-thumb {
-            background: #CBD5E1;
-            border-radius: 20px;
+            background: #6EA4CA;
+            border-radius: 3px;
         }
-        @media (max-width: 1023px) {
-            .filter-drawer {
-                transform: translateY(100%);
-                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-            .filter-drawer.open {
-                transform: translateY(0);
-            }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3A78A4;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        .glow-hover {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glow-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -8px rgba(58, 120, 164, 0.15);
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col text-slate-700 bg-thu-bg w-full">
+<body class="min-h-screen flex flex-col text-slate-700">
 
-    <div id="view-loading" class="flex-1 flex flex-col items-center justify-center p-6 min-h-[calc(100vh-60px)] bg-thu-bg">
-        <div class="animate-spin rounded-full h-11 w-11 border-4 border-slate-100 border-t-thu-blue"></div>
-        <p class="text-xs text-slate-400 mt-5 tracking-widest font-medium">正在安全驗證身分，請稍候...</p>
+    <!-- 驗證等待中遮罩 -->
+    <div id="view-loading" class="flex-1 flex flex-col items-center justify-center p-4 min-h-[calc(100vh-60px)] bg-[#F4F7FA]">
+        <div class="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 border-t-[#3A78A4]"></div>
+        <p class="text-xs text-slate-400 mt-4 tracking-wider">正在安全驗證帳戶身分，請稍候...</p>
     </div>
 
-    <div id="view-dashboard" class="hidden flex-1 flex flex-col min-h-screen w-full">
+    <!-- 主版面系統介面 -->
+    <div id="view-dashboard" class="hidden flex-1 flex flex-col min-h-screen">
         
-        <div id="mobile-sticky-header" class="sticky top-0 z-40 bg-thu-bg/90 backdrop-blur-md border-b border-slate-100/80 px-4 py-3 flex flex-col gap-3 lg:hidden shadow-sm">
-            <div class="flex items-center justify-between w-full">
-                <div id="mobile-header-list-title" class="flex items-center gap-2.5">
-                    <div class="w-9 h-9 bg-gradient-to-tr from-thu-deep to-thu-blue text-white rounded-xl flex items-center justify-center text-base flex-shrink-0 shadow-sm">
-                        <i class="ti ti-briefcase"></i>
-                    </div>
-                    <div>
-                        <h1 class="font-bold text-slate-800 text-xs tracking-wider">東海大學實習專區</h1>
-                        <p class="text-[8px] text-slate-400 font-bold uppercase tracking-widest">Internship Portal</p>
-                    </div>
-                </div>
-
-                <button id="btn-back-mobile" class="hidden inline-flex items-center gap-1.5 text-thu-blue font-bold text-xs bg-white border border-slate-200 px-3 py-2 rounded-xl active:scale-[0.95] transition-all">
-                    <i class="ti ti-chevron-left text-sm"></i> 返回列表
-                </button>
-
-                <button id="btn-logout-mobile" class="text-slate-400 hover:text-slate-600 p-2 flex items-center justify-center"><i class="ti ti-logout text-base"></i></button>
-            </div>
+        <!-- 【首頁滿版】：左側搜尋篩選、右側卡片列表與分頁控制 (緊湊無上下滑動比例調整) -->
+        <main id="view-list" class="max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 flex-1 flex flex-col lg:flex-row gap-6">
             
-            <div id="mobile-search-bar-row" class="flex gap-2 w-full">
-                <div class="relative flex-1 group">
-                    <i class="ti ti-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                    <input type="text" id="search-input-mobile" placeholder="搜尋機構名稱..." class="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-thu-blue/10 focus:border-thu-blue text-xs font-medium placeholder-slate-400 shadow-sm">
-                </div>
-                <button id="btn-toggle-filter" class="bg-thu-blue hover:bg-thu-deep text-white px-3.5 rounded-xl flex items-center gap-1 text-xs font-bold shadow-sm active:scale-[0.95] transition-all">
-                    <i class="ti ti-adjustments-horizontal text-sm"></i> 篩選
-                </button>
-            </div>
-        </div>
-        
-        <main id="view-list" class="max-w-6xl w-full mx-auto px-4 sm:px-6 py-4 lg:py-10 flex-1 flex flex-col lg:flex-row gap-6 sm:gap-8 items-start">
-            
-            <div class="w-full lg:w-80 flex-shrink-0 flex flex-col gap-6 lg:sticky lg:top-8 lg:max-h-[calc(100vh-4rem)] lg:overflow-y-auto">
+            <!-- 左側搜尋與篩選側邊欄 (Sidebar Control Panel) -->
+            <div class="w-full lg:w-72 flex-shrink-0 flex flex-col gap-4">
                 
-                <div class="hidden lg:block bg-white border border-slate-100 rounded-2xl p-6 shadow-premium">
-                    <div class="flex items-center gap-3.5 mb-5">
-                        <div class="w-11 h-11 bg-gradient-to-tr from-thu-deep to-thu-blue text-white rounded-xl flex items-center justify-center text-xl flex-shrink-0 shadow-sm">
+                <!-- 1. 系統識別與帳號狀態 -->
+                <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                    <div class="flex items-center gap-2.5 mb-3">
+                        <div class="w-9 h-9 bg-gradient-to-tr from-thu-deep to-[#5D6D7E] text-white rounded-xl flex items-center justify-center text-lg flex-shrink-0 shadow-sm">
                             <i class="ti ti-briefcase"></i>
                         </div>
                         <div>
-                            <h1 class="font-bold text-slate-800 text-sm tracking-wider">東海大學實習專區</h1>
-                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Internship Portal</p>
+                            <h1 class="font-bold text-slate-800 text-xs sm:text-sm tracking-wider">東海大學實習專區</h1>
+                            <p class="text-[9px] text-slate-400 font-medium">Internship Portal</p>
                         </div>
                     </div>
                     
-                    <div class="border-t border-slate-100 pt-4 flex flex-col gap-3">
-                        <div class="flex items-center gap-2 px-1">
-                            <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                            <span id="user-greeting" class="text-xs font-semibold text-slate-600">同學，您好！</span>
-                        </div>
-                        <button id="btn-logout" class="w-full bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/50 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 active:scale-[0.97]">
-                            <i class="ti ti-logout text-sm text-slate-400"></i> 登出系統
+                    <div class="border-t border-slate-100 pt-2.5 flex flex-col gap-2">
+                        <span id="user-greeting" class="text-[11px] font-semibold text-slate-500">同學，您好！</span>
+                        <button id="btn-logout" class="w-full bg-[#F0F6FA] hover:bg-[#E5ECF4] text-[#3A78A4] border border-slate-200/80 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1">
+                            <i class="ti ti-logout text-xs"></i> 登出系統
                         </button>
                     </div>
                 </div>
 
-                <div id="filter-wrapper" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden lg:z-0 lg:backdrop-blur-none lg:bg-transparent lg:static lg:block">
-                    <div id="filter-drawer" class="filter-drawer fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 space-y-4 shadow-2xl lg:shadow-premium lg:static lg:rounded-2xl lg:border lg:border-slate-100 max-h-[85vh] overflow-y-auto lg:overflow-visible lg:p-6">
-                        
-                        <div class="flex items-center justify-between border-b border-slate-50 pb-3 lg:mb-2">
-                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                                <i class="ti ti-adjustments-horizontal text-sm"></i> 條件篩選面板
-                            </h3>
-                            <button id="btn-close-filter" class="lg:hidden text-slate-400 hover:text-slate-600 p-1"><i class="ti ti-x text-base"></i></button>
-                        </div>
-                        
-                        <div class="hidden lg:relative lg:block group">
-                            <i class="ti ti-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-thu-blue text-base transition-colors"></i>
-                            <input type="text" id="search-input" placeholder="搜尋機構名稱..." class="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200/70 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-thu-blue/10 focus:border-thu-blue transition-all text-xs font-medium placeholder-slate-400">
-                        </div>
+                <!-- 2. 條件篩選面板 (搜尋框在標題上面) -->
+                <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-4">
+                    <!-- 搜尋框移至最上方 -->
+                    <div class="relative w-full">
+                        <i class="ti ti-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                        <input type="text" id="search-input" placeholder="關鍵字搜尋..." class="w-full pl-8 pr-3 py-2 bg-[#F4F7FA] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#3A78A4] focus:border-transparent transition-all text-xs font-medium">
+                    </div>
 
-                        <div class="flex flex-col gap-3.5">
+                    <div class="border-t border-slate-100 pt-3">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">條件篩選</h3>
+                        
+                        <!-- 垂直排列的篩選器 -->
+                        <div class="flex flex-col gap-2.5">
+                            <!-- 1. 國別 -->
                             <div class="relative">
-                                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><i class="ti ti-world text-sm"></i></span>
-                                <select id="filter-country" class="w-full pl-9 pr-10 py-3 lg:py-2.5 bg-slate-50 border border-slate-200/70 rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-thu-blue/5 text-xs font-semibold appearance-none cursor-pointer text-slate-600">
+                                <select id="filter-country" class="w-full pl-3 pr-8 py-2 bg-[#F4F7FA] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#3A78A4] focus:border-transparent transition-all text-xs font-semibold appearance-none cursor-pointer text-slate-600">
                                     <option value="">全部國別</option>
                                 </select>
-                                <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                                <i class="ti ti-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
                             </div>
 
+                            <!-- 2. 縣市別 -->
                             <div class="relative">
-                                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><i class="ti ti-map-pin text-sm"></i></span>
-                                <select id="filter-city" class="w-full pl-9 pr-10 py-3 lg:py-2.5 bg-slate-50 border border-slate-200/70 rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-thu-blue/5 text-xs font-semibold appearance-none cursor-pointer text-slate-600">
+                                <select id="filter-city" class="w-full pl-3 pr-8 py-2 bg-[#F4F7FA] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#3A78A4] focus:border-transparent transition-all text-xs font-semibold appearance-none cursor-pointer text-slate-600">
                                     <option value="">全部縣市</option>
                                 </select>
-                                <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                                <i class="ti ti-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
                             </div>
 
+                            <!-- 3. 實習場所 -->
                             <div class="relative">
-                                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><i class="ti ti-building-community text-sm"></i></span>
-                                <select id="filter-venue-type" class="w-full pl-9 pr-10 py-3 lg:py-2.5 bg-slate-50 border border-slate-200/70 rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-thu-blue/5 text-xs font-semibold appearance-none cursor-pointer text-slate-600">
+                                <select id="filter-venue-type" class="w-full pl-3 pr-8 py-2 bg-[#F4F7FA] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#3A78A4] focus:border-transparent transition-all text-xs font-semibold appearance-none cursor-pointer text-slate-600">
                                     <option value="">全部實習場所</option>
                                 </select>
-                                <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                                <i class="ti ti-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
                             </div>
 
+                            <!-- 4. 行業別 -->
                             <div class="relative">
-                                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><i class="ti ti-category text-sm"></i></span>
-                                <select id="filter-industry" class="w-full pl-9 pr-10 py-3 lg:py-2.5 bg-slate-50 border border-slate-200/70 rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-thu-blue/5 text-xs font-semibold appearance-none cursor-pointer text-slate-600">
+                                <select id="filter-industry" class="w-full pl-3 pr-8 py-2 bg-[#F4F7FA] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#3A78A4] focus:border-transparent transition-all text-xs font-semibold appearance-none cursor-pointer text-slate-600">
                                     <option value="">全部行業別</option>
                                 </select>
-                                <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                                <i class="ti ti-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
                             </div>
                         </div>
-
-                        <button id="btn-apply-filter" class="w-full lg:hidden bg-thu-blue text-white py-3 rounded-xl font-bold text-xs tracking-wider active:scale-[0.98] transition-all">確認篩選</button>
                     </div>
                 </div>
             </div>
 
-            <div class="flex-1 flex flex-col justify-between min-h-[400px] w-full">
+            <!-- 右側主要卡片呈現區 (調整為緊湊比例，避免上下滾動) -->
+            <div class="flex-1 flex flex-col justify-between min-h-[480px]">
                 <div class="w-full">
-                    <div id="loading-state" class="py-20 flex flex-col items-center justify-center text-center">
-                        <div class="animate-spin rounded-full h-8 w-8 border-2 border-slate-200 border-t-thu-blue"></div>
-                        <h3 class="mt-4 text-xs font-bold text-slate-400 tracking-wider">資料載入中...</h3>
+                    <!-- 加載中 -->
+                    <div id="loading-state" class="py-16 flex flex-col items-center justify-center text-center">
+                        <div class="animate-spin rounded-full h-8 w-8 border-2 border-slate-200 border-t-[#3A78A4]"></div>
+                        <h3 class="mt-3 text-xs font-bold text-slate-500">資料加載中，請稍候...</h3>
                     </div>
 
-                    <div id="empty-state" class="hidden py-16 flex flex-col items-center justify-center text-center p-6 bg-white border border-slate-100 rounded-2xl shadow-premium">
-                        <div class="w-12 h-12 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center mb-3 border border-slate-100">
-                            <i class="ti ti-search-off text-xl"></i>
+                    <!-- 空狀態 -->
+                    <div id="empty-state" class="hidden py-12 flex flex-col items-center justify-center text-center p-6">
+                        <div class="w-14 h-14 bg-slate-200/50 text-slate-400 rounded-full flex items-center justify-center mb-3">
+                            <i class="ti ti-search-off text-2xl"></i>
                         </div>
-                        <h3 class="text-xs font-bold text-slate-700">未尋找到符合條件的合作機構</h3>
+                        <h3 class="text-sm font-bold text-slate-700">未尋找到符合條件的合作機構</h3>
+                        <p class="text-slate-400 text-[11px] mt-1">請嘗試調整您的篩選組合或縮減關鍵字。</p>
                     </div>
 
-                    <div id="inst-list" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-4 w-full"></div>
+                    <!-- 機構卡片列表 (電腦版精確控高，避免溢出滑動) -->
+                    <div id="inst-list" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
                 </div>
 
-                <div id="pagination-panel" class="hidden flex items-center justify-center gap-1.5 mt-10 mb-6 w-full"></div>
+                <!-- 莫蘭迪分頁器控制面板 -->
+                <div id="pagination-panel" class="hidden flex items-center justify-center gap-1.5 mt-8"></div>
             </div>
         </main>
 
-        <main id="view-detail" class="hidden max-w-3xl w-full mx-auto px-4 sm:px-6 py-4 lg:py-10 flex-1">
-            <div class="hidden lg:flex items-center justify-between gap-4 mb-5">
-                <button id="btn-back" class="inline-flex items-center gap-1.5 text-thu-blue hover:text-thu-deep font-bold text-xs bg-white border border-slate-200/80 px-4 py-2.5 rounded-xl transition-all shadow-sm active:scale-[0.95]">
-                    <i class="ti ti-chevron-left text-sm"></i> 返回列表
+        <!-- 個別機構詳情頁面 (移除了所有登出相關元素，保持極簡) -->
+        <main id="view-detail" class="hidden max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 flex-1">
+            <div class="flex items-center justify-between gap-4 mb-5">
+                <!-- 莫蘭迪圓角返回按鈕 -->
+                <button id="btn-back" class="inline-flex items-center gap-1.5 text-[#3A78A4] hover:text-[#2C5E7A] font-bold text-xs sm:text-sm bg-white hover:bg-[#E5ECF4] border border-slate-200 hover:border-[#6EA4CA]/50 px-4 py-2 rounded-xl transition-all duration-300 shadow-sm hover:shadow active:scale-95">
+                    <i class="ti ti-chevron-left text-sm"></i> 返回機構列表
                 </button>
-                <button id="btn-logout-detail" class="bg-white text-slate-500 border border-slate-200/80 px-3.5 py-2.5 rounded-xl text-xs font-bold shadow-sm">登出</button>
             </div>
+
+            <!-- 詳情整合生成區 -->
             <div id="detail-content" class="space-y-5"></div>
         </main>
     </div>
 
-    <div id="confirm-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[90] hidden items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-6 transition-all transform animate-in fade-in zoom-in-95 duration-200">
+    <!-- 全域 Modal 控制 -->
+    <div id="confirm-modal" class="fixed inset-0 bg-[#2E4053]/20 backdrop-blur-sm z-[90] hidden items-center justify-center p-4">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-2xl max-w-sm w-full p-6 animate-in fade-in zoom-in-95 duration-200">
             <h4 class="text-sm font-bold text-slate-800 text-center" id="confirm-title">確認動作</h4>
             <p class="text-xs text-slate-400 text-center mt-2 leading-relaxed" id="confirm-desc">確定要執行此操作嗎？</p>
-            <div class="grid grid-cols-2 gap-3 mt-6">
-                <button id="confirm-btn-cancel" class="py-3 bg-slate-50 text-slate-600 font-bold rounded-xl text-xs border border-slate-200/40">取消</button>
-                <button id="confirm-btn-ok" class="py-3 bg-thu-blue text-white font-bold rounded-xl text-xs shadow-sm">確定</button>
+            <div class="grid grid-cols-2 gap-3 mt-5">
+                <button id="confirm-btn-cancel" class="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl text-xs transition-all">
+                    取消
+                </button>
+                <button id="confirm-btn-ok" class="py-2.5 bg-[#3A78A4] hover:bg-[#2C5E7A] text-white font-bold rounded-xl text-xs transition-all shadow-sm">
+                    確定
+                </button>
             </div>
         </div>
     </div>
 
-    <div id="toast-container" class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 pointer-events-none w-[90%] sm:w-auto"></div>
+    <!-- Toast 輕提示容器 -->
+    <div id="toast-container" class="fixed top-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 pointer-events-none"></div>
 
 
     <script type="module">
@@ -231,6 +217,7 @@
         import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
+        // Firebase 預配置
         const firebaseConfig = {
             apiKey: "AIzaSyDcsGfvVKnGmCzWfK5F03saydFpNc1ReYY",
             authDomain: "thu-isac-review.firebaseapp.com",
@@ -249,19 +236,37 @@
             console.error("Firebase 初始化失敗:", e);
         }
 
-        const countriesList = ["中華民國", "大陸地區", "日本", "美國", "越南", "泰國", "澳大利亞", "香港", "澳門", "馬來西亞", "菲律賓", "印尼", "印度", "孟加拉", "緬甸", "柬埔寨", "黎巴嫩", "蒙古", "巴西", "巴拉圭", "秘魯"];
-        const citiesList = ["臺北市", "新北市", "基隆市", "桃園市", "新竹縣", "新竹市", "苗栗縣", "臺中市", "彰化縣", "南投縣", "雲林縣", "嘉義縣", "嘉義市", "臺南市", "高雄市", "屏東縣", "宜蘭縣", "花蓮縣", "臺東縣", "澎湖縣", "金門縣", "連江縣"];
-        const industriesList = ["農、林、漁、牧業", "礦業及土石採取業", "製造業", "電力及燃氣供應業", "用水供應及污染整治業", "營建工程業", "批發及零售業", "運輸及儲儲業", "住宿及餐飲業", "出版及影音等內容傳播業", "電信及資訊服務業", "金融及保險業", "不動產業", "專業、科學及技術服務業", "支援服務業", "公共行政及國防；強制性社會安全", "教育業", "醫療保健及社會工作服務業", "藝術、運動及休閒服務業", "其他服務業"];
+        // ================== 定義各欄位下拉數值 ==================
+        const countriesList = [
+            "中華民國", "大陸地區", "日本", "美國", "越南", "泰國", "澳大利亞", "香港", "澳門", "馬來西亞", 
+            "菲律賓", "印尼", "印度", "孟加拉", "緬甸", "柬埔寨", "黎巴嫩", "蒙古", "巴西", "巴拉圭", "秘魯"
+        ];
+
+        const citiesList = [
+            "臺北市", "新北市", "基隆市", "桃園市", "新竹縣", "新竹市", "苗栗縣", "臺中市", "彰化縣", 
+            "南投縣", "雲林縣", "嘉義縣", "嘉義市", "臺南市", "高雄市", "屏東縣", "宜蘭縣", "花蓮縣", 
+            "臺東縣", "澎湖縣", "金門縣", "連江縣"
+        ];
+
+        const industriesList = [
+            "農、林、漁、牧業", "礦業及土石採取業", "製造業", "電力及燃氣供應業", "用水供應及污染整治業", 
+            "營建工程業", "批發及零售業", "運輸及儲儲業", "住宿及餐飲業", "出版及影音等內容傳播業", 
+            "電信及資訊服務業", "金融及保險業", "不動產業", "專業、科學及技術服務業", "支援服務業", 
+            "公共行政及國防；強制性社會安全", "教育業", "醫療保健及社會工作服務業", "藝術、運動及休閒服務業", "其他服務業"
+        ];
+
         const venueTypesList = ["企業機構", "政府機構", "其他機構"];
 
+        // 全域狀態變數
         let treeData = [];
         let filteredData = [];
         let currentPage = 1;
-        const itemsPerPage = 8; 
+        const itemsPerPage = 8; // 每頁固定顯示 8 家機構，維持高度絕對穩定
 
+        // 當前詳情分支機構的縣市篩選狀態與分頁狀態
         let activeBranchCityFilter = '全部';
         let currentBranchPage = 1;
-        const branchItemsPerPage = 5; 
+        const branchItemsPerPage = 5; // 分支機構每頁固定顯示 5 個
 
         const viewLoading = document.getElementById('view-loading');
         const viewDashboard = document.getElementById('view-dashboard');
@@ -274,45 +279,27 @@
         const elDetailContent = document.getElementById('detail-content');
         
         const inputSearch = document.getElementById('search-input');
-        const inputSearchMobile = document.getElementById('search-input-mobile');
         const selectCountry = document.getElementById('filter-country');
         const selectCity = document.getElementById('filter-city');
         const selectVenue = document.getElementById('filter-venue-type');
         const selectIndustry = document.getElementById('filter-industry');
 
-        // 手機版固定列導覽元素
-        const mobileHeaderListTitle = document.getElementById('mobile-header-list-title');
-        const mobileSearchBarRow = document.getElementById('mobile-search-bar-row');
-        const btnBackMobile = document.getElementById('btn-back-mobile');
-
-        const filterWrapper = document.getElementById('filter-wrapper');
-        const filterDrawer = document.getElementById('filter-drawer');
-        const btnToggleFilter = document.getElementById('btn-toggle-filter');
-        const btnCloseFilter = document.getElementById('btn-close-filter');
-        const btnApplyFilter = document.getElementById('btn-apply-filter');
-
-        function openFilterDrawer() {
-            filterWrapper.classList.remove('hidden');
-            setTimeout(() => filterDrawer.classList.add('open'), 10);
-        }
-        function closeFilterDrawer() {
-            filterDrawer.classList.remove('open');
-            setTimeout(() => filterWrapper.classList.add('hidden'), 300);
-        }
-        btnToggleFilter.addEventListener('click', openFilterDrawer);
-        btnCloseFilter.addEventListener('click', closeFilterDrawer);
-        btnApplyFilter.addEventListener('click', closeFilterDrawer);
-        filterWrapper.addEventListener('click', (e) => {
-            if (e.target === filterWrapper) closeFilterDrawer();
-        });
-
+        // ================== Auth 驗證與跳轉 ==================
         onAuthStateChanged(auth, (user) => {
             if (user) {
+                // 已登入，顯示系統
                 viewLoading.classList.add('hidden');
                 viewDashboard.classList.remove('hidden');
+                const displayName = user.email ? user.email.split('@')[0] : '授權人員';
+                
+                // 更新首頁問候語
+                document.getElementById('user-greeting').textContent = `${displayName}，您好！`;
+                
+                // 啟動加載
                 setupDropdowns();
                 loadData();
             } else {
+                // 未登入，重導向至登入頁面
                 window.location.replace('login.html');
             }
         });
@@ -322,36 +309,29 @@
             selectCity.innerHTML = '<option value="">全部縣市</option>';
             selectVenue.innerHTML = '<option value="">全部實習場所</option>';
             selectIndustry.innerHTML = '<option value="">全部行業別</option>';
+
             countriesList.forEach(c => selectCountry.add(new Option(c, c)));
             citiesList.forEach(c => selectCity.add(new Option(c, c)));
             venueTypesList.forEach(v => selectVenue.add(new Option(v, v)));
             industriesList.forEach(i => selectIndustry.add(new Option(i, i)));
         }
 
+        // 登出流程
         const handleLogout = () => {
             showConfirm("登出確認", "您確定要登出系統嗎？", async () => {
                 await signOut(auth);
             });
         };
         document.getElementById('btn-logout').addEventListener('click', handleLogout);
-        document.getElementById('btn-logout-mobile').addEventListener('click', handleLogout);
-        document.getElementById('btn-logout-detail').addEventListener('click', handleLogout);
 
-        // 返回按鈕點擊機制 (整合桌機與手機返回點)
-        const handleBackToList = () => {
+        // 返回
+        document.getElementById('btn-back').addEventListener('click', () => {
             viewDetail.classList.add('hidden');
             viewList.classList.remove('hidden');
-            
-            // 恢復手機置頂列狀態
-            mobileHeaderListTitle.classList.remove('hidden');
-            mobileSearchBarRow.classList.remove('hidden');
-            btnBackMobile.classList.add('hidden');
-
             window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
-        document.getElementById('btn-back').addEventListener('click', handleBackToList);
-        btnBackMobile.addEventListener('click', handleBackToList);
+        });
 
+        // 欄位標準化對照
         function normalizeItem(d) {
             return {
                 id: d.id,
@@ -366,28 +346,40 @@
             };
         }
 
+        // ================== 資料讀取流程 ==================
         async function loadData() {
             elLoading.classList.remove('hidden');
             elList.classList.add('hidden');
             elEmpty.classList.add('hidden');
+            document.getElementById('pagination-panel').classList.add('hidden');
+
             try {
                 if (!db) throw new Error("Firestore 未加載成功");
                 const snapshot = await getDocs(collection(db, 'internship_institutions'));
                 const allData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
                 buildTreeStructure(allData);
+                
                 elLoading.classList.add('hidden');
 
-                inputSearch.addEventListener('input', (e) => { inputSearchMobile.value = e.target.value; currentPage = 1; renderList(); });
-                inputSearchMobile.addEventListener('input', (e) => { inputSearch.value = e.target.value; currentPage = 1; renderList(); });
-                
+                // 註冊篩選聯動
+                inputSearch.addEventListener('input', () => { currentPage = 1; renderList(); });
                 selectCountry.addEventListener('change', handleCountryChange);
                 selectCity.addEventListener('change', () => { currentPage = 1; renderList(); });
                 selectVenue.addEventListener('change', () => { currentPage = 1; renderList(); });
                 selectIndustry.addEventListener('change', () => { currentPage = 1; renderList(); });
+
                 renderList();
+
             } catch (error) {
                 console.error("載入失敗:", error);
-                elLoading.innerHTML = `<p class="text-xs text-rose-400 py-6 font-medium">連線暫時中斷，請重新整理頁面。</p>`;
+                elLoading.innerHTML = `
+                    <div class="text-slate-600 py-8 flex flex-col items-center">
+                        <i class="ti ti-alert-triangle text-3xl mb-3 text-rose-500"></i>
+                        <h4 class="font-bold text-sm">連線暫時中斷</h4>
+                        <p class="text-slate-400 text-xs mt-1">無法成功連接 Firebase 資料庫，請檢查您的網路狀態或系統權限設定。</p>
+                    </div>
+                `;
             }
         }
 
@@ -395,30 +387,47 @@
             const normalized = rawItems.map(normalizeItem);
             const parents = normalized.filter(d => !d.parentSearchInput);
             const children = normalized.filter(d => d.parentSearchInput);
+
             treeData = parents.map(p => {
                 const branches = children.filter(c => c.parentSearchInput === p.id);
                 branches.sort((a, b) => (a.name).localeCompare(b.name, 'zh-TW'));
                 return { ...p, branches };
             });
+
             treeData.sort((a, b) => (a.name).localeCompare(b.name, 'zh-TW'));
         }
 
+        // ================== 篩選聯動交互 (國別切換，其餘重設並強制海外規則) ==================
         function handleCountryChange() {
             const countryVal = selectCountry.value;
             currentPage = 1;
-            selectCity.value = ''; selectVenue.value = ''; selectIndustry.value = '';
+            
+            // 每次切換國別，立刻重設其他三個篩選器
+            selectCity.value = '';
+            selectVenue.value = '';
+            selectIndustry.value = '';
+            
             if (countryVal && countryVal !== '中華民國') {
+                // 海外鎖定邏輯
                 selectCity.disabled = true;
-                selectCity.classList.add('bg-slate-100', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
-                selectVenue.value = '其他機構'; selectVenue.disabled = true;
-                selectVenue.classList.add('bg-slate-100', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
+                selectCity.classList.add('bg-slate-200/50', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
+                
+                selectVenue.value = '其他機構';
+                selectVenue.disabled = true;
+                selectVenue.classList.add('bg-slate-200/50', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
             } else {
-                selectCity.disabled = false; selectCity.classList.remove('bg-slate-100', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
-                selectVenue.disabled = false; selectVenue.classList.remove('bg-slate-100', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
+                // 恢復國內 / 全部狀態
+                selectCity.disabled = false;
+                selectCity.classList.remove('bg-slate-200/50', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
+                
+                selectVenue.disabled = false;
+                selectVenue.classList.remove('bg-slate-200/50', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
             }
+            
             renderList();
         }
 
+        // ================== 分頁與列表渲染邏輯 ==================
         function renderList() {
             const term = inputSearch.value.trim().toLowerCase();
             const filterCountry = selectCountry.value;
@@ -427,11 +436,16 @@
             const filterIndustry = selectIndustry.value;
 
             filteredData = treeData.filter(p => {
-                const matchTerm = !term || p.name.toLowerCase().includes(term) || p.nameTranslated.toLowerCase().includes(term) || p.branches.some(b => b.name.toLowerCase().includes(term));
+                const matchTerm = !term || 
+                                  p.name.toLowerCase().includes(term) || 
+                                  p.nameTranslated.toLowerCase().includes(term) || 
+                                  p.branches.some(b => b.name.toLowerCase().includes(term));
+                
                 const matchCountry = !filterCountry || p.country === filterCountry || p.branches.some(b => b.country === filterCountry);
                 const matchCity = selectCity.disabled || !filterCity || p.city === filterCity || p.branches.some(b => b.city === filterCity);
                 const matchVenue = !filterVenue || p.venueType === filterVenue;
                 const matchIndustry = !filterIndustry || p.industry === filterIndustry;
+
                 return matchTerm && matchCountry && matchCity && matchVenue && matchIndustry;
             });
 
@@ -441,14 +455,17 @@
                 elEmpty.classList.remove('hidden');
                 return;
             }
+
             elEmpty.classList.add('hidden');
             elList.classList.remove('hidden');
+
             renderPage();
         }
 
         function renderPage() {
             const totalPages = Math.ceil(filteredData.length / itemsPerPage);
             if (currentPage > totalPages) currentPage = totalPages || 1;
+
             const startIndex = (currentPage - 1) * itemsPerPage;
             const pageItems = filteredData.slice(startIndex, startIndex + itemsPerPage);
 
@@ -457,242 +474,459 @@
                 const inst = pageItems[i];
                 if (inst) {
                     const isOverseas = inst.country && inst.country !== '中華民國';
-                    let displayName = (isOverseas && inst.nameTranslated) ? inst.nameTranslated : inst.name;
+                    
+                    // 境外機構首頁不顯示原名，只顯示譯名
+                    let displayName = inst.name;
+                    if (isOverseas && inst.nameTranslated) {
+                        displayName = inst.nameTranslated;
+                    }
 
                     listHtml += `
-                        <div class="bg-white border border-slate-100 rounded-2xl p-4 shadow-premium flex flex-col justify-between cursor-pointer min-h-[155px] sm:min-h-[165px] transition-all duration-200 lg:hover:-translate-y-0.5 lg:hover:shadow-premium-hover active:scale-[0.98]" onclick="openDetail('${inst.id}')">
-                            <div class="flex items-start gap-3 w-full">
-                                <div class="w-11 h-11 bg-slate-50 border border-slate-100 text-slate-400 flex items-center justify-center text-base flex-shrink-0 rounded-xl">
-                                    <i class="ti ti-building"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <h4 class="font-bold text-slate-700 text-xs sm:text-sm md:text-base leading-snug break-words whitespace-normal">${displayName}</h4>
+                        <div class="glow-hover bg-white border border-slate-200/80 rounded-xl p-5 shadow-sm flex flex-col justify-between cursor-pointer min-h-[125px]" onclick="openDetail('${inst.id}')">
+                            <div>
+                                <!-- LOGO大小固定為正方形 (w-12 h-12)，對齊名稱，名稱太長自動換行 -->
+                                <div class="flex items-start gap-3.5 mb-3">
+                                    <div class="w-12 h-12 bg-[#E5ECF4] text-[#3A78A4] flex items-center justify-center text-lg flex-shrink-0 rounded-xl">
+                                        <i class="ti ti-building"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0 py-0.5">
+                                        <h4 class="font-bold text-slate-800 text-xs sm:text-sm leading-snug break-words whitespace-normal hover:text-[#3A78A4] transition-colors">${displayName}</h4>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="flex items-center justify-between gap-2 mt-4 pt-2.5 border-t border-slate-50/80 w-full">
-                                <div class="flex flex-wrap gap-1 max-w-[85%]">
-                                    ${inst.industry ? `<span class="bg-slate-50 text-slate-500 text-[9px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-md border border-slate-100">${inst.industry}</span>` : ''}
-                                    ${inst.venueType ? `<span class="bg-emerald-50 text-emerald-700 text-[9px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-md">${inst.venueType}</span>` : ''}
+
+                            <!-- 實習場所與行業別標籤互換順序 (場所在左，行業在右) -->
+                            <div class="flex items-center justify-between gap-2 mt-auto pt-2.5 border-t border-slate-100/60">
+                                <div class="flex flex-wrap gap-1.5 max-w-[85%]">
+                                    ${inst.venueType ? `<span class="bg-[#EAF7EE] text-[#1E6B3E] text-[10px] font-semibold px-2 py-0.5 rounded">${inst.venueType}</span>` : ''}
+                                    ${inst.industry ? `<span class="bg-[#E5ECF4] text-[#4A607A] text-[10px] font-semibold px-2 py-0.5 rounded">${inst.industry}</span>` : ''}
                                 </div>
-                                <i class="ti ti-chevron-right text-slate-300 text-sm font-bold flex-shrink-0 ml-auto"></i>
+                                <div class="text-slate-300 flex-shrink-0 ml-auto">
+                                    <i class="ti ti-chevron-right text-base"></i>
+                                </div>
                             </div>
                         </div>
                     `;
                 } else {
-                    listHtml += `<div class="hidden sm:block opacity-0 pointer-events-none min-h-[165px]"></div>`;
+                    // 補齊透明的卡片骨架，維持首頁頁面高度絕對固定，在電腦版下完美避免上下滾動
+                    listHtml += `
+                        <div class="opacity-0 pointer-events-none min-h-[125px] border border-transparent"></div>
+                    `;
                 }
             }
+            
             elList.innerHTML = listHtml;
             renderPaginationControls(totalPages);
         }
 
+        // ================== 分頁器：加入第一頁與最後一頁快速跳轉鍵 ==================
         function renderPaginationControls(totalPages) {
             const panel = document.getElementById('pagination-panel');
-            if (totalPages <= 1) { panel.classList.add('hidden'); return; }
+            if (totalPages <= 1) {
+                panel.classList.add('hidden');
+                return;
+            }
             panel.classList.remove('hidden');
 
-            let html = `
-                <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} class="w-10 h-10 rounded-xl border border-slate-200/60 bg-white text-slate-500 flex items-center justify-center disabled:opacity-30 active:bg-slate-50">
-                    <i class="ti ti-chevron-left text-base"></i>
+            let html = '';
+            
+            // 第一頁快速鍵
+            html += `
+                <button onclick="changePage(1)" ${currentPage === 1 ? 'disabled' : ''} class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[#3A78A4] hover:bg-[#E5ECF4] transition-all disabled:opacity-30 disabled:hover:bg-white disabled:cursor-not-allowed text-xs font-bold" title="第一頁">
+                    <i class="ti ti-chevrons-left text-sm"></i>
                 </button>
             `;
 
-            const maxPageButtons = 3; 
-            let startPage = Math.max(1, currentPage - 1);
-            let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
-            if (endPage - startPage < maxPageButtons - 1) startPage = Math.max(1, endPage - maxPageButtons + 1);
+            // 上一頁
+            html += `
+                <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[#3A78A4] hover:bg-[#E5ECF4] transition-all disabled:opacity-30 disabled:hover:bg-white disabled:cursor-not-allowed text-xs font-bold">
+                    <i class="ti ti-chevron-left text-sm"></i>
+                </button>
+            `;
 
-            for (let i = startPage; i <= endPage; i++) {
-                if (i === currentPage) {
-                    html += `<button class="w-10 h-10 rounded-xl bg-thu-blue text-white font-bold text-xs shadow-sm">${i}</button>`;
-                } else {
-                    html += `<button onclick="changePage(${i})" class="w-10 h-10 rounded-xl border border-slate-200 bg-white text-slate-600 font-bold text-xs active:bg-slate-50">${i}</button>`;
+            // 智慧截斷型頁碼生成邏輯
+            const maxPageButtons = 5;
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
+
+            if (endPage - startPage < maxPageButtons - 1) {
+                startPage = Math.max(1, endPage - maxPageButtons + 1);
+            }
+
+            // 首頁輔助提示
+            if (startPage > 1) {
+                html += `
+                    <button onclick="changePage(1)" class="px-3 py-1 bg-white border border-slate-200 rounded-xl text-xs font-bold text-[#3A78A4] hover:bg-[#E5ECF4] transition-all">1</button>
+                `;
+                if (startPage > 2) {
+                    html += `<span class="text-slate-400 text-xs px-1">...</span>`;
                 }
             }
 
+            // 區間頁碼
+            for (let i = startPage; i <= endPage; i++) {
+                if (i === currentPage) {
+                    html += `
+                        <button class="px-3 py-1.5 rounded-xl bg-[#3A78A4] text-white font-bold text-xs shadow-sm transition-all">
+                            ${i}
+                        </button>
+                    `;
+                } else {
+                    html += `
+                        <button onclick="changePage(${i})" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[#3A78A4] hover:bg-[#E5ECF4] font-bold text-xs transition-all">
+                            ${i}
+                        </button>
+                    `;
+                }
+            }
+
+            // 尾頁輔助提示
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    html += `<span class="text-slate-400 text-xs px-1">...</span>`;
+                }
+                html += `
+                    <button onclick="changePage(${totalPages})" class="px-3 py-1 bg-white border border-slate-200 rounded-xl text-xs font-bold text-[#3A78A4] hover:bg-[#E5ECF4] transition-all">${totalPages}</button>
+                `;
+            }
+
+            // 下一頁
             html += `
-                <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} class="w-10 h-10 rounded-xl border border-slate-200/60 bg-white text-slate-500 flex items-center justify-center disabled:opacity-30 active:bg-slate-50">
-                    <i class="ti ti-chevron-right text-base"></i>
+                <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[#3A78A4] hover:bg-[#E5ECF4] transition-all disabled:opacity-30 disabled:hover:bg-white disabled:cursor-not-allowed text-xs font-bold">
+                    <i class="ti ti-chevron-right text-sm"></i>
                 </button>
             `;
+
+            // 最後一頁快速鍵
+            html += `
+                <button onclick="changePage(${totalPages})" ${currentPage === totalPages ? 'disabled' : ''} class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[#3A78A4] hover:bg-[#E5ECF4] transition-all disabled:opacity-30 disabled:hover:bg-white disabled:cursor-not-allowed text-xs font-bold" title="最後一頁">
+                    <i class="ti ti-chevrons-right text-sm"></i>
+                </button>
+            `;
+
             panel.innerHTML = html;
         }
 
         window.changePage = function(page) {
-            currentPage = page; renderPage();
-            const offset = window.innerWidth < 1024 ? 140 : 0;
-            const element = document.getElementById('view-list');
-            const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
-            window.scrollTo({ top: elementPosition - offset, behavior: 'smooth' });
+            currentPage = page;
+            renderPage();
+            // 平滑滾動至下半部列表起始處
+            const listSection = document.getElementById('view-list');
+            if (listSection) {
+                listSection.scrollIntoView({ behavior: 'smooth' });
+            }
         };
 
+        // ================== 個別頁面：詳情與分支機構控制 ==================
         window.openDetail = function(instId) {
             const inst = treeData.find(d => d.id === instId);
             if (!inst) return;
-            viewList.classList.add('hidden'); 
-            viewDetail.classList.remove('hidden');
-            
-            // 變更手機頂部狀態：隱藏搜尋列與原標題，秀出返回列表按鈕
-            mobileHeaderListTitle.classList.add('hidden');
-            mobileSearchBarRow.classList.add('hidden');
-            btnBackMobile.classList.remove('hidden');
 
-            activeBranchCityFilter = '全部'; 
-            currentBranchPage = 1;
+            viewList.classList.add('hidden');
+            viewDetail.classList.remove('hidden');
+
+            activeBranchCityFilter = '全部';
+            currentBranchPage = 1; // 每次打開詳情，重設分支機構分頁
             renderDetailView(inst);
-            window.scrollTo({ top: 0, behavior: 'instant' });
         };
 
         function renderDetailView(inst) {
             const isOverseas = inst.country && inst.country !== '中華民國';
-            let displayNameText = (isOverseas && inst.nameTranslated) ? `${inst.nameTranslated} <span class="text-slate-400 font-normal text-xs block mt-1 sm:inline sm:text-sm sm:ml-2">（${inst.name}）</span>` : inst.name;
+
+            let displayNameText = inst.name;
+            // 海外機構：中文譯名（原始名稱）
+            if (isOverseas && inst.nameTranslated) {
+                displayNameText = `${inst.nameTranslated}（${inst.name}）`;
+            }
+
+            // 提取子機構的獨特縣市
             const uniqueCities = [...new Set(inst.branches.map(b => b.city).filter(Boolean))].sort();
 
+            // 縣市篩選 Pills 按鈕 (國內機構專屬)
             let cityFiltersHtml = '';
             if (!isOverseas && inst.branches.length > 0 && uniqueCities.length > 0) {
                 cityFiltersHtml = `
-                    <div class="flex flex-wrap gap-1 bg-slate-50 p-1 rounded-xl border border-slate-100 overflow-x-auto whitespace-nowrap">
-                        <button onclick="filterBranchCity('全部', '${inst.id}')" class="px-3.5 py-2 text-xs font-bold rounded-lg transition-all ${activeBranchCityFilter === '全部' ? 'bg-thu-blue text-white shadow-sm' : 'text-slate-500'}">全部</button>
-                        ${uniqueCities.map(city => `<button onclick="filterBranchCity('${city}', '${inst.id}')" class="px-3.5 py-2 text-xs font-bold rounded-lg transition-all ${activeBranchCityFilter === city ? 'bg-thu-blue text-white shadow-sm' : 'text-slate-500'}">${city}</button>`).join('')}
+                    <div class="flex flex-wrap gap-2 mb-5">
+                        <button id="pill-all" onclick="filterBranchCity('全部', '${inst.id}')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all ${activeBranchCityFilter === '全部' ? 'bg-[#3A78A4] text-white shadow-sm' : 'bg-[#E5ECF4] text-[#3A78A4] hover:bg-[#6EA4CA]/20'}">
+                            全部
+                        </button>
+                        ${uniqueCities.map(city => `
+                            <button id="pill-${city}" onclick="filterBranchCity('${city}', '${inst.id}')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all ${activeBranchCityFilter === city ? 'bg-[#3A78A4] text-white shadow-sm' : 'bg-[#E5ECF4] text-[#3A78A4] hover:bg-[#6EA4CA]/20'}">
+                                ${city}
+                            </button>
+                        `).join('')}
                     </div>
                 `;
             }
 
             elDetailContent.innerHTML = `
-                <div class="bg-white border border-slate-100 rounded-2xl p-5 sm:p-7 shadow-premium relative overflow-hidden">
-                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-thu-blue to-thu-accent"></div>
-                    <div class="flex flex-col sm:flex-row items-center sm:items-stretch gap-4 sm:gap-5">
-                        <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-gradient-to-tr from-thu-deep to-thu-blue text-white flex items-center justify-center text-2xl flex-shrink-0 shadow-sm">
+                <!-- 1. 上方總機構橫向面版 (圓角修正為 rounded-xl) -->
+                <div class="bg-white border border-slate-200 rounded-xl p-6 sm:p-8 shadow-sm">
+                    <div class="flex flex-col md:flex-row items-center md:items-stretch gap-6">
+                        
+                        <!-- 左側莫蘭迪藍 Office 容器 (與右側三行等高) -->
+                        <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-xl bg-gradient-to-tr from-thu-deep to-[#5D6D7E] text-white flex items-center justify-center text-3xl flex-shrink-0 shadow-sm">
                             <i class="ti ti-building"></i>
                         </div>
-                        <div class="flex-1 flex flex-col justify-center text-center sm:text-left min-w-0 w-full">
-                            <h2 class="text-sm sm:text-base font-bold text-slate-800 tracking-tight leading-snug mb-2">${displayNameText}</h2>
-                            <div class="flex flex-wrap justify-center sm:justify-start gap-1 mb-2.5">
-                                ${inst.venueType ? `<span class="bg-emerald-50 text-emerald-700 text-[10px] font-semibold px-2 py-0.5 rounded">${inst.venueType}</span>` : ''}
-                                ${inst.industry ? `<span class="bg-slate-50 text-slate-500 text-[10px] font-semibold px-2 py-0.5 rounded border border-slate-100">${inst.industry}</span>` : ''}
+
+                        <!-- 右側機構資訊 (標籤與地址字級微調縮小，避免臃腫) -->
+                        <div class="flex-1 flex flex-col justify-between py-1 space-y-2.5 text-center md:text-left min-w-0">
+                            <!-- 第一行：機構名稱 -->
+                            <div>
+                                <h2 class="text-lg sm:text-xl font-bold text-slate-800 tracking-tight leading-snug">${displayNameText}</h2>
                             </div>
-                            <div class="flex items-center justify-center sm:justify-start gap-1 text-slate-400 text-[11px] sm:text-xs w-full min-w-0">
-                                <i class="ti ti-map-pin text-sm flex-shrink-0"></i>
-                                ${isOverseas ? `<span class="bg-rose-50 text-rose-700 text-[9px] font-bold px-1 py-0.5 rounded mr-1 flex-shrink-0">${inst.country}</span>` : ''}
-                                <span class="font-medium text-slate-500 truncate max-w-[70%]">${inst.address || '無主地址登記'}</span>
-                                ${inst.address ? `<button onclick="copyAddress('${inst.address}')" class="p-1 text-slate-400 active:text-slate-700 flex-shrink-0"><i class="ti ti-copy text-xs"></i></button>` : ''}
+
+                            <!-- 第二行：標籤組 (微調縮小為 text-xs sm:text-sm) -->
+                            <div class="flex flex-wrap justify-center md:justify-start gap-2">
+                                ${inst.venueType ? `
+                                    <span class="inline-flex bg-[#EBF3F5] text-[#2E5B44] text-xs sm:text-sm font-semibold px-2.5 py-0.5 rounded-md">
+                                        ${inst.venueType}
+                                    </span>
+                                ` : ''}
+
+                                ${inst.industry ? `
+                                    <span class="inline-flex bg-[#E5ECF4] text-[#4A607A] text-xs sm:text-sm font-semibold px-2.5 py-0.5 rounded-md">
+                                        ${inst.industry}
+                                    </span>
+                                ` : ''}
                             </div>
+
+                            <!-- 第三行：地址資訊列 (微調縮小為 text-xs sm:text-sm) -->
+                            <div class="flex flex-wrap items-center justify-center md:justify-start gap-2 text-slate-500 text-xs sm:text-sm">
+                                <i class="ti ti-map-pin text-[#8FA4B5] text-sm sm:text-base"></i>
+                                
+                                <!-- 國別標籤置於 Icon 正後方 -->
+                                ${isOverseas ? `
+                                    <span class="inline-flex bg-[#F5EBEB] text-[#A66C6C] text-xs sm:text-sm font-semibold px-2.5 py-0.5 rounded-md">
+                                        ${inst.country}
+                                    </span>
+                                ` : ''}
+                                
+                                <span class="font-medium text-slate-600 truncate max-w-full" title="${inst.address || ''}">
+                                    ${inst.address || '無登記主地址'}
+                                </span>
+                                ${inst.address ? `
+                                    <button onclick="copyAddress('${inst.address}')" class="p-1 hover:bg-slate-100 text-slate-400 hover:text-slate-800 rounded transition-colors" title="複製地址">
+                                        <i class="ti ti-copy text-xs"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white border border-slate-100 rounded-2xl p-5 sm:p-7 shadow-premium">
-                    <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-                        <h3 class="font-bold text-slate-800 text-xs sm:text-sm flex items-center gap-1.5"><i class="ti ti-git-branch text-thu-blue"></i> 分支據點清單</h3>
-                        <span id="branch-total-count" class="bg-slate-50 text-slate-500 border border-slate-100 font-bold px-2 py-0.5 rounded-md text-[9px]">共 0 處</span>
+                <!-- 2. 下方分支機構/分所列表 (高度一律固定為 5 個據點高度，約 250px) -->
+                <div class="bg-white border border-slate-200 rounded-xl p-6 sm:p-8 shadow-sm">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-5">
+                        <h3 class="font-bold text-slate-800 text-sm sm:text-base">
+                            分支機構列表
+                        </h3>
+                        <span id="branch-total-count" class="bg-[#E5ECF4] text-[#3A78A4] font-bold px-3 py-1 rounded-xl text-xs">
+                            共 0 處
+                        </span>
                     </div>
+
+                    <!-- 國內縣市篩選 Pills -->
                     ${cityFiltersHtml}
-                    <div class="flex flex-col justify-between min-h-[250px] lg:min-h-[280px]">
-                        <div id="branches-list-wrapper" class="divide-y divide-slate-100/70 flex-1"></div>
-                        <div id="branch-local-pagination" class="flex justify-between items-center pt-3 border-t border-slate-100 mt-4"></div>
+
+                    <!-- 分支機構固定 5 行高度的容器 (就算無據點，高度也固定在 250px) -->
+                    <div class="flex flex-col justify-between min-h-[300px]">
+                        <div id="branches-list-wrapper" class="divide-y divide-slate-100 flex-1">
+                            <!-- JS 動態生成分支項目 -->
+                        </div>
+                        
+                        <!-- 分支局部換頁器 -->
+                        <div id="branch-local-pagination" class="flex justify-between items-center pt-4 border-t border-slate-100 mt-4">
+                            <!-- JS 動態生成上一頁/下一頁按鈕 -->
+                        </div>
                     </div>
                 </div>
             `;
+
             renderBranchesContainer(inst);
         }
 
+        // ================== 分支機構列表分頁與固定高度核心 ==================
         function renderBranchesContainer(inst) {
             const isOverseas = inst.country && inst.country !== '中華民國';
-            let displayBranches = (activeBranchCityFilter !== '全部') ? inst.branches.filter(b => b.city === activeBranchCityFilter) : (inst.branches || []);
+            
+            // 依據篩選值過濾分支
+            let displayBranches = inst.branches || [];
+            if (activeBranchCityFilter !== '全部') {
+                displayBranches = inst.branches.filter(b => b.city === activeBranchCityFilter);
+            }
+
+            // 更新分支數量標籤
             document.getElementById('branch-total-count').textContent = `共 ${displayBranches.length} 處`;
 
             const branchesWrapper = document.getElementById('branches-list-wrapper');
             const paginationWrapper = document.getElementById('branch-local-pagination');
 
             if (displayBranches.length === 0) {
-                branchesWrapper.innerHTML = `<div class="h-[220px] flex items-center justify-center text-slate-400 text-xs font-medium">暫無其他據點登記</div>`;
-                paginationWrapper.innerHTML = ''; return;
+                // 無資料狀態：完全移除虛線框與任何卡片包覆，保留固定 250px 高度之極簡居中提示
+                branchesWrapper.innerHTML = `
+                    <div class="h-[250px] flex items-center justify-center text-center bg-transparent">
+                        <p class="text-slate-400 text-xs font-bold">該機構暫無其他分支機構</p>
+                    </div>
+                `;
+                paginationWrapper.innerHTML = '';
+                return;
             }
 
+            // 分支分頁計算
             const totalBranchPages = Math.ceil(displayBranches.length / branchItemsPerPage);
             if (currentBranchPage > totalBranchPages) currentBranchPage = totalBranchPages || 1;
+
             const startIndex = (currentBranchPage - 1) * branchItemsPerPage;
             const slicedBranches = displayBranches.slice(startIndex, startIndex + branchItemsPerPage);
 
+            // 生成分支項目 (固定單個高度，確保不滿 5 個時使用透明佔位槽補齊高度，確保高度固定)
             let listHtml = '';
             for (let i = 0; i < branchItemsPerPage; i++) {
                 const branch = slicedBranches[i];
                 if (branch) {
-                    const borderClass = i === 0 ? 'border-t-0 pt-1 pb-3' : 'border-t border-slate-100/70 pt-3 pb-3';
-                    const cityTag = (!isOverseas && branch.city) ? `<span class="bg-slate-50 text-slate-500 text-[9px] font-bold px-1.5 py-0.5 rounded border border-slate-100 mr-2 flex-shrink-0">${branch.city}</span>` : '';
-                    
-                    // 解除 h-[52px] 硬限制，改採彈性垂直排版，讓地址可自動斷行 (break-words) 完美呈現
+                    // 第一個項目不要顯示上方邊框
+                    const borderClass = i === 0 ? 'border-t-0 pt-1' : 'border-t border-slate-100 pt-3';
+                    const domesticCityTag = (!isOverseas && branch.city) 
+                        ? `<span class="bg-[#E5ECF4] text-[#3A78A4] text-[11px] font-bold px-2.5 py-0.5 rounded mr-3 flex-shrink-0">${branch.city}</span>` 
+                        : '';
                     listHtml += `
-                        <div class="flex flex-col justify-center min-h-[52px] ${borderClass} w-full min-w-0">
-                            <div class="flex items-start min-w-0 w-full mb-1">
-                                ${cityTag}
-                                <span class="font-bold text-slate-700 text-xs sm:text-sm break-words whitespace-normal flex-1">${branch.name}</span>
+                        <div class="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 h-[50px] ${borderClass}">
+                            <div class="flex items-center min-w-0">
+                                ${domesticCityTag}
+                                <span class="font-semibold text-slate-700 text-xs sm:text-sm truncate">${branch.name}</span>
                             </div>
-                            <span class="text-[10px] sm:text-xs text-slate-400 break-words whitespace-normal w-full pl-1 leading-relaxed">${branch.address || '無詳細通訊地址'}</span>
+                            <span class="text-[11px] sm:text-xs text-slate-400 break-all truncate max-w-xs sm:max-w-md">${branch.address || '無詳細通訊地址'}</span>
                         </div>
                     `;
                 } else {
-                    // 電腦版補空位骨架，手機版不占空間
-                    listHtml += `<div class="hidden lg:block py-2 h-[56px] border-t border-transparent opacity-0 pointer-events-none"></div>`;
+                    // 佔位項目：維持純白透明，確保高度穩定，第一個項目依然不要邊框
+                    const borderClass = i === 0 ? 'border-t-0' : 'border-t border-transparent';
+                    listHtml += `
+                        <div class="py-3 h-[50px] ${borderClass} opacity-0 pointer-events-none"></div>
+                    `;
                 }
             }
             branchesWrapper.innerHTML = listHtml;
 
+            // 分支換頁按鈕 (若總頁數 > 1 時顯示)
             if (totalBranchPages > 1) {
                 paginationWrapper.innerHTML = `
-                    <button onclick="changeBranchPage(${currentBranchPage - 1}, '${inst.id}')" ${currentBranchPage === 1 ? 'disabled' : ''} class="px-3 py-2 rounded-lg border border-slate-200 bg-white text-[11px] font-bold text-slate-500 disabled:opacity-30 active:bg-slate-50">上一頁</button>
-                    <span class="text-[11px] text-slate-400 font-bold">${currentBranchPage} / ${totalBranchPages}</span>
-                    <button onclick="changeBranchPage(${currentBranchPage + 1}, '${inst.id}')" ${currentBranchPage === totalBranchPages ? 'disabled' : ''} class="px-3 py-2 rounded-lg border border-slate-200 bg-white text-[11px] font-bold text-slate-500 disabled:opacity-30 active:bg-slate-50">下一頁</button>
+                    <button onclick="changeBranchPage(${currentBranchPage - 1}, '${inst.id}')" ${currentBranchPage === 1 ? 'disabled' : ''} class="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-[#3A78A4] hover:bg-[#E5ECF4] transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                        上一頁
+                    </button>
+                    <span class="text-xs text-slate-400 font-bold">${currentBranchPage} / ${totalBranchPages}</span>
+                    <button onclick="changeBranchPage(${currentBranchPage + 1}, '${inst.id}')" ${currentBranchPage === totalPages ? 'disabled' : ''} class="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-[#3A78A4] hover:bg-[#E5ECF4] transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                        下一頁
+                    </button>
                 `;
             } else {
-                paginationWrapper.innerHTML = `<div class="text-[10px] text-slate-300 font-medium tracking-wide">已顯示全部據點</div>`;
+                paginationWrapper.innerHTML = `
+                    <div class="text-xs text-slate-300 font-medium">單頁分支據點</div>
+                `;
             }
         }
 
+        // 分支機構換頁事件
         window.changeBranchPage = function(targetPage, instId) {
             currentBranchPage = targetPage;
             const inst = treeData.find(d => d.id === instId);
-            if (inst) renderBranchesContainer(inst);
+            if (inst) {
+                renderBranchesContainer(inst);
+            }
         };
 
+        // 詳情內的分支縣市過濾動態重新整理
         window.filterBranchCity = function(city, instId) {
-            activeBranchCityFilter = city; currentBranchPage = 1;
+            activeBranchCityFilter = city;
+            currentBranchPage = 1; // 縣市篩選切換時自動回到第一頁
             const inst = treeData.find(d => d.id === instId);
-            if (inst) renderDetailView(inst);
+            if (inst) {
+                renderDetailView(inst);
+            }
         };
 
+        // 地址複製
         window.copyAddress = function(text) {
-            const tempInput = document.createElement('textarea'); tempInput.value = text;
-            document.body.appendChild(tempInput); tempInput.select();
-            try { document.execCommand('copy'); showToast("地址已複製", "success"); } catch (err) { showToast("複製失敗", "error"); }
+            const tempInput = document.createElement('textarea');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            try {
+                document.execCommand('copy');
+                showToast("地址複製成功！", "success");
+            } catch (err) {
+                showToast("複製失敗，請手動複製", "error");
+            }
             document.body.removeChild(tempInput);
         };
 
+        // ================== Toast 與 Modal 互動 ==================
         window.showToast = function(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            let bgClass = type === 'success' ? 'bg-slate-900 text-white' : 'bg-rose-50 text-rose-900 border-rose-100';
-            let iconClass = type === 'success' ? 'ti-circle-check-filled text-emerald-400' : 'ti-circle-x-filled text-rose-500';
+            
+            let bgClass = 'bg-white text-slate-800 border-slate-100';
+            let iconClass = 'ti-circle-check text-slate-600';
+            
+            if (type === 'success') {
+                bgClass = 'bg-[#E5ECF4] text-[#3A78A4] border-transparent';
+                iconClass = 'ti-circle-check text-[#3A78A4]';
+            } else if (type === 'error') {
+                bgClass = 'bg-rose-50 text-rose-900 border-rose-100';
+                iconClass = 'ti-circle-x text-rose-600';
+            } else if (type === 'info') {
+                bgClass = 'bg-slate-100 text-slate-700 border-slate-200';
+                iconClass = 'ti-info-circle text-slate-600';
+            }
 
-            toast.className = `flex items-center gap-2 px-3.5 py-2.5 rounded-xl shadow-xl ${bgClass} border text-xs font-semibold mx-auto transition-all duration-300 transform translate-y-2 opacity-0 w-full max-w-[280px]`;
-            toast.innerHTML = `<i class="ti ${iconClass} text-sm flex-shrink-0"></i><span class="truncate">${message}</span>`;
+            toast.className = `flex items-center gap-3 px-4 py-2.5 rounded-xl border shadow-lg ${bgClass} transition-all duration-300 transform translate-y-4 opacity-0 pointer-events-auto max-w-sm w-72 sm:w-auto`;
+            toast.style.padding = '10px 16px';
+            toast.innerHTML = `
+                <i class="ti ${iconClass} text-base flex-shrink-0"></i>
+                <span class="text-xs font-semibold leading-normal">${message}</span>
+            `;
+
             container.appendChild(toast);
-            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-4', 'opacity-0');
+            }, 10);
+
             setTimeout(() => {
                 toast.classList.add('translate-y-[-10px]', 'opacity-0');
-                setTimeout(() => toast.remove(), 300);
-            }, 2000);
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 2500);
         };
 
         window.showConfirm = function(title, desc, onConfirm) {
             const modal = document.getElementById('confirm-modal');
-            document.getElementById('confirm-title').textContent = title;
-            document.getElementById('confirm-desc').textContent = desc;
-            modal.classList.remove('hidden'); modal.classList.add('flex');
-            const close = () => { modal.classList.add('hidden'); modal.classList.remove('flex'); };
-            document.getElementById('confirm-btn-cancel').onclick = close;
-            document.getElementById('confirm-btn-ok').onclick = () => { onConfirm(); close(); };
+            const elTitle = document.getElementById('confirm-title');
+            const elDesc = document.getElementById('confirm-desc');
+            const btnCancel = document.getElementById('confirm-btn-cancel');
+            const btnOk = document.getElementById('confirm-btn-ok');
+
+            elTitle.textContent = title;
+            elDesc.textContent = desc;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            const close = () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            };
+
+            btnCancel.onclick = close;
+            btnOk.onclick = () => {
+                onConfirm();
+                close();
+            };
         };
+
     </script>
 </body>
 </html>
