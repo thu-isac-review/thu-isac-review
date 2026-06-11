@@ -135,6 +135,38 @@
         .state-container { display: flex; flex-direction: column; align-items: center; padding: 80px 20px; text-align: center; }
         .spin-icon { animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* 機密警告橫幅 */
+        .warning-banner {
+            background-color: #fffbeb;
+            border-bottom: 1px solid #fde68a;
+            color: #92400e;
+            padding: 12px 24px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            position: sticky;
+            top: 60px; /* 貼齊在 navbar 下方 */
+            z-index: 40;
+        }
+        
+        .warning-banner i {
+            font-size: 18px;
+            flex-shrink: 0;
+            color: #d97706;
+        }
+        
+        .warning-banner .warning-text {
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        .warning-banner strong {
+            font-weight: 700;
+            margin-right: 4px;
+        }
     </style>
 </head>
 <body>
@@ -151,6 +183,13 @@
             </button>
         </div>
     </nav>
+    
+    <div class="warning-banner">
+        <i class="ti ti-shield-lock"></i>
+        <span class="warning-text">
+            <strong>內部機密聲明：</strong>本系統所列之合作機構資料僅限校內實習承辦單位與授權人員瀏覽使用。請遵守保密原則，嚴禁截圖、轉載或對外公開散布。
+        </span>
+    </div>
 
     <main id="view-list" class="view-container active">
         <div style="margin-bottom: 24px;">
