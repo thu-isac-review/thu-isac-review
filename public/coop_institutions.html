@@ -70,10 +70,10 @@
 
     <div id="view-dashboard" class="hidden flex-1 flex flex-col min-h-screen w-full">
         
-        <div class="sticky top-0 z-40 bg-thu-bg/90 backdrop-blur-md border-b border-slate-100/80 px-4 py-3 flex flex-col gap-3 lg:hidden shadow-sm">
+        <div id="mobile-sticky-header" class="sticky top-0 z-40 bg-thu-bg/90 backdrop-blur-md border-b border-slate-100/80 px-4 py-3 flex flex-col gap-3 lg:hidden shadow-sm">
             <div class="flex items-center justify-between w-full">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-9 h-9 bg-gradient-to-tr from-thu-deep to-thu-blue text-white rounded-xl flex items-center justify-center text-base flex-shrink-0 shadow-sm shadow-slate-100">
+                <div id="mobile-header-list-title" class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 bg-gradient-to-tr from-thu-deep to-thu-blue text-white rounded-xl flex items-center justify-center text-base flex-shrink-0 shadow-sm">
                         <i class="ti ti-briefcase"></i>
                     </div>
                     <div>
@@ -81,9 +81,15 @@
                         <p class="text-[8px] text-slate-400 font-bold uppercase tracking-widest">Internship Portal</p>
                     </div>
                 </div>
-                <button id="btn-logout-mobile" class="text-slate-400 hover:text-slate-600 p-2"><i class="ti ti-logout text-base"></i></button>
+
+                <button id="btn-back-mobile" class="hidden inline-flex items-center gap-1.5 text-thu-blue font-bold text-xs bg-white border border-slate-200 px-3 py-2 rounded-xl active:scale-[0.95] transition-all">
+                    <i class="ti ti-chevron-left text-sm"></i> 返回列表
+                </button>
+
+                <button id="btn-logout-mobile" class="text-slate-400 hover:text-slate-600 p-2 flex items-center justify-center"><i class="ti ti-logout text-base"></i></button>
             </div>
-            <div class="flex gap-2 w-full">
+            
+            <div id="mobile-search-bar-row" class="flex gap-2 w-full">
                 <div class="relative flex-1 group">
                     <i class="ti ti-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
                     <input type="text" id="search-input-mobile" placeholder="搜尋機構名稱..." class="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-thu-blue/10 focus:border-thu-blue text-xs font-medium placeholder-slate-400 shadow-sm">
@@ -100,7 +106,7 @@
                 
                 <div class="hidden lg:block bg-white border border-slate-100 rounded-2xl p-6 shadow-premium">
                     <div class="flex items-center gap-3.5 mb-5">
-                        <div class="w-11 h-11 bg-gradient-to-tr from-thu-deep to-thu-blue text-white rounded-xl flex items-center justify-center text-xl flex-shrink-0 shadow-sm shadow-slate-100">
+                        <div class="w-11 h-11 bg-gradient-to-tr from-thu-deep to-thu-blue text-white rounded-xl flex items-center justify-center text-xl flex-shrink-0 shadow-sm">
                             <i class="ti ti-briefcase"></i>
                         </div>
                         <div>
@@ -114,7 +120,7 @@
                             <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
                             <span id="user-greeting" class="text-xs font-semibold text-slate-600">同學，您好！</span>
                         </div>
-                        <button id="btn-logout" class="w-full bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/50 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 active:scale-[0.97]">
+                        <button id="btn-logout" class="w-full bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/50 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 active:scale-[0.97]">
                             <i class="ti ti-logout text-sm text-slate-400"></i> 登出系統
                         </button>
                     </div>
@@ -196,8 +202,8 @@
         </main>
 
         <main id="view-detail" class="hidden max-w-3xl w-full mx-auto px-4 sm:px-6 py-4 lg:py-10 flex-1">
-            <div class="flex items-center justify-between gap-4 mb-5">
-                <button id="btn-back" class="inline-flex items-center gap-1.5 text-thu-blue hover:text-thu-deep font-bold text-xs bg-white border border-slate-200/80 px-4 py-3 lg:py-2.5 rounded-xl transition-all shadow-sm active:scale-[0.95]">
+            <div class="hidden lg:flex items-center justify-between gap-4 mb-5">
+                <button id="btn-back" class="inline-flex items-center gap-1.5 text-thu-blue hover:text-thu-deep font-bold text-xs bg-white border border-slate-200/80 px-4 py-2.5 rounded-xl transition-all shadow-sm active:scale-[0.95]">
                     <i class="ti ti-chevron-left text-sm"></i> 返回列表
                 </button>
                 <button id="btn-logout-detail" class="bg-white text-slate-500 border border-slate-200/80 px-3.5 py-2.5 rounded-xl text-xs font-bold shadow-sm">登出</button>
@@ -274,6 +280,11 @@
         const selectVenue = document.getElementById('filter-venue-type');
         const selectIndustry = document.getElementById('filter-industry');
 
+        // 手機版固定列導覽元素
+        const mobileHeaderListTitle = document.getElementById('mobile-header-list-title');
+        const mobileSearchBarRow = document.getElementById('mobile-search-bar-row');
+        const btnBackMobile = document.getElementById('btn-back-mobile');
+
         const filterWrapper = document.getElementById('filter-wrapper');
         const filterDrawer = document.getElementById('filter-drawer');
         const btnToggleFilter = document.getElementById('btn-toggle-filter');
@@ -326,11 +337,20 @@
         document.getElementById('btn-logout-mobile').addEventListener('click', handleLogout);
         document.getElementById('btn-logout-detail').addEventListener('click', handleLogout);
 
-        document.getElementById('btn-back').addEventListener('click', () => {
+        // 返回按鈕點擊機制 (整合桌機與手機返回點)
+        const handleBackToList = () => {
             viewDetail.classList.add('hidden');
             viewList.classList.remove('hidden');
+            
+            // 恢復手機置頂列狀態
+            mobileHeaderListTitle.classList.remove('hidden');
+            mobileSearchBarRow.classList.remove('hidden');
+            btnBackMobile.classList.add('hidden');
+
             window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
+        };
+        document.getElementById('btn-back').addEventListener('click', handleBackToList);
+        btnBackMobile.addEventListener('click', handleBackToList);
 
         function normalizeItem(d) {
             return {
@@ -500,8 +520,7 @@
 
         window.changePage = function(page) {
             currentPage = page; renderPage();
-            // 如果是手機版，滾動至畫面頂端，但扣除固定置頂列的高度 (約 120px)
-            const offset = window.innerWidth < 1024 ? 120 : 0;
+            const offset = window.innerWidth < 1024 ? 140 : 0;
             const element = document.getElementById('view-list');
             const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
             window.scrollTo({ top: elementPosition - offset, behavior: 'smooth' });
@@ -510,8 +529,16 @@
         window.openDetail = function(instId) {
             const inst = treeData.find(d => d.id === instId);
             if (!inst) return;
-            viewList.classList.add('hidden'); viewDetail.classList.remove('hidden');
-            activeBranchCityFilter = '全部'; currentBranchPage = 1;
+            viewList.classList.add('hidden'); 
+            viewDetail.classList.remove('hidden');
+            
+            // 變更手機頂部狀態：隱藏搜尋列與原標題，秀出返回列表按鈕
+            mobileHeaderListTitle.classList.add('hidden');
+            mobileSearchBarRow.classList.add('hidden');
+            btnBackMobile.classList.remove('hidden');
+
+            activeBranchCityFilter = '全部'; 
+            currentBranchPage = 1;
             renderDetailView(inst);
             window.scrollTo({ top: 0, behavior: 'instant' });
         };
@@ -544,11 +571,11 @@
                                 ${inst.venueType ? `<span class="bg-emerald-50 text-emerald-700 text-[10px] font-semibold px-2 py-0.5 rounded">${inst.venueType}</span>` : ''}
                                 ${inst.industry ? `<span class="bg-slate-50 text-slate-500 text-[10px] font-semibold px-2 py-0.5 rounded border border-slate-100">${inst.industry}</span>` : ''}
                             </div>
-                            <div class="flex items-center justify-center sm:justify-start gap-1 text-slate-400 text-[11px] sm:text-xs">
-                                <i class="ti ti-map-pin text-sm"></i>
-                                ${isOverseas ? `<span class="bg-rose-50 text-rose-700 text-[9px] font-bold px-1 py-0.5 rounded mr-1">${inst.country}</span>` : ''}
+                            <div class="flex items-center justify-center sm:justify-start gap-1 text-slate-400 text-[11px] sm:text-xs w-full min-w-0">
+                                <i class="ti ti-map-pin text-sm flex-shrink-0"></i>
+                                ${isOverseas ? `<span class="bg-rose-50 text-rose-700 text-[9px] font-bold px-1 py-0.5 rounded mr-1 flex-shrink-0">${inst.country}</span>` : ''}
                                 <span class="font-medium text-slate-500 truncate max-w-[70%]">${inst.address || '無主地址登記'}</span>
-                                ${inst.address ? `<button onclick="copyAddress('${inst.address}')" class="p-1 text-slate-400 active:text-slate-700"><i class="ti ti-copy text-xs"></i></button>` : ''}
+                                ${inst.address ? `<button onclick="copyAddress('${inst.address}')" class="p-1 text-slate-400 active:text-slate-700 flex-shrink-0"><i class="ti ti-copy text-xs"></i></button>` : ''}
                             </div>
                         </div>
                     </div>
@@ -560,9 +587,9 @@
                         <span id="branch-total-count" class="bg-slate-50 text-slate-500 border border-slate-100 font-bold px-2 py-0.5 rounded-md text-[9px]">共 0 處</span>
                     </div>
                     ${cityFiltersHtml}
-                    <div class="flex flex-col justify-between min-h-[280px]">
+                    <div class="flex flex-col justify-between min-h-[250px] lg:min-h-[280px]">
                         <div id="branches-list-wrapper" class="divide-y divide-slate-100/70 flex-1"></div>
-                        <div id="branch-local-pagination" class="flex justify-between items-center pt-3 border-t border-slate-100 mt-3"></div>
+                        <div id="branch-local-pagination" class="flex justify-between items-center pt-3 border-t border-slate-100 mt-4"></div>
                     </div>
                 </div>
             `;
@@ -591,19 +618,22 @@
             for (let i = 0; i < branchItemsPerPage; i++) {
                 const branch = slicedBranches[i];
                 if (branch) {
-                    const borderClass = i === 0 ? 'border-t-0 pt-0.5' : 'border-t border-slate-100/70 pt-2.5';
+                    const borderClass = i === 0 ? 'border-t-0 pt-1 pb-3' : 'border-t border-slate-100/70 pt-3 pb-3';
                     const cityTag = (!isOverseas && branch.city) ? `<span class="bg-slate-50 text-slate-500 text-[9px] font-bold px-1.5 py-0.5 rounded border border-slate-100 mr-2 flex-shrink-0">${branch.city}</span>` : '';
+                    
+                    // 解除 h-[52px] 硬限制，改採彈性垂直排版，讓地址可自動斷行 (break-words) 完美呈現
                     listHtml += `
-                        <div class="py-2 flex flex-col justify-center h-[52px] ${borderClass}">
-                            <div class="flex items-center min-w-0 w-full mb-0.5">
+                        <div class="flex flex-col justify-center min-h-[52px] ${borderClass} w-full min-w-0">
+                            <div class="flex items-start min-w-0 w-full mb-1">
                                 ${cityTag}
-                                <span class="font-bold text-slate-700 text-xs truncate flex-1">${branch.name}</span>
+                                <span class="font-bold text-slate-700 text-xs sm:text-sm break-words whitespace-normal flex-1">${branch.name}</span>
                             </div>
-                            <span class="text-[10px] text-slate-400 truncate w-full pl-1">${branch.address || '無詳細通訊地址'}</span>
+                            <span class="text-[10px] sm:text-xs text-slate-400 break-words whitespace-normal w-full pl-1 leading-relaxed">${branch.address || '無詳細通訊地址'}</span>
                         </div>
                     `;
                 } else {
-                    listHtml += `<div class="py-2 h-[52px] border-t border-transparent opacity-0 pointer-events-none"></div>`;
+                    // 電腦版補空位骨架，手機版不占空間
+                    listHtml += `<div class="hidden lg:block py-2 h-[56px] border-t border-transparent opacity-0 pointer-events-none"></div>`;
                 }
             }
             branchesWrapper.innerHTML = listHtml;
