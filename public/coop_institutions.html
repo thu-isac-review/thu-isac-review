@@ -114,7 +114,7 @@
         }
         .btn-back:hover { color: var(--brand); transform: translateX(-4px); }
 
-        /* 重新設計的上方總機構面板 */
+        /* 總機構面板 */
         .detail-hero-card {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -133,6 +133,7 @@
                 flex-direction: row;
                 align-items: center;
                 padding: 40px;
+                gap: 32px;
             }
         }
 
@@ -148,7 +149,7 @@
             justify-content: center;
             font-size: 44px;
             flex-shrink: 0;
-            box-shadow: 0 8px 16px -4px rgba(26, 86, 219, 0.15);
+            box-shadow: 0 8px 20px -4px rgba(26, 86, 219, 0.18);
             border: 1px solid rgba(26, 86, 219, 0.1);
         }
 
@@ -169,7 +170,7 @@
         .hero-company-subname {
             font-size: 15px;
             color: var(--text-secondary);
-            font-weight: 400;
+            font-weight: 500;
             margin-top: -6px;
             font-style: italic;
         }
@@ -182,21 +183,77 @@
             margin-top: 4px;
         }
 
-        /* 精緻標籤樣式 */
+        /* 高級反白標籤樣式 (文字反白 Solid badge) */
         .tag-pill {
             display: inline-flex;
             align-items: center;
             gap: 6px;
             font-size: 12px;
             font-weight: 600;
-            padding: 5px 12px;
+            padding: 6px 14px;
             border-radius: 8px;
+            color: #ffffff; /* 文字反白 */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
             transition: all 0.2s;
+            border: 1px solid transparent;
         }
-        .tag-pill-venue { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; } /* 實習場所：綠色 */
-        .tag-pill-industry { background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; } /* 行業別：藍色 */
-        .tag-pill-country { background: #fff1f2; color: #be123c; border: 1px solid #fecdd3; } /* 國別：粉紅色 */
-        .tag-pill-address { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; font-weight: 400; } /* 地址：灰色 */
+        .tag-pill i {
+            font-size: 13px;
+        }
+        /* 實習場所：綠色漸層 */
+        .tag-pill-venue { 
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+            border-color: #047857;
+        } 
+        /* 行業別：皇家藍漸層 */
+        .tag-pill-industry { 
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); 
+            border-color: #1e40af;
+        } 
+        /* 國別：玫瑰紅漸層 */
+        .tag-pill-country { 
+            background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%); 
+            border-color: #9f1239;
+        }
+
+        /* 改版：主據點地址專屬樣式區 (非標籤) */
+        .hero-address-info {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px dashed var(--border);
+        }
+        .address-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--brand-light);
+            color: var(--brand);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        .address-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .address-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+        .address-value {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            line-height: 1.4;
+        }
 
         /* 區塊標題 */
         .section-title { 
@@ -393,7 +450,6 @@
         // 2. 獲取並處理資料
         async function fetchInstitutions() {
             try {
-                // 使用正確的 Collection Name
                 const snapshot = await getDocs(collection(db, 'internship_institutions'));
                 const allData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
@@ -522,17 +578,14 @@
             const country = inst.country ? inst.country.trim() : '';
             const hideCountry = !country || country === '中華民國' || country === '台灣' || country === 'Taiwan' || country === 'R.O.C' || country === 'ROC';
             
-            // 處理海外機構名稱顯示邏輯：
-            // 如果不是中華民國，且有英文名字（或原本資料中有 parentheses 括號名稱），對名稱做整合處理。
+            // 處理海外機構名稱顯示邏輯
             let displayName = inst.name || '';
             let englishSubNameHtml = '';
 
             if (!hideCountry) {
-                // 如果是海外機構，且資料庫有提供獨立的英文名稱 (例如 inst.english_name)
                 if (inst.english_name) {
                     englishSubNameHtml = `<div class="hero-company-subname">(${inst.english_name})</div>`;
                 } else if (displayName.includes('(') && displayName.endsWith(')')) {
-                    // 若名稱本身已包含括號英文
                     const match = displayName.match(/^([^(]+)\(([^)]+)\)$/);
                     if (match) {
                         displayName = match[1].trim();
@@ -541,10 +594,10 @@
                 }
             }
 
-            // 填充優化後的詳情面板
+            // 填充全新重構之詳情面板
             elDetailContent.innerHTML = `
                 <div class="detail-hero-card">
-                    <!-- 左側機構 Logo -->
+                    <!-- 左側機構 Logo/Icon -->
                     <div class="hero-logo-wrapper">
                         <i class="ti ti-building-skyscraper"></i>
                     </div>
@@ -554,7 +607,7 @@
                         <h1 class="hero-company-name">${displayName}</h1>
                         ${englishSubNameHtml}
                         
-                        <!-- 標籤列 -->
+                        <!-- 標籤容器 (文字反白實色化) -->
                         <div class="hero-badge-container">
                             <!-- 實習場所標籤 -->
                             ${inst.venue_type ? `
@@ -568,20 +621,26 @@
                                 <i class="ti ti-tag"></i> ${inst.industry || '未分類行業'}
                             </span>
 
-                            <!-- 國別標籤 (中華民國時不顯示) -->
+                            <!-- 國別標籤 (境外機構才顯示) -->
                             ${!hideCountry ? `
                                 <span class="tag-pill tag-pill-country">
                                     <i class="ti ti-world"></i> ${country}
                                 </span>
                             ` : ''}
-
-                            <!-- 機構地址標籤 -->
-                            ${inst.address ? `
-                                <span class="tag-pill tag-pill-address">
-                                    <i class="ti ti-map-pin"></i> ${inst.address}
-                                </span>
-                            ` : ''}
                         </div>
+
+                        <!-- 地址專用資訊列 (去除標籤設計，結構化文字展現) -->
+                        ${inst.address ? `
+                            <div class="hero-address-info">
+                                <div class="address-icon">
+                                    <i class="ti ti-map-pin"></i>
+                                </div>
+                                <div class="address-text">
+                                    <span class="address-label">總部 / 主據點地址</span>
+                                    <span class="address-value">${inst.address}</span>
+                                </div>
+                            </div>
+                        ` : ''}
                     </div>
                 </div>
 
@@ -600,4 +659,3 @@
     </script>
 </body>
 </html>
-
