@@ -76,104 +76,124 @@
     <!-- 主版面系統介面 -->
     <div id="view-dashboard" class="hidden flex-1 flex flex-col min-h-screen">
         
-        <!-- 頂部精美莫蘭迪風格導覽列 -->
-        <nav class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm px-4 sm:px-8 py-3.5 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-gradient-to-tr from-thu-deep to-[#5D6D7E] text-white rounded-xl flex items-center justify-center text-xl flex-shrink-0 shadow-sm">
-                    <i class="ti ti-briefcase"></i>
-                </div>
-                <div>
-                    <h1 class="font-bold text-slate-800 text-sm sm:text-base tracking-wider">東海大學實習專區</h1>
-                    <p class="text-[10px] text-slate-400 font-medium">Internship Management System</p>
-                </div>
-            </div>
-            <div class="flex items-center gap-3.5">
-                <div class="hidden sm:flex items-center gap-2 bg-slate-50 border border-slate-200/80 px-3 py-1.5 rounded-xl">
-                    <span id="user-greeting" class="text-xs font-semibold text-slate-500">同學，您好！</span>
-                </div>
-                <button id="btn-logout" class="bg-slate-100 hover:bg-[#E5ECF4] text-[#4A607A] border border-slate-200/80 px-4 py-1.5 rounded-xl text-xs font-bold transition-all">
-                    登出
-                </button>
-            </div>
-        </nav>
-
-        <!-- 【首頁滿版】：下半部搜尋、篩選控制、卡片列表區與分頁控制 -->
-        <main id="view-list" class="max-w-6xl w-full mx-auto px-4 sm:px-8 py-10 flex-1 flex flex-col justify-between">
-            <div class="w-full">
+        <!-- 【首頁滿版】：左側搜尋篩選、右側卡片列表與分頁控制 -->
+        <main id="view-list" class="max-w-6xl w-full mx-auto px-4 sm:px-8 py-10 flex-1 flex flex-col lg:flex-row gap-8">
+            
+            <!-- 左側搜尋與篩選側邊欄 (Sidebar Control Panel) -->
+            <div class="w-full lg:w-80 flex-shrink-0 flex flex-col gap-6">
                 
-                <!-- 搜尋與篩選控制面板 (置頂於列表上方) -->
-                <div class="w-full bg-white border border-slate-200 rounded-xl p-6 shadow-sm mb-8 space-y-4 text-slate-700">
+                <!-- 1. 系統識別與帳號狀態 (整合原 Navbar 角色) -->
+                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-tr from-thu-deep to-[#5D6D7E] text-white rounded-xl flex items-center justify-center text-xl flex-shrink-0 shadow-sm">
+                            <i class="ti ti-briefcase"></i>
+                        </div>
+                        <div>
+                            <h1 class="font-bold text-slate-800 text-sm tracking-wider">東海大學實習專區</h1>
+                            <p class="text-[10px] text-slate-400 font-medium">Internship Portal</p>
+                        </div>
+                    </div>
+                    
+                    <div class="border-t border-slate-100 pt-3 flex flex-col gap-2">
+                        <span id="user-greeting" class="text-xs font-semibold text-slate-500">同學，您好！</span>
+                        <button id="btn-logout" class="w-full bg-slate-100 hover:bg-[#E5ECF4] text-[#4A607A] border border-slate-200/80 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1">
+                            <i class="ti ti-logout text-xs"></i> 登出系統
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. 搜尋與直向篩選面板 -->
+                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">搜尋與篩選</h3>
+                    
                     <!-- 關鍵字搜尋 -->
                     <div class="relative w-full">
-                        <i class="ti ti-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl"></i>
-                        <input type="text" id="search-input" placeholder="搜尋機構名稱、主據點或海外中文譯名關鍵字..." class="w-full pl-12 pr-4 py-3.5 bg-[#F4F6F8] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#4A607A] focus:border-transparent transition-all text-sm font-medium">
+                        <i class="ti ti-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base"></i>
+                        <input type="text" id="search-input" placeholder="關鍵字搜尋..." class="w-full pl-9 pr-3 py-2.5 bg-[#F4F6F8] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#4A607A] focus:border-transparent transition-all text-xs font-medium">
                     </div>
 
-                    <!-- 四欄並排篩選器：國別、縣市、實習場所、行業別 -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                    <!-- 垂直排列的篩選器 -->
+                    <div class="flex flex-col gap-3">
                         <!-- 1. 國別 -->
                         <div class="relative">
-                            <select id="filter-country" class="w-full px-4 py-3 bg-[#F4F6F8] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#4A607A] focus:border-transparent transition-all text-sm font-semibold appearance-none cursor-pointer text-slate-600">
+                            <select id="filter-country" class="w-full pl-4 pr-10 py-2.5 bg-[#F4F6F8] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#4A607A] focus:border-transparent transition-all text-xs font-semibold appearance-none cursor-pointer text-slate-600">
                                 <option value="">全部國別</option>
                             </select>
-                            <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                            <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
                         </div>
 
                         <!-- 2. 縣市別 -->
                         <div class="relative">
-                            <select id="filter-city" class="w-full px-4 py-3 bg-[#F4F6F8] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#4A607A] focus:border-transparent transition-all text-sm font-semibold appearance-none cursor-pointer text-slate-600">
+                            <select id="filter-city" class="w-full pl-4 pr-10 py-2.5 bg-[#F4F6F8] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#4A607A] focus:border-transparent transition-all text-xs font-semibold appearance-none cursor-pointer text-slate-600">
                                 <option value="">全部縣市</option>
                             </select>
-                            <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                            <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
                         </div>
 
                         <!-- 3. 實習場所 -->
                         <div class="relative">
-                            <select id="filter-venue-type" class="w-full px-4 py-3 bg-[#F4F6F8] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#4A607A] focus:border-transparent transition-all text-sm font-semibold appearance-none cursor-pointer text-slate-600">
+                            <select id="filter-venue-type" class="w-full pl-4 pr-10 py-2.5 bg-[#F4F6F8] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#4A607A] focus:border-transparent transition-all text-xs font-semibold appearance-none cursor-pointer text-slate-600">
                                 <option value="">全部實習場所</option>
                             </select>
-                            <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                            <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
                         </div>
 
                         <!-- 4. 行業別 -->
                         <div class="relative">
-                            <select id="filter-industry" class="w-full px-4 py-3 bg-[#F4F6F8] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#4A607A] focus:border-transparent transition-all text-sm font-semibold appearance-none cursor-pointer text-slate-600">
+                            <select id="filter-industry" class="w-full pl-4 pr-10 py-2.5 bg-[#F4F6F8] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#4A607A] focus:border-transparent transition-all text-xs font-semibold appearance-none cursor-pointer text-slate-600">
                                 <option value="">全部行業別</option>
                             </select>
-                            <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                            <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
                         </div>
                     </div>
                 </div>
-
-                <!-- 加載中 -->
-                <div id="loading-state" class="py-20 flex flex-col items-center justify-center text-center">
-                    <div class="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 border-t-[#4A607A]"></div>
-                    <h3 class="mt-4 text-sm font-bold text-slate-600">資料加載中，請稍候...</h3>
-                </div>
-
-                <!-- 空狀態 -->
-                <div id="empty-state" class="hidden py-16 flex flex-col items-center justify-center text-center p-8">
-                    <div class="w-16 h-16 bg-slate-200/50 text-slate-400 rounded-full flex items-center justify-center mb-4">
-                        <i class="ti ti-search-off text-3xl"></i>
-                    </div>
-                    <h3 class="text-base font-bold text-slate-700">未尋找到符合條件的合作機構</h3>
-                    <p class="text-slate-400 text-xs mt-1">請嘗試調整您的篩選組合或縮減關鍵字。</p>
-                </div>
-
-                <!-- 機構卡片列表 (固定 1 頁 9 家：lg:grid-cols-3) -->
-                <div id="inst-list" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
             </div>
 
-            <!-- 莫蘭迪分頁器控制面板 -->
-            <div id="pagination-panel" class="hidden flex items-center justify-center gap-2 mt-12"></div>
+            <!-- 右側主要卡片呈現區 (1 頁 9 家：雙欄排列，極具呼吸感) -->
+            <div class="flex-1 flex flex-col justify-between min-h-[500px]">
+                <div class="w-full">
+                    <!-- 加載中 -->
+                    <div id="loading-state" class="py-20 flex flex-col items-center justify-center text-center">
+                        <div class="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 border-t-[#4A607A]"></div>
+                        <h3 class="mt-4 text-sm font-bold text-slate-600">資料加載中，請稍候...</h3>
+                    </div>
+
+                    <!-- 空狀態 -->
+                    <div id="empty-state" class="hidden py-16 flex flex-col items-center justify-center text-center p-8">
+                        <div class="w-16 h-16 bg-slate-200/50 text-slate-400 rounded-full flex items-center justify-center mb-4">
+                            <i class="ti ti-search-off text-3xl"></i>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-700">未尋找到符合條件的合作機構</h3>
+                        <p class="text-slate-400 text-xs mt-1">請嘗試調整您的篩選組合或縮減關鍵字。</p>
+                    </div>
+
+                    <!-- 機構卡片列表 -->
+                    <div id="inst-list" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-5"></div>
+                </div>
+
+                <!-- 莫蘭迪分頁器控制面板 -->
+                <div id="pagination-panel" class="hidden flex items-center justify-center gap-2 mt-12"></div>
+            </div>
         </main>
 
         <!-- 個別機構詳情頁面 -->
         <main id="view-detail" class="hidden max-w-6xl w-full mx-auto px-4 sm:px-8 py-10 flex-1">
-            <!-- 莫蘭迪圓角返回按鈕 -->
-            <button id="btn-back" class="inline-flex items-center gap-2 text-[#4A607A] hover:text-[#2E4053] font-bold text-sm bg-white hover:bg-[#E5ECF4] border border-slate-200 hover:border-[#8FA4B5]/50 px-5 py-2.5 rounded-xl transition-all duration-300 shadow-sm hover:shadow active:scale-95 mb-6">
-                <i class="ti ti-chevron-left text-base"></i> 返回機構列表
-            </button>
+            
+            <!-- 回上一頁與登出狀態列 -->
+            <div class="flex items-center justify-between gap-4 mb-6">
+                <!-- 莫蘭迪圓角返回按鈕 -->
+                <button id="btn-back" class="inline-flex items-center gap-2 text-[#4A607A] hover:text-[#2E4053] font-bold text-sm bg-white hover:bg-[#E5ECF4] border border-slate-200 hover:border-[#8FA4B5]/50 px-5 py-2.5 rounded-xl transition-all duration-300 shadow-sm hover:shadow active:scale-95">
+                    <i class="ti ti-chevron-left text-base"></i> 返回機構列表
+                </button>
+                
+                <!-- 帳號與登出 (詳情頁面專屬) -->
+                <div class="flex items-center gap-3">
+                    <span id="user-greeting-detail" class="hidden sm:inline text-xs font-semibold text-slate-500">同學，您好！</span>
+                    <button id="btn-logout-detail" class="bg-white hover:bg-[#E5ECF4] text-[#4A607A] border border-slate-200/80 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm">
+                        登出
+                    </button>
+                </div>
+            </div>
 
             <!-- 詳情整合生成區 -->
             <div id="detail-content" class="space-y-6"></div>
@@ -288,7 +308,10 @@
                 viewLoading.classList.add('hidden');
                 viewDashboard.classList.remove('hidden');
                 const displayName = user.email ? user.email.split('@')[0] : '授權人員';
+                
+                // 同步更新兩個視圖中的問候語
                 document.getElementById('user-greeting').textContent = `${displayName}，您好！`;
+                document.getElementById('user-greeting-detail').textContent = `${displayName}，您好！`;
                 
                 // 啟動加載
                 setupDropdowns();
@@ -311,12 +334,14 @@
             industriesList.forEach(i => selectIndustry.add(new Option(i, i)));
         }
 
-        // 登出
-        document.getElementById('btn-logout').addEventListener('click', () => {
+        // 登出流程 (兩個登出按鈕皆導向此)
+        const handleLogout = () => {
             showConfirm("登出確認", "您確定要登出系統嗎？", async () => {
                 await signOut(auth);
             });
-        });
+        };
+        document.getElementById('btn-logout').addEventListener('click', handleLogout);
+        document.getElementById('btn-logout-detail').addEventListener('click', handleLogout);
 
         // 返回
         document.getElementById('btn-back').addEventListener('click', () => {
@@ -639,35 +664,35 @@
                             <i class="ti ti-building"></i>
                         </div>
 
-                        <!-- 右側機構資訊 (標籤與地址字元調大一號) -->
+                        <!-- 右側機構資訊 (標籤與地址字級進行調小微調) -->
                         <div class="flex-1 flex flex-col justify-between py-1 space-y-2.5 text-center md:text-left min-w-0">
                             <!-- 第一行：機構名稱 -->
                             <div>
                                 <h2 class="text-lg sm:text-xl font-bold text-slate-800 tracking-tight leading-snug">${displayNameText}</h2>
                             </div>
 
-                            <!-- 第二行：標籤組 (字元調大一號：text-sm sm:text-base) -->
+                            <!-- 第二行：標籤組 (微調縮小為 text-xs sm:text-sm) -->
                             <div class="flex flex-wrap justify-center md:justify-start gap-2">
                                 ${inst.venueType ? `
-                                    <span class="inline-flex bg-[#EBF3F5] text-[#2E5B44] text-sm sm:text-base font-bold px-3 py-1 rounded-lg">
+                                    <span class="inline-flex bg-[#EBF3F5] text-[#2E5B44] text-xs sm:text-sm font-semibold px-2.5 py-0.5 rounded-md">
                                         ${inst.venueType}
                                     </span>
                                 ` : ''}
 
                                 ${inst.industry ? `
-                                    <span class="inline-flex bg-[#E5ECF4] text-[#4A607A] text-sm sm:text-base font-bold px-3 py-1 rounded-lg">
+                                    <span class="inline-flex bg-[#E5ECF4] text-[#4A607A] text-xs sm:text-sm font-semibold px-2.5 py-0.5 rounded-md">
                                         ${inst.industry}
                                     </span>
                                 ` : ''}
                             </div>
 
-                            <!-- 第三行：地址資訊列 (字元調大一號：text-base sm:text-lg) -->
-                            <div class="flex flex-wrap items-center justify-center md:justify-start gap-2 text-slate-500 text-base sm:text-lg">
-                                <i class="ti ti-map-pin text-[#8FA4B5] text-lg"></i>
+                            <!-- 第三行：地址資訊列 (微調縮小為 text-xs sm:text-sm) -->
+                            <div class="flex flex-wrap items-center justify-center md:justify-start gap-2 text-slate-500 text-xs sm:text-sm">
+                                <i class="ti ti-map-pin text-[#8FA4B5] text-sm sm:text-base"></i>
                                 
-                                <!-- 國別標籤置於 Icon 正後方 (字元調大一號：text-sm sm:text-base) -->
+                                <!-- 國別標籤置於 Icon 正後方 (微調縮小為 text-xs sm:text-sm) -->
                                 ${isOverseas ? `
-                                    <span class="inline-flex bg-[#F5EBEB] text-[#A66C6C] text-sm sm:text-base font-bold px-3 py-1 rounded-lg">
+                                    <span class="inline-flex bg-[#F5EBEB] text-[#A66C6C] text-xs sm:text-sm font-semibold px-2.5 py-0.5 rounded-md">
                                         ${inst.country}
                                     </span>
                                 ` : ''}
@@ -677,7 +702,7 @@
                                 </span>
                                 ${inst.address ? `
                                     <button onclick="copyAddress('${inst.address}')" class="p-1 hover:bg-slate-100 text-slate-400 hover:text-slate-800 rounded transition-colors" title="複製地址">
-                                        <i class="ti ti-copy text-sm"></i>
+                                        <i class="ti ti-copy text-xs"></i>
                                     </button>
                                 ` : ''}
                             </div>
