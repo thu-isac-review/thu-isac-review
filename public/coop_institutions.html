@@ -61,7 +61,7 @@
         }
         .glow-hover:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px -8px rgba(58, 120, 164, 0.15);
+            box-shadow: 0 10px 20px -8px rgba(58, 120, 164, 0.1);
         }
     </style>
 </head>
@@ -82,8 +82,8 @@
             <!-- 左側搜尋與篩選側邊欄 (Sidebar Control Panel) -->
             <div class="w-full lg:w-72 flex-shrink-0 flex flex-col gap-4">
                 
-                <!-- 1. 系統識別與帳號狀態 -->
-                <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                <!-- 1. 系統識別與帳號狀態 (淡化邊框至 border-slate-100) -->
+                <div class="bg-white border border-slate-100 rounded-xl p-4 shadow-sm">
                     <div class="flex items-center gap-2.5 mb-3">
                         <div class="w-9 h-9 bg-gradient-to-tr from-thu-deep to-[#5D6D7E] text-white rounded-xl flex items-center justify-center text-lg flex-shrink-0 shadow-sm">
                             <i class="ti ti-briefcase"></i>
@@ -94,30 +94,30 @@
                         </div>
                     </div>
                     
-                    <div class="border-t border-slate-100 pt-2.5 flex flex-col gap-2">
+                    <div class="border-t border-slate-100/70 pt-2.5 flex flex-col gap-2">
                         <span id="user-greeting" class="text-[11px] font-semibold text-slate-500">同學，您好！</span>
-                        <button id="btn-logout" class="w-full bg-[#F0F6FA] hover:bg-[#E5ECF4] text-[#3A78A4] border border-slate-200/80 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1">
+                        <button id="btn-logout" class="w-full bg-[#F0F6FA] hover:bg-[#E5ECF4] text-[#3A78A4] border border-slate-100 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1">
                             <i class="ti ti-logout text-xs"></i> 登出系統
                         </button>
                     </div>
                 </div>
 
-                <!-- 2. 條件篩選面板 (搜尋框在標題上面) -->
-                <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-4">
+                <!-- 2. 條件篩選面板 (搜尋框在標題上面，淡化所有邊框) -->
+                <div class="bg-white border border-slate-100 rounded-xl p-4 shadow-sm space-y-4">
                     <!-- 搜尋框移至最上方 -->
                     <div class="relative w-full">
                         <i class="ti ti-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                        <input type="text" id="search-input" placeholder="關鍵字搜尋..." class="w-full pl-8 pr-3 py-2 bg-[#F4F7FA] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#3A78A4] focus:border-transparent transition-all text-xs font-medium">
+                        <input type="text" id="search-input" placeholder="關鍵字搜尋..." class="w-full pl-8 pr-3 py-2 bg-[#F4F7FA] border border-slate-100 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#3A78A4] focus:border-transparent transition-all text-xs font-medium">
                     </div>
 
-                    <div class="border-t border-slate-100 pt-3">
+                    <div class="border-t border-slate-100/70 pt-3">
                         <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">條件篩選</h3>
                         
                         <!-- 垂直排列的篩選器 -->
                         <div class="flex flex-col gap-2.5">
                             <!-- 1. 國別 -->
                             <div class="relative">
-                                <select id="filter-country" class="w-full pl-3 pr-8 py-2 bg-[#F4F7FA] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#3A78A4] focus:border-transparent transition-all text-xs font-semibold appearance-none cursor-pointer text-slate-600">
+                                <select id="filter-country" class="w-full pl-3 pr-8 py-2 bg-[#F4F7FA] border border-slate-100 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#3A78A4] focus:border-transparent transition-all text-xs font-semibold appearance-none cursor-pointer text-slate-600">
                                     <option value="">全部國別</option>
                                 </select>
                                 <i class="ti ti-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
@@ -125,7 +125,7 @@
 
                             <!-- 2. 縣市別 -->
                             <div class="relative">
-                                <select id="filter-city" class="w-full pl-3 pr-8 py-2 bg-[#F4F7FA] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#3A78A4] focus:border-transparent transition-all text-xs font-semibold appearance-none cursor-pointer text-slate-600">
+                                <select id="filter-city" class="w-full pl-3 pr-8 py-2 bg-[#F4F7FA] border border-slate-100 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#3A78A4] focus:border-transparent transition-all text-xs font-semibold appearance-none cursor-pointer text-slate-600">
                                     <option value="">全部縣市</option>
                                 </select>
                                 <i class="ti ti-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
@@ -133,7 +133,7 @@
 
                             <!-- 3. 實習場所 -->
                             <div class="relative">
-                                <select id="filter-venue-type" class="w-full pl-3 pr-8 py-2 bg-[#F4F7FA] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#3A78A4] focus:border-transparent transition-all text-xs font-semibold appearance-none cursor-pointer text-slate-600">
+                                <select id="filter-venue-type" class="w-full pl-3 pr-8 py-2 bg-[#F4F7FA] border border-slate-100 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#3A78A4] focus:border-transparent transition-all text-xs font-semibold appearance-none cursor-pointer text-slate-600">
                                     <option value="">全部實習場所</option>
                                 </select>
                                 <i class="ti ti-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
@@ -141,7 +141,7 @@
 
                             <!-- 4. 行業別 -->
                             <div class="relative">
-                                <select id="filter-industry" class="w-full pl-3 pr-8 py-2 bg-[#F4F7FA] border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#3A78A4] focus:border-transparent transition-all text-xs font-semibold appearance-none cursor-pointer text-slate-600">
+                                <select id="filter-industry" class="w-full pl-3 pr-8 py-2 bg-[#F4F7FA] border border-slate-100 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#3A78A4] focus:border-transparent transition-all text-xs font-semibold appearance-none cursor-pointer text-slate-600">
                                     <option value="">全部行業別</option>
                                 </select>
                                 <i class="ti ti-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
@@ -151,8 +151,8 @@
                 </div>
             </div>
 
-            <!-- 右側主要卡片呈現區 (調整為緊湊比例，避免上下滾動) -->
-            <div class="flex-1 flex flex-col justify-between min-h-[480px]">
+            <!-- 右側主要卡片呈現區 (移除 justify-between 與大 min-h，使頁碼緊密排列) -->
+            <div class="flex-1 flex flex-col justify-start gap-5">
                 <div class="w-full">
                     <!-- 加載中 -->
                     <div id="loading-state" class="py-16 flex flex-col items-center justify-center text-center">
@@ -169,20 +169,20 @@
                         <p class="text-slate-400 text-[11px] mt-1">請嘗試調整您的篩選組合或縮減關鍵字。</p>
                     </div>
 
-                    <!-- 機構卡片列表 (電腦版精確控高，避免溢出滑動) -->
+                    <!-- 機構卡片列表 (調成微透明的細柔邊框 border-slate-200/40) -->
                     <div id="inst-list" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
                 </div>
 
                 <!-- 莫蘭迪分頁器控制面板 -->
-                <div id="pagination-panel" class="hidden flex items-center justify-center gap-1.5 mt-8"></div>
+                <div id="pagination-panel" class="hidden flex items-center justify-center mt-3"></div>
             </div>
         </main>
 
-        <!-- 個別機構詳情頁面 (移除了所有登出相關元素，保持極簡) -->
+        <!-- 個別機構詳情頁面 -->
         <main id="view-detail" class="hidden max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 flex-1">
             <div class="flex items-center justify-between gap-4 mb-5">
                 <!-- 莫蘭迪圓角返回按鈕 -->
-                <button id="btn-back" class="inline-flex items-center gap-1.5 text-[#3A78A4] hover:text-[#2C5E7A] font-bold text-xs sm:text-sm bg-white hover:bg-[#E5ECF4] border border-slate-200 hover:border-[#6EA4CA]/50 px-4 py-2 rounded-xl transition-all duration-300 shadow-sm hover:shadow active:scale-95">
+                <button id="btn-back" class="inline-flex items-center gap-1.5 text-[#3A78A4] hover:text-[#2C5E7A] font-bold text-xs sm:text-sm bg-white hover:bg-[#E5ECF4] border border-slate-100 hover:border-[#6EA4CA]/30 px-4 py-2 rounded-xl transition-all duration-300 shadow-sm hover:shadow active:scale-95">
                     <i class="ti ti-chevron-left text-sm"></i> 返回機構列表
                 </button>
             </div>
@@ -194,7 +194,7 @@
 
     <!-- 全域 Modal 控制 -->
     <div id="confirm-modal" class="fixed inset-0 bg-[#2E4053]/20 backdrop-blur-sm z-[90] hidden items-center justify-center p-4">
-        <div class="bg-white rounded-xl border border-slate-200 shadow-2xl max-w-sm w-full p-6 animate-in fade-in zoom-in-95 duration-200">
+        <div class="bg-white rounded-xl border border-slate-100 shadow-2xl max-w-sm w-full p-6 animate-in fade-in zoom-in-95 duration-200">
             <h4 class="text-sm font-bold text-slate-800 text-center" id="confirm-title">確認動作</h4>
             <p class="text-xs text-slate-400 text-center mt-2 leading-relaxed" id="confirm-desc">確定要執行此操作嗎？</p>
             <div class="grid grid-cols-2 gap-3 mt-5">
@@ -482,9 +482,9 @@
                     }
 
                     listHtml += `
-                        <div class="glow-hover bg-white border border-slate-200/80 rounded-xl p-5 shadow-sm flex flex-col justify-between cursor-pointer min-h-[125px]" onclick="openDetail('${inst.id}')">
+                        <div class="glow-hover bg-white border border-slate-200/40 rounded-xl p-5 shadow-sm flex flex-col justify-between cursor-pointer min-h-[125px]" onclick="openDetail('${inst.id}')">
                             <div>
-                                <!-- LOGO大小固定為正方形 (w-12 h-12)，對齊名稱，名稱太長自動換行 -->
+                                <!-- LOGO與名稱頂端對齊 -->
                                 <div class="flex items-start gap-3.5 mb-3">
                                     <div class="w-12 h-12 bg-[#E5ECF4] text-[#3A78A4] flex items-center justify-center text-lg flex-shrink-0 rounded-xl">
                                         <i class="ti ti-building"></i>
@@ -495,7 +495,7 @@
                                 </div>
                             </div>
 
-                            <!-- 實習場所與行業別標籤互換順序 (場所在左，行業在右) -->
+                            <!-- 實習場所與行業別標籤 (淡化邊框、高質感背景) -->
                             <div class="flex items-center justify-between gap-2 mt-auto pt-2.5 border-t border-slate-100/60">
                                 <div class="flex flex-wrap gap-1.5 max-w-[85%]">
                                     ${inst.venueType ? `<span class="bg-[#EAF7EE] text-[#1E6B3E] text-[10px] font-semibold px-2 py-0.5 rounded">${inst.venueType}</span>` : ''}
@@ -508,7 +508,7 @@
                         </div>
                     `;
                 } else {
-                    // 補齊透明的卡片骨架，維持首頁頁面高度絕對固定，在電腦版下完美避免上下滾動
+                    // 補齊透明卡片骨架
                     listHtml += `
                         <div class="opacity-0 pointer-events-none min-h-[125px] border border-transparent"></div>
                     `;
@@ -519,7 +519,7 @@
             renderPaginationControls(totalPages);
         }
 
-        // ================== 分頁器：加入第一頁與最後一頁快速跳轉鍵 ==================
+        // ================== 分頁器：左右控制鍵完全鎖定，數字於中間自適應 ==================
         function renderPaginationControls(totalPages) {
             const panel = document.getElementById('pagination-panel');
             if (totalPages <= 1) {
@@ -528,23 +528,21 @@
             }
             panel.classList.remove('hidden');
 
-            let html = '';
-            
-            // 第一頁快速鍵
-            html += `
-                <button onclick="changePage(1)" ${currentPage === 1 ? 'disabled' : ''} class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[#3A78A4] hover:bg-[#E5ECF4] transition-all disabled:opacity-30 disabled:hover:bg-white disabled:cursor-not-allowed text-xs font-bold" title="第一頁">
-                    <i class="ti ti-chevrons-left text-sm"></i>
+            let leftButtonsHtml = '';
+            let middleButtonsHtml = '';
+            let rightButtonsHtml = '';
+
+            // 左側鎖定區：第一頁與上一頁
+            leftButtonsHtml += `
+                <button onclick="changePage(1)" ${currentPage === 1 ? 'disabled' : ''} class="w-9 h-9 rounded-xl border border-slate-100 bg-white text-[#3A78A4] hover:bg-[#E5ECF4] transition-all disabled:opacity-30 disabled:hover:bg-white disabled:cursor-not-allowed text-xs font-bold flex items-center justify-center" title="第一頁">
+                    <i class="ti ti-chevrons-left"></i>
+                </button>
+                <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} class="w-9 h-9 rounded-xl border border-slate-100 bg-white text-[#3A78A4] hover:bg-[#E5ECF4] transition-all disabled:opacity-30 disabled:hover:bg-white disabled:cursor-not-allowed text-xs font-bold flex items-center justify-center" title="上一頁">
+                    <i class="ti ti-chevron-left"></i>
                 </button>
             `;
 
-            // 上一頁
-            html += `
-                <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[#3A78A4] hover:bg-[#E5ECF4] transition-all disabled:opacity-30 disabled:hover:bg-white disabled:cursor-not-allowed text-xs font-bold">
-                    <i class="ti ti-chevron-left text-sm"></i>
-                </button>
-            `;
-
-            // 智慧截斷型頁碼生成邏輯
+            // 中間自適應頁碼
             const maxPageButtons = 5;
             let startPage = Math.max(1, currentPage - 2);
             let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
@@ -553,58 +551,64 @@
                 startPage = Math.max(1, endPage - maxPageButtons + 1);
             }
 
-            // 首頁輔助提示
             if (startPage > 1) {
-                html += `
-                    <button onclick="changePage(1)" class="px-3 py-1 bg-white border border-slate-200 rounded-xl text-xs font-bold text-[#3A78A4] hover:bg-[#E5ECF4] transition-all">1</button>
+                middleButtonsHtml += `
+                    <button onclick="changePage(1)" class="w-8 h-8 rounded-xl border border-slate-100 bg-white text-xs font-bold text-[#3A78A4] hover:bg-[#E5ECF4] transition-all flex items-center justify-center">1</button>
                 `;
                 if (startPage > 2) {
-                    html += `<span class="text-slate-400 text-xs px-1">...</span>`;
+                    middleButtonsHtml += `<span class="text-slate-400 text-xs px-1 flex items-center">...</span>`;
                 }
             }
 
-            // 區間頁碼
             for (let i = startPage; i <= endPage; i++) {
                 if (i === currentPage) {
-                    html += `
-                        <button class="px-3 py-1.5 rounded-xl bg-[#3A78A4] text-white font-bold text-xs shadow-sm transition-all">
+                    middleButtonsHtml += `
+                        <button class="w-8 h-8 rounded-xl bg-[#3A78A4] text-white font-bold text-xs shadow-sm flex items-center justify-center">
                             ${i}
                         </button>
                     `;
                 } else {
-                    html += `
-                        <button onclick="changePage(${i})" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[#3A78A4] hover:bg-[#E5ECF4] font-bold text-xs transition-all">
+                    middleButtonsHtml += `
+                        <button onclick="changePage(${i})" class="w-8 h-8 rounded-xl border border-slate-100 bg-white text-[#3A78A4] hover:bg-[#E5ECF4] font-bold text-xs transition-all flex items-center justify-center">
                             ${i}
                         </button>
                     `;
                 }
             }
 
-            // 尾頁輔助提示
             if (endPage < totalPages) {
                 if (endPage < totalPages - 1) {
-                    html += `<span class="text-slate-400 text-xs px-1">...</span>`;
+                    middleButtonsHtml += `<span class="text-slate-400 text-xs px-1 flex items-center">...</span>`;
                 }
-                html += `
-                    <button onclick="changePage(${totalPages})" class="px-3 py-1 bg-white border border-slate-200 rounded-xl text-xs font-bold text-[#3A78A4] hover:bg-[#E5ECF4] transition-all">${totalPages}</button>
+                middleButtonsHtml += `
+                    <button onclick="changePage(${totalPages})" class="w-8 h-8 rounded-xl border border-slate-100 bg-white text-xs font-bold text-[#3A78A4] hover:bg-[#E5ECF4] transition-all flex items-center justify-center">${totalPages}</button>
                 `;
             }
 
-            // 下一頁
-            html += `
-                <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[#3A78A4] hover:bg-[#E5ECF4] transition-all disabled:opacity-30 disabled:hover:bg-white disabled:cursor-not-allowed text-xs font-bold">
-                    <i class="ti ti-chevron-right text-sm"></i>
+            // 右側鎖定區：下一頁與最後一頁
+            rightButtonsHtml += `
+                <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} class="w-9 h-9 rounded-xl border border-slate-100 bg-white text-[#3A78A4] hover:bg-[#E5ECF4] transition-all disabled:opacity-30 disabled:hover:bg-white disabled:cursor-not-allowed text-xs font-bold flex items-center justify-center" title="下一頁">
+                    <i class="ti ti-chevron-right"></i>
+                </button>
+                <button onclick="changePage(${totalPages})" ${currentPage === totalPages ? 'disabled' : ''} class="w-9 h-9 rounded-xl border border-slate-100 bg-white text-[#3A78A4] hover:bg-[#E5ECF4] transition-all disabled:opacity-30 disabled:hover:bg-white disabled:cursor-not-allowed text-xs font-bold flex items-center justify-center" title="最後一頁">
+                    <i class="ti ti-chevrons-right"></i>
                 </button>
             `;
 
-            // 最後一頁快速鍵
-            html += `
-                <button onclick="changePage(${totalPages})" ${currentPage === totalPages ? 'disabled' : ''} class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[#3A78A4] hover:bg-[#E5ECF4] transition-all disabled:opacity-30 disabled:hover:bg-white disabled:cursor-not-allowed text-xs font-bold" title="最後一頁">
-                    <i class="ti ti-chevrons-right text-sm"></i>
-                </button>
+            // 左右兩端精確固定，中間頁碼自適應之莫蘭迪分頁條
+            panel.innerHTML = `
+                <div class="flex items-center justify-between w-full max-w-md mx-auto bg-white border border-slate-100 rounded-xl p-1.5 shadow-sm">
+                    <div class="flex items-center gap-1 flex-shrink-0">
+                        ${leftButtonsHtml}
+                    </div>
+                    <div class="flex items-center gap-1 justify-center overflow-hidden">
+                        ${middleButtonsHtml}
+                    </div>
+                    <div class="flex items-center gap-1 flex-shrink-0">
+                        ${rightButtonsHtml}
+                    </div>
+                </div>
             `;
-
-            panel.innerHTML = html;
         }
 
         window.changePage = function(page) {
@@ -660,8 +664,8 @@
             }
 
             elDetailContent.innerHTML = `
-                <!-- 1. 上方總機構橫向面版 (圓角修正為 rounded-xl) -->
-                <div class="bg-white border border-slate-200 rounded-xl p-6 sm:p-8 shadow-sm">
+                <!-- 1. 上方總機構橫向面版 (淡化為 border-slate-100) -->
+                <div class="bg-white border border-slate-100 rounded-xl p-6 sm:p-8 shadow-sm">
                     <div class="flex flex-col md:flex-row items-center md:items-stretch gap-6">
                         
                         <!-- 左側莫蘭迪藍 Office 容器 (與右側三行等高) -->
@@ -669,14 +673,14 @@
                             <i class="ti ti-building"></i>
                         </div>
 
-                        <!-- 右側機構資訊 (標籤與地址字級微調縮小，避免臃腫) -->
+                        <!-- 右側機構資訊 (標籤與地址字元微調縮小，避免臃腫) -->
                         <div class="flex-1 flex flex-col justify-between py-1 space-y-2.5 text-center md:text-left min-w-0">
                             <!-- 第一行：機構名稱 -->
                             <div>
                                 <h2 class="text-lg sm:text-xl font-bold text-slate-800 tracking-tight leading-snug">${displayNameText}</h2>
                             </div>
 
-                            <!-- 第二行：標籤組 (微調縮小為 text-xs sm:text-sm) -->
+                            <!-- 第二行：標籤組 (精緻微縮微調：text-xs sm:text-sm) -->
                             <div class="flex flex-wrap justify-center md:justify-start gap-2">
                                 ${inst.venueType ? `
                                     <span class="inline-flex bg-[#EBF3F5] text-[#2E5B44] text-xs sm:text-sm font-semibold px-2.5 py-0.5 rounded-md">
@@ -695,7 +699,7 @@
                             <div class="flex flex-wrap items-center justify-center md:justify-start gap-2 text-slate-500 text-xs sm:text-sm">
                                 <i class="ti ti-map-pin text-[#8FA4B5] text-sm sm:text-base"></i>
                                 
-                                <!-- 國別標籤置於 Icon 正後方 -->
+                                <!-- 國別標籤置於 Icon 正後方 (微調縮小為 text-xs sm:text-sm) -->
                                 ${isOverseas ? `
                                     <span class="inline-flex bg-[#F5EBEB] text-[#A66C6C] text-xs sm:text-sm font-semibold px-2.5 py-0.5 rounded-md">
                                         ${inst.country}
@@ -717,7 +721,7 @@
                 </div>
 
                 <!-- 2. 下方分支機構/分所列表 (高度一律固定為 5 個據點高度，約 250px) -->
-                <div class="bg-white border border-slate-200 rounded-xl p-6 sm:p-8 shadow-sm">
+                <div class="bg-white border border-slate-100 rounded-xl p-6 sm:p-8 shadow-sm">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-5">
                         <h3 class="font-bold text-slate-800 text-sm sm:text-base">
                             分支機構列表
@@ -732,7 +736,7 @@
 
                     <!-- 分支機構固定 5 行高度的容器 (就算無據點，高度也固定在 250px) -->
                     <div class="flex flex-col justify-between min-h-[300px]">
-                        <div id="branches-list-wrapper" class="divide-y divide-slate-100 flex-1">
+                        <div id="branches-list-wrapper" class="divide-y divide-slate-100/70 flex-1">
                             <!-- JS 動態生成分支項目 -->
                         </div>
                         
@@ -787,7 +791,7 @@
                 const branch = slicedBranches[i];
                 if (branch) {
                     // 第一個項目不要顯示上方邊框
-                    const borderClass = i === 0 ? 'border-t-0 pt-1' : 'border-t border-slate-100 pt-3';
+                    const borderClass = i === 0 ? 'border-t-0 pt-1' : 'border-t border-slate-100/50 pt-3';
                     const domesticCityTag = (!isOverseas && branch.city) 
                         ? `<span class="bg-[#E5ECF4] text-[#3A78A4] text-[11px] font-bold px-2.5 py-0.5 rounded mr-3 flex-shrink-0">${branch.city}</span>` 
                         : '';
@@ -817,7 +821,7 @@
                         上一頁
                     </button>
                     <span class="text-xs text-slate-400 font-bold">${currentBranchPage} / ${totalBranchPages}</span>
-                    <button onclick="changeBranchPage(${currentBranchPage + 1}, '${inst.id}')" ${currentBranchPage === totalPages ? 'disabled' : ''} class="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-[#3A78A4] hover:bg-[#E5ECF4] transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                    <button onclick="changeBranchPage(${currentBranchPage + 1}, '${inst.id}')" ${currentBranchPage === totalBranchPages ? 'disabled' : ''} class="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-[#3A78A4] hover:bg-[#E5ECF4] transition-all disabled:opacity-30 disabled:cursor-not-allowed">
                         下一頁
                     </button>
                 `;
