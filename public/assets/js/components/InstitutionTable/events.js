@@ -6,7 +6,7 @@ import * as Data from './data.js';
 export function bindEvents(container) {
     if (!container) return;
 
-    // 🌟 [新增] 全域鍵盤快捷鍵綁定
+    // 🌟 全域鍵盤快捷鍵綁定
     if (!state.isKeyboardShortcutBound) {
         document.addEventListener('keydown', (e) => {
             // [快捷鍵: ESC] 關閉最上層彈窗
@@ -29,7 +29,7 @@ export function bindEvents(container) {
 
             // [快捷鍵: Ctrl + S 或 Cmd + S] 儲存當前開啟的彈窗表單
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
-                if (state.isReadOnly) return; // 唯讀模式阻擋儲存
+                if (state.isReadOnly) return; 
                 e.preventDefault();
                 
                 if (document.getElementById('change-intent-modal')?.classList.contains('open')) {
@@ -41,7 +41,7 @@ export function bindEvents(container) {
                 } else if (document.getElementById('merge-modal')?.classList.contains('open')) {
                     document.getElementById('btn-merge-submit')?.click();
                 } else if (document.getElementById('batch-parent-modal')?.classList.contains('open')) {
-                    document.getElementById('btn-confirm-batch-parent')?.click(); // 🌟 新增批次總公司快捷儲存
+                    document.getElementById('btn-confirm-batch-parent')?.click(); 
                 } else if (document.getElementById('data-modal')?.classList.contains('open')) {
                     document.getElementById('btn-submit')?.click();
                 }
@@ -326,19 +326,16 @@ export function bindEvents(container) {
         document.getElementById('merge-modal')?.classList.add('open');
     });
 
-    // 🌟 [新增] 點擊快捷列上的「設為分支」按鈕 -> 打開 Modal
     container.querySelector('#btn-batch-parent')?.addEventListener('click', () => {
         if(state.isReadOnly) return;
         if(state.selectedIds.length === 0) return;
         document.getElementById('batch-parent-selected-count').textContent = state.selectedIds.length;
-        UI.populateBatchParentDropdown(); // 載入過濾後的總公司清單
-        document.getElementById('batch-parent-id-value').value = '';
+        UI.populateBatchParentDropdown();
         document.getElementById('batch-parent-search').value = '';
         document.getElementById('batch-parent-modal')?.classList.add('open');
     });
 
     // ---------------- 5. 分頁與排序 ----------------
-    // ... [這區與原本完全相同，省略文字，您原本的 code 留著]
     container.querySelector('#per-page-select')?.addEventListener('change', (e) => { 
         state.itemsPerPage = Number(e.target.value); state.currentPage = 1; Render.renderTable(); 
     });
@@ -557,38 +554,31 @@ export function bindEvents(container) {
         }
     });
 
-    // 🌟 [新增] 批次設定總公司的 Modal 內部事件
-    container.querySelector('.btn-close-modal')?.addEventListener('click', (e) => {
-        // 如果是批次設定總公司的關閉按鈕
-        if(e.target.closest('#batch-parent-modal')) UI.closeBatchParentModal();
-    });
-    container.querySelector('#batch-parent-modal .btn-secondary')?.addEventListener('click', UI.closeBatchParentModal);
+    // 🌟 批次設定總公司的 Modal 內部事件
+    container.querySelector('#btn-close-batch-parent-x')?.addEventListener('click', UI.closeBatchParentModal);
+    container.querySelector('#btn-cancel-batch-parent')?.addEventListener('click', UI.closeBatchParentModal);
 
     // 🌟 總公司 Modal 內的搜尋過濾
     container.querySelector('#batch-parent-search')?.addEventListener('input', (e) => {
         const term = e.target.value.toLowerCase().trim();
-        const options = document.querySelectorAll('#batch-parent-dropdown-list .searchable-option');
+        const options = document.querySelectorAll('#batch-parent-dropdown-list .batch-parent-item');
         options.forEach(opt => {
-            if(opt.classList.contains('empty-opt')) return;
             const text = (opt.dataset.name || '').toLowerCase();
             opt.style.display = text.includes(term) ? 'flex' : 'none';
         });
-    });
-
-    // 🌟 點擊清單選擇總公司
-    container.querySelector('#batch-parent-dropdown-list')?.addEventListener('click', (e) => {
-        const option = e.target.closest('.searchable-option');
-        if (!option) return;
-        document.querySelectorAll('#batch-parent-dropdown-list .searchable-option').forEach(opt => opt.classList.remove('selected'));
-        option.classList.add('selected');
-        document.getElementById('batch-parent-id-value').value = option.dataset.id || '';
     });
 
     // 🌟 確認送出批次設定總公司
     container.querySelector('#btn-confirm-batch-parent')?.addEventListener('click', async () => {
         if(state.isReadOnly || state.selectedIds.length === 0) return;
         
-        const parentId = document.getElementById('batch-parent-id-value').value;
+        const selectedRadio = document.querySelector('input[name="batch_parent_inst"]:checked');
+        if (!selectedRadio) {
+            alert("請先在下方列表選擇一間總公司，或選擇「獨立機構 (清除隸屬關係)」。");
+            return;
+        }
+        
+        const parentId = selectedRadio.value;
         const confirmMsg = parentId === '' 
             ? `確定要將這 ${state.selectedIds.length} 筆機構解除隸屬，設為「獨立機構」嗎？`
             : `確定要將這 ${state.selectedIds.length} 筆機構的總公司設定為所選項嗎？`;
@@ -601,7 +591,7 @@ export function bindEvents(container) {
         btn.disabled = true;
 
         try {
-            await Data.executeBatchSetParent(parentId); // 呼叫 Data 層執行
+            await Data.executeBatchSetParent(parentId); 
             UI.closeBatchParentModal();
             await Data.fetchInitialDataOnce(); 
             UI.updateBatchActionBar(); 
@@ -714,7 +704,6 @@ export function bindEvents(container) {
     });
 
     // ---------------- 10. 歷史快照相關 Modal ----------------
-    // ... [這區與原本完全相同，省略文字，您原本的 code 留著]
     const tabBtnMain = container.querySelector('#tab-btn-main');
     const tabBtnHistory = container.querySelector('#tab-btn-history');
     const tabMain = container.querySelector('#data-form');
