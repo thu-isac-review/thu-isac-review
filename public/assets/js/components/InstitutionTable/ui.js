@@ -231,15 +231,27 @@ export function populateBatchParentDropdown() {
     const listContainer = document.getElementById('batch-parent-dropdown-list');
     if (!listContainer) return;
 
-    let html = '<div class="searchable-option empty-opt" data-id="" data-name="">-- 獨立機構 (清除隸屬關係) --</div>';
+    // 第一個選項：清除隸屬關係
+    let html = `
+    <label class="merge-option" style="margin-bottom: 8px;">
+        <input type="radio" name="batch_parent_inst" value="" class="batch-parent-radio">
+        <div class="merge-option-content">
+            <div class="merge-option-title" style="color: var(--text-secondary);"><i class="ti ti-unlink"></i> 獨立機構 (清除隸屬關係)</div>
+            <div class="merge-option-desc">解除目前所選機構的隸屬關係，將其設為獨立機構。</div>
+        </div>
+    </label>`;
     
     state.allData.forEach(d => {
-        // 只能選擇 "本身沒有總公司" 的機構作為總公司，且不能選擇 "目前被勾選" 的機構
+        // 過濾掉已有總公司的機構，以及目前正在被勾選的機構
         if (!d.parent_id && !state.selectedIds.includes(d.id)) {
             html += `
-            <div class="searchable-option batch-parent-option" data-id="${d.id}" data-name="${d.name}">
-                <span>${d.name}</span> 
-            </div>`;
+            <label class="merge-option batch-parent-item" data-name="${d.name}" style="margin-bottom: 8px;">
+                <input type="radio" name="batch_parent_inst" value="${d.id}" class="batch-parent-radio">
+                <div class="merge-option-content">
+                    <div class="merge-option-title">${d.name}</div>
+                    <div class="merge-option-desc">統編/代碼：${d.tax_id || d.overseas_tax_id || '無'} | 地址：${d.address || '無'}</div>
+                </div>
+            </label>`;
         }
     });
     listContainer.innerHTML = html;
