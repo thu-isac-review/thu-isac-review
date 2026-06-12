@@ -95,6 +95,7 @@
             <button id="btn-select-all-filtered" class="btn btn-sm btn-secondary">選取全部符合條件</button>
             <button id="btn-clear-selection" class="btn btn-sm btn-secondary">取消選取</button>
             <div class="flex-spacer"></div>
+            <button id="btn-batch-parent" class="btn btn-sm secondary"><i class="ti ti-building-skyscraper"></i> 設為分支</button>
             <button id="btn-batch-edit" class="btn btn-sm btn-primary"><i class="ti ti-edit"></i> 批次修改屬性</button>
             <button id="btn-batch-merge" class="btn btn-sm btn-indigo-solid"><i class="ti ti-link"></i> 合併勾選</button>
             <button id="btn-batch-delete" class="btn btn-sm btn-danger-solid"><i class="ti ti-trash"></i> 批次刪除</button>
@@ -339,6 +340,32 @@
             <div class="dialog-footer" style="background:#f8fafc; border-top:1px solid var(--border); padding:16px 24px; border-radius: 0 0 12px 12px; display:flex; justify-content:flex-end; gap:8px;">
                 <button type="button" class="btn btn-secondary" style="background:white;" id="btn-cancel-batch">取消</button>
                 <button type="button" id="btn-batch-edit-submit" class="btn btn-primary" style="box-shadow:var(--shadow-sm);"><i class="ti ti-check"></i> 確認批次更新</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="batch-parent-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>批次設定隸屬總公司</h3>
+                <button type="button" class="btn-close-modal" onclick="document.getElementById('batch-parent-modal').classList.remove('open')"><i class="ti ti-x"></i></button>
+            </div>
+            <div class="modal-body space-y-4">
+                <p class="text-xs text-slate-500 font-medium">將目前勾選的 <span id="batch-parent-selected-count" class="text-thu-blue font-bold">0</span> 間機構，統一設定為以下總公司的分支據點：</p>
+                
+                <div class="searchable-dropdown-wrapper">
+                    <div class="search-input-wrapper">
+                        <i class="ti ti-search text-slate-400 text-sm"></i>
+                        <input type="text" id="batch-parent-search" placeholder="搜尋總公司名稱...">
+                    </div>
+                    <div id="batch-parent-dropdown-list" class="searchable-list">
+                        </div>
+                </div>
+                <input type="hidden" id="batch-parent-id-value" value="">
+            </div>
+            <div class="modal-footer flex gap-2 justify-end">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('batch-parent-modal').classList.remove('open')">取消</button>
+                <button type="button" id="btn-confirm-batch-parent" class="btn btn-primary">確認設定</button>
             </div>
         </div>
     </div>
