@@ -579,8 +579,8 @@ export function bindEvents(container) {
     container.querySelector('#batch-parent-dropdown-list')?.addEventListener('click', (e) => {
         const option = e.target.closest('.searchable-option');
         if (!option) return;
-        document.querySelectorAll('#batch-parent-dropdown-list .searchable-option').forEach(opt => opt.classList.remove('selected', 'bg-slate-50', 'border-brand'));
-        option.classList.add('selected', 'bg-slate-50', 'border-brand');
+        document.querySelectorAll('#batch-parent-dropdown-list .searchable-option').forEach(opt => opt.classList.remove('selected'));
+        option.classList.add('selected');
         document.getElementById('batch-parent-id-value').value = option.dataset.id || '';
     });
 
