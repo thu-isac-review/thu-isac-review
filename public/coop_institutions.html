@@ -718,6 +718,17 @@
             for (let i = 0; i < branchItemsPerPage; i++) {
                 const branch = sliced[i];
                 if (branch) {
+                    // === 新增：分支名稱智能過濾邏輯 ===
+                    let displayBranchName = branch.name.trim();
+                    const mainName = inst.name.trim();
+                    
+                    // 嚴格比對：開頭為「主機構名+左括號」，且結尾為「右括號」 (同時支援全形與半形)
+                    if (displayBranchName.startsWith(mainName + '（') && displayBranchName.endsWith('）')) {
+                        displayBranchName = displayBranchName.slice(mainName.length + 1, -1);
+                    } else if (displayBranchName.startsWith(mainName + '(') && displayBranchName.endsWith(')')) {
+                        displayBranchName = displayBranchName.slice(mainName.length + 1, -1);
+                    }
+                    
                     listHtml += `
                         <div class="py-4 flex flex-col md:flex-row md:items-center justify-between gap-3 h-auto md:h-[68px] hover:bg-slate-50/50 transition-colors px-2 rounded-lg">
                             <div class="flex items-center gap-3 min-w-0">
