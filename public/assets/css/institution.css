@@ -26,6 +26,7 @@ i.ti { line-height: 1; }
 .searchable-dropdown.show { display: block; }
 .searchable-option { padding: 10px 12px; font-size: 13px; color: var(--text-primary); cursor: pointer; border-bottom: 1px solid var(--border); transition: all 0.15s; display: flex; align-items: center; justify-content: space-between; }
 .searchable-option:hover { background: var(--brand-light); color: var(--brand); font-weight: 600; }
+.searchable-option.selected { background: var(--brand-light); color: var(--brand); font-weight: 700; border-left: 3px solid var(--brand); }
 .searchable-option:last-child { border-bottom: none; }
 .searchable-option.empty-opt { color: var(--text-muted); font-style: italic; background: var(--bg); font-weight: 400; justify-content: center; }
 .searchable-option.empty-opt:hover { background: var(--bg); color: var(--text-muted); cursor: default; font-weight: 400; }
