@@ -344,28 +344,39 @@
         </div>
     </div>
 
-    <div id="batch-parent-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 500px;">
-            <div class="modal-header">
-                <h3>批次設定隸屬總公司</h3>
-                <button type="button" class="btn-close-modal" onclick="document.getElementById('batch-parent-modal').classList.remove('open')"><i class="ti ti-x"></i></button>
-            </div>
-            <div class="modal-body space-y-4">
-                <p class="text-xs text-slate-500 font-medium">將目前勾選的 <span id="batch-parent-selected-count" class="text-thu-blue font-bold">0</span> 間機構，統一設定為以下總公司的分支據點：</p>
-                
-                <div class="searchable-dropdown-wrapper">
-                    <div class="search-input-wrapper">
-                        <i class="ti ti-search text-slate-400 text-sm"></i>
-                        <input type="text" id="batch-parent-search" placeholder="搜尋總公司名稱...">
-                    </div>
-                    <div id="batch-parent-dropdown-list" class="searchable-list">
-                        </div>
+    <div id="batch-parent-modal" class="dialog-overlay">
+        <div class="dialog-box" style="max-width: 500px;">
+            <div class="dialog-header flex-col items-start p-0 border-none">
+                <div style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:20px 24px 16px; border-bottom:1px solid var(--border); background:#f8fafc;">
+                    <h3 style="display:flex; align-items:center; gap:8px; font-size:16px; font-weight:700; color:var(--text-primary);"><i class="ti ti-building-skyscraper" style="color:var(--brand); font-size:20px;"></i> 批次設定隸屬總公司</h3>
+                    <button type="button" class="dialog-close btn-close-modal"><i class="ti ti-x"></i></button>
                 </div>
-                <input type="hidden" id="batch-parent-id-value" value="">
             </div>
-            <div class="modal-footer flex gap-2 justify-end">
-                <button type="button" class="btn btn-secondary" onclick="document.getElementById('batch-parent-modal').classList.remove('open')">取消</button>
-                <button type="button" id="btn-confirm-batch-parent" class="btn btn-primary">確認設定</button>
+            <div class="dialog-body custom-scroll" style="background:#f8fafc; padding:24px;">
+                <div style="background:white; border:1px solid var(--border); border-radius:8px; padding:16px; box-shadow:var(--shadow-sm); margin-bottom:16px;">
+                    <p style="font-size: 13px; color: var(--text-primary); line-height: 1.5; margin:0;">
+                        將目前勾選的 <span id="batch-parent-selected-count" style="font-size: 16px; font-weight: 700; color: var(--brand); margin: 0 2px;">0</span> 間機構，統一設定為以下總公司的分支據點。<br>
+                        <span style="color: var(--text-muted); font-size: 12px;">若選擇「獨立機構」，則解除原有的隸屬關係。</span>
+                    </p>
+                </div>
+                
+                <div class="field" style="margin-bottom:0;">
+                    <label class="field-label">搜尋並選擇總公司</label>
+                    <div class="searchable-select-wrap relative">
+                        <div style="position: absolute; left: 12px; top: 0; bottom: 0; display: flex; align-items: center; pointer-events: none; height: 38px;">
+                            <i class="ti ti-search" style="color: var(--text-muted); font-size: 16px;"></i>
+                        </div>
+                        <input type="text" id="batch-parent-search" class="field-input" style="padding-left: 36px; height: 38px;" placeholder="輸入關鍵字搜尋..." autocomplete="off">
+                        
+                        <div id="batch-parent-dropdown-list" class="searchable-dropdown custom-scroll" style="position: relative; margin-top: 8px; max-height: 180px; box-shadow: none; border: 1px solid var(--border); display: block; border-radius: 8px;">
+                            </div>
+                    </div>
+                    <input type="hidden" id="batch-parent-id-value" value="">
+                </div>
+            </div>
+            <div class="dialog-footer" style="background:#f8fafc; border-top:1px solid var(--border); padding:16px 24px; border-radius: 0 0 12px 12px; display:flex; justify-content:flex-end; gap:8px;">
+                <button type="button" class="btn btn-secondary btn-close-modal" style="background:white;">取消</button>
+                <button type="button" id="btn-confirm-batch-parent" class="btn btn-primary" style="box-shadow:var(--shadow-sm);"><i class="ti ti-check"></i> 確認設定</button>
             </div>
         </div>
     </div>
