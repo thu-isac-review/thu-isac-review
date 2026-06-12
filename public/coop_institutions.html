@@ -571,7 +571,7 @@
         function renderDetailView(inst) {
             const isOverseas = inst.country && inst.country !== '中華民國';
             let displayNameText = inst.name;
-            if (isOverseas && inst.nameTranslated) displayNameText = `${inst.nameTranslated} <span class="text-slate-400 text-lg font-medium block sm:inline mt-1 sm:mt-0">${inst.name}</span>`;
+            if (isOverseas && inst.nameTranslated) displayNameText = `${inst.nameTranslated} <span class="text-slate-400 text-lg font-medium block sm:inline mt-1 sm:mt-0">　${inst.name}</span>`;
 
             const uniqueCities = [...new Set(inst.branches.map(b => b.city).filter(Boolean))].sort();
             let cityFiltersHtml = '';
