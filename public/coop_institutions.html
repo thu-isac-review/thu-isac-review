@@ -12,16 +12,16 @@
                 extend: {
                     colors: {
                         thu: {
-                            deep: '#233142',      
-                            blue: '#455A64',      
-                            accent: '#78909C',    
-                            light: '#ECEFF1',     
-                            bg: '#F8FAFC'         
+                            deep: '#2C5E7A',      // 亮莫蘭迪海空藍
+                            blue: '#3A78A4',      // 亮莫蘭迪石墨藍
+                            accent: '#6EA4CA',    // 莫蘭迪粉藍
+                            light: '#F0F6FA',     // 莫蘭迪冰川灰藍
+                            bg: '#F8FAFC'         // 更現代乾淨的灰白色背景
                         }
                     },
                     boxShadow: {
-                        'premium': '0 8px 30px rgb(0, 0, 0, 0.02)',
-                        'premium-hover': '0 16px 36px rgb(0, 0, 0, 0.06)'
+                        'soft': '0 4px 20px -2px rgba(58, 120, 164, 0.05)',
+                        'hover': '0 10px 25px -5px rgba(58, 120, 164, 0.12)',
                     }
                 }
             }
@@ -29,7 +29,7 @@
     </script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
     
     <style>
@@ -37,19 +37,30 @@
             font-family: 'Noto Sans TC', sans-serif;
             background-color: #F8FAFC;
             -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
         }
+        /* 優化滾動條 */
         ::-webkit-scrollbar {
-            width: 5px;
-            height: 5px;
+            width: 6px;
+            height: 6px;
         }
         ::-webkit-scrollbar-track {
-            background: #F1F5F9;
+            background: transparent;
         }
         ::-webkit-scrollbar-thumb {
             background: #CBD5E1;
-            border-radius: 20px;
+            border-radius: 10px;
         }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94A3B8;
+        }
+        /* 卡片懸浮通用過渡 */
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-3px);
+        }
+
         @media (max-width: 1023px) {
             .filter-drawer {
                 transform: translateY(100%);
@@ -59,127 +70,151 @@
                 transform: translateY(0);
             }
         }
+        
     </style>
 </head>
-<body class="min-h-screen flex flex-col text-slate-700 bg-thu-bg w-full">
+<body class="min-h-screen flex flex-col text-slate-700 font-medium">
 
-    <div id="view-loading" class="flex-1 flex flex-col items-center justify-center p-6 min-h-[calc(100vh-60px)] bg-thu-bg">
-        <div class="animate-spin rounded-full h-11 w-11 border-4 border-slate-100 border-t-thu-blue"></div>
-        <p class="text-xs text-slate-400 mt-5 tracking-widest font-medium">正在安全驗證身分，請稍候...</p>
+    <div id="view-loading" class="flex-1 flex flex-col items-center justify-center p-4 min-h-screen bg-slate-50 z-50">
+        <div class="animate-spin rounded-full h-12 w-12 border-4 border-slate-200 border-t-thu-blue"></div>
+        <p class="text-sm text-slate-500 mt-5 font-medium tracking-wide">正在安全驗證帳戶身分，請稍候...</p>
     </div>
 
-    <div id="view-dashboard" class="hidden flex-1 flex flex-col min-h-screen w-full">
+    <div id="view-dashboard" class="hidden flex-1 flex flex-col min-h-screen">
         
-        <div id="mobile-sticky-header" class="sticky top-0 z-40 bg-thu-bg/90 backdrop-blur-md border-b border-slate-100/80 px-4 py-3 flex flex-col gap-3 lg:hidden shadow-sm">
-            <div class="flex items-center justify-between w-full">
-                <div id="mobile-header-list-title" class="flex items-center gap-2.5">
-                    <div class="w-9 h-9 bg-gradient-to-tr from-thu-deep to-thu-blue text-white rounded-xl flex items-center justify-center text-base flex-shrink-0 shadow-sm">
-                        <i class="ti ti-briefcase"></i>
-                    </div>
-                    <div>
-                        <h1 class="font-bold text-slate-800 text-xs tracking-wider">東海大學實習專區</h1>
-                        <p class="text-[8px] text-slate-400 font-bold uppercase tracking-widest">Internship Portal</p>
-                    </div>
+        <nav class="lg:hidden sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-100 px-5 py-3.5 flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-gradient-to-br from-thu-deep to-thu-accent text-white rounded-xl flex items-center justify-center shadow-md">
+                    <i class="ti ti-briefcase text-lg"></i>
                 </div>
-
-                <button id="btn-back-mobile" class="hidden inline-flex items-center gap-1.5 text-thu-blue font-bold text-xs bg-white border border-slate-200 px-3 py-2 rounded-xl active:scale-[0.95] transition-all">
-                    <i class="ti ti-chevron-left text-sm"></i> 返回列表
-                </button>
-
-                <button id="btn-logout-mobile" class="text-slate-400 hover:text-slate-600 p-2 flex items-center justify-center"><i class="ti ti-logout text-base"></i></button>
+                <span class="font-bold text-slate-800 text-sm tracking-wide">東海大學實習專區</span>
             </div>
-            
-            <div id="mobile-search-bar-row" class="flex gap-2 w-full">
-                <div class="relative flex-1 group">
-                    <i class="ti ti-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                    <input type="text" id="search-input-mobile" placeholder="搜尋機構名稱..." class="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-thu-blue/10 focus:border-thu-blue text-xs font-medium placeholder-slate-400 shadow-sm">
+            <div class="flex items-center gap-3">
+                <span id="user-greeting-mobile" class="text-xs font-semibold text-slate-500 hidden sm:block">同學，您好！</span>
+                <button id="btn-logout-mobile" class="bg-slate-50 hover:bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border border-slate-200">登出</button>
+            </div>
+        </nav>
+
+        <div class="lg:hidden sticky top-[65px] z-30 bg-white/95 backdrop-blur px-5 py-3 border-b border-slate-100 flex gap-2.5 shadow-sm">
+            <div class="relative flex-1 group">
+                <i class="ti ti-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-thu-blue transition-colors"></i>
+                <input type="text" id="search-input-mobile" placeholder="搜尋機構關鍵字..." class="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-thu-blue/20 focus:border-thu-blue text-sm transition-all">
+            </div>
+            <button id="btn-toggle-filter" class="px-4 bg-white border border-slate-200 text-slate-600 hover:text-thu-blue hover:bg-slate-50 rounded-xl flex items-center justify-center gap-1.5 text-sm font-bold active:scale-95 transition-all shadow-sm">
+                <i class="ti ti-adjustments-horizontal text-lg"></i>
+                <span>篩選</span>
+            </button>
+        </div>
+
+        <div id="filter-wrapper" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden lg:hidden">
+            <div id="filter-drawer" class="filter-drawer fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 space-y-4 shadow-2xl max-h-[85vh] overflow-y-auto">
+                
+                <div class="flex items-center justify-between border-b border-slate-50 pb-3">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                        <i class="ti ti-adjustments-horizontal text-sm"></i> 條件篩選面板
+                    </h3>
+                    <button id="btn-close-filter" class="text-slate-400 hover:text-slate-600 p-1"><i class="ti ti-x text-base"></i></button>
                 </div>
-                <button id="btn-toggle-filter" class="bg-thu-blue hover:bg-thu-deep text-white px-3.5 rounded-xl flex items-center gap-1 text-xs font-bold shadow-sm active:scale-[0.95] transition-all">
-                    <i class="ti ti-adjustments-horizontal text-sm"></i> 篩選
-                </button>
+                
+                <div class="flex flex-col gap-3.5">
+                    <div class="relative">
+                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><i class="ti ti-world text-sm"></i></span>
+                        <select id="filter-country-mobile" class="w-full pl-9 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-thu-blue/5 text-xs font-semibold appearance-none cursor-pointer text-slate-600">
+                            <option value="">全部國別</option>
+                        </select>
+                        <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                    </div>
+    
+                    <div class="relative">
+                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><i class="ti ti-map-pin text-sm"></i></span>
+                        <select id="filter-city-mobile" class="w-full pl-9 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-thu-blue/5 text-xs font-semibold appearance-none cursor-pointer text-slate-600">
+                            <option value="">全部縣市</option>
+                        </select>
+                        <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                    </div>
+    
+                    <div class="relative">
+                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><i class="ti ti-building-community text-sm"></i></span>
+                        <select id="filter-venue-type-mobile" class="w-full pl-9 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-thu-blue/5 text-xs font-semibold appearance-none cursor-pointer text-slate-600">
+                            <option value="">全部實習場所</option>
+                        </select>
+                        <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                    </div>
+    
+                    <div class="relative">
+                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><i class="ti ti-category text-sm"></i></span>
+                        <select id="filter-industry-mobile" class="w-full pl-9 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-thu-blue/5 text-xs font-semibold appearance-none cursor-pointer text-slate-600">
+                            <option value="">全部行業別</option>
+                        </select>
+                        <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                    </div>
+                </div>
+    
+                <button id="btn-apply-filter" class="w-full bg-thu-blue text-white py-3 rounded-xl font-bold text-xs tracking-wider active:scale-[0.98] transition-all shadow-md">確認篩選</button>
             </div>
         </div>
-        
-        <main id="view-list" class="max-w-6xl w-full mx-auto px-4 sm:px-6 py-4 lg:py-10 flex-1 flex flex-col lg:flex-row gap-6 sm:gap-8 items-start">
+
+        <main id="view-list" class="max-w-[1440px] w-full mx-auto px-5 sm:px-8 lg:px-12 py-8 flex-1 flex flex-col lg:flex-row gap-8">
             
-            <div class="w-full lg:w-80 flex-shrink-0 flex flex-col gap-6 lg:sticky lg:top-8 lg:max-h-[calc(100vh-4rem)] lg:overflow-y-auto">
+            <div class="hidden lg:flex w-80 flex-shrink-0 flex-col gap-6">
                 
-                <div class="hidden lg:block bg-white border border-slate-100 rounded-2xl p-6 shadow-premium">
-                    <div class="flex items-center gap-3.5 mb-5">
-                        <div class="w-11 h-11 bg-gradient-to-tr from-thu-deep to-thu-blue text-white rounded-xl flex items-center justify-center text-xl flex-shrink-0 shadow-sm">
+                <div class="bg-white border border-slate-100 rounded-2xl p-6 shadow-soft">
+                    <div class="flex items-center gap-4 mb-5">
+                        <div class="w-12 h-12 bg-gradient-to-br from-thu-deep to-thu-accent text-white rounded-xl flex items-center justify-center text-2xl shadow-md">
                             <i class="ti ti-briefcase"></i>
                         </div>
                         <div>
-                            <h1 class="font-bold text-slate-800 text-sm tracking-wider">東海大學實習專區</h1>
-                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Internship Portal</p>
+                            <h1 class="font-bold text-slate-800 text-base tracking-wide">東海大學實習專區</h1>
+                            <p class="text-xs text-slate-400 mt-0.5">Internship Portal</p>
                         </div>
                     </div>
                     
-                    <div class="border-t border-slate-100 pt-4 flex flex-col gap-3">
-                        <div class="flex items-center gap-2 px-1">
-                            <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                            <span id="user-greeting" class="text-xs font-semibold text-slate-600">同學，您好！</span>
-                        </div>
-                        <button id="btn-logout" class="w-full bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/50 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 active:scale-[0.97]">
-                            <i class="ti ti-logout text-sm text-slate-400"></i> 登出系統
+                    <div class="border-t border-slate-100 pt-5 space-y-3">
+                        <p id="user-greeting" class="text-sm font-semibold text-slate-500">同學，您好！</p>
+                        <button id="btn-logout" class="w-full bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 hover:text-thu-blue">
+                            <i class="ti ti-logout"></i> 安全登出
                         </button>
                     </div>
                 </div>
 
-                <div id="filter-wrapper" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden lg:z-0 lg:backdrop-blur-none lg:bg-transparent lg:static lg:block">
-                    <div id="filter-drawer" class="filter-drawer fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 space-y-4 shadow-2xl lg:shadow-premium lg:static lg:rounded-2xl lg:border lg:border-slate-100 max-h-[85vh] overflow-y-auto lg:overflow-visible lg:p-6">
-                        
-                        <div class="flex items-center justify-between border-b border-slate-50 pb-3 lg:mb-2">
-                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                                <i class="ti ti-adjustments-horizontal text-sm"></i> 條件篩選面板
-                            </h3>
-                            <button id="btn-close-filter" class="lg:hidden text-slate-400 hover:text-slate-600 p-1"><i class="ti ti-x text-base"></i></button>
-                        </div>
-                        
-                        <div class="hidden lg:relative lg:block group">
-                            <i class="ti ti-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-thu-blue text-base transition-colors"></i>
-                            <input type="text" id="search-input" placeholder="搜尋機構名稱..." class="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200/70 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-thu-blue/10 focus:border-thu-blue transition-all text-xs font-medium placeholder-slate-400">
-                        </div>
+                <div class="bg-white border border-slate-100 rounded-2xl p-6 shadow-soft space-y-5">
+                    <div class="relative group">
+                        <i class="ti ti-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-thu-blue transition-colors"></i>
+                        <input type="text" id="search-input" placeholder="關鍵字搜尋..." class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-thu-blue/20 focus:border-thu-blue transition-all text-sm">
+                    </div>
 
+                    <div class="border-t border-slate-100 pt-5">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">進階篩選</h3>
+                        
                         <div class="flex flex-col gap-3.5">
                             <div class="relative">
-                                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><i class="ti ti-world text-sm"></i></span>
-                                <select id="filter-country" class="w-full pl-9 pr-10 py-3 lg:py-2.5 bg-slate-50 border border-slate-200/70 rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-thu-blue/5 text-xs font-semibold appearance-none cursor-pointer text-slate-600">
+                                <select id="filter-country" class="w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-thu-blue transition-all text-sm appearance-none cursor-pointer text-slate-700">
                                     <option value="">全部國別</option>
                                 </select>
-                                <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                                <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
                             </div>
-
                             <div class="relative">
-                                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><i class="ti ti-map-pin text-sm"></i></span>
-                                <select id="filter-city" class="w-full pl-9 pr-10 py-3 lg:py-2.5 bg-slate-50 border border-slate-200/70 rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-thu-blue/5 text-xs font-semibold appearance-none cursor-pointer text-slate-600">
+                                <select id="filter-city" class="w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-thu-blue transition-all text-sm appearance-none cursor-pointer text-slate-700">
                                     <option value="">全部縣市</option>
                                 </select>
-                                <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                                <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
                             </div>
-
                             <div class="relative">
-                                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><i class="ti ti-building-community text-sm"></i></span>
-                                <select id="filter-venue-type" class="w-full pl-9 pr-10 py-3 lg:py-2.5 bg-slate-50 border border-slate-200/70 rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-thu-blue/5 text-xs font-semibold appearance-none cursor-pointer text-slate-600">
+                                <select id="filter-venue-type" class="w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-thu-blue transition-all text-sm appearance-none cursor-pointer text-slate-700">
                                     <option value="">全部實習場所</option>
                                 </select>
-                                <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                                <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
                             </div>
-
                             <div class="relative">
-                                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><i class="ti ti-category text-sm"></i></span>
-                                <select id="filter-industry" class="w-full pl-9 pr-10 py-3 lg:py-2.5 bg-slate-50 border border-slate-200/70 rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-thu-blue/5 text-xs font-semibold appearance-none cursor-pointer text-slate-600">
+                                <select id="filter-industry" class="w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-thu-blue transition-all text-sm appearance-none cursor-pointer text-slate-700">
                                     <option value="">全部行業別</option>
                                 </select>
-                                <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                                <i class="ti ti-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
                             </div>
                         </div>
-
-                        <button id="btn-apply-filter" class="w-full lg:hidden bg-thu-blue text-white py-3 rounded-xl font-bold text-xs tracking-wider active:scale-[0.98] transition-all">確認篩選</button>
                     </div>
                 </div>
-
-                <div class="hidden lg:block px-2 mt-2 pb-6">
+                <div class="px-2 mt-2">
                     <div class="flex items-start gap-2 text-slate-400">
                         <i class="ti ti-shield-lock text-[15px] flex-shrink-0 mt-[3px] text-slate-300"></i>
                         <p class="text-[11px] leading-relaxed text-justify font-medium">
@@ -187,54 +222,52 @@
                         </p>
                     </div>
                 </div>
-
             </div>
 
-            <div class="flex-1 flex flex-col justify-between min-h-[400px] w-full">
+            <div class="flex-1 flex flex-col gap-6">
                 <div class="w-full">
-                    <div id="loading-state" class="py-20 flex flex-col items-center justify-center text-center">
-                        <div class="animate-spin rounded-full h-8 w-8 border-2 border-slate-200 border-t-thu-blue"></div>
-                        <h3 class="mt-4 text-xs font-bold text-slate-400 tracking-wider">資料載入中...</h3>
+                    <div id="loading-state" class="py-24 flex flex-col items-center justify-center text-center">
+                        <div class="animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-t-thu-blue"></div>
+                        <h3 class="mt-4 text-sm font-bold text-slate-500">資料加載中，請稍候...</h3>
                     </div>
 
-                    <div id="empty-state" class="hidden py-16 flex flex-col items-center justify-center text-center p-6 bg-white border border-slate-100 rounded-2xl shadow-premium">
-                        <div class="w-12 h-12 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center mb-3 border border-slate-100">
-                            <i class="ti ti-search-off text-xl"></i>
+                    <div id="empty-state" class="hidden py-24 flex flex-col items-center justify-center text-center bg-white rounded-2xl border border-slate-100 shadow-soft">
+                        <div class="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mb-4">
+                            <i class="ti ti-search-off text-3xl"></i>
                         </div>
-                        <h3 class="text-xs font-bold text-slate-700">未尋找到符合條件的合作機構</h3>
+                        <h3 class="text-base font-bold text-slate-700">未尋找到符合條件的合作機構</h3>
+                        <p class="text-slate-400 text-sm mt-2">請嘗試調整您的篩選組合或縮減關鍵字。</p>
                     </div>
 
-                    <div id="inst-list" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-4 w-full"></div>
+                    <div id="inst-list" class="hidden grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-5 xl:gap-6 animate-fade-in"></div>
                 </div>
 
-                <div id="pagination-panel" class="hidden flex items-center justify-center gap-1.5 mt-10 mb-6 w-full"></div>
+                <div id="pagination-panel" class="hidden mt-6"></div>
             </div>
         </main>
 
-        <main id="view-detail" class="hidden max-w-3xl w-full mx-auto px-4 sm:px-6 py-4 lg:py-10 flex-1">
-            <div class="hidden lg:flex items-center justify-between gap-4 mb-5">
-                <button id="btn-back" class="inline-flex items-center gap-1.5 text-thu-blue hover:text-thu-deep font-bold text-xs bg-white border border-slate-200/80 px-4 py-2.5 rounded-xl transition-all shadow-sm active:scale-[0.95]">
-                    <i class="ti ti-chevron-left text-sm"></i> 返回列表
+        <main id="view-detail" class="hidden max-w-[1200px] w-full mx-auto px-5 sm:px-8 py-8 flex-1">
+            <div class="mb-6">
+                <button id="btn-back" class="inline-flex items-center gap-2 text-slate-500 hover:text-thu-blue font-bold text-sm bg-white border border-slate-200 hover:border-thu-accent/40 px-5 py-2.5 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-95">
+                    <i class="ti ti-arrow-left text-lg"></i> 返回列表
                 </button>
-                <button id="btn-logout-detail" class="bg-white text-slate-500 border border-slate-200/80 px-3.5 py-2.5 rounded-xl text-xs font-bold shadow-sm">登出</button>
             </div>
-            <div id="detail-content" class="space-y-5"></div>
+
+            <div id="detail-content" class="space-y-6"></div>
         </main>
     </div>
 
     <div id="confirm-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[90] hidden items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-6 transition-all transform animate-in fade-in zoom-in-95 duration-200">
-            <h4 class="text-sm font-bold text-slate-800 text-center" id="confirm-title">確認動作</h4>
-            <p class="text-xs text-slate-400 text-center mt-2 leading-relaxed" id="confirm-desc">確定要執行此操作嗎？</p>
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-in fade-in zoom-in-95 duration-200">
+            <h4 class="text-lg font-bold text-slate-800 text-center" id="confirm-title">確認動作</h4>
+            <p class="text-sm text-slate-500 text-center mt-3 leading-relaxed" id="confirm-desc">確定要執行此操作嗎？</p>
             <div class="grid grid-cols-2 gap-3 mt-6">
-                <button id="confirm-btn-cancel" class="py-3 bg-slate-50 text-slate-600 font-bold rounded-xl text-xs border border-slate-200/40">取消</button>
-                <button id="confirm-btn-ok" class="py-3 bg-thu-blue text-white font-bold rounded-xl text-xs shadow-sm">確定</button>
+                <button id="confirm-btn-cancel" class="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-sm transition-colors">取消</button>
+                <button id="confirm-btn-ok" class="py-2.5 bg-thu-blue hover:bg-thu-deep text-white font-bold rounded-xl text-sm transition-colors shadow-md">確定</button>
             </div>
         </div>
     </div>
-
-    <div id="toast-container" class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 pointer-events-none w-[90%] sm:w-auto"></div>
-
+    <div id="toast-container" class="fixed top-8 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-3 pointer-events-none"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -259,9 +292,21 @@
             console.error("Firebase 初始化失敗:", e);
         }
 
-        const countriesList = ["中華民國", "大陸地區", "日本", "美國", "越南", "泰國", "澳大利亞", "香港", "澳門", "馬來西亞", "菲律賓", "印尼", "印度", "孟加拉", "緬甸", "柬埔寨", "黎巴嫩", "蒙古", "巴西", "巴拉圭", "秘魯"];
-        const citiesList = ["臺北市", "新北市", "基隆市", "桃園市", "新竹縣", "新竹市", "苗栗縣", "臺中市", "彰化縣", "南投縣", "雲林縣", "嘉義縣", "嘉義市", "臺南市", "高雄市", "屏東縣", "宜蘭縣", "花蓮縣", "臺東縣", "澎湖縣", "金門縣", "連江縣"];
-        const industriesList = ["農、林、漁、牧業", "礦業及土石採取業", "製造業", "電力及燃氣供應業", "用水供應及污染整治業", "營建工程業", "批發及零售業", "運輸及儲儲業", "住宿及餐飲業", "出版及影音等內容傳播業", "電信及資訊服務業", "金融及保險業", "不動產業", "專業、科學及技術服務業", "支援服務業", "公共行政及國防；強制性社會安全", "教育業", "醫療保健及社會工作服務業", "藝術、運動及休閒服務業", "其他服務業"];
+        const countriesList = [
+            "中華民國", "大陸地區", "日本", "美國", "越南", "泰國", "澳大利亞", "香港", "澳門", "馬來西亞", 
+            "菲律賓", "印尼", "印度", "孟加拉", "緬甸", "柬埔寨", "黎巴嫩", "蒙古", "巴西", "巴拉圭", "秘魯"
+        ];
+        const citiesList = [
+            "臺北市", "新北市", "基隆市", "桃園市", "新竹縣", "新竹市", "苗栗縣", "臺中市", "彰化縣", 
+            "南投縣", "雲林縣", "嘉義縣", "嘉義市", "臺南市", "高雄市", "屏東縣", "宜蘭縣", "花蓮縣", 
+            "臺東縣", "澎湖縣", "金門縣", "連江縣"
+        ];
+        const industriesList = [
+            "農、林、漁、牧業", "礦業及土石採取業", "製造業", "電力及燃氣供應業", "用水供應及污染整治業", 
+            "營建工程業", "批發及零售業", "運輸及倉儲業", "住宿及餐飲業", "出版及影音等內容傳播業", 
+            "電信及資訊服務業", "金融及保險業", "不動產業", "專業、科學及技術服務業", "支援服務業", 
+            "公共行政及國防；強制性社會安全", "教育業", "醫療保健及社會工作服務業", "藝術、運動及休閒服務業", "其他服務業"
+        ];
         const venueTypesList = ["企業機構", "政府機構", "其他機構"];
 
         let treeData = [];
@@ -277,49 +322,30 @@
         const viewDashboard = document.getElementById('view-dashboard');
         const viewList = document.getElementById('view-list');
         const viewDetail = document.getElementById('view-detail');
-        
         const elList = document.getElementById('inst-list');
         const elLoading = document.getElementById('loading-state');
         const elEmpty = document.getElementById('empty-state');
         const elDetailContent = document.getElementById('detail-content');
         
         const inputSearch = document.getElementById('search-input');
-        const inputSearchMobile = document.getElementById('search-input-mobile');
         const selectCountry = document.getElementById('filter-country');
         const selectCity = document.getElementById('filter-city');
         const selectVenue = document.getElementById('filter-venue-type');
         const selectIndustry = document.getElementById('filter-industry');
 
-        // 手機版固定列導覽元素
-        const mobileHeaderListTitle = document.getElementById('mobile-header-list-title');
-        const mobileSearchBarRow = document.getElementById('mobile-search-bar-row');
-        const btnBackMobile = document.getElementById('btn-back-mobile');
-
-        const filterWrapper = document.getElementById('filter-wrapper');
-        const filterDrawer = document.getElementById('filter-drawer');
-        const btnToggleFilter = document.getElementById('btn-toggle-filter');
-        const btnCloseFilter = document.getElementById('btn-close-filter');
-        const btnApplyFilter = document.getElementById('btn-apply-filter');
-
-        function openFilterDrawer() {
-            filterWrapper.classList.remove('hidden');
-            setTimeout(() => filterDrawer.classList.add('open'), 10);
-        }
-        function closeFilterDrawer() {
-            filterDrawer.classList.remove('open');
-            setTimeout(() => filterWrapper.classList.add('hidden'), 300);
-        }
-        btnToggleFilter.addEventListener('click', openFilterDrawer);
-        btnCloseFilter.addEventListener('click', closeFilterDrawer);
-        btnApplyFilter.addEventListener('click', closeFilterDrawer);
-        filterWrapper.addEventListener('click', (e) => {
-            if (e.target === filterWrapper) closeFilterDrawer();
-        });
+        const inputSearchMobile = document.getElementById('search-input-mobile');
+        const selectCountryMobile = document.getElementById('filter-country-mobile');
+        const selectCityMobile = document.getElementById('filter-city-mobile');
+        const selectVenueMobile = document.getElementById('filter-venue-type-mobile');
+        const selectIndustryMobile = document.getElementById('filter-industry-mobile');
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 viewLoading.classList.add('hidden');
                 viewDashboard.classList.remove('hidden');
+                const displayName = user.email ? user.email.split('@')[0] : '授權人員';
+                document.getElementById('user-greeting').textContent = `${displayName}，您好！`;
+                document.getElementById('user-greeting-mobile').textContent = `${displayName}，您好！`;
                 setupDropdowns();
                 loadData();
             } else {
@@ -328,39 +354,61 @@
         });
 
         function setupDropdowns() {
-            selectCountry.innerHTML = '<option value="">全部國別</option>';
-            selectCity.innerHTML = '<option value="">全部縣市</option>';
-            selectVenue.innerHTML = '<option value="">全部實習場所</option>';
-            selectIndustry.innerHTML = '<option value="">全部行業別</option>';
-            countriesList.forEach(c => selectCountry.add(new Option(c, c)));
-            citiesList.forEach(c => selectCity.add(new Option(c, c)));
-            venueTypesList.forEach(v => selectVenue.add(new Option(v, v)));
-            industriesList.forEach(i => selectIndustry.add(new Option(i, i)));
+            [selectCountry, selectCountryMobile].forEach(el => el.innerHTML = '<option value="">全部國別</option>');
+            [selectCity, selectCityMobile].forEach(el => el.innerHTML = '<option value="">全部縣市</option>');
+            [selectVenue, selectVenueMobile].forEach(el => el.innerHTML = '<option value="">全部實習場所</option>');
+            [selectIndustry, selectIndustryMobile].forEach(el => el.innerHTML = '<option value="">全部行業別</option>');
+
+            countriesList.forEach(c => { selectCountry.add(new Option(c, c)); selectCountryMobile.add(new Option(c, c)); });
+            citiesList.forEach(c => { selectCity.add(new Option(c, c)); selectCityMobile.add(new Option(c, c)); });
+            venueTypesList.forEach(v => { selectVenue.add(new Option(v, v)); selectVenueMobile.add(new Option(v, v)); });
+            industriesList.forEach(i => { selectIndustry.add(new Option(i, i)); selectIndustryMobile.add(new Option(i, i)); });
         }
 
         const handleLogout = () => {
-            showConfirm("登出確認", "您確定要登出系統嗎？", async () => {
-                await signOut(auth);
-            });
+            showConfirm("登出確認", "您確定要登出系統嗎？", async () => { await signOut(auth); });
         };
         document.getElementById('btn-logout').addEventListener('click', handleLogout);
         document.getElementById('btn-logout-mobile').addEventListener('click', handleLogout);
-        document.getElementById('btn-logout-detail').addEventListener('click', handleLogout);
 
-        // 返回按鈕點擊機制 (整合桌機與手機返回點)
-        const handleBackToList = () => {
+        document.getElementById('btn-back').addEventListener('click', () => {
             viewDetail.classList.add('hidden');
             viewList.classList.remove('hidden');
-            
-            // 恢復手機置頂列狀態
-            mobileHeaderListTitle.classList.remove('hidden');
-            mobileSearchBarRow.classList.remove('hidden');
-            btnBackMobile.classList.add('hidden');
-
             window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
-        document.getElementById('btn-back').addEventListener('click', handleBackToList);
-        btnBackMobile.addEventListener('click', handleBackToList);
+        });
+
+        // ================== 新版手機滑出式篩選器控制邏輯 ==================
+        const filterWrapper = document.getElementById('filter-wrapper');
+        const filterDrawer = document.getElementById('filter-drawer');
+        const btnToggleFilter = document.getElementById('btn-toggle-filter');
+        const btnCloseFilter = document.getElementById('btn-close-filter');
+        const btnApplyFilter = document.getElementById('btn-apply-filter');
+
+        // 打開抽屜
+        function openFilterDrawer() {
+            filterWrapper.classList.remove('hidden');
+            // 延遲 10 毫秒確保 DOM 渲染完畢後，加上 open 類別觸發 CSS 滑出動畫
+            setTimeout(() => filterDrawer.classList.add('open'), 10);
+        }
+
+        // 關閉抽屜
+        function closeFilterDrawer() {
+            filterDrawer.classList.remove('open');
+            // 等待 300 毫秒（CSS 動畫時間）後，隱藏外部半透明遮罩
+            setTimeout(() => filterWrapper.classList.add('hidden'), 300);
+        }
+
+        // 綁定各個按鈕的點擊事件
+        if (btnToggleFilter) btnToggleFilter.addEventListener('click', openFilterDrawer);
+        if (btnCloseFilter) btnCloseFilter.addEventListener('click', closeFilterDrawer);
+        if (btnApplyFilter) btnApplyFilter.addEventListener('click', closeFilterDrawer);
+        
+        // 點擊黑色半透明遮罩空白處，也能觸發關閉
+        if (filterWrapper) {
+            filterWrapper.addEventListener('click', (e) => {
+                if (e.target === filterWrapper) closeFilterDrawer();
+            });
+        }
 
         function normalizeItem(d) {
             return {
@@ -380,24 +428,46 @@
             elLoading.classList.remove('hidden');
             elList.classList.add('hidden');
             elEmpty.classList.add('hidden');
+            document.getElementById('pagination-panel').classList.add('hidden');
+
             try {
                 if (!db) throw new Error("Firestore 未加載成功");
                 const snapshot = await getDocs(collection(db, 'internship_institutions'));
                 const allData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
                 buildTreeStructure(allData);
                 elLoading.classList.add('hidden');
 
-                inputSearch.addEventListener('input', (e) => { inputSearchMobile.value = e.target.value; currentPage = 1; renderList(); });
-                inputSearchMobile.addEventListener('input', (e) => { inputSearch.value = e.target.value; currentPage = 1; renderList(); });
-                
-                selectCountry.addEventListener('change', handleCountryChange);
-                selectCity.addEventListener('change', () => { currentPage = 1; renderList(); });
-                selectVenue.addEventListener('change', () => { currentPage = 1; renderList(); });
-                selectIndustry.addEventListener('change', () => { currentPage = 1; renderList(); });
+                // 綁定事件 (簡化綁定邏輯)
+                const syncAndRender = (desktopEl, mobileEl, isCountry = false) => {
+                    desktopEl.addEventListener('input', (e) => {
+                        mobileEl.value = e.target.value;
+                        if(isCountry) handleCountryChange(desktopEl.value);
+                        else { currentPage = 1; renderList(); }
+                    });
+                    mobileEl.addEventListener('input', (e) => {
+                        desktopEl.value = e.target.value;
+                        if(isCountry) handleCountryChange(mobileEl.value);
+                        else { currentPage = 1; renderList(); }
+                    });
+                };
+
+                syncAndRender(inputSearch, inputSearchMobile);
+                syncAndRender(selectCountry, selectCountryMobile, true);
+                syncAndRender(selectCity, selectCityMobile);
+                syncAndRender(selectVenue, selectVenueMobile);
+                syncAndRender(selectIndustry, selectIndustryMobile);
+
                 renderList();
             } catch (error) {
                 console.error("載入失敗:", error);
-                elLoading.innerHTML = `<p class="text-xs text-rose-400 py-6 font-medium">連線暫時中斷，請重新整理頁面。</p>`;
+                elLoading.innerHTML = `
+                    <div class="text-slate-500 py-12 flex flex-col items-center bg-white rounded-2xl border border-slate-100 shadow-soft">
+                        <i class="ti ti-alert-triangle text-4xl mb-4 text-rose-400"></i>
+                        <h4 class="font-bold text-base">連線暫時中斷</h4>
+                        <p class="text-slate-400 text-sm mt-2">無法連接資料庫，請檢查網路狀態。</p>
+                    </div>
+                `;
             }
         }
 
@@ -405,6 +475,7 @@
             const normalized = rawItems.map(normalizeItem);
             const parents = normalized.filter(d => !d.parentSearchInput);
             const children = normalized.filter(d => d.parentSearchInput);
+
             treeData = parents.map(p => {
                 const branches = children.filter(c => c.parentSearchInput === p.id);
                 branches.sort((a, b) => (a.name).localeCompare(b.name, 'zh-TW'));
@@ -413,19 +484,22 @@
             treeData.sort((a, b) => (a.name).localeCompare(b.name, 'zh-TW'));
         }
 
-        function handleCountryChange() {
-            const countryVal = selectCountry.value;
+        function handleCountryChange(countryVal) {
             currentPage = 1;
-            selectCity.value = ''; selectVenue.value = ''; selectIndustry.value = '';
-            if (countryVal && countryVal !== '中華民國') {
-                selectCity.disabled = true;
-                selectCity.classList.add('bg-slate-100', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
-                selectVenue.value = '其他機構'; selectVenue.disabled = true;
-                selectVenue.classList.add('bg-slate-100', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
-            } else {
-                selectCity.disabled = false; selectCity.classList.remove('bg-slate-100', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
-                selectVenue.disabled = false; selectVenue.classList.remove('bg-slate-100', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
-            }
+            [selectCity, selectCityMobile, selectVenue, selectVenueMobile, selectIndustry, selectIndustryMobile].forEach(el => el.value = '');
+            
+            const isOverseas = countryVal && countryVal !== '中華民國';
+            [selectCity, selectCityMobile].forEach(el => {
+                el.disabled = isOverseas;
+                el.className = isOverseas ? 'w-full pl-4 pr-10 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm appearance-none text-slate-400 cursor-not-allowed' 
+                                          : 'w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-thu-blue transition-all text-sm appearance-none cursor-pointer text-slate-700';
+            });
+            [selectVenue, selectVenueMobile].forEach(el => {
+                if (isOverseas) el.value = '其他機構';
+                el.disabled = isOverseas;
+                el.className = isOverseas ? 'w-full pl-4 pr-10 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm appearance-none text-slate-400 cursor-not-allowed' 
+                                          : 'w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-thu-blue transition-all text-sm appearance-none cursor-pointer text-slate-700';
+            });
             renderList();
         }
 
@@ -451,6 +525,7 @@
                 elEmpty.classList.remove('hidden');
                 return;
             }
+
             elEmpty.classList.add('hidden');
             elList.classList.remove('hidden');
             renderPage();
@@ -459,6 +534,7 @@
         function renderPage() {
             const totalPages = Math.ceil(filteredData.length / itemsPerPage);
             if (currentPage > totalPages) currentPage = totalPages || 1;
+
             const startIndex = (currentPage - 1) * itemsPerPage;
             const pageItems = filteredData.slice(startIndex, startIndex + itemsPerPage);
 
@@ -467,29 +543,33 @@
                 const inst = pageItems[i];
                 if (inst) {
                     const isOverseas = inst.country && inst.country !== '中華民國';
-                    let displayName = (isOverseas && inst.nameTranslated) ? inst.nameTranslated : inst.name;
+                    let displayName = isOverseas && inst.nameTranslated ? inst.nameTranslated : inst.name;
 
                     listHtml += `
-                        <div class="bg-white border border-slate-100 rounded-2xl p-4 shadow-premium flex flex-col justify-between cursor-pointer min-h-[155px] sm:min-h-[165px] transition-all duration-200 lg:hover:-translate-y-0.5 lg:hover:shadow-premium-hover active:scale-[0.98]" onclick="openDetail('${inst.id}')">
-                            <div class="flex items-start gap-3 w-full">
-                                <div class="w-11 h-11 bg-slate-50 border border-slate-100 text-slate-400 flex items-center justify-center text-base flex-shrink-0 rounded-xl">
-                                    <i class="ti ti-building"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <h4 class="font-bold text-slate-700 text-xs sm:text-sm md:text-base leading-snug break-words whitespace-normal">${displayName}</h4>
+                        <div class="card-hover group bg-white border border-slate-200 rounded-2xl p-6 shadow-soft hover:shadow-hover hover:border-thu-accent/40 flex flex-col justify-between cursor-pointer min-h-[140px]" onclick="openDetail('${inst.id}')">
+                            <div>
+                                <div class="flex items-start gap-4 mb-4">
+                                    <div class="w-12 h-12 bg-slate-50 group-hover:bg-thu-light text-slate-400 group-hover:text-thu-blue transition-colors flex items-center justify-center text-xl flex-shrink-0 rounded-xl border border-slate-100">
+                                        <i class="ti ti-building"></i>
+                                    </div>
+                                    <div class="flex-1 py-1">
+                                        <h4 class="font-bold text-slate-800 text-sm sm:text-base leading-snug group-hover:text-thu-deep transition-colors">${displayName}</h4>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="flex items-center justify-between gap-2 mt-4 pt-2.5 border-t border-slate-50/80 w-full">
-                                <div class="flex flex-wrap gap-1 max-w-[85%]">
-                                    ${inst.industry ? `<span class="bg-slate-50 text-slate-500 text-[9px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-md border border-slate-100">${inst.industry}</span>` : ''}
-                                    ${inst.venueType ? `<span class="bg-emerald-50 text-emerald-700 text-[9px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-md">${inst.venueType}</span>` : ''}
+                            <div class="flex items-center justify-between gap-3 mt-auto pt-4 border-t border-slate-50 group-hover:border-slate-100">
+                                <div class="flex flex-wrap gap-2">
+                                    ${inst.venueType ? `<span class="bg-emerald-50 text-emerald-700 text-xs font-semibold px-2.5 py-1 rounded-md border border-emerald-100/50">${inst.venueType}</span>` : ''}
+                                    ${inst.industry ? `<span class="bg-slate-50 text-slate-600 text-xs font-semibold px-2.5 py-1 rounded-md border border-slate-200/60">${inst.industry}</span>` : ''}
                                 </div>
-                                <i class="ti ti-chevron-right text-slate-300 text-sm font-bold flex-shrink-0 ml-auto"></i>
+                                <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-thu-blue group-hover:text-white transition-colors flex-shrink-0">
+                                    <i class="ti ti-arrow-right text-sm"></i>
+                                </div>
                             </div>
                         </div>
                     `;
                 } else {
-                    listHtml += `<div class="hidden sm:block opacity-0 pointer-events-none min-h-[165px]"></div>`;
+                    listHtml += `<div class="hidden md:block opacity-0 pointer-events-none min-h-[140px]"></div>`;
                 }
             }
             elList.innerHTML = listHtml;
@@ -501,105 +581,105 @@
             if (totalPages <= 1) { panel.classList.add('hidden'); return; }
             panel.classList.remove('hidden');
 
-            let html = `
-                <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} class="w-10 h-10 rounded-xl border border-slate-200/60 bg-white text-slate-500 flex items-center justify-center disabled:opacity-30 active:bg-slate-50">
-                    <i class="ti ti-chevron-left text-base"></i>
-                </button>
-            `;
+            let btnClass = "w-10 h-10 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-thu-blue transition-all disabled:opacity-50 disabled:bg-slate-50 disabled:cursor-not-allowed font-semibold text-sm flex items-center justify-center";
+            let activeBtnClass = "w-10 h-10 rounded-xl bg-thu-blue text-white font-bold text-sm shadow-md flex items-center justify-center";
 
-            const maxPageButtons = 3; 
-            let startPage = Math.max(1, currentPage - 1);
-            let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
-            if (endPage - startPage < maxPageButtons - 1) startPage = Math.max(1, endPage - maxPageButtons + 1);
+            let html = `<div class="flex items-center justify-center w-full gap-2">`;
+            html += `<button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} class="${btnClass}"><i class="ti ti-chevron-left"></i></button>`;
+            
+            let start = Math.max(1, currentPage - 2);
+            let end = Math.min(totalPages, start + 4);
+            if (end - start < 4) start = Math.max(1, end - 4);
 
-            for (let i = startPage; i <= endPage; i++) {
-                if (i === currentPage) {
-                    html += `<button class="w-10 h-10 rounded-xl bg-thu-blue text-white font-bold text-xs shadow-sm">${i}</button>`;
-                } else {
-                    html += `<button onclick="changePage(${i})" class="w-10 h-10 rounded-xl border border-slate-200 bg-white text-slate-600 font-bold text-xs active:bg-slate-50">${i}</button>`;
-                }
+            if (start > 1) {
+                html += `<button onclick="changePage(1)" class="${btnClass}">1</button>`;
+                if (start > 2) html += `<span class="px-2 text-slate-400">...</span>`;
             }
 
-            html += `
-                <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} class="w-10 h-10 rounded-xl border border-slate-200/60 bg-white text-slate-500 flex items-center justify-center disabled:opacity-30 active:bg-slate-50">
-                    <i class="ti ti-chevron-right text-base"></i>
-                </button>
-            `;
+            for (let i = start; i <= end; i++) {
+                html += `<button onclick="changePage(${i})" class="${i === currentPage ? activeBtnClass : btnClass}">${i}</button>`;
+            }
+
+            if (end < totalPages) {
+                if (end < totalPages - 1) html += `<span class="px-2 text-slate-400">...</span>`;
+                html += `<button onclick="changePage(${totalPages})" class="${btnClass}">${totalPages}</button>`;
+            }
+
+            html += `<button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} class="${btnClass}"><i class="ti ti-chevron-right"></i></button>`;
+            html += `</div>`;
             panel.innerHTML = html;
         }
 
         window.changePage = function(page) {
-            currentPage = page; renderPage();
-            const offset = window.innerWidth < 1024 ? 140 : 0;
-            const element = document.getElementById('view-list');
-            const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
-            window.scrollTo({ top: elementPosition - offset, behavior: 'smooth' });
+            currentPage = page;
+            renderPage();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
         window.openDetail = function(instId) {
             const inst = treeData.find(d => d.id === instId);
             if (!inst) return;
-            viewList.classList.add('hidden'); 
+            viewList.classList.add('hidden');
             viewDetail.classList.remove('hidden');
-            
-            // 變更手機頂部狀態：隱藏搜尋列與原標題，秀出返回列表按鈕
-            mobileHeaderListTitle.classList.add('hidden');
-            mobileSearchBarRow.classList.add('hidden');
-            btnBackMobile.classList.remove('hidden');
-
-            activeBranchCityFilter = '全部'; 
+            activeBranchCityFilter = '全部';
             currentBranchPage = 1;
             renderDetailView(inst);
-            window.scrollTo({ top: 0, behavior: 'instant' });
         };
 
         function renderDetailView(inst) {
             const isOverseas = inst.country && inst.country !== '中華民國';
-            let displayNameText = (isOverseas && inst.nameTranslated) ? `${inst.nameTranslated} <span class="text-slate-400 font-normal text-xs block mt-1 sm:inline sm:text-sm sm:ml-2">　${inst.name}</span>` : inst.name;
-            const uniqueCities = [...new Set(inst.branches.map(b => b.city).filter(Boolean))].sort();
+            let displayNameText = inst.name;
+            if (isOverseas && inst.nameTranslated) displayNameText = `${inst.nameTranslated} <span class="text-slate-400 text-lg font-medium block sm:inline mt-1 sm:mt-0">　${inst.name}</span>`;
 
+            const uniqueCities = [...new Set(inst.branches.map(b => b.city).filter(Boolean))].sort();
             let cityFiltersHtml = '';
-            if (!isOverseas && inst.branches.length > 0 && uniqueCities.length > 0) {
+            
+            if (!isOverseas && uniqueCities.length > 0) {
                 cityFiltersHtml = `
-                    <div class="flex flex-wrap gap-1 bg-slate-50 p-1 rounded-xl border border-slate-100 overflow-x-auto whitespace-nowrap">
-                        <button onclick="filterBranchCity('全部', '${inst.id}')" class="px-3.5 py-2 text-xs font-bold rounded-lg transition-all ${activeBranchCityFilter === '全部' ? 'bg-thu-blue text-white shadow-sm' : 'text-slate-500'}">全部</button>
-                        ${uniqueCities.map(city => `<button onclick="filterBranchCity('${city}', '${inst.id}')" class="px-3.5 py-2 text-xs font-bold rounded-lg transition-all ${activeBranchCityFilter === city ? 'bg-thu-blue text-white shadow-sm' : 'text-slate-500'}">${city}</button>`).join('')}
+                    <div class="flex flex-wrap gap-2 mb-6">
+                        <button onclick="filterBranchCity('全部', '${inst.id}')" class="px-4 py-2 text-sm font-semibold rounded-xl transition-all ${activeBranchCityFilter === '全部' ? 'bg-thu-blue text-white shadow-md' : 'bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100'}">全部區域</button>
+                        ${uniqueCities.map(city => `
+                            <button onclick="filterBranchCity('${city}', '${inst.id}')" class="px-4 py-2 text-sm font-semibold rounded-xl transition-all ${activeBranchCityFilter === city ? 'bg-thu-blue text-white shadow-md' : 'bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100'}">${city}</button>
+                        `).join('')}
                     </div>
                 `;
             }
 
             elDetailContent.innerHTML = `
-                <div class="bg-white border border-slate-100 rounded-2xl p-5 sm:p-7 shadow-premium relative overflow-hidden">
-                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-thu-blue to-thu-accent"></div>
-                    <div class="flex flex-col sm:flex-row items-center sm:items-stretch gap-4 sm:gap-5">
-                        <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-gradient-to-tr from-thu-deep to-thu-blue text-white flex items-center justify-center text-2xl flex-shrink-0 shadow-sm">
-                            <i class="ti ti-building"></i>
+                <div class="bg-white border border-slate-100 rounded-2xl p-6 sm:p-10 shadow-soft">
+                    <div class="flex flex-col md:flex-row gap-6 lg:gap-8 items-start">
+                        <div class="w-20 h-20 sm:w-28 sm:h-28 rounded-2xl bg-gradient-to-br from-thu-deep to-thu-accent text-white flex items-center justify-center text-4xl flex-shrink-0 shadow-lg shadow-thu-blue/20">
+                            <i class="ti ti-building-skyscraper"></i>
                         </div>
-                        <div class="flex-1 flex flex-col justify-center text-center sm:text-left min-w-0 w-full">
-                            <h2 class="text-sm sm:text-base font-bold text-slate-800 tracking-tight leading-snug mb-2">${displayNameText}</h2>
-                            <div class="flex flex-wrap justify-center sm:justify-start gap-1 mb-2.5">
-                                ${inst.venueType ? `<span class="bg-emerald-50 text-emerald-700 text-[10px] font-semibold px-2 py-0.5 rounded">${inst.venueType}</span>` : ''}
-                                ${inst.industry ? `<span class="bg-slate-50 text-slate-500 text-[10px] font-semibold px-2 py-0.5 rounded border border-slate-100">${inst.industry}</span>` : ''}
+                        <div class="flex-1 space-y-4 w-full min-w-0">
+                            <h2 class="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight leading-snug">${displayNameText}</h2>
+                            <div class="flex flex-wrap gap-2.5">
+                                ${inst.venueType ? `<span class="bg-emerald-50 text-emerald-700 text-sm font-semibold px-3 py-1 rounded-md border border-emerald-100/50 flex items-center gap-1.5"><i class="ti ti-category text-base"></i>${inst.venueType}</span>` : ''}
+                                ${inst.industry ? `<span class="bg-slate-50 text-slate-600 text-sm font-semibold px-3 py-1 rounded-md border border-slate-200 flex items-center gap-1.5"><i class="ti ti-tag text-base"></i>${inst.industry}</span>` : ''}
+                                ${isOverseas ? `<span class="bg-rose-50 text-rose-700 text-sm font-semibold px-3 py-1 rounded-md border border-rose-100 flex items-center gap-1.5"><i class="ti ti-world text-base"></i>${inst.country}</span>` : ''}
                             </div>
-                            <div class="flex items-center justify-center sm:justify-start gap-1 text-slate-400 text-[11px] sm:text-xs w-full min-w-0">
-                                <i class="ti ti-map-pin text-sm flex-shrink-0"></i>
-                                ${isOverseas ? `<span class="bg-rose-50 text-rose-700 text-[9px] font-bold px-1 py-0.5 rounded mr-1 flex-shrink-0">${inst.country}</span>` : ''}
-                                <span class="font-medium text-slate-500 truncate max-w-[70%]">${inst.address || '無主地址登記'}</span>
-                                ${inst.address ? `<button onclick="copyAddress('${inst.address}')" class="p-1 text-slate-400 active:text-slate-700 flex-shrink-0"><i class="ti ti-copy text-xs"></i></button>` : ''}
+                            <div class="flex items-start gap-2 pt-2 text-slate-500">
+                                <i class="ti ti-map-pin-filled text-slate-400 text-lg mt-0.5"></i>
+                                <span class="text-sm sm:text-base font-medium flex-1">${inst.address || '無登記主要地址'}</span>
+                                ${inst.address ? `<button onclick="copyAddress('${inst.address}')" class="p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-500 rounded-lg transition-colors border border-slate-200" title="複製地址"><i class="ti ti-copy"></i></button>` : ''}
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white border border-slate-100 rounded-2xl p-5 sm:p-7 shadow-premium">
-                    <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-                        <h3 class="font-bold text-slate-800 text-xs sm:text-sm flex items-center gap-1.5"><i class="ti ti-git-branch text-thu-blue"></i> 分支據點清單</h3>
-                        <span id="branch-total-count" class="bg-slate-50 text-slate-500 border border-slate-100 font-bold px-2 py-0.5 rounded-md text-[9px]">共 0 處</span>
+                <div class="bg-white border border-slate-100 rounded-2xl p-6 sm:p-10 shadow-soft">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5 mb-6">
+                        <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <i class="ti ti-map-2 text-thu-blue"></i> 服務據點與分支機構
+                        </h3>
+                        <span id="branch-total-count" class="bg-thu-light text-thu-deep font-bold px-4 py-1.5 rounded-full text-sm">共 0 處</span>
                     </div>
+
                     ${cityFiltersHtml}
-                    <div class="flex flex-col justify-between min-h-[250px] lg:min-h-[280px]">
-                        <div id="branches-list-wrapper" class="divide-y divide-slate-100/70 flex-1"></div>
-                        <div id="branch-local-pagination" class="flex justify-between items-center pt-3 border-t border-slate-100 mt-4"></div>
+
+                    <div class="flex flex-col min-h-[350px]">
+                        <div id="branches-list-wrapper" class="divide-y divide-slate-100 flex-1"></div>
+                        <div id="branch-local-pagination" class="flex justify-between items-center pt-6 mt-4"></div>
                     </div>
                 </div>
             `;
@@ -607,55 +687,56 @@
         }
 
         function renderBranchesContainer(inst) {
-            const isOverseas = inst.country && inst.country !== '中華民國';
-            let displayBranches = (activeBranchCityFilter !== '全部') ? inst.branches.filter(b => b.city === activeBranchCityFilter) : (inst.branches || []);
-            document.getElementById('branch-total-count').textContent = `共 ${displayBranches.length} 處`;
+            let displayBranches = inst.branches || [];
+            if (activeBranchCityFilter !== '全部') {
+                displayBranches = inst.branches.filter(b => b.city === activeBranchCityFilter);
+            }
 
+            document.getElementById('branch-total-count').textContent = `共 ${displayBranches.length} 處`;
             const branchesWrapper = document.getElementById('branches-list-wrapper');
             const paginationWrapper = document.getElementById('branch-local-pagination');
 
             if (displayBranches.length === 0) {
-                branchesWrapper.innerHTML = `<div class="h-[220px] flex items-center justify-center text-slate-400 text-xs font-medium">暫無其他據點登記</div>`;
-                paginationWrapper.innerHTML = ''; return;
+                branchesWrapper.innerHTML = `
+                    <div class="h-[250px] flex flex-col items-center justify-center text-center">
+                        <i class="ti ti-map-off text-4xl text-slate-300 mb-3"></i>
+                        <p class="text-slate-500 text-sm font-medium">該區域暫無分支據點</p>
+                    </div>`;
+                paginationWrapper.innerHTML = '';
+                return;
             }
 
-            const totalBranchPages = Math.ceil(displayBranches.length / branchItemsPerPage);
-            if (currentBranchPage > totalBranchPages) currentBranchPage = totalBranchPages || 1;
-            const startIndex = (currentBranchPage - 1) * branchItemsPerPage;
-            const slicedBranches = displayBranches.slice(startIndex, startIndex + branchItemsPerPage);
+            const totalPages = Math.ceil(displayBranches.length / branchItemsPerPage);
+            if (currentBranchPage > totalPages) currentBranchPage = totalPages || 1;
+            const sliced = displayBranches.slice((currentBranchPage - 1) * branchItemsPerPage, currentBranchPage * branchItemsPerPage);
 
             let listHtml = '';
             for (let i = 0; i < branchItemsPerPage; i++) {
-                const branch = slicedBranches[i];
+                const branch = sliced[i];
                 if (branch) {
-                    const borderClass = i === 0 ? 'border-t-0 pt-1 pb-3' : 'border-t border-slate-100/70 pt-3 pb-3';
-                    const cityTag = (!isOverseas && branch.city) ? `<span class="bg-slate-50 text-slate-500 text-[9px] font-bold px-1.5 py-0.5 rounded border border-slate-100 mr-2 flex-shrink-0">${branch.city}</span>` : '';
-                    
-                    // 解除 h-[52px] 硬限制，改採彈性垂直排版，讓地址可自動斷行 (break-words) 完美呈現
                     listHtml += `
-                        <div class="flex flex-col justify-center min-h-[52px] ${borderClass} w-full min-w-0">
-                            <div class="flex items-start min-w-0 w-full mb-1">
-                                ${cityTag}
-                                <span class="font-bold text-slate-700 text-xs sm:text-sm break-words whitespace-normal flex-1">${branch.name}</span>
+                        <div class="py-4 flex flex-col md:flex-row md:items-center justify-between gap-3 h-auto md:h-[68px] hover:bg-slate-50/50 transition-colors px-2 rounded-lg">
+                            <div class="flex items-center gap-3 min-w-0">
+                                ${branch.city && inst.country === '中華民國' ? `<span class="bg-slate-100 text-slate-600 text-xs font-bold px-3 py-1 rounded-md flex-shrink-0">${branch.city}</span>` : ''}
+                                <span class="font-bold text-slate-700 text-sm md:text-base truncate">${branch.name}</span>
                             </div>
-                            <span class="text-[10px] sm:text-xs text-slate-400 break-words whitespace-normal w-full pl-1 leading-relaxed">${branch.address || '無詳細通訊地址'}</span>
+                            <span class="text-sm text-slate-500 truncate w-full md:w-1/2 md:text-right pl-3 md:pl-0 border-l-2 border-slate-100 md:border-0">${branch.address || '無詳細通訊地址'}</span>
                         </div>
                     `;
                 } else {
-                    // 電腦版補空位骨架，手機版不占空間
-                    listHtml += `<div class="hidden lg:block py-2 h-[56px] border-t border-transparent opacity-0 pointer-events-none"></div>`;
+                    listHtml += `<div class="py-4 h-[68px] opacity-0 pointer-events-none"></div>`;
                 }
             }
             branchesWrapper.innerHTML = listHtml;
 
-            if (totalBranchPages > 1) {
+            if (totalPages > 1) {
                 paginationWrapper.innerHTML = `
-                    <button onclick="changeBranchPage(${currentBranchPage - 1}, '${inst.id}')" ${currentBranchPage === 1 ? 'disabled' : ''} class="px-3 py-2 rounded-lg border border-slate-200 bg-white text-[11px] font-bold text-slate-500 disabled:opacity-30 active:bg-slate-50">上一頁</button>
-                    <span class="text-[11px] text-slate-400 font-bold">${currentBranchPage} / ${totalBranchPages}</span>
-                    <button onclick="changeBranchPage(${currentBranchPage + 1}, '${inst.id}')" ${currentBranchPage === totalBranchPages ? 'disabled' : ''} class="px-3 py-2 rounded-lg border border-slate-200 bg-white text-[11px] font-bold text-slate-500 disabled:opacity-30 active:bg-slate-50">下一頁</button>
+                    <button onclick="changeBranchPage(${currentBranchPage - 1}, '${inst.id}')" ${currentBranchPage === 1 ? 'disabled' : ''} class="px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-thu-blue transition-all disabled:opacity-40 disabled:cursor-not-allowed">上一頁</button>
+                    <span class="text-sm text-slate-500 font-semibold bg-slate-50 px-4 py-2 rounded-lg">${currentBranchPage} / ${totalPages}</span>
+                    <button onclick="changeBranchPage(${currentBranchPage + 1}, '${inst.id}')" ${currentBranchPage === totalPages ? 'disabled' : ''} class="px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-thu-blue transition-all disabled:opacity-40 disabled:cursor-not-allowed">下一頁</button>
                 `;
             } else {
-                paginationWrapper.innerHTML = `<div class="text-[10px] text-slate-300 font-medium tracking-wide">已顯示全部據點</div>`;
+                paginationWrapper.innerHTML = ``;
             }
         }
 
@@ -666,39 +747,45 @@
         };
 
         window.filterBranchCity = function(city, instId) {
-            activeBranchCityFilter = city; currentBranchPage = 1;
+            activeBranchCityFilter = city;
+            currentBranchPage = 1;
             const inst = treeData.find(d => d.id === instId);
             if (inst) renderDetailView(inst);
         };
 
         window.copyAddress = function(text) {
-            const tempInput = document.createElement('textarea'); tempInput.value = text;
-            document.body.appendChild(tempInput); tempInput.select();
-            try { document.execCommand('copy'); showToast("地址已複製", "success"); } catch (err) { showToast("複製失敗", "error"); }
-            document.body.removeChild(tempInput);
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("地址複製成功！", "success");
+            }).catch(() => {
+                showToast("複製失敗，請手動複製", "error");
+            });
         };
 
         window.showToast = function(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            let bgClass = type === 'success' ? 'bg-slate-900 text-white' : 'bg-rose-50 text-rose-900 border-rose-100';
-            let iconClass = type === 'success' ? 'ti-circle-check-filled text-emerald-400' : 'ti-circle-x-filled text-rose-500';
-
-            toast.className = `flex items-center gap-2 px-3.5 py-2.5 rounded-xl shadow-xl ${bgClass} border text-xs font-semibold mx-auto transition-all duration-300 transform translate-y-2 opacity-0 w-full max-w-[280px]`;
-            toast.innerHTML = `<i class="ti ${iconClass} text-sm flex-shrink-0"></i><span class="truncate">${message}</span>`;
+            let theme = type === 'success' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200';
+            let icon = type === 'success' ? 'ti-circle-check-filled' : 'ti-alert-circle-filled';
+            
+            toast.className = `flex items-center gap-3 px-5 py-3 rounded-2xl border shadow-lg ${theme} transition-all duration-300 transform translate-y-4 opacity-0 pointer-events-auto`;
+            toast.innerHTML = `<i class="ti ${icon} text-lg"></i><span class="text-sm font-bold">${message}</span>`;
             container.appendChild(toast);
-            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-4', 'opacity-0');
+            });
             setTimeout(() => {
-                toast.classList.add('translate-y-[-10px]', 'opacity-0');
+                toast.classList.add('-translate-y-4', 'opacity-0');
                 setTimeout(() => toast.remove(), 300);
-            }, 2000);
+            }, 2500);
         };
 
         window.showConfirm = function(title, desc, onConfirm) {
             const modal = document.getElementById('confirm-modal');
             document.getElementById('confirm-title').textContent = title;
             document.getElementById('confirm-desc').textContent = desc;
-            modal.classList.remove('hidden'); modal.classList.add('flex');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
             const close = () => { modal.classList.add('hidden'); modal.classList.remove('flex'); };
             document.getElementById('confirm-btn-cancel').onclick = close;
             document.getElementById('confirm-btn-ok').onclick = () => { onConfirm(); close(); };
