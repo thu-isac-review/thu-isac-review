@@ -72,3 +72,22 @@ export async function batchDelete() {
     state.selectedIds.forEach(id => batch.delete(doc(state.db, "internship_institutions", id)));
     await batch.commit(); 
 }
+
+// 🌟 [新增] 執行批次設定總公司的資料庫寫入邏輯
+export async function executeBatchSetParent(parentId) {
+    if (!state.selectedIds || state.selectedIds.length === 0) return;
+    
+    const batch = writeBatch(state.db);
+    
+    state.selectedIds.forEach(id => {
+        const instRef = doc(state.db, "internship_institutions", id);
+        // 將 parent_id 指向目標總公司的 ID (若為空字串，則代表解除隸屬，變回獨立機構)
+        batch.update(instRef, { 
+            parent_id: parentId, 
+            updated_at: serverTimestamp() 
+        });
+    });
+
+    await batch.commit();
+    state.selectedIds = []; // 批次執行完畢後清空選取
+}
