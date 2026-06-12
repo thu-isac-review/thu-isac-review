@@ -17,6 +17,7 @@ export function applyReadOnlyMode() {
             #btn-batch-edit, 
             #btn-batch-merge, 
             #btn-batch-delete,
+            #btn-batch-parent, /* 🌟 [新增] 唯讀模式下隱藏批次設定總公司按鈕 */
             .col-checkbox, 
             .col-actions {
                 display: none !important;
@@ -98,7 +99,6 @@ export function updateBatchActionBar() {
     const count = document.getElementById('selected-count');
     const btnSelectAll = document.getElementById('btn-select-all-filtered');
     
-    // 如果是唯讀模式，不需要顯示批次操作列
     if (state.isReadOnly) {
         bar.classList.remove('visible');
         return;
@@ -166,7 +166,6 @@ export function toggleDropdown(type) {
     if (!isOpen) { drop.classList.add('show'); wrap.classList.add('open'); }
 }
 
-// 🌟 [修正] 篩選無符合選項之一般粗體紅色提示 (A. 篩選結果如果找不到符合的選項...)
 export function filterDropdownItems(inputElement, containerId) {
     const term = inputElement.value.toLowerCase().trim();
     const container = document.getElementById(containerId);
@@ -186,7 +185,6 @@ export function filterDropdownItems(inputElement, containerId) {
         if (!emptyMsg) {
             emptyMsg = document.createElement('div');
             emptyMsg.className = 'empty-filter-msg';
-            // 紅色、一般粗體、無斜體樣式
             emptyMsg.style.cssText = 'color: #dc2626; font-weight: 700; padding: 12px; text-align: center; font-size: 13px;';
             emptyMsg.textContent = '查無符合的選項';
             container.appendChild(emptyMsg);
@@ -228,8 +226,36 @@ export function populateParentDropdown(excludeId = null) {
     listContainer.innerHTML = html;
 }
 
+// 🌟 [新增] 批次設定總公司的專屬下拉選單渲染 (過濾掉自己，避免無限迴圈)
+export function populateBatchParentDropdown() {
+    const listContainer = document.getElementById('batch-parent-dropdown-list');
+    if (!listContainer) return;
+
+    let html = '<div class="searchable-option empty-opt" data-id="" data-name="">-- 獨立機構 (清除隸屬關係) --</div>';
+    
+    state.allData.forEach(d => {
+        // 只能選擇 "本身沒有總公司" 的機構作為總公司，且不能選擇 "目前被勾選" 的機構
+        if (!d.parent_id && !state.selectedIds.includes(d.id)) {
+            html += `
+            <div class="searchable-option batch-parent-option" data-id="${d.id}" data-name="${d.name}">
+                <span>${d.name}</span> 
+            </div>`;
+        }
+    });
+    listContainer.innerHTML = html;
+}
+
 export function closeModal() { 
     document.getElementById('data-modal').classList.remove('open'); 
     state.editingId = null; 
     state.pendingPayload = null; 
+}
+
+// 🌟 [新增] 關閉批次設定總公司的 Modal
+export function closeBatchParentModal() { 
+    const modal = document.getElementById('batch-parent-modal');
+    if(modal) {
+        modal.classList.remove('open'); 
+        document.getElementById('batch-parent-search').value = ''; 
+    }
 }
