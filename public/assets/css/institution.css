@@ -55,6 +55,8 @@ i.ti { line-height: 1; }
 .btn-success-solid:hover { background: #047857; }
 .btn-indigo-solid { background: var(--indigo); color: white; border: 1px solid var(--indigo); }
 .btn-indigo-solid:hover { background: #4338ca; }
+.btn-teal-solid { background: #0d9488; color: white; border: 1px solid #0d9488; }
+.btn-teal-solid:hover { background: #0f766e; border-color: #0f766e; }
 
 /* 🌟 [新增] 全選/全不選的輕量化淡藍色背景無框按鈕 */
 .btn-light-blue { height: 24px; padding: 0 10px; font-size: 11px; border-radius: 4px; background: #e0f2fe; color: #0284c7; border: none; font-weight: 600; display: inline-flex; align-items: center; cursor: pointer; transition: 0.2s; }
