@@ -140,8 +140,8 @@
             </div>
         </div>
 
-        <!-- ================== 【首頁】：左側搜尋篩選、右側卡片列表與分頁控制 (調整 max-w-screen-2xl 以及 lg:items-start 實現頂部靠齊滿版) ================== -->
-        <main id="view-list" class="max-w-screen-2xl w-full mx-auto px-4 sm:px-8 py-8 flex-1 flex flex-col lg:flex-row gap-8 lg:items-start lg:justify-start">
+        <!-- ================== 【首頁】：左側搜尋篩選、右側卡片列表與分頁控制 (設定 max-w-[1360px] 預留左右優雅呼吸空間) ================== -->
+        <main id="view-list" class="max-w-[1360px] w-full mx-auto px-4 sm:px-6 lg:px-10 py-8 flex-1 flex flex-col lg:flex-row gap-8 lg:items-start lg:justify-start">
             
             <!-- 【電腦版專屬】左側搜尋與篩選側邊欄 -->
             <div class="hidden lg:flex w-72 flex-shrink-0 flex-col gap-5">
@@ -215,7 +215,7 @@
                 </div>
             </div>
 
-            <!-- 右側主要卡片呈現區 (滿版等高、頂端靠齊) -->
+            <!-- 右側主要卡片呈現區 -->
             <div class="flex-1 flex flex-col justify-start gap-6">
                 <div class="w-full">
                     <!-- 加載中 -->
@@ -242,8 +242,8 @@
             </div>
         </main>
 
-        <!-- 個別機構詳情頁面 (同步升級 max-w-screen-2xl 及間距) -->
-        <main id="view-detail" class="hidden max-w-screen-2xl w-full mx-auto px-4 sm:px-8 py-8 flex-1">
+        <!-- 個別機構詳情頁面 (同步配置 max-w-[1360px] 及對稱間距) -->
+        <main id="view-detail" class="hidden max-w-[1360px] w-full mx-auto px-4 sm:px-8 lg:px-10 py-8 flex-1">
             <div class="flex items-center justify-between gap-4 mb-5">
                 <!-- 莫蘭迪圓角返回按鈕 -->
                 <button id="btn-back" class="inline-flex items-center gap-1.5 text-[#3A78A4] hover:text-[#2C5E7A] font-bold text-xs sm:text-sm bg-white hover:bg-[#E5ECF4] border border-slate-100 hover:border-[#6EA4CA]/30 px-4 py-2 rounded-xl transition-all duration-300 shadow-sm hover:shadow active:scale-95">
