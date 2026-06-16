@@ -1,14 +1,10 @@
-/**
- * 實習紀錄模組 - 狀態管理器 (State.js)
- * 集中管理資料快取、篩選狀態、排序與分頁狀態。
- */
-
-export const state = {
+export let state = {
+    db: null,
+    isReadOnly: false,
     allRecords: [],
     allStudents: [],
     allInsts: [],
     allCourses: [],
-    isViewOnly: false,
     filteredRecords: [],
     selectedIds: [],
     selectedCourseIds: [],
@@ -20,7 +16,7 @@ export const state = {
     globalDepts: [],
     orderedColleges: [],
     globalImportReportData: [],
-
+    isGlobalListenerBound: false,
     tableColumns: [
         { index: 1, label: '學號', visible: true },
         { index: 2, label: '姓名', visible: true },
@@ -37,45 +33,34 @@ export const state = {
         { index: 13, label: '勞雇關係', visible: true },
         { index: 14, label: '填報系所', visible: true }
     ],
-
     filterSelections: {
-        dept: new Set(),
-        grade: new Set(),
-        inst_raw: new Set(),
-        course: new Set(),
-        resp_dept: new Set(),
-        period: new Set(),
-        proof: new Set(),
-        insurance: new Set(),
-        employment: new Set()
+        dept: new Set(), grade: new Set(), inst_raw: new Set(), course: new Set(), 
+        resp_dept: new Set(), period: new Set(), proof: new Set(), insurance: new Set(), employment: new Set()
     },
-
     filterDefinitions: [
-        { key: 'dept', label: '學系', searchable: true },
-        { key: 'grade', label: '年級', searchable: false },
-        { key: 'inst_raw', label: '機構名稱', searchable: true },
-        { key: 'course', label: '修習課程', searchable: true },
-        { key: 'resp_dept', label: '填報系所', searchable: true },
-        { key: 'period', label: '實習時間', searchable: false },
-        { key: 'proof', label: '證明文件', searchable: false },
-        { key: 'insurance', label: '投保情形', searchable: false },
+        { key: 'dept', label: '學系', searchable: true }, { key: 'grade', label: '年級', searchable: false },
+        { key: 'inst_raw', label: '機構名稱', searchable: true }, { key: 'course', label: '修習課程', searchable: true },
+        { key: 'resp_dept', label: '填報系所', searchable: true }, { key: 'period', label: '實習時間', searchable: false },
+        { key: 'proof', label: '證明文件', searchable: false }, { key: 'insurance', label: '投保情形', searchable: false },
         { key: 'employment', label: '勞雇關係', searchable: false }
     ]
 };
 
-export function getColShort(collegeName) {
-    const col = state.orderedColleges.find(x => x.name === collegeName);
-    return col && col.shortName ? col.shortName : (collegeName || '未知學院');
+export function resetInternRecordState() {
+    const preserveDb = state.db;
+    const preserveGlobalListener = state.isGlobalListenerBound;
+    state = {
+        db: preserveDb,
+        isReadOnly: false, allRecords: [], allStudents: [], allInsts: [], allCourses: [], filteredRecords: [],
+        selectedIds: [], selectedCourseIds: [], currentPage: 1, itemsPerPage: 15, sortCol: 'created_at', sortDir: 'desc',
+        editingId: null, globalDepts: [], orderedColleges: [], globalImportReportData: [],
+        isGlobalListenerBound: preserveGlobalListener,
+        tableColumns: [...state.tableColumns],
+        filterSelections: { dept: new Set(), grade: new Set(), inst_raw: new Set(), course: new Set(), resp_dept: new Set(), period: new Set(), proof: new Set(), insurance: new Set(), employment: new Set() },
+        filterDefinitions: [...state.filterDefinitions]
+    };
 }
 
-export function getDeptShort(deptName) {
-    const dept = state.globalDepts.find(x => x.name === deptName);
-    return dept && dept.shortName ? dept.shortName : (deptName || '未知學系');
-}
-
-export function getTime(timestamp) {
-    if (!timestamp) return 0;
-    if (timestamp.toMillis) return timestamp.toMillis();
-    if (timestamp.seconds) return timestamp.seconds * 1000;
-    return new Date(timestamp).getTime() || 0;
-}
+export function getColShort(collegeName) { const col = state.orderedColleges.find(x => x.name === collegeName); return col && col.shortName ? col.shortName : (collegeName || '未知學院'); }
+export function getDeptShort(deptName) { const dept = state.globalDepts.find(x => x.name === deptName); return dept && dept.shortName ? dept.shortName : (deptName || '未知學系'); }
+export function getTime(timestamp) { if (!timestamp) return 0; if (timestamp.toMillis) return timestamp.toMillis(); if (timestamp.seconds) return timestamp.seconds * 1000; return new Date(timestamp).getTime() || 0; }
