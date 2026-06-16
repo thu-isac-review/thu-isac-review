@@ -4,39 +4,23 @@
  */
 
 export const state = {
-    // 原始資料快取
     allRecords: [],
     allStudents: [],
     allInsts: [],
     allCourses: [],
-    
-    // 主控設定
-    isViewOnly: false, // 決定是否為檢視模式 (唯讀模式)
-
-    // 篩選與排序結果
+    isViewOnly: false,
     filteredRecords: [],
     selectedIds: [],
     selectedCourseIds: [],
-    
-    // 分頁
     currentPage: 1,
     itemsPerPage: 15,
-    
-    // 排序
     sortCol: 'created_at',
     sortDir: 'desc',
-    
-    // 目前編輯中的紀錄 ID
     editingId: null,
-    
-    // 外部參照資料 (學院、系所對照)
     globalDepts: [],
     orderedColleges: [],
-    
-    // 批次匯入結果儲存
     globalImportReportData: [],
 
-    // 欄位顯示設定 (可動態開關顯示)
     tableColumns: [
         { index: 1, label: '學號', visible: true },
         { index: 2, label: '姓名', visible: true },
@@ -54,7 +38,6 @@ export const state = {
         { index: 14, label: '填報系所', visible: true }
     ],
 
-    // 目前篩選選取的 Set 項目
     filterSelections: {
         dept: new Set(),
         grade: new Set(),
@@ -67,7 +50,6 @@ export const state = {
         employment: new Set()
     },
 
-    // 篩選項目定義
     filterDefinitions: [
         { key: 'dept', label: '學系', searchable: true },
         { key: 'grade', label: '年級', searchable: false },
@@ -81,19 +63,16 @@ export const state = {
     ]
 };
 
-// 輔助函式：取得學院簡稱
 export function getColShort(collegeName) {
     const col = state.orderedColleges.find(x => x.name === collegeName);
     return col && col.shortName ? col.shortName : (collegeName || '未知學院');
 }
 
-// 輔助函式：取得系所簡稱
 export function getDeptShort(deptName) {
     const dept = state.globalDepts.find(x => x.name === deptName);
     return dept && dept.shortName ? dept.shortName : (deptName || '未知學系');
 }
 
-// 輔助工具：解析 Firebase Timestamp
 export function getTime(timestamp) {
     if (!timestamp) return 0;
     if (timestamp.toMillis) return timestamp.toMillis();
