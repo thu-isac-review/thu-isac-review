@@ -1,61 +1,92 @@
+// 在 ui.js 原本的匯出項目下面，加入這些函式
 import { state } from './state.js';
 
-export async function loadTemplate(containerId) {
+export function updateRespDeptOptions(preselectedValue = '') {
+    const selectEl = document.getElementById('input-resp-dept');
+    if (!selectEl) return;
+
+    const stuIn = document.getElementById('input-student');
+    const stuMatch = stuIn ? stuIn.value.split(' - ')[0] : '';
+    const stu = state.allStudents.find(s => s.student_id === stuMatch);
+    const stuDept = stu ? stu.department : null;
+
+    const courseDepts = state.selectedCourseIds.map(cid => {
+        const c = state.allCourses.find(x => x.id === cid);
+        return c ? c.department : null;
+    }).filter(Boolean);
+
+    const deptsSet = new Set();
+    if (stuDept) deptsSet.add(stuDept);
+    courseDepts.forEach(d => deptsSet.add(d));
+
+    const uniqueDepts = Array.from(deptsSet);
+
+    if (uniqueDepts.length === 0) {
+        selectEl.innerHTML = '<option value="">請先選擇學生與關聯課程...</option>';
+        return;
+    }
+
+    const currentVal = preselectedValue || selectEl.value;
+    let html = '<option value="">請選擇負責填報系所...</option>';
+    uniqueDepts.forEach(d => {
+        const deptObj = state.globalDepts.find(x => x.name === d);
+        const dispName = deptObj && deptObj.shortName ? deptObj.shortName : d;
+        html += `<option value="${d}">${dispName}</option>`;
+    });
+
+    selectEl.innerHTML = html;
+    
+    if (uniqueDepts.includes(currentVal)) selectEl.value = currentVal;
+    else if (uniqueDepts.length === 1) selectEl.value = uniqueDepts[0]; 
+    else if (stuDept && uniqueDepts.includes(stuDept)) selectEl.value = stuDept; 
+}
+
+export function filterDropdownItems(input, containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    try {
-        const response = await fetch('./assets/templates/intern_record.html');
-        container.innerHTML = await response.text();
-    } catch (error) {
-        container.innerHTML = '<div style="padding: 20px; color: red;">模板載入失敗</div>';
+    const term = input.value.toLowerCase().trim();
+    container.querySelectorAll('.filter-option').forEach(lbl => {
+        const text = lbl.querySelector('span').textContent.toLowerCase();
+        if (text.includes(term)) { lbl.style.display = 'flex'; } 
+        else { lbl.style.display = 'none'; }
+    });
+}
+
+export function toggleDropdown(type) {
+    const drop = document.getElementById(`drop-${type}`);
+    const wrap = document.getElementById(`pill-wrap-${type}`);
+    if (!drop || !wrap) return;
+    const isOpen = drop.classList.contains('show');
+    document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
+    document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
+    if (!isOpen) { drop.classList.add('show'); wrap.classList.add('open'); }
+}
+
+export function updatePillActive(type) {
+    const set = state.filterSelections[type];
+    const def = state.filterDefinitions.find(d => d.key === type);
+    if(!def) return;
+    const pill = document.getElementById(`pill-${type}`);
+    if(!pill) return;
+    if (set.size > 0) {
+        pill.classList.add('active');
+        pill.innerHTML = `${def.label} <span class="pill-count">${set.size}</span> <i class="ti ti-chevron-down"></i>`;
+    } else {
+        pill.classList.remove('active');
+        pill.innerHTML = `${def.label} <i class="ti ti-chevron-down"></i>`;
     }
 }
 
-export function applyReadOnlyMode() {
-    if (state.isReadOnly) {
-        document.querySelectorAll('.col-checkbox, .col-actions, #btn-import-trigger, #btn-add-record, .v-divider, #batch-bar').forEach(el => {
-            el.style.setProperty('display', 'none', 'important');
-        });
+export function updateColumnVisibility() {
+    let styleEl = document.getElementById('dynamic-col-styles');
+    if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'dynamic-col-styles';
+        document.head.appendChild(styleEl);
     }
-}
-
-export function openFormModal(isEdit = false) {
-    document.getElementById('main-view')?.style.setProperty('display', 'none');
-    document.getElementById('data-modal')?.classList.add('open');
-    const title = document.getElementById('modal-title');
-    if (title) title.innerText = isEdit ? '編輯實習紀錄' : '新增實習紀錄';
-}
-
-export function closeFormModal() { document.getElementById('data-modal')?.classList.remove('open'); document.getElementById('main-view')?.style.setProperty('display', 'flex'); state.editingId = null; }
-export function openInfoPopup(htmlContent, titleText) { const title = document.getElementById('info-popup-title'); const body = document.getElementById('info-popup-body'); if (title) title.innerHTML = titleText; if (body) body.innerHTML = htmlContent; document.getElementById('info-popup')?.classList.add('open'); }
-export function closeInfoPopup() { document.getElementById('info-popup')?.classList.remove('open'); }
-export function openImportReportModal() { document.getElementById('import-report-modal')?.classList.add('open'); }
-export function closeImportReportModal() { document.getElementById('import-report-modal')?.classList.remove('open'); }
-
-export function showToast(message, type = 'success') {
-    let container = document.getElementById('toast-container');
-    if (!container) { container = document.createElement('div'); container.id = 'toast-container'; container.style.cssText = 'position: fixed; top: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;'; document.body.appendChild(container); }
-    const toast = document.createElement('div');
-    let bg = type === 'error' ? 'var(--danger-bg)' : (type === 'success' ? 'var(--success-bg)' : 'var(--warning-bg)');
-    let color = type === 'error' ? 'var(--danger)' : (type === 'success' ? 'var(--success)' : 'var(--warning)');
-    let icon = type === 'error' ? 'ti-alert-circle' : (type === 'success' ? 'ti-circle-check' : 'ti-alert-triangle');
-    toast.style.cssText = `background: ${bg}; color: ${color}; border: 1px solid currentColor; padding: 12px 20px; border-radius: var(--radius); box-shadow: var(--shadow-md); font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; min-width: 280px; pointer-events: auto; animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); transition: opacity 0.3s;`;
-    toast.innerHTML = `<i class="ti ${icon}" style="font-size: 18px;"></i> <span>${message}</span>`;
-    container.appendChild(toast);
-    setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3500);
-}
-
-export function showConfirm(message, onConfirm) {
-    let confirmModal = document.getElementById('custom-confirm-modal');
-    if (!confirmModal) { confirmModal = document.createElement('div'); confirmModal.id = 'custom-confirm-modal'; confirmModal.className = 'info-modal-overlay'; confirmModal.style.zIndex = '1000'; document.body.appendChild(confirmModal); }
-    confirmModal.innerHTML = `
-        <div class="info-modal-box" style="max-width: 360px;">
-            <div class="info-modal-header" style="background: var(--danger-bg); border-bottom-color: var(--danger-border);"><h4 style="font-weight: 700; font-size: 14px; margin: 0; color: var(--danger);"><i class="ti ti-alert-triangle" style="margin-right: 4px;"></i> 確認操作</h4><button class="btn btn-icon sm btn-close-confirm" style="background:transparent; color: var(--text-muted);"><i class="ti ti-x"></i></button></div>
-            <div class="info-modal-body" style="padding: 20px; font-size: 13px; line-height: 1.5; color: var(--text-secondary);">${message}</div>
-            <div style="padding: 12px 20px; border-top: 1px solid var(--border); text-align: right; background: var(--bg); display: flex; justify-content: flex-end; gap: 8px;"><button class="btn btn-secondary btn-sm btn-cancel-confirm">取消</button><button class="btn btn-danger btn-sm" id="confirm-modal-yes">確認執行</button></div>
-        </div>`;
-    confirmModal.classList.add('open');
-    const closeFn = () => confirmModal.classList.remove('open');
-    confirmModal.querySelector('.btn-close-confirm').onclick = closeFn; confirmModal.querySelector('.btn-cancel-confirm').onclick = closeFn;
-    confirmModal.querySelector('#confirm-modal-yes').onclick = () => { closeFn(); onConfirm(); };
+    let css = '';
+    state.tableColumns.forEach(c => {
+        if (!c.visible) { css += `th[data-col="${c.index}"], td[data-col="${c.index}"] { display: none !important; }\n`; }
+    });
+    styleEl.innerHTML = css;
 }
