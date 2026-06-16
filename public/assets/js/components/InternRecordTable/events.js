@@ -20,7 +20,6 @@ export function bindEvents(container) {
     // 1. 頂部工具列事件
     container.querySelector('#btn-export-csv')?.addEventListener('click', () => {
         if (state.filteredRecords.length === 0) { UI.showToast("沒有資料可供匯出！", "error"); return; }
-        // 匯出邏輯不變
         let csv = '\uFEFF學號,姓名,學系,年級,機構名稱,實習起訖時間,總時數,實習時間,證明文件,投保情形,勞雇關係,填報系所,備註\n';
         state.filteredRecords.forEach(d => {
             csv += [d.student_raw?.split(' - ')[0], d.student_raw?.split(' - ')[1], d.dept, d.grade, d.inst_raw, d.duration, d.hours, d.period_type, d.proof_type, d.insurance, d.employment, d.resp_dept, d.notes].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
@@ -43,43 +42,6 @@ export function bindEvents(container) {
         state.currentPage = 1; Render.renderTable(); 
     });
 
-    // 2. 篩選器事件 (完全對齊 CourseTable 邏輯)
-    const filterTypes = ['dept', 'grade', 'inst_raw', 'course', 'resp_dept', 'period', 'proof', 'insurance', 'employment'];
-    filterTypes.forEach(type => {
-        container.querySelector(`#pill-${type}`)?.addEventListener('click', (e) => { e.stopPropagation(); UI.toggleDropdown(type); });
-        container.querySelector(`#search-${type}-input`)?.addEventListener('keyup', (e) => UI.filterDropdownItems(e.target, `${type}-options-container`));
-        
-        container.querySelector(`#drop-${type}`)?.addEventListener('change', (e) => {
-            if(e.target.classList.contains(`filter-chk-${type}`)) {
-                const val = e.target.value;
-                const set = state.filterSelections[type];
-                if (set.has(val)) set.delete(val); else set.add(val);
-                document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
-                state.currentPage = 1; UI.updatePillActive(type); Render.renderTable();
-            }
-        });
-    });
-
-    // 「全選/取消選取」按鈕 (btn-filter-toggle)
-    container.querySelectorAll('.btn-filter-toggle').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const type = btn.dataset.type;
-            const isSelectAll = btn.dataset.state !== 'all';
-            btn.dataset.state = isSelectAll ? 'all' : 'none';
-            btn.innerText = isSelectAll ? '取消選取' : '全選';
-            
-            const set = state.filterSelections[type];
-            container.querySelectorAll(`.filter-chk-${type}`).forEach(c => {
-                if(c.closest('.filter-option').style.display !== 'none') { 
-                    c.checked = isSelectAll; 
-                    if(isSelectAll) set.add(c.value); else set.delete(c.value); 
-                }
-            });
-            state.currentPage = 1; UI.updatePillActive(type); Render.renderTable();
-        });
-    });
-
     // 點擊外部關閉選單
     if (!state.isGlobalListenerBound) {
         document.addEventListener('click', (e) => {
@@ -94,7 +56,7 @@ export function bindEvents(container) {
         state.isGlobalListenerBound = true;
     }
 
-    // 3. 批次操作列事件
+    // 2. 批次操作列事件
     container.querySelector('#selectAll')?.addEventListener('change', (e) => {
         const isChecked = e.target.checked;
         const startIndex = (state.currentPage - 1) * state.itemsPerPage;
@@ -102,21 +64,21 @@ export function bindEvents(container) {
         
         if (isChecked) { currentPaginatedIds.forEach(id => { if (!state.selectedIds.includes(id)) state.selectedIds.push(id); }); } 
         else { state.selectedIds = state.selectedIds.filter(id => !currentPaginatedIds.includes(id)); }
-        UI.updateBatchActionBar(); Render.renderTable();
+        updateBatchActionBar(); Render.renderTable();
     });
 
-    container.querySelector('#btn-select-all-filtered')?.addEventListener('click', () => { state.selectedIds = state.filteredRecords.map(d => d.id); UI.updateBatchActionBar(); Render.renderTable(); });
-    container.querySelector('#btn-clear-selection')?.addEventListener('click', () => { state.selectedIds = []; UI.updateBatchActionBar(); Render.renderTable(); });
+    container.querySelector('#btn-select-all-filtered')?.addEventListener('click', () => { state.selectedIds = state.filteredRecords.map(d => d.id); updateBatchActionBar(); Render.renderTable(); });
+    container.querySelector('#btn-clear-selection')?.addEventListener('click', () => { state.selectedIds = []; updateBatchActionBar(); Render.renderTable(); });
     container.querySelector('#btn-batch-delete')?.addEventListener('click', async () => {
         if(state.isReadOnly) return;
         if (!confirm(`確定刪除選取的 ${state.selectedIds.length} 筆紀錄嗎？`)) return;
         try {
             await Data.batchDeleteRecords(state.selectedIds);
-            state.selectedIds = []; UI.updateBatchActionBar(); UI.showToast("批次刪除成功", "success");
+            state.selectedIds = []; updateBatchActionBar(); UI.showToast("批次刪除成功", "success");
         } catch(e) { UI.showToast("刪除失敗", "error"); }
     });
 
-    // 4. 表單儲存與關閉
+    // 3. 表單儲存與關閉
     container.querySelector('#btn-close-modal-x')?.addEventListener('click', UI.closeFormModal);
     container.querySelector('#btn-cancel-modal')?.addEventListener('click', UI.closeFormModal);
     container.querySelector('#btn-info-close')?.addEventListener('click', UI.closeInfoPopup);
@@ -154,7 +116,7 @@ export function bindEvents(container) {
         finally { if(btn) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> 確認儲存'; } }
     });
 
-    // 5. 分頁與表格內操作 (Event Delegation)
+    // 4. 分頁與表格內操作 (Event Delegation)
     container.querySelector('#per-page-select')?.addEventListener('change', (e) => { state.itemsPerPage = Number(e.target.value); state.currentPage = 1; Render.renderTable(); });
     
     container.addEventListener('click', (e) => {
@@ -180,7 +142,7 @@ export function bindEvents(container) {
             const id = rowChk.value;
             const index = state.selectedIds.indexOf(id);
             if (index === -1) state.selectedIds.push(id); else state.selectedIds.splice(index, 1);
-            UI.updateBatchActionBar(); Render.renderTable();
+            updateBatchActionBar(); Render.renderTable();
         }
 
         // 編輯按鈕
@@ -234,4 +196,16 @@ export function bindEvents(container) {
     container.querySelector('#input-student')?.addEventListener('input', (e) => { document.getElementById('student-dropdown').classList.add('show'); Render.renderStudentDropdown(state.allStudents, e.target.value); });
     container.querySelector('#input-institution')?.addEventListener('input', (e) => { e.target.dataset.id = ''; document.getElementById('institution-dropdown').classList.add('show'); Render.renderInstDropdown(state.allInsts, e.target.value); });
     container.querySelector('#input-course-search')?.addEventListener('input', (e) => { document.getElementById('course-dropdown').classList.add('show'); Render.renderCourseDropdown(state.allCourses, e.target.value); });
+}
+
+export function updateBatchActionBar() {
+    const bar = document.getElementById('batch-bar'); const count = document.getElementById('selected-count'); const btn = document.getElementById('btn-select-all-filtered'); 
+    if (!bar) return;
+    if (state.selectedIds.length > 0) { 
+        bar.classList.add('visible'); 
+        if (count) count.innerText = state.selectedIds.length; 
+        if (btn) btn.style.display = state.selectedIds.length < state.filteredRecords.length ? 'inline-flex' : 'none'; 
+    } else { 
+        bar.classList.remove('visible'); 
+    }
 }
