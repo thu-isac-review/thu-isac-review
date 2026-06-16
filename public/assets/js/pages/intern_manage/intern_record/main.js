@@ -1,8 +1,8 @@
 /**
  * 實習紀錄 - 管理模式頁面入口 (Manage Mode Entry)
- * 對應 Hash: intern_manage/record
+ * 對應 Hash: intern_manage/intern_record/main
  */
-import { InternRecordTable } from '../../components/InternRecordTable/main.js';
+import { InternRecordTable } from '../../../components/InternRecordTable/main.js';
 
 export async function render(containerId, options = {}) {
     const container = document.getElementById(containerId);
@@ -17,7 +17,7 @@ export async function render(containerId, options = {}) {
     }
 
     try {
-        // 2. 載入實習紀錄的 HTML 骨架模板
+        // 2. 載入實習紀錄的 HTML 骨架模板 (修正為專案中實際存在的範本名稱)
         const res = await fetch('./assets/templates/intern_record.html');
         if (!res.ok) throw new Error('無法載入實習紀錄 HTML 模板');
         const templateHtml = await res.text();
@@ -25,7 +25,7 @@ export async function render(containerId, options = {}) {
         // 3. 注入至 SPA 主要內容容器
         container.innerHTML = templateHtml;
 
-        // 4. 啟動實習紀錄模組，傳入 isViewOnly: false 來開啟完整管理權限
+        // 4. 啟動實習紀錄模組，傳入 isViewOnly: false 來開啟完整管理模式
         InternRecordTable.init({ isViewOnly: false });
     } catch (err) {
         console.error('實習紀錄管理頁面載入異常:', err);
