@@ -1,6 +1,5 @@
 /**
  * 實習紀錄模組 - 元件主控引導核心 (Main.js)
- * 負責系統初始載入串接，統合資料訂閱、視窗渲染和事件綁定三大區塊。
  */
 
 import { state } from './state.js';
@@ -10,17 +9,15 @@ import * as render from './render.js';
 import * as events from './events.js';
 
 export const InternRecordTable = {
-    /**
-     * 元件啟動主方法
-     * @param {Object} config - 初始化設定，如: { isViewOnly: false }
-     */
     init(config = { isViewOnly: false }) {
         state.isViewOnly = !!config.isViewOnly;
         
-        // 開始進行即時資料訂閱與認證追蹤
         db.onAuthStateChanged(db.auth, (user) => {
             if (user) {
-                this.loadApplication(user);
+                // 等待瀏覽器完成 DOM 渲染後再執行綁定
+                setTimeout(() => {
+                    this.loadApplication(user);
+                }, 50);
             } else {
                 const tbody = document.getElementById('table-body');
                 if (tbody) {
@@ -30,69 +27,79 @@ export const InternRecordTable = {
         });
     },
 
-    /**
-     * 認證成功後載入主檔並建立即時數據訂閱
-     */
     loadApplication(user) {
-        // A. 載入並監聽必要的學生、科系、機構與課程等主檔參照 (包覆 try-catch 提高強韌度)
+        if (!document.getElementById('search-input')) {
+            console.warn("DOM 尚未就緒，延遲載入模組...");
+            setTimeout(() => this.loadApplication(user), 100);
+            return;
+        }
+
         try {
             db.initDataSubscriptions({
                 onStudentsUpdate: (students) => {
                     state.allStudents = students;
-                    render.renderTable();
+                    this.safeRenderTable();
                 },
                 onInstsUpdate: (insts) => {
                     state.allInsts = insts;
-                    render.renderTable();
+                    this.safeRenderTable();
                 },
                 onCoursesUpdate: (courses) => {
                     state.allCourses = courses;
-                    render.renderTable();
+                    this.safeRenderTable();
                 },
                 onCollegesLoaded: (collegesList) => {
                     state.orderedColleges = collegesList;
-                    render.renderTable();
+                    this.safeRenderTable();
                 },
                 onDeptsLoaded: (depts) => {
                     state.globalDepts = depts;
-                    render.renderFilterDropdowns(); // 篩選需要系所簡稱，在此初始化篩選標籤
-                    render.renderTable();
+                    if(document.getElementById('filter-container')) {
+                        render.renderFilterDropdowns();
+                    }
+                    this.safeRenderTable();
                 }
             });
         } catch (err) {
             console.error("訂閱主檔資料流程發生錯誤:", err);
         }
 
-        // B. 監聽實習紀錄主資料異動
         try {
             db.subscribeToRecords((records) => {
                 state.allRecords = records;
-                
-                // 每次資料異動，主動重置批次選取狀態
                 state.selectedIds = [];
-                events.updateBatchActionBar();
                 
-                render.renderFilterDropdowns();
-                render.renderTable();
+                if(document.getElementById('batch-bar')) {
+                    events.updateBatchActionBar();
+                }
+                if(document.getElementById('filter-container')) {
+                    render.renderFilterDropdowns();
+                }
+                this.safeRenderTable();
             });
         } catch (err) {
             console.error("訂閱實習紀錄發生錯誤:", err);
-            // 即使出錯，仍嘗試強行渲染一次以移除「資料載入中」畫面
-            render.renderTable();
+            this.safeRenderTable();
         }
 
-        // C. 綁定所有視窗 UI 事件與輸入框監聽
         try {
             events.setupEventListeners();
         } catch (err) {
             console.error("事件監聽器設定失敗:", err);
         }
         
-        // D. 初始化套用欄位設定
         try {
-            render.updateColumnVisibility();
+            if(document.querySelector('table')) {
+                render.updateColumnVisibility();
+            }
         } catch (err) {
             console.error("欄位能見度初始化失敗:", err);
+        }
+    },
+    
+    safeRenderTable() {
+        if (document.getElementById('search-input') && document.getElementById('table-body')) {
+            render.renderTable();
         }
     }
 };
