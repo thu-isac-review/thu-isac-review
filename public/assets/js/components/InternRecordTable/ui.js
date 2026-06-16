@@ -1,50 +1,42 @@
 /**
  * 實習紀錄模組 - UI 彈窗控制與自訂通知系統 (UI.js)
- * 處理表單、詳情和匯入報告的開啟/關閉，並實踐自訂 Toast / Confirm 以取代 native 瀏覽器阻斷。
  */
 
 import { state } from './state.js';
 
-// 開啟表單彈窗
 export function openFormModal(isEdit = false) {
-    document.getElementById('main-view').style.display = 'none';
-    document.getElementById('data-modal').classList.add('open');
-    document.getElementById('modal-title').innerText = isEdit ? '編輯實習紀錄' : '新增實習紀錄';
+    document.getElementById('main-view')?.style.setProperty('display', 'none');
+    document.getElementById('data-modal')?.classList.add('open');
+    const title = document.getElementById('modal-title');
+    if (title) title.innerText = isEdit ? '編輯實習紀錄' : '新增實習紀錄';
 }
 
-// 關閉表單彈窗與重置
 export function closeFormModal() {
-    document.getElementById('data-modal').classList.remove('open');
-    document.getElementById('main-view').style.display = 'flex';
+    document.getElementById('data-modal')?.classList.remove('open');
+    document.getElementById('main-view')?.style.setProperty('display', 'flex');
     state.editingId = null;
 }
 
-// 開啟詳情確認彈窗 (學生/機構詳細資訊)
 export function openInfoPopup(htmlContent, titleText) {
-    document.getElementById('info-popup-title').innerHTML = titleText;
-    document.getElementById('info-popup-body').innerHTML = htmlContent;
-    document.getElementById('info-popup').classList.add('open');
+    const title = document.getElementById('info-popup-title');
+    const body = document.getElementById('info-popup-body');
+    if (title) title.innerHTML = titleText;
+    if (body) body.innerHTML = htmlContent;
+    document.getElementById('info-popup')?.classList.add('open');
 }
 
-// 關閉詳情確認彈窗
 export function closeInfoPopup() {
-    document.getElementById('info-popup').classList.remove('open');
+    document.getElementById('info-popup')?.classList.remove('open');
 }
 
-// 開啟匯入結果報告彈窗
 export function openImportReportModal() {
-    document.getElementById('import-report-modal').classList.add('open');
+    document.getElementById('import-report-modal')?.classList.add('open');
 }
 
-// 關閉匯入結果報告彈窗
 export function closeImportReportModal() {
-    document.getElementById('import-report-modal').classList.remove('open');
+    document.getElementById('import-report-modal')?.classList.remove('open');
 }
 
-/**
- * 💡 核心升級：精美自訂 Toast 系統
- * 代替原生 alert() 避免阻斷 iframe 或網頁執行流程
- */
 export function showToast(message, type = 'success') {
     let container = document.getElementById('toast-container');
     if (!container) {
@@ -74,20 +66,10 @@ export function showToast(message, type = 'success') {
     }
 
     toast.style.cssText = `
-        background: ${bg};
-        color: ${color};
-        border: 1px solid currentColor;
-        padding: 12px 20px;
-        border-radius: var(--radius);
-        box-shadow: var(--shadow-md);
-        font-size: 13px;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        min-width: 280px;
-        pointer-events: auto;
-        animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: ${bg}; color: ${color}; border: 1px solid currentColor;
+        padding: 12px 20px; border-radius: var(--radius); box-shadow: var(--shadow-md);
+        font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px;
+        min-width: 280px; pointer-events: auto; animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         transition: opacity 0.3s;
     `;
 
@@ -100,10 +82,6 @@ export function showToast(message, type = 'success') {
     }, 3500);
 }
 
-/**
- * 💡 核心升級：自訂確認對話方塊
- * 代替原生 confirm() 提供極具現代美感的互動介面
- */
 export function showConfirm(message, onConfirm) {
     let confirmModal = document.getElementById('custom-confirm-modal');
     if (!confirmModal) {
@@ -134,14 +112,8 @@ export function showConfirm(message, onConfirm) {
 
     confirmModal.classList.add('open');
 
-    // 關閉/取消按鈕邏輯
     const closeFn = () => confirmModal.classList.remove('open');
     confirmModal.querySelector('.btn-close-confirm').onclick = closeFn;
     confirmModal.querySelector('.btn-cancel-confirm').onclick = closeFn;
-
-    // 確認按鈕邏輯
-    confirmModal.querySelector('#confirm-modal-yes').onclick = () => {
-        closeFn();
-        onConfirm();
-    };
+    confirmModal.querySelector('#confirm-modal-yes').onclick = () => { closeFn(); onConfirm(); };
 }
