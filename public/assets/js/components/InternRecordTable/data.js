@@ -24,6 +24,9 @@ export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app); 
 export const db = getFirestore(app);
 
+// 💡 關鍵修復：將 onAuthStateChanged 匯出，供 main.js 呼叫使用！
+export { onAuthStateChanged };
+
 // 定義主要集合參照
 export const recordsCol = collection(db, "internship_records");
 export const studentsCol = collection(db, "internship_students");
