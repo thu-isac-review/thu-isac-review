@@ -1,15 +1,11 @@
 /**
  * 實習紀錄模組 - 網頁動態渲染引擎 (Render.js)
- * 負責產生表格資料、篩選標籤 UI、分頁按鈕、欄位開關樣式以及表單內選課晶片等。
  */
 
 import { state, getDeptShort, getColShort, getTime } from './state.js';
 
 const formatCourseInfo = (c) => c ? `${c.academic_year}-${c.term}_${c.course_code}：${c.course_name}` : '';
 
-/**
- * 建立/更新動態欄位隱藏樣式
- */
 export function updateColumnVisibility() {
     let styleEl = document.getElementById('col-vis-style');
     if (!styleEl) {
@@ -26,9 +22,6 @@ export function updateColumnVisibility() {
     styleEl.innerHTML = css;
 }
 
-/**
- * 渲染篩選欄位下拉清單與頂端標籤
- */
 export function renderFilterDropdowns() {
     const container = document.getElementById('filter-container');
     if (!container) return;
@@ -97,7 +90,6 @@ export function renderFilterDropdowns() {
         </div>`;
     });
 
-    // 加入顯示欄位控制選項
     html += `
     <div class="flex-spacer"></div>
     <div class="filter-pill-wrap" id="pill-wrap-col-toggle">
@@ -122,10 +114,8 @@ export function renderFilterDropdowns() {
     updateFilterVisibility();
 }
 
-/**
- * 依據當前多維度篩選、全域關鍵字過濾並重新整理對應之下拉清單選項能見度 (動態聯動)
- */
 export function updateFilterVisibility() {
+    // 防呆處理：若搜尋框還沒渲染，預設搜尋為空字串
     const searchInputGlobal = document.getElementById('search-input');
     const globalSearchTerm = searchInputGlobal ? searchInputGlobal.value.toLowerCase().trim() : '';
 
@@ -137,7 +127,6 @@ export function updateFilterVisibility() {
             const matchSearch = (d.student_raw || '').toLowerCase().includes(globalSearchTerm) || (d.inst_raw || '').toLowerCase().includes(globalSearchTerm);
             let ok = matchSearch;
 
-            // 分別對所有「非當前篩選器項目」進行聯動縮限過濾
             if (key !== 'dept' && ok && state.filterSelections.dept.size > 0) {
                 const stuId = (d.student_raw || '').split(' - ')[0];
                 const stu = state.allStudents.find(s => s.student_id === stuId);
@@ -183,24 +172,22 @@ export function updateFilterVisibility() {
         if (container) {
             container.querySelectorAll('.filter-option').forEach(lbl => {
                 const checkbox = lbl.querySelector('input[type="checkbox"]');
-                const val = checkbox.value;
-                const isAvailable = availableValues.has(val) || checkbox.checked;
+                const val = checkbox ? checkbox.value : '';
+                const isAvailable = availableValues.has(val) || (checkbox && checkbox.checked);
                 lbl.style.display = isAvailable ? 'flex' : 'none';
             });
         }
     });
 }
 
-/**
- * 💡 核心升級：表格核心數據渲染 (整合唯讀檢視模式)
- */
 export function renderTable() {
     const tbody = document.getElementById('table-body');
     if (!tbody) return;
 
-    const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
+    // 防呆處理
+    const searchInput = document.getElementById('search-input');
+    const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
-    // 多重條件過濾
     state.filteredRecords = state.allRecords.filter(d => {
         const matchSearch = (d.student_raw || '').toLowerCase().includes(searchTerm) || (d.inst_raw || '').toLowerCase().includes(searchTerm);
         let ok = matchSearch;
@@ -224,10 +211,8 @@ export function renderTable() {
         return ok;
     });
 
-    // 多重排序處理
     state.filteredRecords.sort((a, b) => {
         let valA = ''; let valB = '';
-
         if (state.sortCol === 'created_at') { valA = getTime(a.created_at); valB = getTime(b.created_at); }
         else if (state.sortCol === 'student_id') {
             valA = (a.student_raw || '').split(' - ')[0] || '';
@@ -257,14 +242,12 @@ export function renderTable() {
         return 0;
     });
 
-    // 計算分頁
     const total = state.filteredRecords.length;
     const tPages = Math.max(1, Math.ceil(total / state.itemsPerPage));
     if (state.currentPage > tPages) state.currentPage = tPages;
     const start = (state.currentPage - 1) * state.itemsPerPage;
     const items = state.filteredRecords.slice(start, start + state.itemsPerPage);
 
-    // 更新分頁文字
     const pagInfo = document.getElementById('pagination-info');
     if (pagInfo) {
         pagInfo.innerHTML = total > 0 
@@ -272,10 +255,8 @@ export function renderTable() {
             : `共 <strong>0</strong> 筆`;
     }
     
-    // 渲染分頁按鈕
     renderPagination(tPages);
     
-    // 更新頂端全選 Checkbox 狀態
     const selectAllChk = document.getElementById('selectAll');
     if (selectAllChk) {
         selectAllChk.checked = items.length > 0 && items.every(i => state.selectedIds.includes(i.id));
@@ -294,7 +275,6 @@ export function renderTable() {
         const stu = state.allStudents.find(s => s.student_id === stuId);
         const stuDept = stu ? getDeptShort(stu.department) : '未綁定學系';
 
-        // 總學分累加
         const courseCount = Array.isArray(data.courses) ? data.courses.length : 0;
         let totalCredits = 0;
         if (courseCount > 0) {
@@ -304,7 +284,6 @@ export function renderTable() {
             });
         }
 
-        // 多課程展開與縮合 UI 設計
         let coursesHtml = '-';
         let courseAlign = 'center';
         if (data.courses && data.courses.length > 0) {
@@ -387,7 +366,6 @@ export function renderTable() {
     });
     tbody.innerHTML = tHtml;
 
-    // 唯讀檢視模式 UI 動態調整
     if (state.isViewOnly) {
         document.querySelectorAll('.col-checkbox, .col-actions, #btn-import-trigger, #btn-add-record, .v-divider, #batch-bar').forEach(el => {
             el.style.setProperty('display', 'none', 'important');
@@ -397,9 +375,6 @@ export function renderTable() {
     updateFilterVisibility();
 }
 
-/**
- * 渲染底端分頁控制按鈕
- */
 function renderPagination(tPages) {
     const pagControls = document.getElementById('pagination-controls');
     if (!pagControls) return;
@@ -421,9 +396,6 @@ function renderPagination(tPages) {
     pagControls.innerHTML = pHtml;
 }
 
-/**
- * 渲染表單中已加入之實習修習課程清單晶片
- */
 export function renderSelectedCourseChips(skipRespUpdate = false) {
     const container = document.getElementById('selected-courses-container');
     if (!container) return;
@@ -458,14 +430,12 @@ export function renderSelectedCourseChips(skipRespUpdate = false) {
     if (!skipRespUpdate) updateRespDeptOptions();
 }
 
-/**
- * 依據選擇的「學生科系」與「加入課程的開課科系」之聯集，動態建立負責填報系所下拉清單
- */
 export function updateRespDeptOptions(preselectedValue = '') {
     const selectEl = document.getElementById('input-resp-dept');
     if (!selectEl) return;
 
-    const studentInputVal = document.getElementById('input-student').value;
+    const studentInput = document.getElementById('input-student');
+    const studentInputVal = studentInput ? studentInput.value : '';
     const stuMatch = studentInputVal.split(' - ')[0];
     const stu = state.allStudents.find(s => s.student_id === stuMatch);
     const stuDept = stu ? stu.department : null;
