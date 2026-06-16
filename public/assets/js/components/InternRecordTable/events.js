@@ -1,6 +1,5 @@
 /**
  * 實習紀錄模組 - 事件偵聽器與動作綁定 (Events.js)
- * 綁定並管理 UI 所有動態互動、自動完成聯想搜尋下拉框、分頁和批次檔案 CSV 上傳解析動作。
  */
 
 import { state, getDeptShort, getColShort } from './state.js';
@@ -11,14 +10,12 @@ import * as render from './render.js';
 const formatCourseInfo = (c) => c ? `${c.academic_year}-${c.term}_${c.course_code}：${c.course_name}` : '';
 
 export function setupEventListeners() {
-    // 1. 全域與欄位即時關鍵字搜尋
     const searchInput = document.getElementById('search-input');
     searchInput?.addEventListener('input', () => {
         state.currentPage = 1;
         render.renderTable();
     });
 
-    // 2. 表格表頭點擊排序監聽
     document.querySelectorAll('th[data-sort]').forEach(th => {
         th.addEventListener('click', () => {
             const col = th.dataset.sort;
@@ -31,16 +28,17 @@ export function setupEventListeners() {
             
             document.querySelectorAll('th[data-sort]').forEach(t => {
                 t.classList.remove('sort-asc', 'sort-desc');
-                t.querySelector('.sort-icon').className = 'ti ti-arrows-sort sort-icon';
+                const icon = t.querySelector('.sort-icon');
+                if (icon) icon.className = 'ti ti-arrows-sort sort-icon';
             });
             
             th.classList.add(state.sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
-            th.querySelector('.sort-icon').className = `ti ti-sort-${state.sortDir === 'asc' ? 'ascending' : 'descending'} sort-icon`;
+            const thIcon = th.querySelector('.sort-icon');
+            if (thIcon) thIcon.className = `ti ti-sort-${state.sortDir === 'asc' ? 'ascending' : 'descending'} sort-icon`;
             render.renderTable();
         });
     });
 
-    // 3. 欄位顯示/隱藏與下拉篩選器開關 (事件委派)
     document.addEventListener('click', (e) => {
         const toggleBtn = e.target.closest('.btn-filter-toggle');
         if (toggleBtn) {
@@ -48,8 +46,9 @@ export function setupEventListeners() {
             const type = toggleBtn.dataset.type;
             const drop = document.getElementById(`drop-${type}`);
             const wrap = document.getElementById(`pill-wrap-${type}`);
+            if (!drop || !wrap) return;
+
             const isOpen = drop.classList.contains('show');
-            
             document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
             document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
             
@@ -60,13 +59,11 @@ export function setupEventListeners() {
             return;
         }
 
-        // 當點擊篩選視窗外部時，自動關閉
         if (!e.target.closest('.filter-pill-wrap')) {
             document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
             document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
         }
 
-        // 動態聯想輸入下拉選單自動隱藏
         if (!e.target.closest('#input-student') && !e.target.closest('#student-dropdown')) {
             document.getElementById('student-dropdown')?.classList.remove('show');
         }
@@ -78,7 +75,6 @@ export function setupEventListeners() {
         }
     });
 
-    // 4. 點擊篩選勾選框 (事件委派)
     document.addEventListener('change', (e) => {
         if (e.target.classList.contains('col-visibility-chk')) {
             const index = Number(e.target.dataset.index);
@@ -88,12 +84,11 @@ export function setupEventListeners() {
             return;
         }
 
-        // 複選篩選器處理
         if (e.target.className.startsWith('filter-chk-')) {
             const type = e.target.dataset.type;
             const val = e.target.value;
             const set = state.filterSelections[type];
-            if (set.has(val)) set.delete(val); else set.add(val);
+            if (set && set.has(val)) set.delete(val); else if (set) set.add(val);
             
             state.currentPage = 1;
             updatePillActive(type);
@@ -101,7 +96,6 @@ export function setupEventListeners() {
         }
     });
 
-    // 5. 本地篩選器輸入聯想框過濾
     document.addEventListener('keyup', (e) => {
         if (e.target.classList.contains('local-filter-search')) {
             const targetId = e.target.dataset.target;
@@ -109,18 +103,20 @@ export function setupEventListeners() {
             const container = document.getElementById(targetId);
             if (container) {
                 container.querySelectorAll('.filter-option').forEach(lbl => {
-                    const text = lbl.querySelector('span').textContent.toLowerCase();
-                    lbl.style.display = text.includes(term) ? 'flex' : 'none';
+                    const span = lbl.querySelector('span');
+                    if (span) {
+                        const text = span.textContent.toLowerCase();
+                        lbl.style.display = text.includes(term) ? 'flex' : 'none';
+                    }
                 });
             }
         }
     });
 
-    // 6. 清除單個篩選器按鈕 (事件委派)
     document.addEventListener('click', (e) => {
         if (e.target.classList.contains('btn-clear-filter-pills')) {
             const type = e.target.dataset.type;
-            state.filterSelections[type].clear();
+            if (state.filterSelections[type]) state.filterSelections[type].clear();
             document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = false);
             
             const searchInputLocal = document.getElementById(`search-${type}-input`);
@@ -132,7 +128,6 @@ export function setupEventListeners() {
         }
     });
 
-    // 7. 分頁控制按鈕綁定 (事件委派)
     document.addEventListener('click', (e) => {
         const pageNumBtn = e.target.closest('.page-num-btn');
         if (pageNumBtn) {
@@ -140,29 +135,21 @@ export function setupEventListeners() {
             render.renderTable();
             return;
         }
-        
         if (e.target.closest('#btn-page-prev')) {
-            if (state.currentPage > 1) {
-                state.currentPage--;
-                render.renderTable();
-            }
+            if (state.currentPage > 1) { state.currentPage--; render.renderTable(); }
             return;
         }
-
         if (e.target.closest('#btn-page-next')) {
-            state.currentPage++;
-            render.renderTable();
+            state.currentPage++; render.renderTable();
         }
     });
 
-    // 每頁筆數下拉變更
     document.getElementById('per-page-select')?.addEventListener('change', (e) => {
         state.itemsPerPage = Number(e.target.value);
         state.currentPage = 1;
         render.renderTable();
     });
 
-    // 8. 欄位 Checkbox 多選、全頁選取、批次刪除等核心動作事件委派
     document.getElementById('selectAll')?.addEventListener('change', (e) => {
         const isChecked = e.target.checked;
         const startIndex = (state.currentPage - 1) * state.itemsPerPage;
@@ -201,7 +188,6 @@ export function setupEventListeners() {
         render.renderTable();
     });
 
-    // 批次刪除
     document.getElementById('btn-batch-delete')?.addEventListener('click', () => {
         if (state.selectedIds.length === 0) return;
         ui.showConfirm(`確定刪除選擇的 ${state.selectedIds.length} 筆實習紀錄？此動作將永久移除資料庫中的紀錄。`, async () => {
@@ -216,15 +202,14 @@ export function setupEventListeners() {
         });
     });
 
-    // 9. 彈窗內聯想自動完成輸入 (學生、機構與課程)
     const stuInput = document.getElementById('input-student');
     const stuDropdown = document.getElementById('student-dropdown');
     stuInput?.addEventListener('focus', () => {
-        stuDropdown.classList.add('show');
+        if(stuDropdown) stuDropdown.classList.add('show');
         renderStudentDropdown(stuInput.value);
     });
     stuInput?.addEventListener('input', () => {
-        stuDropdown.classList.add('show');
+        if(stuDropdown) stuDropdown.classList.add('show');
         renderStudentDropdown(stuInput.value);
         checkBtnActive(stuInput, 'btn-info-student', state.allStudents, 'student_id');
         render.updateRespDeptOptions();
@@ -233,61 +218,59 @@ export function setupEventListeners() {
     const instInput = document.getElementById('input-institution');
     const instDropdown = document.getElementById('institution-dropdown');
     instInput?.addEventListener('focus', () => {
-        instDropdown.classList.add('show');
+        if(instDropdown) instDropdown.classList.add('show');
         renderInstDropdown(instInput.value);
     });
     instInput?.addEventListener('input', (e) => {
-        e.target.dataset.id = ''; // 要求使用者點擊選項重新綁定 ID
-        document.getElementById('btn-info-inst').disabled = true;
-        instDropdown.classList.add('show');
+        e.target.dataset.id = '';
+        const btn = document.getElementById('btn-info-inst');
+        if (btn) btn.disabled = true;
+        if(instDropdown) instDropdown.classList.add('show');
         renderInstDropdown(instInput.value);
     });
 
     const courseInput = document.getElementById('input-course-search');
     const courseDropdown = document.getElementById('course-dropdown');
     courseInput?.addEventListener('focus', () => {
-        courseDropdown.classList.add('show');
+        if(courseDropdown) courseDropdown.classList.add('show');
         renderCourseDropdown(courseInput.value);
     });
     courseInput?.addEventListener('input', () => {
-        courseDropdown.classList.add('show');
+        if(courseDropdown) courseDropdown.classList.add('show');
         renderCourseDropdown(courseInput.value);
     });
 
-    // 10. 表單內彈窗相關點擊動作事件委派
     document.addEventListener('click', (e) => {
-        // 點選聯想學生
         const stuItem = e.target.closest('.student-select-item');
-        if (stuItem) {
+        if (stuItem && stuInput) {
             stuInput.value = `${stuItem.dataset.id} - ${stuItem.dataset.name}`;
-            stuDropdown.classList.remove('show');
-            document.getElementById('btn-info-student').disabled = false;
+            stuDropdown?.classList.remove('show');
+            const btn = document.getElementById('btn-info-student');
+            if (btn) btn.disabled = false;
             render.updateRespDeptOptions();
             return;
         }
 
-        // 點選聯想機構
         const instItem = e.target.closest('.inst-select-item');
-        if (instItem) {
+        if (instItem && instInput) {
             instInput.value = instItem.dataset.name;
             instInput.dataset.id = instItem.dataset.id;
-            instDropdown.classList.remove('show');
-            document.getElementById('btn-info-inst').disabled = false;
+            instDropdown?.classList.remove('show');
+            const btn = document.getElementById('btn-info-inst');
+            if (btn) btn.disabled = false;
             return;
         }
 
-        // 點選聯想加入課程
         const courseItem = e.target.closest('.course-select-item');
-        if (courseItem) {
+        if (courseItem && courseInput) {
             const cid = courseItem.dataset.id;
             if (!state.selectedCourseIds.includes(cid)) state.selectedCourseIds.push(cid);
             courseInput.value = '';
-            courseDropdown.classList.remove('show');
+            courseDropdown?.classList.remove('show');
             render.renderSelectedCourseChips();
             return;
         }
 
-        // 多選課程明細刪除
         const removeCourseBtn = e.target.closest('.btn-remove-course');
         if (removeCourseBtn) {
             const cid = removeCourseBtn.dataset.id;
@@ -296,23 +279,23 @@ export function setupEventListeners() {
             return;
         }
 
-        // 行內表格多課程展開/縮合
         const courseExpandBtn = e.target.closest('.btn-course-expand');
         if (courseExpandBtn) {
             const id = courseExpandBtn.dataset.id;
             const el = document.getElementById(`expand-course-${id}`);
             const icon = document.getElementById(`icon-course-${id}`);
-            if (el.style.display === 'none') {
-                el.style.display = 'block';
-                icon.style.transform = 'rotate(180deg)';
-            } else {
-                el.style.display = 'none';
-                icon.style.transform = 'rotate(0deg)';
+            if (el && icon) {
+                if (el.style.display === 'none') {
+                    el.style.display = 'block';
+                    icon.style.transform = 'rotate(180deg)';
+                } else {
+                    el.style.display = 'none';
+                    icon.style.transform = 'rotate(0deg)';
+                }
             }
             return;
         }
 
-        // 表格列編輯與刪除 (事件委派)
         const rowEditBtn = e.target.closest('.btn-row-edit');
         if (rowEditBtn) {
             triggerEdit(rowEditBtn.dataset.id);
@@ -334,8 +317,8 @@ export function setupEventListeners() {
         }
     });
 
-    // 11. 詳情資訊小彈窗開啟
     document.getElementById('btn-info-student')?.addEventListener('click', () => {
+        if (!stuInput) return;
         const stuId = stuInput.value.split(' - ')[0];
         const stu = state.allStudents.find(s => s.student_id === stuId);
         if (!stu) return;
@@ -349,6 +332,7 @@ export function setupEventListeners() {
     });
 
     document.getElementById('btn-info-inst')?.addEventListener('click', () => {
+        if (!instInput) return;
         const instId = instInput.dataset.id;
         let inst = instId ? state.allInsts.find(i => i.id === instId) : state.allInsts.find(i => i.name === instInput.value);
         if (!inst) return;
@@ -360,41 +344,38 @@ export function setupEventListeners() {
         ui.openInfoPopup(html, '<i class="ti ti-building-skyscraper" style="color:var(--success); margin-right:4px;"></i> 機構詳細資訊');
     });
 
-    // 12. 彈窗關閉按鈕
     document.getElementById('btn-info-close')?.addEventListener('click', ui.closeInfoPopup);
     document.getElementById('btn-info-footer-close')?.addEventListener('click', ui.closeInfoPopup);
     document.getElementById('btn-modal-close')?.addEventListener('click', ui.closeFormModal);
     document.getElementById('btn-report-close')?.addEventListener('click', ui.closeImportReportModal);
     document.getElementById('btn-report-footer-close')?.addEventListener('click', ui.closeImportReportModal);
 
-    // 13. 表單新增紀錄開啟按鈕
     document.getElementById('btn-add-record')?.addEventListener('click', () => {
         state.editingId = null;
         state.selectedCourseIds = [];
-        stuInput.value = '';
-        instInput.value = '';
-        instInput.dataset.id = '';
-        document.getElementById('input-grade').value = '';
-        document.getElementById('input-duration').value = '';
-        document.getElementById('input-hours').value = '';
-        document.getElementById('input-period-type').value = '';
-        document.getElementById('input-proof-type').value = '';
-        document.getElementById('input-insurance').value = '';
-        document.getElementById('input-employment').value = '';
-        document.getElementById('input-notes').value = '';
-        document.getElementById('btn-info-student').disabled = true;
-        document.getElementById('btn-info-inst').disabled = true;
+        if(stuInput) stuInput.value = '';
+        if(instInput) { instInput.value = ''; instInput.dataset.id = ''; }
+        
+        ['input-grade', 'input-duration', 'input-hours', 'input-period-type', 'input-proof-type', 'input-insurance', 'input-employment', 'input-notes'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+
+        const btnInfoStu = document.getElementById('btn-info-student');
+        if (btnInfoStu) btnInfoStu.disabled = true;
+        const btnInfoInst = document.getElementById('btn-info-inst');
+        if (btnInfoInst) btnInfoInst.disabled = true;
         
         render.renderSelectedCourseChips();
-        document.getElementById('input-resp-dept').innerHTML = '<option value="">請先選擇學生與關聯課程...</option>';
+        const respDept = document.getElementById('input-resp-dept');
+        if(respDept) respDept.innerHTML = '<option value="">請先選擇學生與關聯課程...</option>';
         ui.openFormModal(false);
     });
 
-    // 14. 表單儲存送出
     document.getElementById('btn-submit')?.addEventListener('click', async () => {
-        const durationInput = document.getElementById('input-duration').value.trim();
-        const respDeptInput = document.getElementById('input-resp-dept').value;
-        const hoursVal = document.getElementById('input-hours').value.trim();
+        const durationInput = document.getElementById('input-duration')?.value.trim() || '';
+        const respDeptInput = document.getElementById('input-resp-dept')?.value || '';
+        const hoursVal = document.getElementById('input-hours')?.value.trim() || '';
         const btn = document.getElementById('btn-submit');
 
         const regex = /^\d{2,3}\/\d{2}\/\d{2}-\d{2,3}\/\d{2}\/\d{2}$/;
@@ -412,18 +393,18 @@ export function setupEventListeners() {
         }
 
         const payload = { 
-            student_raw: stuInput.value.trim(), 
-            grade: document.getElementById('input-grade').value,
-            inst_raw: instInput.value.trim(), 
-            inst_id: instInput.dataset.id || '', 
-            period_type: document.getElementById('input-period-type').value,
+            student_raw: stuInput?.value.trim() || '', 
+            grade: document.getElementById('input-grade')?.value || '',
+            inst_raw: instInput?.value.trim() || '', 
+            inst_id: instInput?.dataset?.id || '', 
+            period_type: document.getElementById('input-period-type')?.value || '',
             duration: durationInput, 
-            insurance: document.getElementById('input-insurance').value, 
-            employment: document.getElementById('input-employment').value, 
-            proof_type: document.getElementById('input-proof-type').value, 
+            insurance: document.getElementById('input-insurance')?.value || '', 
+            employment: document.getElementById('input-employment')?.value || '', 
+            proof_type: document.getElementById('input-proof-type')?.value || '', 
             hours: hoursVal === '' ? '' : Number(hoursVal), 
             resp_dept: respDeptInput, 
-            notes: document.getElementById('input-notes').value.trim(), 
+            notes: document.getElementById('input-notes')?.value.trim() || '', 
             courses: state.selectedCourseIds
         };
 
@@ -432,8 +413,10 @@ export function setupEventListeners() {
             return; 
         }
 
-        btn.disabled = true; 
-        btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 儲存中...';
+        if (btn) {
+            btn.disabled = true; 
+            btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> 儲存中...';
+        }
 
         try {
             if (state.editingId) {
@@ -447,12 +430,13 @@ export function setupEventListeners() {
         } catch (err) { 
             ui.showToast("儲存失敗：" + err.message, "error"); 
         } finally { 
-            btn.disabled = false; 
-            btn.innerHTML = '<i class="ti ti-check"></i> 儲存紀錄'; 
+            if (btn) {
+                btn.disabled = false; 
+                btn.innerHTML = '<i class="ti ti-check"></i> 儲存紀錄'; 
+            }
         }
     });
 
-    // 15. 清單匯出功能
     document.getElementById('btn-export')?.addEventListener('click', () => {
         if (state.filteredRecords.length === 0) { 
             ui.showToast("當前無符合條件之資料可供匯出！", "warning"); 
@@ -474,9 +458,9 @@ export function setupEventListeners() {
             const stuDept = stu ? stu.department : '';
 
             csv += [
-                stuId, stuName, stuDept, d.grade, d.inst_raw, courseNames, totalCredits, 
-                d.duration, d.hours !== undefined && d.hours !== '' ? d.hours : '', 
-                d.period_type, d.proof_type, d.insurance, d.employment, d.resp_dept || '', d.notes || ''
+                stuId, stuName, stuDept, d.grade || '', d.inst_raw || '', courseNames, totalCredits, 
+                d.duration || '', d.hours !== undefined && d.hours !== '' ? d.hours : '', 
+                d.period_type || '', d.proof_type || '', d.insurance || '', d.employment || '', d.resp_dept || '', d.notes || ''
             ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
         });
         const link = document.createElement('a'); 
@@ -485,18 +469,19 @@ export function setupEventListeners() {
         link.click();
     });
 
-    // 16. 批次 CSV 檔案匯入處理
     const importTrigger = document.getElementById('btn-import-trigger');
     const importFileInput = document.getElementById('import-file');
-    importTrigger?.addEventListener('click', () => importFileInput.click());
+    importTrigger?.addEventListener('click', () => importFileInput?.click());
 
     importFileInput?.addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file) return;
         
-        const originalHtml = importTrigger.innerHTML;
-        importTrigger.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> <span class="btn-text">匯入中...</span>';
-        importTrigger.disabled = true;
+        if (importTrigger) {
+            importTrigger.dataset.originalHtml = importTrigger.innerHTML;
+            importTrigger.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> <span class="btn-text">匯入中...</span>';
+            importTrigger.disabled = true;
+        }
 
         const reader = new FileReader();
         reader.onload = async (event) => {
@@ -507,7 +492,6 @@ export function setupEventListeners() {
                 
                 let successCount = 0; let warningCount = 0; let errorCount = 0;
                 
-                // 跳過標題列進行解析
                 for (let i = 1; i < rows.length; i++) {
                     let cols = []; let inQuotes = false; let currentVal = '';
                     for (let char of rows[i]) {
@@ -606,7 +590,7 @@ export function setupEventListeners() {
                         hours: record.hours, period_type: record.period_type, proof_type: record.proof_type, insurance: record.insurance,
                         employment: record.employment, notes: record.notes, 
                         resp_dept: record.resp_dept || (studentMatch ? studentMatch.department : ''), 
-                        created_at: new Date() // Firestore Server Timestamp 將由 addDoc 設定
+                        created_at: new Date()
                     };
 
                     if (rowWarnings.length > 0) {
@@ -619,46 +603,50 @@ export function setupEventListeners() {
                     parsedRows.push(payload);
                 }
 
-                // 批次存入資料庫
                 for (let payload of parsedRows) { 
                     await db.addRecord(payload); 
                 }
 
-                // 產生匯入統計結果與渲染報告清單
-                document.getElementById('report-success-count').innerText = successCount;
-                document.getElementById('report-warning-count').innerText = warningCount;
-                document.getElementById('report-error-count').innerText = errorCount;
+                const rSuccess = document.getElementById('report-success-count');
+                const rWarning = document.getElementById('report-warning-count');
+                const rError = document.getElementById('report-error-count');
+                if(rSuccess) rSuccess.innerText = successCount;
+                if(rWarning) rWarning.innerText = warningCount;
+                if(rError) rError.innerText = errorCount;
 
                 const detailsContainer = document.getElementById('report-details-container');
-                let detailsHtml = '';
-                state.globalImportReportData.forEach(item => {
-                    let statusColor = item.status === '成功' ? 'var(--success)' : (item.status === '警告' ? 'var(--warning)' : 'var(--danger)');
-                    let statusBg = item.status === '成功' ? 'var(--success-bg)' : (item.status === '警告' ? 'var(--warning-bg)' : 'var(--danger-bg)');
+                if (detailsContainer) {
+                    let detailsHtml = '';
+                    state.globalImportReportData.forEach(item => {
+                        let statusColor = item.status === '成功' ? 'var(--success)' : (item.status === '警告' ? 'var(--warning)' : 'var(--danger)');
+                        let statusBg = item.status === '成功' ? 'var(--success-bg)' : (item.status === '警告' ? 'var(--warning-bg)' : 'var(--danger-bg)');
 
-                    detailsHtml += `
-                        <div style="display: grid; grid-template-columns: 15% 15% 25% 45%; padding: 10px 12px; border-bottom: 1px solid var(--border); align-items: center;">
-                            <div><span style="background:${statusBg}; color:${statusColor}; padding:2px 6px; border-radius:4px; font-weight:700; font-size:10px;">${item.status}</span></div>
-                            <div style="font-family:monospace; color:var(--text-muted);">${item.rows}</div>
-                            <div style="font-weight:700; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.student}</div>
-                            <div style="color:var(--text-secondary);">${item.message}</div>
-                        </div>`;
-                });
-                detailsContainer.innerHTML = detailsHtml;
+                        detailsHtml += `
+                            <div style="display: grid; grid-template-columns: 15% 15% 25% 45%; padding: 10px 12px; border-bottom: 1px solid var(--border); align-items: center;">
+                                <div><span style="background:${statusBg}; color:${statusColor}; padding:2px 6px; border-radius:4px; font-weight:700; font-size:10px;">${item.status}</span></div>
+                                <div style="font-family:monospace; color:var(--text-muted);">${item.rows}</div>
+                                <div style="font-weight:700; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.student}</div>
+                                <div style="color:var(--text-secondary);">${item.message}</div>
+                            </div>`;
+                    });
+                    detailsContainer.innerHTML = detailsHtml;
+                }
 
                 ui.openImportReportModal();
 
             } catch (error) { 
                 ui.showToast("解析匯入檔時發生預期外的錯誤：" + error.message, "error"); 
             } finally { 
-                importTrigger.innerHTML = originalHtml; 
-                importTrigger.disabled = false; 
+                if (importTrigger) {
+                    importTrigger.innerHTML = importTrigger.dataset.originalHtml || '上傳匯入'; 
+                    importTrigger.disabled = false; 
+                }
                 e.target.value = ''; 
             }
         };
         reader.readAsText(file);
     });
 
-    // 下載 CSV 批次報告
     document.getElementById('btn-report-download')?.addEventListener('click', () => {
         if (!state.globalImportReportData || state.globalImportReportData.length === 0) return;
         let csv = '\uFEFF狀態,Excel來源列,學號姓名,詳細說明\n';
@@ -672,106 +660,6 @@ export function setupEventListeners() {
     });
 }
 
-/**
- * 彈窗內聯想篩選輔助方法
- */
-function renderStudentDropdown(term) {
-    const dropdown = document.getElementById('student-dropdown'); 
-    const val = term.split(' - ')[0].trim().toLowerCase(); 
-    const filtered = state.allStudents.filter(s => s.student_id.toLowerCase().includes(val) || s.name.toLowerCase().includes(val));
-    if (filtered.length === 0) { 
-        dropdown.innerHTML = '<div style="padding:12px; text-align:center; font-size:11px; color:var(--text-muted);">查無相符學生</div>'; 
-        return; 
-    }
-    
-    let html = '';
-    filtered.slice(0, 30).forEach(s => {
-        html += `
-        <div class="search-item student-select-item" data-id="${s.student_id}" data-name="${s.name}">
-            <div class="search-item-title">${s.student_id} - ${s.name}</div>
-            <div class="search-item-desc">${getColShort(s.college)} / ${getDeptShort(s.department)}</div>
-        </div>`;
-    });
-    dropdown.innerHTML = html;
-}
-
-function renderInstDropdown(term) {
-    const dropdown = document.getElementById('institution-dropdown'); 
-    const val = term.trim().toLowerCase();
-    const filtered = state.allInsts.filter(i => i.name.toLowerCase().includes(val) || (i.tax_id && i.tax_id.toLowerCase().includes(val)));
-    if (filtered.length === 0) { 
-        dropdown.innerHTML = '<div style="padding:12px; text-align:center; font-size:11px; color:var(--text-muted);">查無相符機構</div>'; 
-        return; 
-    }
-    
-    let html = '';
-    filtered.slice(0, 30).forEach(i => {
-        html += `
-        <div class="search-item inst-select-item" data-id="${i.id}" data-name="${i.name}">
-            <div class="search-item-title">${i.name}</div>
-            <div class="search-item-desc">${i.tax_id || '統編：無統一編號'} | ${i.address || ''}</div>
-        </div>`;
-    });
-    dropdown.innerHTML = html;
-}
-
-function renderCourseDropdown(term) {
-    const dropdown = document.getElementById('course-dropdown'); 
-    const val = term.trim().toLowerCase();
-    const available = state.allCourses.filter(c => !state.selectedCourseIds.includes(c.id));
-    
-    const filtered = available.filter(c => {
-        const deptShort = getDeptShort(c.department).toLowerCase();
-        return c.course_name.toLowerCase().includes(val) || 
-               c.course_code.toLowerCase().includes(val) || 
-               c.department.toLowerCase().includes(val) ||
-               deptShort.includes(val); 
-    });
-    
-    if (filtered.length === 0) { 
-        dropdown.innerHTML = '<div style="padding:12px; text-align:center; font-size:11px; color:var(--text-muted);">查無相符或可選擇之課程</div>'; 
-        return; 
-    }
-
-    let html = '';
-    filtered.slice(0, 30).forEach(c => {
-        html += `
-        <div class="search-item course-select-item" data-id="${c.id}">
-            <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
-                <span style="font-size:13px; font-weight:700; color:var(--text-primary);">${c.academic_year}-${c.term}</span>
-                <span style="font-size:10px; font-weight:700; background:var(--brand-light); color:var(--brand); padding:2px 4px; border-radius:4px;">${c.course_code}</span>
-                <span style="font-size:13px; font-weight:700; color:var(--text-primary);">${c.course_name}</span>
-            </div>
-            <div class="search-item-desc">開課院系：${getColShort(c.college)} / ${getDeptShort(c.department)} | ${c.credits}學分</div>
-        </div>`;
-    });
-    dropdown.innerHTML = html;
-}
-
-// 輔助檢查主檔比對後，決定詳情 Info 鍵是否點亮啟用
-function checkBtnActive(inputEl, btnId, list, key) {
-    const match = list.find(x => (x[key] === inputEl.value || (x.student_id && inputEl.value.startsWith(x.student_id))));
-    document.getElementById(btnId).disabled = !match;
-}
-
-// 表頭動態更新篩選器按鈕樣式
-export function updatePillActive(type) {
-    const set = state.filterSelections[type];
-    const def = state.filterDefinitions.find(d => d.key === type);
-    if (!def) return;
-    const pill = document.getElementById(`pill-${type}`);
-    if (!pill) return;
-    
-    if (set.size > 0) {
-        pill.classList.add('active');
-        pill.innerHTML = `${def.label} <span class="pill-count">${set.size}</span> <i class="ti ti-chevron-down"></i>`;
-    } else {
-        pill.classList.remove('active');
-        pill.innerHTML = `${def.label} <i class="ti ti-chevron-down"></i>`;
-    }
-}
-
-// 批次列顯示狀態控制
 export function updateBatchActionBar() {
     const bar = document.getElementById('batch-bar'); 
     const count = document.getElementById('selected-count'); 
@@ -794,7 +682,93 @@ export function updateBatchActionBar() {
     }
 }
 
-// 行內編輯按鈕點擊觸發還原
+function updatePillActive(type) {
+    const set = state.filterSelections[type];
+    const def = state.filterDefinitions.find(d => d.key === type);
+    if (!def) return;
+    const pill = document.getElementById(`pill-${type}`);
+    if (!pill) return;
+    
+    if (set.size > 0) {
+        pill.classList.add('active');
+        pill.innerHTML = `${def.label} <span class="pill-count">${set.size}</span> <i class="ti ti-chevron-down"></i>`;
+    } else {
+        pill.classList.remove('active');
+        pill.innerHTML = `${def.label} <i class="ti ti-chevron-down"></i>`;
+    }
+}
+
+function renderStudentDropdown(term) {
+    const dropdown = document.getElementById('student-dropdown'); 
+    if (!dropdown) return;
+    const val = term.split(' - ')[0].trim().toLowerCase(); 
+    const filtered = state.allStudents.filter(s => s.student_id.toLowerCase().includes(val) || s.name.toLowerCase().includes(val));
+    if (filtered.length === 0) { 
+        dropdown.innerHTML = '<div style="padding:12px; text-align:center; font-size:11px; color:var(--text-muted);">查無相符學生</div>'; 
+        return; 
+    }
+    
+    dropdown.innerHTML = filtered.slice(0, 15).map(s => `
+        <div class="search-item student-select-item" data-id="${s.student_id}" data-name="${s.name}">
+            <div class="search-item-title">${s.student_id} - ${s.name}</div>
+            <div class="search-item-desc">${getColShort(s.college)} / ${getDeptShort(s.department)}</div>
+        </div>`).join('');
+}
+
+function renderInstDropdown(term) {
+    const dropdown = document.getElementById('institution-dropdown'); 
+    if (!dropdown) return;
+    const val = term.trim().toLowerCase();
+    const filtered = state.allInsts.filter(i => i.name.toLowerCase().includes(val) || (i.tax_id && i.tax_id.toLowerCase().includes(val)));
+    if (filtered.length === 0) { 
+        dropdown.innerHTML = '<div style="padding:12px; text-align:center; font-size:11px; color:var(--text-muted);">查無相符機構</div>'; 
+        return; 
+    }
+    
+    dropdown.innerHTML = filtered.slice(0, 15).map(i => `
+        <div class="search-item inst-select-item" data-id="${i.id}" data-name="${i.name}">
+            <div class="search-item-title">${i.name}</div>
+            <div class="search-item-desc">${i.tax_id || '統編：無統一編號'} | ${i.address || ''}</div>
+        </div>`).join('');
+}
+
+function renderCourseDropdown(term) {
+    const dropdown = document.getElementById('course-dropdown'); 
+    if (!dropdown) return;
+    const val = term.trim().toLowerCase();
+    const available = state.allCourses.filter(c => !state.selectedCourseIds.includes(c.id));
+    
+    const filtered = available.filter(c => {
+        const deptShort = getDeptShort(c.department).toLowerCase();
+        return c.course_name.toLowerCase().includes(val) || 
+               c.course_code.toLowerCase().includes(val) || 
+               c.department.toLowerCase().includes(val) ||
+               deptShort.includes(val); 
+    });
+    
+    if (filtered.length === 0) { 
+        dropdown.innerHTML = '<div style="padding:12px; text-align:center; font-size:11px; color:var(--text-muted);">查無相符或可選擇之課程</div>'; 
+        return; 
+    }
+
+    dropdown.innerHTML = filtered.slice(0, 15).map(c => `
+        <div class="search-item course-select-item" data-id="${c.id}">
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                <span style="font-size:13px; font-weight:700; color:var(--text-primary);">${c.academic_year}-${c.term}</span>
+                <span style="font-size:10px; font-weight:700; background:var(--brand-light); color:var(--brand); padding:2px 4px; border-radius:4px;">${c.course_code}</span>
+                <span style="font-size:13px; font-weight:700; color:var(--text-primary);">${c.course_name}</span>
+            </div>
+            <div class="search-item-desc">開課院系：${getColShort(c.college)} / ${getDeptShort(c.department)} | ${c.credits}學分</div>
+        </div>`).join('');
+}
+
+function checkBtnActive(inputEl, btnId, list, key) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    const match = list.find(x => (x[key] === inputEl.value || (x.student_id && inputEl.value.startsWith(x.student_id))));
+    btn.disabled = !match;
+}
+
 function triggerEdit(id) {
     const data = state.allRecords.find(d => d.id === id); 
     if (!data) return;
@@ -803,27 +777,33 @@ function triggerEdit(id) {
     const stuInput = document.getElementById('input-student');
     const instInput = document.getElementById('input-institution');
     
-    stuInput.value = data.student_raw || '';
-    instInput.value = data.inst_raw || '';
-    instInput.dataset.id = data.inst_id || ''; 
+    if (stuInput) stuInput.value = data.student_raw || '';
+    if (instInput) {
+        instInput.value = data.inst_raw || '';
+        instInput.dataset.id = data.inst_id || ''; 
+    }
     
-    document.getElementById('input-duration').value = data.duration || '';
-    document.getElementById('input-hours').value = data.hours !== undefined && data.hours !== '' ? data.hours : '';
-    document.getElementById('input-notes').value = data.notes || '';
-    
-    document.getElementById('input-grade').value = data.grade || '';
-    document.getElementById('input-period-type').value = data.period_type || '';
-    document.getElementById('input-proof-type').value = data.proof_type || '';
-    document.getElementById('input-insurance').value = data.insurance || '';
-    document.getElementById('input-employment').value = data.employment || '';
+    const setVal = (eid, val) => { const el = document.getElementById(eid); if (el) el.value = val; };
+    setVal('input-duration', data.duration || '');
+    setVal('input-hours', data.hours !== undefined && data.hours !== '' ? data.hours : '');
+    setVal('input-notes', data.notes || '');
+    setVal('input-grade', data.grade || '');
+    setVal('input-period-type', data.period_type || '');
+    setVal('input-proof-type', data.proof_type || '');
+    setVal('input-insurance', data.insurance || '');
+    setVal('input-employment', data.employment || '');
 
-    document.getElementById('btn-info-student').disabled = false;
+    const btnInfoStu = document.getElementById('btn-info-student');
+    if (btnInfoStu) btnInfoStu.disabled = false;
     
-    if (data.inst_id) {
-        document.getElementById('btn-info-inst').disabled = false;
-    } else {
-        const exists = state.allInsts.some(i => i.name === data.inst_raw);
-        document.getElementById('btn-info-inst').disabled = !exists;
+    const btnInfoInst = document.getElementById('btn-info-inst');
+    if (btnInfoInst) {
+        if (data.inst_id) {
+            btnInfoInst.disabled = false;
+        } else {
+            const exists = state.allInsts.some(i => i.name === data.inst_raw);
+            btnInfoInst.disabled = !exists;
+        }
     }
 
     state.selectedCourseIds = Array.isArray(data.courses) ? [...data.courses] : [];
