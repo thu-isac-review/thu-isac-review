@@ -22,7 +22,6 @@ export const InternRecordTable = {
             if (user) {
                 this.loadApplication(user);
             } else {
-                // 未登入之轉導或載入載入骨架遮罩處理
                 const tbody = document.getElementById('table-body');
                 if (tbody) {
                     tbody.innerHTML = `<tr><td colspan="16" class="empty-state"><div class="empty-text">請先完成登入驗證。</div></td></tr>`;
@@ -35,47 +34,65 @@ export const InternRecordTable = {
      * 認證成功後載入主檔並建立即時數據訂閱
      */
     loadApplication(user) {
-        // A. 載入並監聽必要的學生、科系、機構與課程等主檔參照
-        db.initDataSubscriptions({
-            onStudentsUpdate: (students) => {
-                state.allStudents = students;
-                render.renderTable();
-            },
-            onInstsUpdate: (insts) => {
-                state.allInsts = insts;
-                render.renderTable();
-            },
-            onCoursesUpdate: (courses) => {
-                state.allCourses = courses;
-                render.renderTable();
-            },
-            onCollegesLoaded: (collegesList) => {
-                state.orderedColleges = collegesList;
-                render.renderTable();
-            },
-            onDeptsLoaded: (depts) => {
-                state.globalDepts = depts;
-                render.renderFilterDropdowns(); // 篩選需要系所簡稱，在此初始化篩選標籤
-                render.renderTable();
-            }
-        });
+        // A. 載入並監聽必要的學生、科系、機構與課程等主檔參照 (包覆 try-catch 提高強韌度)
+        try {
+            db.initDataSubscriptions({
+                onStudentsUpdate: (students) => {
+                    state.allStudents = students;
+                    render.renderTable();
+                },
+                onInstsUpdate: (insts) => {
+                    state.allInsts = insts;
+                    render.renderTable();
+                },
+                onCoursesUpdate: (courses) => {
+                    state.allCourses = courses;
+                    render.renderTable();
+                },
+                onCollegesLoaded: (collegesList) => {
+                    state.orderedColleges = collegesList;
+                    render.renderTable();
+                },
+                onDeptsLoaded: (depts) => {
+                    state.globalDepts = depts;
+                    render.renderFilterDropdowns(); // 篩選需要系所簡稱，在此初始化篩選標籤
+                    render.renderTable();
+                }
+            });
+        } catch (err) {
+            console.error("訂閱主檔資料流程發生錯誤:", err);
+        }
 
         // B. 監聽實習紀錄主資料異動
-        db.subscribeToRecords((records) => {
-            state.allRecords = records;
-            
-            // 每次資料異動，主動重置批次選取狀態
-            state.selectedIds = [];
-            events.updateBatchActionBar();
-            
-            render.renderFilterDropdowns();
+        try {
+            db.subscribeToRecords((records) => {
+                state.allRecords = records;
+                
+                // 每次資料異動，主動重置批次選取狀態
+                state.selectedIds = [];
+                events.updateBatchActionBar();
+                
+                render.renderFilterDropdowns();
+                render.renderTable();
+            });
+        } catch (err) {
+            console.error("訂閱實習紀錄發生錯誤:", err);
+            // 即使出錯，仍嘗試強行渲染一次以移除「資料載入中」畫面
             render.renderTable();
-        });
+        }
 
         // C. 綁定所有視窗 UI 事件與輸入框監聽
-        events.setupEventListeners();
+        try {
+            events.setupEventListeners();
+        } catch (err) {
+            console.error("事件監聽器設定失敗:", err);
+        }
         
         // D. 初始化套用欄位設定
-        render.updateColumnVisibility();
+        try {
+            render.updateColumnVisibility();
+        } catch (err) {
+            console.error("欄位能見度初始化失敗:", err);
+        }
     }
 };
