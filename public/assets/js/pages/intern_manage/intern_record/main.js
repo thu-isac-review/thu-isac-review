@@ -1,40 +1,39 @@
 /**
- * 實習紀錄 - 管理模式頁面入口 (Manage Entry point)
- * 負責載入對應之網頁骨架 HTML 模板、元件專屬 CSS 樣式，並呼叫元件內核以「管理權限 (isViewOnly: false)」開啟。
+ * 實習紀錄 - 管理模式頁面入口 (Manage Mode Entry)
+ * 對應 Hash: intern_manage/record
  */
+import { InternRecordTable } from '../../components/InternRecordTable/main.js';
 
-import { InternRecordTable } from '../../../components/InternRecordTable/main.js';
+export async function render(containerId, options = {}) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
 
-async function bootstrapManagePage() {
-    // 1. 動態追加元件樣式表 (如果不存在)
+    // 1. 自動動態加載實習紀錄專用的 CSS 樣式表，確保在 SPA 路由切換時樣式不跑版
     if (!document.querySelector('link[href*="intern_record.css"]')) {
         const link = document.createElement('link');
         link.rel = 'stylesheet';
-        link.href = '/assets/css/intern_record.css';
+        link.href = './assets/css/intern_record.css';
         document.head.appendChild(link);
     }
 
     try {
-        // 2. 獲取 HTML 佈局骨架模板
-        const res = await fetch('/assets/templates/intern_record.html');
-        if (!res.ok) throw new Error('無法讀取實習紀錄 HTML 模板檔案');
+        // 2. 載入實習紀錄的 HTML 骨架模板
+        const res = await fetch('./assets/templates/intern_record.html');
+        if (!res.ok) throw new Error('無法載入實習紀錄 HTML 模板');
         const templateHtml = await res.text();
+        
+        // 3. 注入至 SPA 主要內容容器
+        container.innerHTML = templateHtml;
 
-        // 3. 將佈局注入至頁面主容器
-        const pageContainer = document.getElementById('app') || document.body;
-        pageContainer.innerHTML = templateHtml;
-
-        // 4. 以管理模式啟動實習紀錄模組
+        // 4. 啟動實習紀錄模組，傳入 isViewOnly: false 來開啟完整管理權限
         InternRecordTable.init({ isViewOnly: false });
-
     } catch (err) {
-        console.error('初始化實習紀錄管理頁面發生異常:', err);
+        console.error('實習紀錄管理頁面載入異常:', err);
+        container.innerHTML = `
+            <div class="flex flex-col items-center justify-center h-full p-6 text-red-500">
+                <i class="ti ti-alert-triangle text-5xl mb-2"></i>
+                <p class="text-sm">頁面載入失敗: ${err.message}</p>
+            </div>
+        `;
     }
-}
-
-// 監聽 DOM 載入完畢後進行初始化
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', bootstrapManagePage);
-} else {
-    bootstrapManagePage();
 }
