@@ -1,0 +1,102 @@
+/**
+ * 實習紀錄模組 - 狀態管理器 (State.js)
+ * 集中管理資料快取、篩選狀態、排序與分頁狀態。
+ */
+
+export const state = {
+    // 原始資料快取
+    allRecords: [],
+    allStudents: [],
+    allInsts: [],
+    allCourses: [],
+    
+    // 主控設定
+    isViewOnly: false, // 決定是否為檢視模式 (唯讀模式)
+
+    // 篩選與排序結果
+    filteredRecords: [],
+    selectedIds: [],
+    selectedCourseIds: [],
+    
+    // 分頁
+    currentPage: 1,
+    itemsPerPage: 15,
+    
+    // 排序
+    sortCol: 'created_at',
+    sortDir: 'desc',
+    
+    // 目前編輯中的紀錄 ID
+    editingId: null,
+    
+    // 外部參照資料 (學院、系所對照)
+    globalDepts: [],
+    orderedColleges: [],
+    
+    // 批次匯入結果儲存
+    globalImportReportData: [],
+
+    // 欄位顯示設定 (可動態開關顯示)
+    tableColumns: [
+        { index: 1, label: '學號', visible: true },
+        { index: 2, label: '姓名', visible: true },
+        { index: 3, label: '學系', visible: true },
+        { index: 4, label: '年級', visible: true },
+        { index: 5, label: '機構名稱', visible: true },
+        { index: 6, label: '修習課程', visible: true },
+        { index: 7, label: '總學分', visible: true },
+        { index: 8, label: '實習起訖時間', visible: true },
+        { index: 9, label: '總時數', visible: true },
+        { index: 10, label: '實習時間', visible: true },
+        { index: 11, label: '證明文件', visible: true },
+        { index: 12, label: '投保情形', visible: true },
+        { index: 13, label: '勞雇關係', visible: true },
+        { index: 14, label: '填報系所', visible: true }
+    ],
+
+    // 目前篩選選取的 Set 項目
+    filterSelections: {
+        dept: new Set(),
+        grade: new Set(),
+        inst_raw: new Set(),
+        course: new Set(),
+        resp_dept: new Set(),
+        period: new Set(),
+        proof: new Set(),
+        insurance: new Set(),
+        employment: new Set()
+    },
+
+    // 篩選項目定義
+    filterDefinitions: [
+        { key: 'dept', label: '學系', searchable: true },
+        { key: 'grade', label: '年級', searchable: false },
+        { key: 'inst_raw', label: '機構名稱', searchable: true },
+        { key: 'course', label: '修習課程', searchable: true },
+        { key: 'resp_dept', label: '填報系所', searchable: true },
+        { key: 'period', label: '實習時間', searchable: false },
+        { key: 'proof', label: '證明文件', searchable: false },
+        { key: 'insurance', label: '投保情形', searchable: false },
+        { key: 'employment', label: '勞雇關係', searchable: false }
+    ]
+};
+
+// 輔助函式：取得學院簡稱
+export function getColShort(collegeName) {
+    const col = state.orderedColleges.find(x => x.name === collegeName);
+    return col && col.shortName ? col.shortName : (collegeName || '未知學院');
+}
+
+// 輔助函式：取得系所簡稱
+export function getDeptShort(deptName) {
+    const dept = state.globalDepts.find(x => x.name === deptName);
+    return dept && dept.shortName ? dept.shortName : (deptName || '未知學系');
+}
+
+// 輔助工具：解析 Firebase Timestamp
+export function getTime(timestamp) {
+    if (!timestamp) return 0;
+    if (timestamp.toMillis) return timestamp.toMillis();
+    if (timestamp.seconds) return timestamp.seconds * 1000;
+    return new Date(timestamp).getTime() || 0;
+}
