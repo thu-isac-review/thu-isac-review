@@ -1,8 +1,8 @@
 /**
  * 實習紀錄 - 檢視模式頁面入口 (View Mode Entry)
- * 對應 Hash: intern_view/record_view
+ * 對應 Hash: intern_view/intern_record/main
  */
-import { InternRecordTable } from '../../components/InternRecordTable/main.js';
+import { InternRecordTable } from '../../../components/InternRecordTable/main.js';
 
 export async function render(containerId, options = {}) {
     const container = document.getElementById(containerId);
