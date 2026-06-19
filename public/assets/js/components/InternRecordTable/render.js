@@ -1,4 +1,4 @@
-import { state, getDeptShort, getTime, getColShort, formatCourseInfo, Utils, getStudentInfo } from './state.js';
+import { state, getDeptShort, getTime, getColShort, formatCourseForTable, formatCourseForExport, Utils } from './state.js';
 import * as UI from './ui.js';
 
 export function populateAcademicYearDropdown() {
@@ -21,16 +21,20 @@ export function renderTable() {
     const searchTerm = rawSearchTerm.toLowerCase();
 
     state.filteredRecords = state.allRecords.filter(d => {
-        const stuInfo = getStudentInfo(d, state.allStudents);
+        const stu = state.allStudents.find(s => s.student_id === d.student_id) || {};
+        const inst = state.allInsts.find(i => i.id === d.inst_id) || {};
+        const stuName = stu.name || '';
+        const instName = inst.name || d.inst_raw || '';
+        
         let ok = (d.academic_year || '').toLowerCase().includes(searchTerm) || 
-                 stuInfo.id.toLowerCase().includes(searchTerm) || 
-                 stuInfo.name.toLowerCase().includes(searchTerm) || 
-                 (d.inst_raw || '').toLowerCase().includes(searchTerm);
+                 (d.student_id || '').toLowerCase().includes(searchTerm) || 
+                 stuName.toLowerCase().includes(searchTerm) || 
+                 instName.toLowerCase().includes(searchTerm);
                  
         if (ok && state.filterSelections.academic_year.size > 0) ok = state.filterSelections.academic_year.has(d.academic_year);
-        if (ok && state.filterSelections.dept.size > 0) ok = stuInfo.student && state.filterSelections.dept.has(stuInfo.student.department);
+        if (ok && state.filterSelections.dept.size > 0) ok = stu.department && state.filterSelections.dept.has(stu.department);
         if (ok && state.filterSelections.grade.size > 0) ok = state.filterSelections.grade.has(d.grade);
-        if (ok && state.filterSelections.inst_raw.size > 0) ok = state.filterSelections.inst_raw.has(d.inst_raw);
+        if (ok && state.filterSelections.inst_raw.size > 0) ok = state.filterSelections.inst_raw.has(instName);
         if (ok && state.filterSelections.course.size > 0) ok = d.courses && d.courses.some(cid => state.filterSelections.course.has(cid));
         if (ok && state.filterSelections.resp_dept.size > 0) ok = state.filterSelections.resp_dept.has(d.resp_dept);
         if (ok && state.filterSelections.period.size > 0) ok = state.filterSelections.period.has(d.period_type);
@@ -44,11 +48,18 @@ export function renderTable() {
         let valA = '', valB = '';
         if (state.sortCol === 'created_at') { valA = getTime(a.created_at); valB = getTime(b.created_at); }
         else if (state.sortCol === 'academic_year') { valA = a.academic_year || ''; valB = b.academic_year || ''; }
-        else if (state.sortCol === 'student_id') { valA = getStudentInfo(a, state.allStudents).id; valB = getStudentInfo(b, state.allStudents).id; }
-        else if (state.sortCol === 'student_name') { valA = getStudentInfo(a, state.allStudents).name; valB = getStudentInfo(b, state.allStudents).name; }
+        else if (state.sortCol === 'student_id') { valA = a.student_id || ''; valB = b.student_id || ''; }
+        else if (state.sortCol === 'student_name') { 
+            const stuA = state.allStudents.find(s => s.student_id === a.student_id); valA = stuA ? stuA.name : ''; 
+            const stuB = state.allStudents.find(s => s.student_id === b.student_id); valB = stuB ? stuB.name : ''; 
+        }
         else if (state.sortCol === 'dept') {
-            const stuA = getStudentInfo(a, state.allStudents).student; valA = stuA ? getDeptShort(stuA.department) : '';
-            const stuB = getStudentInfo(b, state.allStudents).student; valB = stuB ? getDeptShort(stuB.department) : '';
+            const stuA = state.allStudents.find(s => s.student_id === a.student_id); valA = stuA ? getDeptShort(stuA.department) : '';
+            const stuB = state.allStudents.find(s => s.student_id === b.student_id); valB = stuB ? getDeptShort(stuB.department) : '';
+        }
+        else if (state.sortCol === 'inst_name') {
+            const instA = state.allInsts.find(i => i.id === a.inst_id); valA = instA ? instA.name : (a.inst_raw || '');
+            const instB = state.allInsts.find(i => i.id === b.inst_id); valB = instB ? instB.name : (b.inst_raw || '');
         }
         else if (state.sortCol === 'resp_dept') { valA = a.resp_dept ? getDeptShort(a.resp_dept) : ''; valB = b.resp_dept ? getDeptShort(b.resp_dept) : ''; }
         else if (state.sortCol === 'hours') { valA = a.hours || 0; valB = b.hours || 0; }
@@ -106,16 +117,23 @@ export function renderTable() {
 
     let tHtml = '';
     items.forEach(data => {
-        const stuInfo = getStudentInfo(data, state.allStudents);
-        const stuDept = stuInfo.student ? getDeptShort(stuInfo.student.department) : '未綁定學系';
+        // 🌟 [修正] 100% ID 化，由資料庫抓取真實內容
+        const stu = state.allStudents.find(s => s.student_id === data.student_id);
+        const stuName = stu ? stu.name : '未知學生';
+        const stuDept = stu ? getDeptShort(stu.department) : '未綁定學系';
+        
+        const inst = state.allInsts.find(i => i.id === data.inst_id);
+        const instName = inst ? inst.name : (data.inst_raw || '未知機構');
 
         const displayYear = Utils.highlightKeyword(data.academic_year, rawSearchTerm);
-        const displayStuId = Utils.highlightKeyword(stuInfo.id, rawSearchTerm);
-        const displayStuName = Utils.highlightKeyword(stuInfo.name, rawSearchTerm);
-        const displayInstRaw = Utils.highlightKeyword(data.inst_raw, rawSearchTerm);
+        const displayStuId = Utils.highlightKeyword(data.student_id, rawSearchTerm);
+        const displayStuName = Utils.highlightKeyword(stuName, rawSearchTerm);
+        const displayInstRaw = Utils.highlightKeyword(instName, rawSearchTerm);
 
         let totalCredits = 0;
         let coursesHtml = '-'; let courseAlign = 'center';
+        let termDisplay = '-';
+
         if (data.courses && data.courses.length > 0) {
             const courseObjs = data.courses.map(cid => {
                 const c = state.allCourses.find(x => x.id === cid);
@@ -123,9 +141,13 @@ export function renderTable() {
                 return c;
             }).filter(Boolean);
 
+            // 🌟 [新增] 動態計算學期
             if (courseObjs.length > 0) {
+                const terms = [...new Set(courseObjs.map(c => c.term))].sort();
+                termDisplay = terms.join('、') || '-';
+
                 const badgeStyle = 'max-width: 100%; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle;';
-                const firstCourseTag = `<span class="badge badge-outline-blue" style="${badgeStyle}" title="${formatCourseInfo(courseObjs[0])}">${formatCourseInfo(courseObjs[0])}</span>`;
+                const firstCourseTag = `<span class="badge badge-outline-blue" style="${badgeStyle}" title="${formatCourseForExport(courseObjs[0])}">${formatCourseForTable(courseObjs[0])}</span>`;
                 if (courseObjs.length > 1) {
                     coursesHtml = `
                         <div style="display:flex; flex-direction:column; width:100%;">
@@ -134,7 +156,7 @@ export function renderTable() {
                                 <button type="button" class="more-badge btn-course-expand" data-id="${data.id}">+${courseObjs.length - 1} <i class="ti ti-chevron-down" id="icon-course-${data.id}" style="margin-left:4px; font-size:12px; transition:0.2s;"></i></button>
                             </div>
                             <div id="expand-course-${data.id}" style="display:none; margin-top:4px; text-align: left;">
-                                ${courseObjs.slice(1).map(c => `<div style="margin-top:4px;"><span class="badge badge-outline-blue" style="${badgeStyle}" title="${formatCourseInfo(c)}">${formatCourseInfo(c)}</span></div>`).join('')}
+                                ${courseObjs.slice(1).map(c => `<div style="margin-top:4px;"><span class="badge badge-outline-blue" style="${badgeStyle}" title="${formatCourseForExport(c)}">${formatCourseForTable(c)}</span></div>`).join('')}
                             </div>
                         </div>`;
                 } else {
@@ -158,7 +180,7 @@ export function renderTable() {
         const actionHtml = state.isReadOnly ? '-' : `
             <div class="row-actions">
                 <button class="btn btn-secondary btn-icon sm btn-row-edit" data-id="${data.id}" title="編輯"><i class="ti ti-edit"></i></button>
-                <button class="btn btn-danger btn-icon sm btn-row-delete" data-id="${data.id}" data-name="${stuInfo.name}" title="刪除"><i class="ti ti-trash"></i></button>
+                <button class="btn btn-danger btn-icon sm btn-row-delete" data-id="${data.id}" data-name="${stuName}" title="刪除"><i class="ti ti-trash"></i></button>
             </div>
         `;
 
@@ -168,20 +190,21 @@ export function renderTable() {
                 <input type="checkbox" class="row-select-chk" value="${data.id}" ${state.selectedIds.includes(data.id)?'checked':''} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
             </td>
             <td data-col="1" class="col-academic_year" style="text-align: center;"><div class="cell-primary bold">${displayYear || '-'}</div></td>
-            <td data-col="2" class="col-student_id" style="text-align: center;"><div class="cell-primary bold">${displayStuId}</div></td>
-            <td data-col="3" class="col-student_name" style="text-align: center;"><div class="cell-primary bold">${displayStuName}</div></td>
-            <td data-col="4" class="col-dept" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${stuDept}</div></td>
-            <td data-col="5" class="col-grade" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.grade || '-'}</div></td>
-            <td data-col="6" class="col-inst_raw" style="text-align: left;"><div class="cell-primary bold">${displayInstRaw}</div></td>
-            <td data-col="7" class="col-course" style="text-align: ${courseAlign};">${coursesHtml}</td>
-            <td data-col="8" class="col-credits" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${totalCredits}</div></td>
-            <td data-col="9" class="col-duration" style="text-align: center;"><div class="cell-primary bold">${data.duration || '-'}</div></td>
-            <td data-col="10" class="col-hours" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.hours !== undefined && data.hours !== '' ? data.hours : '-'}</div></td>
-            <td data-col="11" class="col-period" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.period_type || '-'}</div></td>
-            <td data-col="12" class="col-proof" style="text-align: center;"><div class="badge ${proofBadge}">${data.proof_type || '-'}</div></td>
-            <td data-col="13" class="col-insurance" style="text-align: center;"><div class="badge ${insBadge}">${data.insurance || '-'}</div></td>
-            <td data-col="14" class="col-employment" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.employment || '-'}</div></td>
-            <td data-col="15" class="col-resp_dept" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</div></td>
+            <td data-col="2" class="col-term" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${termDisplay}</div></td>
+            <td data-col="3" class="col-student_id" style="text-align: center;"><div class="cell-primary bold">${displayStuId}</div></td>
+            <td data-col="4" class="col-student_name" style="text-align: center;"><div class="cell-primary bold">${displayStuName}</div></td>
+            <td data-col="5" class="col-dept" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${stuDept}</div></td>
+            <td data-col="6" class="col-grade" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.grade || '-'}</div></td>
+            <td data-col="7" class="col-inst_name" style="text-align: left;"><div class="cell-primary bold">${displayInstRaw}</div></td>
+            <td data-col="8" class="col-course" style="text-align: ${courseAlign};">${coursesHtml}</td>
+            <td data-col="9" class="col-credits" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${totalCredits}</div></td>
+            <td data-col="10" class="col-duration" style="text-align: center;"><div class="cell-primary bold">${data.duration || '-'}</div></td>
+            <td data-col="11" class="col-hours" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.hours !== undefined && data.hours !== '' ? data.hours : '-'}</div></td>
+            <td data-col="12" class="col-period" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.period_type || '-'}</div></td>
+            <td data-col="13" class="col-proof" style="text-align: center;"><div class="badge ${proofBadge}">${data.proof_type || '-'}</div></td>
+            <td data-col="14" class="col-insurance" style="text-align: center;"><div class="badge ${insBadge}">${data.insurance || '-'}</div></td>
+            <td data-col="15" class="col-employment" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.employment || '-'}</div></td>
+            <td data-col="16" class="col-resp_dept" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</div></td>
             <td class="col-spacer" style="padding: 0; pointer-events: none;"></td>
             <td class="col-actions" style="text-align: center;">${actionHtml}</td>
         </tr>`;
@@ -199,15 +222,22 @@ export function renderFilterDropdowns() {
     const uniqueUsedCourses = [...new Set(state.allRecords.flatMap(r => r.courses || []))];
     const courseOptions = uniqueUsedCourses.map(cid => {
         const c = state.allCourses.find(x => x.id === cid);
-        return { value: cid, label: c ? formatCourseInfo(c) : cid };
+        // 🌟 下拉篩選使用完整詳細命名格式
+        return { value: cid, label: c ? formatCourseForExport(c) : cid };
     }).filter(opt => opt.label !== opt.value);
     courseOptions.sort((a,b) => a.label.localeCompare(b.label));
+
+    // 使用實際機構名稱產生下拉清單
+    const instNames = state.allRecords.map(r => {
+        const inst = state.allInsts.find(i => i.id === r.inst_id);
+        return inst ? inst.name : r.inst_raw;
+    }).filter(Boolean);
 
     const filterOptions = {
         academic_year: uniqueYears.map(v=>({value:v, label: `${v} 學年度`})),
         dept: uniqueSortedDepts.map(v=>({value:v, label: getDeptShort(v)})),
         grade: ['1', '2', '3', '4', '5'].map(v=>({value:v, label: `${v} 年級${v==='5'?'以上':''}`})),
-        inst_raw: [...new Set(state.allRecords.map(r=>r.inst_raw))].filter(Boolean).sort().map(v=>({value:v, label:v})),
+        inst_raw: [...new Set(instNames)].sort().map(v=>({value:v, label:v})),
         course: courseOptions,
         resp_dept: uniqueSortedDepts.map(v=>({value:v, label: getDeptShort(v)})),
         period: ['寒假實習', '暑假實習', '學期期間實習', '單一學期實習', '全學年'].map(v=>({value:v, label:v})),
@@ -351,7 +381,7 @@ export function renderStudentDropdown(list, term) {
         item.addEventListener('click', () => {
             const input = document.getElementById('input-student');
             input.value = `${item.dataset.id} - ${item.dataset.name}`;
-            input.dataset.id = item.dataset.id; // 🌟 設定 dataset.id
+            input.dataset.id = item.dataset.id;
             dropdown.classList.remove('show');
             document.getElementById('btn-info-student').disabled = false;
             if(UI.updateRespDeptOptions) UI.updateRespDeptOptions();
@@ -436,6 +466,7 @@ export function renderCourseDropdown(list, term) {
     });
 }
 
+// 🌟 [修正] 尚未加入課程的 UI 修復 (高度置中對齊)
 export function renderSelectedCourseChips(skipRespUpdate = false) {
     const container = document.getElementById('selected-courses-container');
     if (!container) return;
@@ -444,7 +475,10 @@ export function renderSelectedCourseChips(skipRespUpdate = false) {
     if (countSpan) countSpan.innerText = `已選 ${state.selectedCourseIds.length} 門`;
 
     if (state.selectedCourseIds.length === 0) { 
-        container.innerHTML = '<div class="empty-state" style="padding:20px;"><div class="empty-text">尚未加入課程</div></div>'; 
+        container.innerHTML = `
+            <div style="height: 100%; display: flex; justify-content: center; align-items: center; border: none; background: transparent;">
+                <div style="color: var(--text-muted); font-weight: 600; font-size: 13px;"><i class="ti ti-inbox" style="margin-right: 4px;"></i>尚未加入課程</div>
+            </div>`; 
         if (!skipRespUpdate && UI.updateRespDeptOptions) UI.updateRespDeptOptions(); 
         return; 
     }
