@@ -1,219 +1,214 @@
 <link rel="stylesheet" href="./assets/css/intern_record.css">
 <style id="dynamic-col-styles"></style>
 
-<div id="intern-record-page-wrapper" style="height: 100%; display: flex; flex-direction: column;">
-    <div class="toolbar">
-        <div class="search-wrap">
-            <i class="ti ti-search"></i>
-            <input type="text" id="search-input" placeholder="搜尋學號、姓名、機構..." class="search-input">
-        </div>
-        
-        <div class="flex-spacer"></div>
-        
-        <div class="toolbar-actions">
-            <button id="btn-export-csv" class="btn btn-success-solid">
-                <i class="ti ti-file-export"></i> <span class="btn-text">匯出清單</span>
-            </button>
-            <button id="btn-import-trigger" class="btn btn-indigo-solid">
-                <i class="ti ti-file-import"></i> <span class="btn-text">批次匯入</span>
-            </button>
-            <div class="v-divider"></div>
-            <button id="btn-create-record" class="btn btn-primary">
-                <i class="ti ti-plus"></i> <span class="btn-text">新增紀錄</span>
-            </button>
-        </div>
-        <input type="file" id="import-file" accept=".csv" style="display:none;">
-    </div>
-
-    <div class="filter-row">
-        <div class="filters-scroll-area custom-scroll" id="filter-container">
+<div id="intern-record-page-wrapper" style="height: 100%; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+    <div id="main-view" style="display: flex; flex-direction: column; height: 100%;">
+        <div class="toolbar">
+            <div class="search-wrap">
+                <i class="ti ti-search"></i>
+                <input type="text" id="search-input" placeholder="搜尋學號、姓名、機構..." class="search-input">
             </div>
-
-        <div id="batch-bar">
-            <div class="batch-info"><i class="ti ti-checks" style="font-size:18px;"></i> 已選 <span id="selected-count">0</span> 筆紀錄</div>
-            <button id="btn-select-all-filtered" class="btn btn-sm btn-secondary">選取全部符合條件</button>
-            <button id="btn-clear-selection" class="btn btn-sm btn-secondary">取消選取</button>
             <div class="flex-spacer"></div>
-            <button id="btn-batch-delete" class="btn btn-sm btn-danger-solid"><i class="ti ti-trash"></i> 批次刪除</button>
+            <div class="toolbar-actions">
+                <button id="btn-export-csv" class="btn btn-success-solid">
+                    <i class="ti ti-file-export"></i> <span class="btn-text">匯出清單</span>
+                </button>
+                <button id="btn-import-trigger" class="btn btn-indigo-solid">
+                    <i class="ti ti-file-import"></i> <span class="btn-text">批次匯入</span>
+                </button>
+                <div class="v-divider"></div>
+                <button id="btn-create-record" class="btn btn-primary">
+                    <i class="ti ti-plus"></i> <span class="btn-text">新增紀錄</span>
+                </button>
+            </div>
+            <input type="file" id="import-file" accept=".csv" style="display:none;">
+        </div>
+
+        <div class="filter-row" id="filter-container">
+            <div id="batch-bar">
+                <div class="batch-info"><i class="ti ti-checks" style="font-size:18px;"></i> 已選 <span id="selected-count">0</span> 筆紀錄</div>
+                <button id="btn-select-all-filtered" class="btn btn-sm btn-secondary">選取全部符合條件</button>
+                <button id="btn-clear-selection" class="btn btn-sm btn-secondary">取消選取</button>
+                <div class="flex-spacer"></div>
+                <button id="btn-batch-delete" class="btn btn-sm btn-danger-solid"><i class="ti ti-trash"></i> 批次刪除</button>
+            </div>
+        </div>
+
+        <div class="table-wrap">
+            <div class="table-scroll custom-scroll">
+                <table>
+                    <thead id="intern-record-table-head">
+                        <tr>
+                            <th class="col-checkbox" style="width: 48px; text-align: center;">
+                                <div class="flex-center">
+                                    <input type="checkbox" id="selectAll" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
+                                </div>
+                            </th>
+                            <th data-sort="student_id" data-col="1" style="width: 100px;">學號 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="student_name" data-col="2" style="width: 90px;">姓名 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="dept" data-col="3" style="width: 110px;">學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="grade" data-col="4" style="width: 80px;">年級 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="inst_raw" data-col="5" style="width: 220px;">機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-col="6" style="width: 250px;">修習課程</th>
+                            <th data-col="7" style="width: 80px;">總學分</th>
+                            <th data-sort="duration" data-col="8" style="width: 150px;">實習起訖時間 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="hours" data-col="9" style="width: 80px;">總時數 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-col="10" style="width: 110px;">實習時間</th>
+                            <th data-col="11" style="width: 100px;">證明文件</th>
+                            <th data-col="12" style="width: 110px;">投保情形</th>
+                            <th data-col="13" style="width: 90px;">勞雇關係</th>
+                            <th data-sort="resp_dept" data-col="14" style="width: 110px;">填報系所 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th class="col-actions" style="width: 90px; text-align: center;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="intern-record-table-body">
+                        <tr>
+                            <td colspan="16" class="empty-state">
+                                <i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i>
+                                <div class="empty-text">資料載入與驗證中...</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="pagination-bar">
+                <div class="pagination-info" id="pagination-info">共 0 筆</div>
+                <div class="pagination-bar-right">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <span style="font-size:12px; color:var(--text-muted)">每頁顯示</span>
+                        <select class="per-page-select" id="per-page-select">
+                            <option value="15">15 筆</option>
+                            <option value="25">25 筆</option>
+                            <option value="50">50 筆</option>
+                        </select>
+                    </div>
+                    <div class="pagination-controls" id="pagination-controls"></div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="table-wrap">
-        <div class="table-scroll custom-scroll">
-            <table>
-                <thead id="intern-record-table-head">
-                    <tr>
-                        <th class="col-checkbox" style="width: 48px; text-align: center;">
-                            <div class="flex-center">
-                                <input type="checkbox" id="selectAll" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
-                            </div>
-                        </th>
-                        <th data-sort="student_id" data-col="1" style="width: 100px;">學號 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="student_name" data-col="2" style="width: 90px;">姓名 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="dept" data-col="3" style="width: 110px;">學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="grade" data-col="4" style="width: 80px;">年級 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="inst_raw" data-col="5" style="width: 220px;">機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-col="6" style="width: 250px;">修習課程</th>
-                        <th data-col="7" style="width: 80px;">總學分</th>
-                        <th data-sort="duration" data-col="8" style="width: 150px;">實習起訖時間 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-sort="hours" data-col="9" style="width: 80px;">總時數 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th data-col="10" style="width: 110px;">實習時間</th>
-                        <th data-col="11" style="width: 100px;">證明文件</th>
-                        <th data-col="12" style="width: 110px;">投保情形</th>
-                        <th data-col="13" style="width: 90px;">勞雇關係</th>
-                        <th data-sort="resp_dept" data-col="14" style="width: 110px;">填報系所 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                        <th class="col-actions" style="width: 90px; text-align: center;">操作</th>
-                    </tr>
-                </thead>
-                <tbody id="intern-record-table-body"></tbody>
-            </table>
+    <div id="data-modal" class="fs-modal">
+        <div class="fs-topbar">
+            <div class="fs-topbar-left">
+                <button class="btn-ghost-back" id="btn-close-modal-x"><i class="ti ti-chevron-left" style="font-size: 18px;"></i> 返回清單</button>
+                <div class="fs-topbar-title" id="modal-title" style="border-left: 1px solid var(--border); padding-left: 16px; margin-left: 4px;">新增實習紀錄</div>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button type="button" class="btn btn-primary" id="btn-submit"><i class="ti ti-check"></i> 儲存紀錄</button>
+            </div>
         </div>
         
-        <div id="empty-state-container" class="empty-state" style="display: none;">
-            <i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i>
-            <div class="empty-text">資料載入中...</div>
-        </div>
-
-        <div class="pagination-bar">
-            <div class="pagination-info" id="pagination-info">共 0 筆</div>
-            <div class="pagination-bar-right">
-                <div style="display:flex; align-items:center; gap:6px;">
-                    <span style="font-size:12px; color:var(--text-muted)">每頁顯示</span>
-                    <select class="per-page-select" id="per-page-select">
-                        <option value="15">15 筆</option>
-                        <option value="25">25 筆</option>
-                        <option value="50">50 筆</option>
-                    </select>
-                </div>
-                <div class="pagination-controls" id="pagination-controls"></div>
-            </div>
-        </div>
-    </div>
-
-    <div id="data-modal" class="dialog-overlay">
-        <div class="dialog-box" style="max-width: 1000px; width: 95vw; max-height: 90vh;">
-            <div class="dialog-header flex-col items-start p-0 border-none" style="flex-direction: column; align-items: flex-start; padding: 0; border: none;">
-                <div style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 20px 20px 16px;">
-                    <h3 id="modal-title" style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700;"><i class="ti ti-briefcase text-brand" style="font-size: 20px;"></i> 新增實習紀錄</h3>
-                    <button type="button" class="dialog-close" id="btn-close-modal-x"><i class="ti ti-x"></i></button>
-                </div>
-            </div>
-
-            <div class="dialog-body-container" style="flex: 1; overflow-y: auto;">
-                <form id="data-form" class="custom-scroll" style="display: flex; flex-direction: column; width: 100%; padding: 24px;">
-                    <div class="split-layout">
-                        <div class="split-col">
-                            <div class="clean-section">
-                                <div class="clean-section-title"><i class="ti ti-user"></i> 實習學生與機構</div>
-                                <div class="form-grid">
-                                    <div class="field z-index-fix" style="z-index: 30;">
-                                        <label class="field-label">實習學生 <span class="req">*</span></label>
-                                        <div style="display:flex; gap:8px;">
-                                            <div class="search-input-wrap" style="flex:1;">
-                                                <input type="text" id="input-student" class="field-input" placeholder="搜尋學號或姓名..." autocomplete="off">
-                                                <div id="student-dropdown" class="search-dropdown custom-scroll"></div>
-                                            </div>
-                                            <button type="button" id="btn-info-student" class="btn-info-pop" disabled title="查看學生詳情"><i class="ti ti-info-circle"></i></button>
-                                        </div>
-                                    </div>
-                                    <div class="field">
-                                        <label class="field-label">當學年年級 <span class="req">*</span></label>
-                                        <select id="input-grade" required class="field-select">
-                                            <option value="">請選擇</option>
-                                            <option value="1">1 年級</option><option value="2">2 年級</option><option value="3">3 年級</option><option value="4">4 年級</option><option value="5">5 年級以上</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="field z-index-fix" style="z-index: 20; margin-top: 16px;">
-                                    <label class="field-label">實習機構 <span class="req">*</span></label>
+        <div class="fs-content custom-scroll">
+            <form id="data-form" style="width: 100%;">
+                <div class="split-layout">
+                    <div class="split-col">
+                        <div class="clean-section">
+                            <div class="clean-section-title"><i class="ti ti-briefcase-2"></i> 實習學生、機構與修習課程</div>
+                            <div class="form-grid">
+                                <div class="field z-index-fix" style="z-index: 30;">
+                                    <label class="field-label">實習學生 <span class="req">*</span></label>
                                     <div style="display:flex; gap:8px;">
                                         <div class="search-input-wrap" style="flex:1;">
-                                            <input type="text" id="input-institution" class="field-input" placeholder="搜尋機構名稱或統編..." autocomplete="off">
-                                            <div id="institution-dropdown" class="search-dropdown custom-scroll"></div>
+                                            <input type="text" id="input-student" class="field-input" placeholder="搜尋學號或姓名..." autocomplete="off">
+                                            <div id="student-dropdown" class="search-dropdown custom-scroll"></div>
                                         </div>
-                                        <button type="button" id="btn-info-inst" class="btn-info-pop" disabled title="查看機構詳情"><i class="ti ti-info-circle"></i></button>
+                                        <button type="button" id="btn-info-student" class="btn-info-pop" disabled title="查看學生詳情"><i class="ti ti-info-circle"></i></button>
                                     </div>
                                 </div>
-                                <div class="field z-index-fix" style="z-index: 10; margin-top: 16px;">
-                                    <label class="field-label">搜尋並加入課程 <span class="req">*</span></label>
-                                    <div class="search-input-wrap">
-                                        <input type="text" id="input-course-search" class="field-input" placeholder="搜尋課程名稱、選課代號或系所名稱..." autocomplete="off">
-                                        <div id="course-dropdown" class="search-dropdown custom-scroll"></div>
-                                    </div>
+                                <div class="field">
+                                    <label class="field-label">當學年年級 <span class="req">*</span></label>
+                                    <select id="input-grade" class="field-select" required>
+                                        <option value="">請選擇</option>
+                                        <option value="1">1 年級</option><option value="2">2 年級</option><option value="3">3 年級</option><option value="4">4 年級</option><option value="5">5 年級以上</option>
+                                    </select>
                                 </div>
                             </div>
-                    
-                            <div class="clean-section stretch-section" style="display: flex; flex-direction: column;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px solid var(--brand-light); padding-bottom: 8px;">
-                                    <div class="clean-section-title" style="border: none; padding: 0; margin: 0;"><i class="ti ti-album"></i> 修習課程明細</div>
-                                    <span id="selected-course-count" class="badge badge-outline-blue" style="font-size: 11px; padding: 4px 8px;">已選 0 門</span>
+                            <div class="field z-index-fix" style="z-index: 20; margin-top: 16px;">
+                                <label class="field-label">實習機構 <span class="req">*</span></label>
+                                <div style="display:flex; gap:8px;">
+                                    <div class="search-input-wrap" style="flex:1;">
+                                        <input type="text" id="input-institution" class="field-input" placeholder="搜尋機構名稱或統編..." autocomplete="off">
+                                        <div id="institution-dropdown" class="search-dropdown custom-scroll"></div>
+                                    </div>
+                                    <button type="button" id="btn-info-inst" class="btn-info-pop" disabled title="查看機構詳情"><i class="ti ti-info-circle"></i></button>
                                 </div>
-                                <div id="selected-courses-container" class="custom-scroll" style="display: flex; flex-direction: column; overflow-y: scroll; height: 180px; border: 1px solid var(--border); border-radius: var(--radius); padding: 0 8px; background: #f8f9fc;">
-                                    <div class="empty-state" style="padding: 20px;"><div class="empty-text">尚未加入課程</div></div>
+                            </div>
+                            <div class="field z-index-fix" style="z-index: 10; margin-top: 16px;">
+                                <label class="field-label">搜尋並加入課程 <span class="req">*</span></label>
+                                <div class="search-input-wrap">
+                                    <input type="text" id="input-course-search" class="field-input" placeholder="搜尋課程名稱、選課代號或系所名稱..." autocomplete="off">
+                                    <div id="course-dropdown" class="search-dropdown custom-scroll"></div>
                                 </div>
                             </div>
                         </div>
-                        <div class="split-col">
-                            <div class="clean-section">
-                                <div class="clean-section-title"><i class="ti ti-clipboard-text"></i> 實習資訊</div>
-                                <div class="form-grid">
-                                    <div class="field">
-                                        <label class="field-label">起訖時間 (民國年) <span class="req">*</span></label>
-                                        <input type="text" id="input-duration" class="field-input" placeholder="YYY/MM/DD-YYY/MM/DD" required>
-                                    </div>
-                                    <div class="field">
-                                        <label class="field-label">總時數</label>
-                                        <input type="number" id="input-hours" class="field-input" placeholder="可留空 (待補)" min="0">
-                                    </div>
-                                    <div class="field">
-                                        <label class="field-label">實習時間 <span class="req">*</span></label>
-                                        <select id="input-period-type" class="field-select" required>
-                                            <option value="">請選擇</option><option value="寒假實習">寒假實習</option><option value="暑假實習">暑假實習</option><option value="學期期間實習">學期期間實習</option><option value="單一學期實習">單一學期實習</option><option value="全學年">全學年</option>
-                                        </select>
-                                    </div>
-                                    <div class="field">
-                                        <label class="field-label">證明文件 <span class="req">*</span></label>
-                                        <select id="input-proof-type" class="field-select" required>
-                                            <option value="">請選擇</option><option value="合約">合約</option><option value="公函">公函</option><option value="其他證明文件">其他證明文件</option>
-                                        </select>
-                                    </div>
-                                    <div class="field">
-                                        <label class="field-label">投保情形 <span class="req">*</span></label>
-                                        <select id="input-insurance" class="field-select" required>
-                                            <option value="">請選擇</option><option value="僅校外實習保險">僅校外實習保險</option><option value="僅勞保">僅勞保</option><option value="兩者皆有">兩者皆有</option><option value="兩者皆無">兩者皆無</option>
-                                        </select>
-                                    </div>
-                                    <div class="field">
-                                        <label class="field-label">勞雇關係 <span class="req">*</span></label>
-                                        <select id="input-employment" class="field-select" required>
-                                            <option value="">請選擇</option><option value="是">是</option><option value="否">否</option>
-                                        </select>
-                                    </div>
-                                </div>
+                
+                        <div class="clean-section stretch-section" style="display: flex; flex-direction: column;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px solid var(--brand-light); padding-bottom: 8px;">
+                                <div class="clean-section-title" style="border: none; padding: 0; margin: 0;"><i class="ti ti-album"></i> 修習課程明細</div>
+                                <span id="selected-course-count" class="badge badge-outline-blue" style="font-size: 11px; padding: 4px 8px;">已選 0 門</span>
                             </div>
-                    
-                            <div class="clean-section stretch-section">
-                                <div class="clean-section-title"><i class="ti ti-building-community"></i> 填報系所與備註說明</div>
-                                <div class="field">
-                                    <label class="field-label">負責填報系所 <span class="req">*</span></label>
-                                    <select id="input-resp-dept" class="field-select" required>
-                                        <option value="">請先選擇學生與關聯課程...</option>
-                                    </select>
-                                </div>
-                                <div class="field" style="margin-top: 16px; flex: 1; display: flex; flex-direction: column;">
-                                    <label class="field-label">備註 (選填)</label>
-                                    <textarea id="input-notes" class="field-input custom-scroll" placeholder="選填備註..." style="height: 100px; resize: none; padding-top: 10px;"></textarea>
-                                </div>
+                            <div id="selected-courses-container" class="custom-scroll" style="display: flex; flex-direction: column; overflow-y: scroll; height: 210px; border: 1px solid var(--border); border-radius: var(--radius); padding: 0 8px; background: #f8f9fc;">
+                                <div class="empty-state" style="padding: 20px;"><div class="empty-text">尚未加入課程</div></div>
                             </div>
                         </div>
                     </div>
-                </form>
-            </div>
-            
-            <div class="dialog-footer">
-                <button type="button" class="btn btn-secondary" id="btn-cancel-modal">取消</button>
-                <button type="button" id="btn-submit" class="btn btn-primary"><i class="ti ti-check"></i> 確認儲存</button>
-            </div>
+                    <div class="split-col">
+                        <div class="clean-section">
+                            <div class="clean-section-title"><i class="ti ti-clipboard-text"></i> 實習資訊</div>
+                            <div class="form-grid">
+                                <div class="field">
+                                    <label class="field-label">起訖時間 (民國年) <span class="req">*</span></label>
+                                    <input type="text" id="input-duration" class="field-input" placeholder="YYY/MM/DD-YYY/MM/DD" required>
+                                </div>
+                                <div class="field">
+                                    <label class="field-label">總時數</label>
+                                    <input type="number" id="input-hours" class="field-input" placeholder="可留空 (待補)" min="0">
+                                </div>
+                                <div class="field">
+                                    <label class="field-label">實習時間 <span class="req">*</span></label>
+                                    <select id="input-period-type" class="field-select" required>
+                                        <option value="">請選擇</option><option value="寒假實習">寒假實習</option><option value="暑假實習">暑假實習</option><option value="學期期間實習">學期期間實習</option><option value="單一學期實習">單一學期實習</option><option value="全學年">全學年</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label class="field-label">證明文件 <span class="req">*</span></label>
+                                    <select id="input-proof-type" class="field-select" required>
+                                        <option value="">請選擇</option><option value="合約">合約</option><option value="公函">公函</option><option value="其他證明文件">其他證明文件</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label class="field-label">投保情形 <span class="req">*</span></label>
+                                    <select id="input-insurance" class="field-select" required>
+                                        <option value="">請選擇</option><option value="僅校外實習保險">僅校外實習保險</option><option value="僅勞保">僅勞保</option><option value="兩者皆有">兩者皆有</option><option value="兩者皆無">兩者皆無</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label class="field-label">勞雇關係 <span class="req">*</span></label>
+                                    <select id="input-employment" class="field-select" required>
+                                        <option value="">請選擇</option><option value="是">是</option><option value="否">否</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                
+                        <div class="clean-section stretch-section">
+                            <div class="clean-section-title"><i class="ti ti-building-community"></i> 填報系所與備註說明</div>
+                            <div class="field">
+                                <label class="field-label">負責填報系所 <span class="req">*</span></label>
+                                <select id="input-resp-dept" class="field-select" required>
+                                    <option value="">請先選擇學生與關聯課程...</option>
+                                </select>
+                            </div>
+                            <div class="field" style="margin-top: 16px; flex: 1; display: flex; flex-direction: column;">
+                                <label class="field-label">備註 (選填)</label>
+                                <textarea id="input-notes" class="field-input custom-scroll" placeholder="選填備註..." style="height: 117px; resize: none; padding-top: 10px;"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
     
@@ -226,6 +221,48 @@
             <div id="info-popup-body" class="info-modal-body"></div>
             <div style="padding: 12px 24px; border-top: 1px solid var(--border); text-align: right; background: var(--bg);">
                 <button id="btn-info-footer-close" class="btn btn-secondary btn-sm">關閉</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="import-report-modal" class="dialog-overlay">
+        <div class="dialog-box">
+            <div class="dialog-header" style="justify-content: space-between;">
+                <h3><i class="ti ti-file-invoice" style="color: var(--brand);"></i> 批次匯入結果報告</h3>
+                <button type="button" class="dialog-close btn-close-report"><i class="ti ti-x"></i></button>
+            </div>
+            <div class="dialog-body custom-scroll" style="background: var(--bg);">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                    <div style="background: var(--success-bg); border: 1px solid var(--success-border); padding: 16px; border-radius: var(--radius); text-align: center;">
+                        <div id="report-success-count" style="font-size: 28px; font-weight: 700; color: var(--success); margin-bottom: 4px;">0</div>
+                        <div style="font-size: 11px; font-weight: 700; color: var(--success);">成功匯入 (筆)</div>
+                    </div>
+                    <div style="background: var(--warning-bg); border: 1px solid var(--warning-border); padding: 16px; border-radius: var(--radius); text-align: center;">
+                        <div id="report-warning-count" style="font-size: 28px; font-weight: 700; color: var(--warning); margin-bottom: 4px;">0</div>
+                        <div style="font-size: 11px; font-weight: 700; color: var(--warning);">異常綁定 (筆)</div>
+                    </div>
+                    <div style="background: var(--danger-bg); border: 1px solid var(--danger-border); padding: 16px; border-radius: var(--radius); text-align: center;">
+                        <div id="report-error-count" style="font-size: 28px; font-weight: 700; color: var(--danger); margin-bottom: 4px;">0</div>
+                        <div style="font-size: 11px; font-weight: 700; color: var(--danger);">嚴重錯誤 (筆)</div>
+                    </div>
+                </div>
+                
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;">
+                    <div style="display: grid; grid-template-columns: 15% 15% 25% 45%; padding: 8px 12px; background: var(--bg); border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 700; color: var(--text-muted);">
+                        <div>狀態</div><div>Excel來源列</div><div>學號 / 姓名</div><div>詳細說明</div>
+                    </div>
+                    <div id="report-details-container" class="custom-scroll" style="max-height: 240px; overflow-y: auto; font-size: 13px;">
+                    </div>
+                </div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 12px; font-weight: 500;">
+                    <i class="ti ti-search" style="color: var(--brand);"></i> 提示：帶有「異常綁定」的資料依然會被匯入系統，您可以事後透過編輯功能或補齊主檔來修正。
+                </div>
+            </div>
+            <div class="dialog-footer">
+                <button type="button" class="btn btn-secondary btn-close-report">關閉視窗</button>
+                <button type="button" class="btn btn-primary" id="btn-download-report">
+                    <i class="ti ti-download"></i> 下載詳細報表
+                </button>
             </div>
         </div>
     </div>
