@@ -1,4 +1,4 @@
-import { state, getDeptShort, getTime, getColShort, formatCourseInfo, Utils } from './state.js';
+import { state, getDeptShort, getTime, getColShort, formatCourseInfo, Utils, getStudentInfo } from './state.js';
 import * as UI from './ui.js';
 
 export function populateAcademicYearDropdown() {
@@ -21,15 +21,14 @@ export function renderTable() {
     const searchTerm = rawSearchTerm.toLowerCase();
 
     state.filteredRecords = state.allRecords.filter(d => {
+        const stuInfo = getStudentInfo(d, state.allStudents);
         let ok = (d.academic_year || '').toLowerCase().includes(searchTerm) || 
-                 (d.student_raw || '').toLowerCase().includes(searchTerm) || 
+                 stuInfo.id.toLowerCase().includes(searchTerm) || 
+                 stuInfo.name.toLowerCase().includes(searchTerm) || 
                  (d.inst_raw || '').toLowerCase().includes(searchTerm);
+                 
         if (ok && state.filterSelections.academic_year.size > 0) ok = state.filterSelections.academic_year.has(d.academic_year);
-        if (ok && state.filterSelections.dept.size > 0) {
-            const stuId = (d.student_raw || '').split(' - ')[0];
-            const stu = state.allStudents.find(s => s.student_id === stuId);
-            ok = stu && state.filterSelections.dept.has(stu.department);
-        }
+        if (ok && state.filterSelections.dept.size > 0) ok = stuInfo.student && state.filterSelections.dept.has(stuInfo.student.department);
         if (ok && state.filterSelections.grade.size > 0) ok = state.filterSelections.grade.has(d.grade);
         if (ok && state.filterSelections.inst_raw.size > 0) ok = state.filterSelections.inst_raw.has(d.inst_raw);
         if (ok && state.filterSelections.course.size > 0) ok = d.courses && d.courses.some(cid => state.filterSelections.course.has(cid));
@@ -44,11 +43,12 @@ export function renderTable() {
     state.filteredRecords.sort((a, b) => {
         let valA = '', valB = '';
         if (state.sortCol === 'created_at') { valA = getTime(a.created_at); valB = getTime(b.created_at); }
-        else if (state.sortCol === 'student_id') { valA = (a.student_raw || '').split(' - ')[0] || ''; valB = (b.student_raw || '').split(' - ')[0] || ''; }
-        else if (state.sortCol === 'student_name') { valA = (a.student_raw || '').split(' - ')[1] || ''; valB = (b.student_raw || '').split(' - ')[1] || ''; }
+        else if (state.sortCol === 'academic_year') { valA = a.academic_year || ''; valB = b.academic_year || ''; }
+        else if (state.sortCol === 'student_id') { valA = getStudentInfo(a, state.allStudents).id; valB = getStudentInfo(b, state.allStudents).id; }
+        else if (state.sortCol === 'student_name') { valA = getStudentInfo(a, state.allStudents).name; valB = getStudentInfo(b, state.allStudents).name; }
         else if (state.sortCol === 'dept') {
-            const stuA = state.allStudents.find(s => s.student_id === (a.student_raw || '').split(' - ')[0]); valA = stuA ? getDeptShort(stuA.department) : '';
-            const stuB = state.allStudents.find(s => s.student_id === (b.student_raw || '').split(' - ')[0]); valB = stuB ? getDeptShort(stuB.department) : '';
+            const stuA = getStudentInfo(a, state.allStudents).student; valA = stuA ? getDeptShort(stuA.department) : '';
+            const stuB = getStudentInfo(b, state.allStudents).student; valB = stuB ? getDeptShort(stuB.department) : '';
         }
         else if (state.sortCol === 'resp_dept') { valA = a.resp_dept ? getDeptShort(a.resp_dept) : ''; valB = b.resp_dept ? getDeptShort(b.resp_dept) : ''; }
         else if (state.sortCol === 'hours') { valA = a.hours || 0; valB = b.hours || 0; }
@@ -106,14 +106,12 @@ export function renderTable() {
 
     let tHtml = '';
     items.forEach(data => {
-        const stuParts = (data.student_raw || '').split(' - ');
-        const stuId = stuParts[0] || ''; const stuName = stuParts[1] || '';
-        const stu = state.allStudents.find(s => s.student_id === stuId);
-        const stuDept = stu ? getDeptShort(stu.department) : '未綁定學系';
+        const stuInfo = getStudentInfo(data, state.allStudents);
+        const stuDept = stuInfo.student ? getDeptShort(stuInfo.student.department) : '未綁定學系';
 
         const displayYear = Utils.highlightKeyword(data.academic_year, rawSearchTerm);
-        const displayStuId = Utils.highlightKeyword(stuId, rawSearchTerm);
-        const displayStuName = Utils.highlightKeyword(stuName, rawSearchTerm);
+        const displayStuId = Utils.highlightKeyword(stuInfo.id, rawSearchTerm);
+        const displayStuName = Utils.highlightKeyword(stuInfo.name, rawSearchTerm);
         const displayInstRaw = Utils.highlightKeyword(data.inst_raw, rawSearchTerm);
 
         let totalCredits = 0;
@@ -160,7 +158,7 @@ export function renderTable() {
         const actionHtml = state.isReadOnly ? '-' : `
             <div class="row-actions">
                 <button class="btn btn-secondary btn-icon sm btn-row-edit" data-id="${data.id}" title="編輯"><i class="ti ti-edit"></i></button>
-                <button class="btn btn-danger btn-icon sm btn-row-delete" data-id="${data.id}" data-name="${stuName}" title="刪除"><i class="ti ti-trash"></i></button>
+                <button class="btn btn-danger btn-icon sm btn-row-delete" data-id="${data.id}" data-name="${stuInfo.name}" title="刪除"><i class="ti ti-trash"></i></button>
             </div>
         `;
 
@@ -351,7 +349,9 @@ export function renderStudentDropdown(list, term) {
 
     dropdown.querySelectorAll('.student-item').forEach(item => {
         item.addEventListener('click', () => {
-            document.getElementById('input-student').value = `${item.dataset.id} - ${item.dataset.name}`;
+            const input = document.getElementById('input-student');
+            input.value = `${item.dataset.id} - ${item.dataset.name}`;
+            input.dataset.id = item.dataset.id; // 🌟 設定 dataset.id
             dropdown.classList.remove('show');
             document.getElementById('btn-info-student').disabled = false;
             if(UI.updateRespDeptOptions) UI.updateRespDeptOptions();
@@ -391,7 +391,6 @@ export function renderCourseDropdown(list, term) {
     const dropdown = document.getElementById('course-dropdown');
     if (!dropdown) return;
     
-    // 🌟 [新增] 強制綁定學年度：沒選擇就不顯示課程
     const selectedYear = document.getElementById('input-academic-year').value;
     if (!selectedYear) {
         dropdown.innerHTML = '<div style="padding:12px; text-align:center; font-size:12px; color:var(--danger); font-weight:bold;"><i class="ti ti-alert-triangle"></i> 請先於上方選擇「學年度」</div>';
@@ -399,7 +398,6 @@ export function renderCourseDropdown(list, term) {
     }
 
     const val = term.trim().toLowerCase();
-    // 🌟 [修改] 新增學年度的嚴格篩選條件
     const available = list.filter(c => !state.selectedCourseIds.includes(c.id) && c.academic_year === selectedYear);
     
     const filtered = available.filter(c => {
