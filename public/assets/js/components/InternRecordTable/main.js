@@ -6,17 +6,11 @@ import * as Data from './data.js';
 import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 import { getApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 
-/**
- * 實習紀錄元件總初始化入口
- * 統一導出 InternRecordTable 供 Pages 層呼叫
- */
 export const InternRecordTable = {
     init: async function(options = { isViewOnly: false }) {
-        // 1. 狀態重置與權限寫入
         resetInternRecordState();
         state.isReadOnly = options.isViewOnly;
         
-        // 2. 獲取 Firebase DB (自動掛載現有的 App 實體)
         try {
             const app = getApp();
             state.db = getFirestore(app);
@@ -26,12 +20,12 @@ export const InternRecordTable = {
         }
         
         const container = document.getElementById('intern-record-page-wrapper');
-        if (!container) {
-            console.warn("找不到實習紀錄容器 #intern-record-page-wrapper");
-            return;
-        }
+        if (!container) return;
 
-        // 3. 若為「檢視模式 (View Only)」，自動抹除管理專用的 UI 元素
+        // 【修復跨頁面 BUG】：進入模組前，先清除任何殘留的全域唯讀樣式
+        const residualStyle = document.getElementById('view-only-styles');
+        if (residualStyle) residualStyle.remove();
+
         if (state.isReadOnly) {
             const addBtn = document.getElementById('btn-create-record');
             const importBtn = document.getElementById('btn-import-trigger');
@@ -41,37 +35,31 @@ export const InternRecordTable = {
             if (addBtn) addBtn.remove();
             if (importBtn) importBtn.remove();
             if (batchBar) batchBar.remove();
-            if (selectAllChk) selectAllChk.closest('th').innerHTML = ''; // 清空全選表頭
+            if (selectAllChk) selectAllChk.closest('th').innerHTML = '';
 
-            // 強制隱藏所有勾選框與操作按鈕
-            let styleEl = document.getElementById('view-only-styles');
-            if (!styleEl) {
-                styleEl = document.createElement('style');
-                styleEl.id = 'view-only-styles';
-                document.head.appendChild(styleEl);
-            }
+            // 使用「限定範圍 (Scoped)」的 CSS 選擇器，確保絕不污染其他模組(學生/機構/課程)
+            let styleEl = document.createElement('style');
+            styleEl.id = 'view-only-styles';
+            document.head.appendChild(styleEl);
             styleEl.innerHTML = `
-                .col-checkbox, .col-actions, .row-select-chk, .btn-row-edit, .btn-row-delete { display: none !important; }
+                #intern-record-page-wrapper .col-checkbox, 
+                #intern-record-page-wrapper .col-actions, 
+                #intern-record-page-wrapper .row-select-chk, 
+                #intern-record-page-wrapper .btn-row-edit, 
+                #intern-record-page-wrapper .btn-row-delete { display: none !important; }
             `;
         }
 
-        // 4. UI 權限限制與事件綁定
         Events.bindEvents(container);
         
-        // 5. 初始化主檔與實習紀錄訂閱
         await Data.initDataSubscriptions(() => {
-            if(document.getElementById('filter-container')) {
-                Render.renderFilterDropdowns();
-            }
+            if(document.getElementById('filter-container')) Render.renderFilterDropdowns();
             Render.renderTable();
         });
 
-        // 6. 監聽資料庫更新並重繪
         Data.subscribeToRecords(() => {
             if(!state.isReadOnly) Events.updateBatchActionBar();
-            if(document.getElementById('filter-container')) {
-                Render.renderFilterDropdowns();
-            }
+            if(document.getElementById('filter-container')) Render.renderFilterDropdowns();
             Render.renderTable();
         });
     }
