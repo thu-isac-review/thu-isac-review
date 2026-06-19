@@ -1,10 +1,9 @@
-import { state, getDeptShort, getTime, getColShort } from './state.js';
+import { state, getDeptShort, getTime, getColShort, formatCourseInfo } from './state.js';
 import * as UI from './ui.js';
 
 export function renderTable() {
     const tbody = document.getElementById('intern-record-table-body'); 
-    const emptyState = document.getElementById('empty-state-container');
-    if (!tbody || !emptyState) return;
+    if (!tbody) return;
 
     const searchInput = document.getElementById('search-input');
     const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
@@ -28,12 +27,25 @@ export function renderTable() {
         return ok;
     });
 
-    // 2. 排序
+    // 2. 進階排序
     state.filteredRecords.sort((a, b) => {
         let valA = '', valB = '';
         if (state.sortCol === 'created_at') { valA = getTime(a.created_at); valB = getTime(b.created_at); }
-        else if (state.sortCol === 'student_id') { valA = (a.student_raw || '').split(' - ')[0]; valB = (b.student_raw || '').split(' - ')[0]; }
+        else if (state.sortCol === 'student_id') { 
+            valA = (a.student_raw || '').split(' - ')[0] || ''; valB = (b.student_raw || '').split(' - ')[0] || ''; 
+        }
+        else if (state.sortCol === 'student_name') { 
+            valA = (a.student_raw || '').split(' - ')[1] || ''; valB = (b.student_raw || '').split(' - ')[1] || ''; 
+        }
+        else if (state.sortCol === 'dept') {
+            const stuA = state.allStudents.find(s => s.student_id === (a.student_raw || '').split(' - ')[0]); valA = stuA ? getDeptShort(stuA.department) : '';
+            const stuB = state.allStudents.find(s => s.student_id === (b.student_raw || '').split(' - ')[0]); valB = stuB ? getDeptShort(stuB.department) : '';
+        }
+        else if (state.sortCol === 'resp_dept') {
+            valA = a.resp_dept ? getDeptShort(a.resp_dept) : ''; valB = b.resp_dept ? getDeptShort(b.resp_dept) : '';
+        }
         else { valA = (a[state.sortCol] || '').toString().toLowerCase(); valB = (b[state.sortCol] || '').toString().toLowerCase(); }
+        
         if (valA < valB) return state.sortDir === 'asc' ? -1 : 1;
         if (valA > valB) return state.sortDir === 'asc' ? 1 : -1;
         return 0;
@@ -49,32 +61,31 @@ export function renderTable() {
     const pageInfo = document.getElementById('pagination-info');
     if (total > 0) {
         if(pageInfo) pageInfo.innerHTML = `共 <strong>${total}</strong> 筆，顯示第 ${start + 1}–${Math.min(start + state.itemsPerPage, total)} 筆`;
-        emptyState.style.display = 'none';
-        tbody.style.display = 'table-row-group';
     } else {
         if(pageInfo) pageInfo.innerHTML = `共 <strong>0</strong> 筆`;
-        emptyState.style.display = 'flex';
-        emptyState.innerHTML = `<i class="ti ti-inbox empty-icon"></i><div class="empty-text">找不到符合條件的紀錄。</div>`;
-        tbody.style.display = 'none';
     }
 
     let pHtml = `<button class="page-btn" data-page="${state.currentPage-1}" ${state.currentPage<=1?'disabled':''}><i class="ti ti-chevron-left"></i></button>`;
+    const pages = [];
     for (let p=1; p<=tPages; p++) {
-        if (p===1 || p===tPages || Math.abs(p-state.currentPage)<=1) {
-            pHtml += `<button class="page-btn ${p === state.currentPage ? 'active' : ''}" data-page="${p}">${p}</button>`;
-        } else if (p === 2 || p === tPages - 1) {
-            pHtml += `<span class="page-btn" style="cursor:default;border:none">…</span>`;
-        }
+        if (p===1 || p===tPages || Math.abs(p-state.currentPage)<=1) pages.push(p);
+        else if (pages[pages.length-1] !== '…') pages.push('…');
     }
+    pages.forEach(p => {
+        if (p === '…') pHtml += `<span class="page-btn" style="cursor:default;border:none">…</span>`;
+        else pHtml += `<button class="page-btn ${p === state.currentPage ? 'active' : ''}" data-page="${p}">${p}</button>`;
+    });
     pHtml += `<button class="page-btn" data-page="${state.currentPage+1}" ${state.currentPage>=tPages?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
-    
     const pageControls = document.getElementById('pagination-controls');
     if(pageControls) pageControls.innerHTML = pHtml;
 
     const selectAll = document.getElementById('selectAll');
     if(selectAll) selectAll.checked = items.length > 0 && items.every(i => state.selectedIds.includes(i.id));
 
-    if (total === 0) return;
+    if (total === 0) { 
+        tbody.innerHTML = `<tr><td colspan="16" class="empty-state"><i class="ti ti-inbox empty-icon" style="opacity: 0.4;"></i><div class="empty-text">找不到符合條件的紀錄。</div></td></tr>`; 
+        return; 
+    }
 
     let tHtml = '';
     items.forEach(data => {
@@ -83,61 +94,77 @@ export function renderTable() {
         const stu = state.allStudents.find(s => s.student_id === stuId);
         const stuDept = stu ? getDeptShort(stu.department) : '未綁定學系';
 
+        let totalCredits = 0;
         let coursesHtml = '-'; let courseAlign = 'center';
         if (data.courses && data.courses.length > 0) {
-            const courseObjs = data.courses.map(cid => state.allCourses.find(x => x.id === cid)).filter(Boolean);
+            const courseObjs = data.courses.map(cid => {
+                const c = state.allCourses.find(x => x.id === cid);
+                if (c && c.credits) totalCredits += Number(c.credits);
+                return c;
+            }).filter(Boolean);
+
             if (courseObjs.length > 0) {
-                const firstLabel = `${courseObjs[0].academic_year}-${courseObjs[0].term}_${courseObjs[0].course_code}`;
-                const firstCourseTag = `<span class="badge badge-outline-blue" style="max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${firstLabel}">${firstLabel}</span>`;
+                const badgeStyle = 'max-width: 100%; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle;';
+                const firstCourseTag = `<span class="badge badge-outline-blue" style="${badgeStyle}" title="${formatCourseInfo(courseObjs[0])}">${formatCourseInfo(courseObjs[0])}</span>`;
                 if (courseObjs.length > 1) {
                     coursesHtml = `
                         <div style="display:flex; flex-direction:column; width:100%;">
-                            <div style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
-                                <div style="flex: 1; text-align: left; display: flex;">${firstCourseTag}</div>
+                            <div style="display:flex; align-items:center; justify-content:space-between; gap:6px; width:100%;">
+                                <div style="flex: 1; min-width: 0; text-align: left; display: flex;">${firstCourseTag}</div>
                                 <button type="button" class="more-badge btn-course-expand" data-id="${data.id}">+${courseObjs.length - 1} <i class="ti ti-chevron-down" id="icon-course-${data.id}" style="margin-left:4px; font-size:12px; transition:0.2s;"></i></button>
                             </div>
                             <div id="expand-course-${data.id}" style="display:none; margin-top:4px; text-align: left;">
-                                ${courseObjs.slice(1).map(c => `<div style="margin-top:4px;"><span class="badge badge-outline-blue" title="${c.academic_year}-${c.term}_${c.course_code}">${c.academic_year}-${c.term}_${c.course_code}</span></div>`).join('')}
+                                ${courseObjs.slice(1).map(c => `<div style="margin-top:4px;"><span class="badge badge-outline-blue" style="${badgeStyle}" title="${formatCourseInfo(c)}">${formatCourseInfo(c)}</span></div>`).join('')}
                             </div>
                         </div>`;
                 } else {
-                    coursesHtml = `<div style="display:flex; align-items:center;"><div style="flex: 1; text-align: left; display: flex;">${firstCourseTag}</div></div>`;
+                    coursesHtml = `<div style="display:flex; align-items:center; width:100%;"><div style="flex: 1; min-width: 0; text-align: left; display: flex;">${firstCourseTag}</div></div>`;
                 }
                 courseAlign = 'left';
             }
         }
 
+        let proofBadge = 'badge-outline-gray';
+        if (data.proof_type === '合約') proofBadge = 'badge-outline-green';
+        else if (data.proof_type === '公函') proofBadge = 'badge-outline-blue';
+        else if (data.proof_type === '其他證明文件') proofBadge = 'badge-outline-amber';
+
+        let insBadge = 'badge-outline-gray';
+        if (data.insurance === '兩者皆有') insBadge = 'badge-outline-green';
+        else if (data.insurance === '僅校外實習保險') insBadge = 'badge-outline-indigo';
+        else if (data.insurance === '僅勞保') insBadge = 'badge-outline-blue';
+        else if (data.insurance === '兩者皆無') insBadge = 'badge-outline-red';
+
         const actionHtml = state.isReadOnly ? '-' : `
             <div class="row-actions">
                 <button class="btn btn-secondary btn-icon sm btn-row-edit" data-id="${data.id}" title="編輯"><i class="ti ti-edit"></i></button>
-                <button class="btn btn-icon sm btn-row-delete" data-id="${data.id}" style="color:var(--danger); border-color:var(--danger-border);" title="刪除"><i class="ti ti-trash"></i></button>
+                <button class="btn btn-icon sm btn-row-delete" data-id="${data.id}" data-name="${stuName}" style="color:var(--danger); border-color:var(--danger-border);" title="刪除"><i class="ti ti-trash"></i></button>
             </div>
         `;
 
         tHtml += `
         <tr class="${state.selectedIds.includes(data.id)?'selected':''}">
             <td class="col-checkbox" style="text-align: center;">
-                <input type="checkbox" class="row-select-chk" value="${data.id}" ${state.selectedIds.includes(data.id)?'checked':''} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px;">
+                <input type="checkbox" class="row-select-chk" value="${data.id}" ${state.selectedIds.includes(data.id)?'checked':''} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
             </td>
             <td data-col="1" style="text-align: center;"><div class="cell-primary bold">${stuId}</div></td>
             <td data-col="2" style="text-align: center;"><div class="cell-primary bold">${stuName}</div></td>
-            <td data-col="3" style="text-align: center;"><div class="cell-primary">${stuDept}</div></td>
-            <td data-col="4" style="text-align: center;"><div class="cell-primary">${data.grade || '-'}</div></td>
+            <td data-col="3" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${stuDept}</div></td>
+            <td data-col="4" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.grade || '-'}</div></td>
             <td data-col="5" style="text-align: left;"><div class="cell-primary bold">${data.inst_raw}</div></td>
             <td data-col="6" style="text-align: ${courseAlign};">${coursesHtml}</td>
-            <td data-col="7" style="text-align: center;"><div class="cell-primary">-</div></td>
+            <td data-col="7" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${totalCredits}</div></td>
             <td data-col="8" style="text-align: center;"><div class="cell-primary bold">${data.duration || '-'}</div></td>
-            <td data-col="9" style="text-align: center;"><div class="cell-primary">${data.hours !== undefined && data.hours !== '' ? data.hours : '-'}</div></td>
-            <td data-col="10" style="text-align: center;"><div class="cell-primary">${data.period_type || '-'}</div></td>
-            <td data-col="11" style="text-align: center;"><div class="badge badge-outline-gray">${data.proof_type || '-'}</div></td>
-            <td data-col="12" style="text-align: center;"><div class="badge badge-outline-gray">${data.insurance || '-'}</div></td>
-            <td data-col="13" style="text-align: center;"><div class="cell-primary">${data.employment || '-'}</div></td>
-            <td data-col="14" style="text-align: center;"><div class="cell-primary">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</div></td>
+            <td data-col="9" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.hours !== undefined && data.hours !== '' ? data.hours : '-'}</div></td>
+            <td data-col="10" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.period_type || '-'}</div></td>
+            <td data-col="11" style="text-align: center;"><div class="badge ${proofBadge}">${data.proof_type || '-'}</div></td>
+            <td data-col="12" style="text-align: center;"><div class="badge ${insBadge}">${data.insurance || '-'}</div></td>
+            <td data-col="13" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.employment || '-'}</div></td>
+            <td data-col="14" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</div></td>
             <td class="col-actions">${actionHtml}</td>
         </tr>`;
     });
     tbody.innerHTML = tHtml;
-    
     if (UI.updateColumnVisibility) UI.updateColumnVisibility();
 }
 
@@ -283,7 +310,6 @@ export function renderFilterDropdowns() {
     const container = document.getElementById('filter-container');
     if (!container) return;
     
-    const formatCourseInfo = (c) => c ? `${c.academic_year}-${c.term}_${c.course_code}：${c.course_name}` : '';
     const uniqueSortedDepts = [...new Set(state.globalDepts.map(d=>d.name))];
     const uniqueUsedCourses = [...new Set(state.allRecords.flatMap(r => r.courses || []))];
     const courseOptions = uniqueUsedCourses.map(cid => {
@@ -363,9 +389,11 @@ export function renderFilterDropdowns() {
         </div>
     </div>`;
     
+    // Batch bar 仍保留在 HTML 原位，下拉選單直接覆寫前面的內容
+    const existingBatchBar = container.querySelector('#batch-bar');
     container.innerHTML = html;
+    if (existingBatchBar) container.appendChild(existingBatchBar);
 
-    // 重新綁定事件，防止被覆蓋
     container.querySelectorAll('.filter-pill').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -380,7 +408,6 @@ export function renderFilterDropdowns() {
         });
     });
 
-    // 處理 Filter checkbox 與 Column Toggle Checkbox
     container.addEventListener('change', (e) => {
         const isFilterChk = Array.from(e.target.classList).some(c => c.startsWith('filter-chk-'));
         if (isFilterChk) {
