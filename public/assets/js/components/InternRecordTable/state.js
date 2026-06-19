@@ -38,11 +38,12 @@ export let state = {
         { index: 16, label: '填報系所', visible: true }
     ],
     filterSelections: {
-        academic_year: new Set(), dept: new Set(), grade: new Set(), inst_raw: new Set(), course: new Set(), 
+        academic_year: new Set(), term: new Set(), dept: new Set(), grade: new Set(), inst_raw: new Set(), course: new Set(), 
         resp_dept: new Set(), period: new Set(), proof: new Set(), insurance: new Set(), employment: new Set()
     },
     filterDefinitions: [
         { key: 'academic_year', label: '學年度', searchable: true },
+        { key: 'term', label: '學期', searchable: false }, // 🌟 新增學期過濾器
         { key: 'dept', label: '學系', searchable: true }, { key: 'grade', label: '年級', searchable: false },
         { key: 'inst_raw', label: '機構名稱', searchable: true }, { key: 'course', label: '修習課程', searchable: true },
         { key: 'resp_dept', label: '填報系所', searchable: true }, { key: 'period', label: '實習時間', searchable: false },
