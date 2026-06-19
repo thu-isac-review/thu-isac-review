@@ -1,6 +1,14 @@
 import { state, getDeptShort, getTime, getColShort, formatCourseForTable, formatCourseForExport, Utils } from './state.js';
 import * as UI from './ui.js';
 
+function getRecordTerm(d) {
+    if (!d.courses || d.courses.length === 0) return '-';
+    const courseObjs = d.courses.map(cid => state.allCourses.find(x => x.id === cid)).filter(Boolean);
+    if (courseObjs.length === 0) return '-';
+    const terms = [...new Set(courseObjs.map(c => c.term))].filter(Boolean).sort();
+    return terms.join('、') || '-';
+}
+
 export function populateAcademicYearDropdown() {
     const select = document.getElementById('input-academic-year');
     if (!select) return;
@@ -34,6 +42,7 @@ export function renderTable() {
                  instNameStr.toLowerCase().includes(searchTerm);
                  
         if (ok && state.filterSelections.academic_year.size > 0) ok = state.filterSelections.academic_year.has(d.academic_year);
+        if (ok && state.filterSelections.term.size > 0) ok = state.filterSelections.term.has(getRecordTerm(d));
         if (ok && state.filterSelections.dept.size > 0) ok = stu.department && state.filterSelections.dept.has(stu.department);
         if (ok && state.filterSelections.grade.size > 0) ok = state.filterSelections.grade.has(d.grade);
         if (ok && state.filterSelections.inst_raw.size > 0) ok = state.filterSelections.inst_raw.has(instNameStr);
@@ -55,6 +64,7 @@ export function renderTable() {
 
         if (state.sortCol === 'created_at') { valA = getTime(a.created_at); valB = getTime(b.created_at); }
         else if (state.sortCol === 'academic_year') { valA = a.academic_year || ''; valB = b.academic_year || ''; }
+        else if (state.sortCol === 'term') { valA = getRecordTerm(a); valB = getRecordTerm(b); }
         else if (state.sortCol === 'student_id') { valA = stuA.student_id || ''; valB = stuB.student_id || ''; }
         else if (state.sortCol === 'student_name') { valA = stuA.name || ''; valB = stuB.name || ''; }
         else if (state.sortCol === 'dept') { valA = stuA.department ? getDeptShort(stuA.department) : ''; valB = stuB.department ? getDeptShort(stuB.department) : ''; }
@@ -218,6 +228,7 @@ export function renderFilterDropdowns() {
     if (!container) return;
     
     const uniqueYears = [...new Set(state.allRecords.map(r=>r.academic_year))].filter(Boolean).sort((a,b) => b.localeCompare(a));
+    const uniqueTerms = [...new Set(state.allRecords.map(r=>getRecordTerm(r)))].filter(t => t !== '-').sort();
     const uniqueSortedDepts = [...new Set(state.globalDepts.map(d=>d.name))];
     const uniqueUsedCourses = [...new Set(state.allRecords.flatMap(r => r.courses || []))];
     const courseOptions = uniqueUsedCourses.map(cid => {
@@ -234,6 +245,7 @@ export function renderFilterDropdowns() {
 
     const filterOptions = {
         academic_year: uniqueYears.map(v=>({value:v, label: `${v} 學年度`})),
+        term: uniqueTerms.map(v=>({value:v, label: `${v} 學期`})),
         dept: uniqueSortedDepts.map(v=>({value:v, label: getDeptShort(v)})),
         grade: ['1', '2', '3', '4', '5'].map(v=>({value:v, label: `${v} 年級${v==='5'?'以上':''}`})),
         inst_raw: [...new Set(instNames)].sort().map(v=>({value:v, label:v})),
