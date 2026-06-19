@@ -65,7 +65,8 @@ export function resetInternRecordState() {
         isGlobalListenerBound: preserveGlobalListener,
         isKeyboardShortcutBound: preserveKeyboardShortcut,
         tableColumns: [...state.tableColumns],
-        filterSelections: { academic_year: new Set(), dept: new Set(), grade: new Set(), inst_raw: new Set(), course: new Set(), resp_dept: new Set(), period: new Set(), proof: new Set(), insurance: new Set(), employment: new Set() },
+        // 🌟 這裡補上 term: new Set()
+        filterSelections: { academic_year: new Set(), term: new Set(), dept: new Set(), grade: new Set(), inst_raw: new Set(), course: new Set(), resp_dept: new Set(), period: new Set(), proof: new Set(), insurance: new Set(), employment: new Set() },
         filterDefinitions: [...state.filterDefinitions]
     };
 }
