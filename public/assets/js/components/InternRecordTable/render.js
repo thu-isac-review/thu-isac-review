@@ -154,10 +154,8 @@ export function renderTable() {
         // 🌟 [修正] 每個 tr 補上 .col-spacer 確保剩餘空間被正確吸收
         tHtml += `
         <tr class="${state.selectedIds.includes(data.id)?'selected':''}">
-            <td class="col-checkbox" style="text-align: center; padding: 0;">
-                <div class="flex-center" style="display:flex; justify-content:center; align-items:center; height:100%;">
-                    <input type="checkbox" class="row-select-chk" value="${data.id}" ${state.selectedIds.includes(data.id)?'checked':''} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
-                </div>
+            <td class="col-checkbox" style="text-align: center;">
+                <input type="checkbox" class="row-select-chk" value="${data.id}" ${state.selectedIds.includes(data.id)?'checked':''} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
             </td>
             <td data-col="1" class="col-student_id" style="text-align: center;"><div class="cell-primary bold">${displayStuId}</div></td>
             <td data-col="2" class="col-student_name" style="text-align: center;"><div class="cell-primary bold">${displayStuName}</div></td>
@@ -174,7 +172,7 @@ export function renderTable() {
             <td data-col="13" class="col-employment" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.employment || '-'}</div></td>
             <td data-col="14" class="col-resp_dept" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</div></td>
             <td class="col-spacer" style="padding: 0; pointer-events: none; border: none;"></td>
-            <td class="col-actions" style="text-align: center; padding: 0;">${actionHtml}</td>
+            <td class="col-actions">${actionHtml}</td>
         </tr>`;
     });
     tbody.innerHTML = tHtml;
