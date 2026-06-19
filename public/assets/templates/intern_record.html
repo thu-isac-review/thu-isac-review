@@ -20,12 +20,12 @@
         left: 0;
         width: 48px;
         text-align: center;
-        z-index: 2;
+        z-index: 5; /* 確保大於一般 td */
         background-color: inherit;
         border-right: none !important;
     }
     th.col-checkbox {
-        z-index: 3;
+        z-index: 30 !important; /* 必須大於一般 th 的 10 */
         background-color: var(--surface);
     }
 
@@ -35,16 +35,16 @@
         right: 0;
         width: 90px;
         text-align: center;
-        z-index: 2;
+        z-index: 5; /* 確保大於一般 td */
         background-color: inherit;
         border-left: none !important;
     }
     th.col-actions {
-        z-index: 3;
+        z-index: 30 !important; /* 必須大於一般 th 的 10 */
         background-color: var(--surface);
     }
 
-    /* 解決隱藏欄位時的分隔線中斷問題：確保 spacer 填滿剩餘空間且與其餘欄位完美接合 */
+    /* 解決隱藏欄位時的分隔線中斷問題 */
     th.col-spacer, td.col-spacer {
         border-right: none !important;
         border-left: none !important;
