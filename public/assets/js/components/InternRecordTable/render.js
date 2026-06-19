@@ -1,21 +1,13 @@
-import { state, getDeptShort, getTime, getColShort, formatCourseInfo } from './state.js';
+import { state, getDeptShort, getTime, getColShort, formatCourseInfo, Utils } from './state.js';
 import * as UI from './ui.js';
-
-// 【反黃功能】：高亮符合搜尋字串的文字
-const highlightMatch = (text, term) => {
-    if (!term || text === null || text === undefined) return text || '';
-    const str = text.toString();
-    // 使用正則表達式進行全域且忽略大小寫的比對
-    const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-    return str.replace(regex, '<mark class="search-highlight" style="background-color: #fef08a; color: #854d0e; padding: 0 2px; border-radius: 2px; font-weight: bold;">$1</mark>');
-};
 
 export function renderTable() {
     const tbody = document.getElementById('intern-record-table-body'); 
     if (!tbody) return;
 
     const searchInput = document.getElementById('search-input');
-    const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    const rawSearchTerm = searchInput ? searchInput.value.trim() : ''; 
+    const searchTerm = rawSearchTerm.toLowerCase();
 
     state.filteredRecords = state.allRecords.filter(d => {
         let ok = (d.student_raw || '').toLowerCase().includes(searchTerm) || (d.inst_raw || '').toLowerCase().includes(searchTerm);
@@ -65,7 +57,8 @@ export function renderTable() {
         if(pageInfo) pageInfo.innerHTML = `共 <strong>0</strong> 筆`;
     }
 
-    let pHtml = `<button class="page-btn" data-page="${state.currentPage-1}" ${state.currentPage<=1?'disabled':''}><i class="ti ti-chevron-left"></i></button>`;
+    // 🌟 [統一] 加入 page-step-btn 與 page-num-btn
+    let pHtml = `<button class="page-btn page-step-btn" data-page="${state.currentPage-1}" ${state.currentPage<=1?'disabled':''}><i class="ti ti-chevron-left"></i></button>`;
     const pages = [];
     for (let p=1; p<=tPages; p++) {
         if (p===1 || p===tPages || Math.abs(p-state.currentPage)<=1) pages.push(p);
@@ -73,9 +66,10 @@ export function renderTable() {
     }
     pages.forEach(p => {
         if (p === '…') pHtml += `<span class="page-btn" style="cursor:default;border:none">…</span>`;
-        else pHtml += `<button class="page-btn ${p === state.currentPage ? 'active' : ''}" data-page="${p}">${p}</button>`;
+        else pHtml += `<button class="page-btn page-num-btn ${p === state.currentPage ? 'active' : ''}" data-page="${p}">${p}</button>`;
     });
-    pHtml += `<button class="page-btn" data-page="${state.currentPage+1}" ${state.currentPage>=tPages?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
+    pHtml += `<button class="page-btn page-step-btn" data-page="${state.currentPage+1}" ${state.currentPage>=tPages?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
+    
     const pageControls = document.getElementById('pagination-controls');
     if(pageControls) pageControls.innerHTML = pHtml;
 
@@ -83,7 +77,7 @@ export function renderTable() {
     if(selectAll) selectAll.checked = items.length > 0 && items.every(i => state.selectedIds.includes(i.id));
 
     if (total === 0) { 
-        tbody.innerHTML = `<tr><td colspan="16" class="empty-state"><i class="ti ti-inbox empty-icon" style="opacity: 0.4;"></i><div class="empty-text">找不到符合條件的紀錄。</div></td></tr>`; 
+        tbody.innerHTML = `<tr><td colspan="16" class="empty-state"><i class="ti ti-inbox empty-icon"></i><div class="empty-text">找不到符合條件的紀錄。</div></td></tr>`; 
         return; 
     }
 
@@ -94,10 +88,10 @@ export function renderTable() {
         const stu = state.allStudents.find(s => s.student_id === stuId);
         const stuDept = stu ? getDeptShort(stu.department) : '未綁定學系';
 
-        // 【套用反黃】對有支援搜尋的欄位進行高亮包裹
-        const displayStuId = highlightMatch(stuId, searchTerm);
-        const displayStuName = highlightMatch(stuName, searchTerm);
-        const displayInstRaw = highlightMatch(data.inst_raw, searchTerm);
+        // 🌟 [統一] 使用共用 Utils.highlightKeyword
+        const displayStuId = Utils.highlightKeyword(stuId, rawSearchTerm);
+        const displayStuName = Utils.highlightKeyword(stuName, rawSearchTerm);
+        const displayInstRaw = Utils.highlightKeyword(data.inst_raw, rawSearchTerm);
 
         let totalCredits = 0;
         let coursesHtml = '-'; let courseAlign = 'center';
@@ -173,5 +167,4 @@ export function renderTable() {
     if (UI.updateColumnVisibility) UI.updateColumnVisibility();
 }
 
-// ... 下方的 renderStudentDropdown 等函式維持原樣不動即可 ...
-// 為了精簡版面，這裡省略下半段完全不需要修改的 Dropdown 渲染代碼
+// ... renderStudentDropdown / renderInstDropdown / renderCourseDropdown 保持原樣不變 ...
