@@ -59,9 +59,10 @@ export function bindEvents(container) {
         }, 250);
     });
 
+    // 🌟 [修改] CSV 匯出，加入學年度在最前面
     container.querySelector('#btn-export-csv')?.addEventListener('click', () => {
         if (state.filteredRecords.length === 0) { UI.showToast("沒有資料可供匯出！", "error"); return; }
-        let csv = '\uFEFF學號,姓名,學系,年級,機構名稱,修習課程(學年-學期_代號：課程名稱),總學分,實習起訖時間,總時數,實習時間,證明文件,投保情形,勞雇關係,填報系所,備註\n';
+        let csv = '\uFEFF學年度,學號,姓名,學系,年級,機構名稱,修習課程(學年-學期_代號：課程名稱),總學分,實習起訖時間,總時數,實習時間,證明文件,投保情形,勞雇關係,填報系所,備註\n';
         state.filteredRecords.forEach(d => {
             let totalCredits = 0;
             let courseNames = (Array.isArray(d.courses) ? d.courses : []).map(cid => { 
@@ -77,7 +78,7 @@ export function bindEvents(container) {
             const stuDept = stu ? stu.department : '';
 
             csv += [
-                stuId, stuName, stuDept, d.grade, d.inst_raw, courseNames, totalCredits, 
+                d.academic_year || '', stuId, stuName, stuDept, d.grade, d.inst_raw, courseNames, totalCredits, 
                 d.duration, d.hours !== undefined && d.hours !== '' ? d.hours : '', 
                 d.period_type, d.proof_type, d.insurance, d.employment, d.resp_dept || '', d.notes || ''
             ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
@@ -91,6 +92,7 @@ export function bindEvents(container) {
         container.querySelector('#import-file').click();
     });
 
+    // 🌟 [修改] CSV 匯入，將欄位順序對齊最新結構 (cols[0] 變為學年度)
     container.querySelector('#import-file')?.addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -117,32 +119,33 @@ export function bindEvents(container) {
                     }
                     cols.push(currentVal.trim());
 
-                    if (cols.length >= 14) {
-                        const stuId = (cols[0] || '').trim().toUpperCase();
-                        const stuName = (cols[1] || '').trim();
-                        const grade = cols[3];
-                        const inst_raw = cols[4];
-                        const coursesRaw = cols[5];
-                        const duration = cols[7];        
-                        const hours = cols[8] ? Number(cols[8]) : ''; 
-                        const period_type = cols[9];     
-                        const proof_type = cols[10];      
-                        const insurance = cols[11];      
-                        const employment = cols[12];     
-                        const resp_dept = cols[13] || ''; 
-                        const notes = cols[14] || '';   
+                    if (cols.length >= 15) {
+                        const academic_year = (cols[0] || '').trim();
+                        const stuId = (cols[1] || '').trim().toUpperCase();
+                        const stuName = (cols[2] || '').trim();
+                        const grade = cols[4];
+                        const inst_raw = cols[5];
+                        const coursesRaw = cols[6];
+                        const duration = cols[8];        
+                        const hours = cols[9] ? Number(cols[9]) : ''; 
+                        const period_type = cols[10];     
+                        const proof_type = cols[11];      
+                        const insurance = cols[12];      
+                        const employment = cols[13];     
+                        const resp_dept = cols[14] || ''; 
+                        const notes = cols[15] || '';   
 
-                        if (!stuId || !inst_raw || !duration || !period_type || !proof_type || !insurance || !employment || !grade) {
+                        if (!academic_year || !stuId || !inst_raw || !duration || !period_type || !proof_type || !insurance || !employment || !grade) {
                             errorCount++;
-                            state.globalImportReportData.push({ status: '錯誤', rows: `第 ${i+1} 列`, student: stuName || '未知', message: '缺少必填欄位 (學號、機構、時間、保險、年級等)' });
+                            state.globalImportReportData.push({ status: '錯誤', rows: `第 ${i+1} 列`, student: stuName || '未知', message: '缺少必填欄位 (學年度、學號、機構、時間、保險等)' });
                             continue;
                         }
 
-                        const key = `${stuId}|${inst_raw}|${duration}|${grade}|${period_type}|${proof_type}|${insurance}|${employment}`;
+                        const key = `${academic_year}|${stuId}|${inst_raw}|${duration}|${grade}|${period_type}|${proof_type}|${insurance}|${employment}`;
 
                         if (!recordsMap.has(key)) {
                             recordsMap.set(key, {
-                                student_raw: `${stuId} - ${stuName}`, stuId: stuId, stuName: stuName, grade, inst_raw, duration, hours: hours !== '' ? hours : 0, 
+                                academic_year: academic_year, student_raw: `${stuId} - ${stuName}`, stuId: stuId, stuName: stuName, grade, inst_raw, duration, hours: hours !== '' ? hours : 0, 
                                 period_type, proof_type, insurance, employment, notes, resp_dept, coursesRawList: [], courseIds: [], sourceRows: [] 
                             });
                         } else if (hours !== '') {
@@ -182,19 +185,20 @@ export function bindEvents(container) {
                         const cMatch = token.match(/(\d+-\d+)[_：:](.+)/);
                         if (cMatch) {
                             const sem = cMatch[1]; const code = cMatch[2];
-                            const match = state.allCourses.find(c => (c.semester === sem || `${c.academic_year}-${c.term}` === sem) && c.course_code === code);
+                            const match = state.allCourses.find(c => (c.semester === sem || `${c.academic_year}-${c.term}` === sem) && c.course_code === code && c.academic_year === record.academic_year);
                             if (match) { if (!record.courseIds.includes(match.id)) record.courseIds.push(match.id); } 
-                            else rowWarnings.push(`找不到課程「${token}」`);
+                            else rowWarnings.push(`找不到符合學年度的課程「${token}」`);
                         } else {
-                            const match = state.allCourses.find(c => `${c.academic_year}-${c.term}_${c.course_code}` === token || `${c.academic_year}-${c.term}：${c.course_code}` === token);
+                            const match = state.allCourses.find(c => (`${c.academic_year}-${c.term}_${c.course_code}` === token || `${c.academic_year}-${c.term}：${c.course_code}` === token) && c.academic_year === record.academic_year);
                             if (match) { if (!record.courseIds.includes(match.id)) record.courseIds.push(match.id); } 
-                            else rowWarnings.push(`無法識別課程「${token}」`);
+                            else rowWarnings.push(`無法識別符合學年度的課程「${token}」`);
                         }
                     });
 
                     if (record.courseIds.length === 0) rowWarnings.push("無法綁定任何實習課程");
 
                     const payload = {
+                        academic_year: record.academic_year,
                         student_raw: record.student_raw, grade: record.grade, inst_raw: record.inst_raw, 
                         inst_id: instMatch ? instMatch.id : '', 
                         courses: record.courseIds, duration: record.duration,
@@ -258,10 +262,13 @@ export function bindEvents(container) {
         btn.addEventListener('click', () => { document.getElementById('import-report-modal').classList.remove('open'); });
     });
     
+    // 🌟 [新增] 新增時自動載入可用的學年度
     container.querySelector('#btn-create-record')?.addEventListener('click', () => {
         if(state.isReadOnly) return;
         state.editingId = null; state.selectedCourseIds = [];
         
+        Render.populateAcademicYearDropdown();
+        document.getElementById('input-academic-year').value = '';
         document.getElementById('input-student').value = '';
         document.getElementById('input-grade').value = '';
         const instInput = document.getElementById('input-institution');
@@ -282,7 +289,27 @@ export function bindEvents(container) {
         UI.openFormModal(false);
     });
 
-    // 🌟 [新增] 顯示設定按鈕與委派事件 (包含全域關閉邏輯)
+    // 🌟 [新增] 監聽學年度變化，若變更則自動清理無效課程
+    container.querySelector('#input-academic-year')?.addEventListener('change', (e) => {
+        const newYear = e.target.value;
+        if (state.selectedCourseIds.length > 0) {
+            const prevLen = state.selectedCourseIds.length;
+            state.selectedCourseIds = state.selectedCourseIds.filter(cid => {
+                const c = state.allCourses.find(x => x.id === cid);
+                return c && c.academic_year === newYear;
+            });
+            if (state.selectedCourseIds.length !== prevLen) {
+                UI.showToast("已移除與所選學年度不符的課程", "info");
+            }
+            Render.renderSelectedCourseChips();
+        }
+        
+        const dropdown = document.getElementById('course-dropdown');
+        if (dropdown && dropdown.classList.contains('show')) {
+            Render.renderCourseDropdown(state.allCourses, document.getElementById('input-course-search').value);
+        }
+    });
+
     container.querySelector('#btn-display-settings')?.addEventListener('click', (e) => {
         e.stopPropagation();
         const menu = document.getElementById('display-settings-menu');
@@ -294,7 +321,6 @@ export function bindEvents(container) {
 
     if (!state.isGlobalListenerBound) {
         document.addEventListener('click', (e) => {
-            // 點擊非選單區自動關閉顯示設定下拉框
             if (!e.target.closest('#display-settings-wrap')) {
                 const menu = document.getElementById('display-settings-menu');
                 if (menu) menu.style.display = 'none';
@@ -310,26 +336,6 @@ export function bindEvents(container) {
         });
         state.isGlobalListenerBound = true;
     }
-
-    // 顯示欄位 Checkbox 事件綁定 (使用委派)
-    container.addEventListener('change', (e) => {
-        if (e.target.classList.contains('col-toggle-chk')) {
-            const index = Number(e.target.dataset.index);
-            const col = state.tableColumns.find(c => c.index === index);
-            if (col && !col.disableToggle) col.visible = e.target.checked;
-            if (UI.updateColumnVisibility) UI.updateColumnVisibility();
-        } else if (Array.from(e.target.classList).some(c => c.startsWith('filter-chk-'))) {
-            const classMatch = Array.from(e.target.classList).find(c => c.startsWith('filter-chk-'));
-            const type = classMatch.replace('filter-chk-', '');
-            const val = e.target.value;
-            const set = state.filterSelections[type];
-            if (set.has(val)) set.delete(val); else set.add(val);
-            container.querySelectorAll(`.${classMatch}`).forEach(c => c.checked = set.has(c.value));
-            state.currentPage = 1; 
-            if(UI.updatePillActive) UI.updatePillActive(type); 
-            Render.renderTable();
-        }
-    });
 
     container.querySelector('#selectAll')?.addEventListener('change', (e) => {
         const isChecked = e.target.checked;
@@ -358,6 +364,7 @@ export function bindEvents(container) {
     container.querySelector('#btn-info-close')?.addEventListener('click', UI.closeInfoPopup);
     container.querySelector('#btn-info-footer-close')?.addEventListener('click', UI.closeInfoPopup);
 
+    // 🌟 [新增] 寫入資料庫時攜帶學年度參數
     container.querySelector('#btn-submit')?.addEventListener('click', async () => {
         if(state.isReadOnly) return;
         
@@ -373,6 +380,7 @@ export function bindEvents(container) {
         }
 
         const payload = {
+            academic_year: document.getElementById('input-academic-year').value,
             student_raw: document.getElementById('input-student').value.trim(),
             grade: document.getElementById('input-grade').value,
             inst_raw: document.getElementById('input-institution').value.trim(),
@@ -388,7 +396,7 @@ export function bindEvents(container) {
             courses: state.selectedCourseIds
         };
         
-        if(!payload.student_raw || !payload.inst_raw || !payload.duration || !payload.grade || !payload.period_type || !payload.proof_type || !payload.insurance || !payload.employment || !payload.resp_dept) { 
+        if(!payload.academic_year || !payload.student_raw || !payload.inst_raw || !payload.duration || !payload.grade || !payload.period_type || !payload.proof_type || !payload.insurance || !payload.employment || !payload.resp_dept) { 
             UI.showToast("請完成所有包含 * 號之必填選單與欄位設定！", "warning"); return; 
         }
 
@@ -440,6 +448,11 @@ export function bindEvents(container) {
             const id = btnEdit.dataset.id;
             const data = state.allRecords.find(d => d.id === id); if (!data) return;
             state.editingId = id;
+
+            // 🌟 [新增] 編輯時載入該紀錄的學年度
+            Render.populateAcademicYearDropdown();
+            document.getElementById('input-academic-year').value = data.academic_year || '';
+
             document.getElementById('input-student').value = data.student_raw || '';
             const instInput = document.getElementById('input-institution');
             instInput.value = data.inst_raw || ''; 
