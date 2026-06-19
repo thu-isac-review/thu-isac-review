@@ -21,20 +21,22 @@ export function renderTable() {
     const searchTerm = rawSearchTerm.toLowerCase();
 
     state.filteredRecords = state.allRecords.filter(d => {
-        const stu = state.allStudents.find(s => s.student_id === d.student_id) || {};
+        // 🌟 絕對使用 Firebase ID 來尋找關聯主檔
+        const stu = state.allStudents.find(s => s.id === d.student_doc_id) || {};
         const inst = state.allInsts.find(i => i.id === d.inst_id) || {};
-        const stuName = stu.name || '';
-        const instName = inst.name || d.inst_raw || '';
+        const stuIdStr = stu.student_id || '';
+        const stuNameStr = stu.name || '';
+        const instNameStr = inst.name || '';
         
         let ok = (d.academic_year || '').toLowerCase().includes(searchTerm) || 
-                 (d.student_id || '').toLowerCase().includes(searchTerm) || 
-                 stuName.toLowerCase().includes(searchTerm) || 
-                 instName.toLowerCase().includes(searchTerm);
+                 stuIdStr.toLowerCase().includes(searchTerm) || 
+                 stuNameStr.toLowerCase().includes(searchTerm) || 
+                 instNameStr.toLowerCase().includes(searchTerm);
                  
         if (ok && state.filterSelections.academic_year.size > 0) ok = state.filterSelections.academic_year.has(d.academic_year);
         if (ok && state.filterSelections.dept.size > 0) ok = stu.department && state.filterSelections.dept.has(stu.department);
         if (ok && state.filterSelections.grade.size > 0) ok = state.filterSelections.grade.has(d.grade);
-        if (ok && state.filterSelections.inst_raw.size > 0) ok = state.filterSelections.inst_raw.has(instName);
+        if (ok && state.filterSelections.inst_raw.size > 0) ok = state.filterSelections.inst_raw.has(instNameStr);
         if (ok && state.filterSelections.course.size > 0) ok = d.courses && d.courses.some(cid => state.filterSelections.course.has(cid));
         if (ok && state.filterSelections.resp_dept.size > 0) ok = state.filterSelections.resp_dept.has(d.resp_dept);
         if (ok && state.filterSelections.period.size > 0) ok = state.filterSelections.period.has(d.period_type);
@@ -46,21 +48,17 @@ export function renderTable() {
 
     state.filteredRecords.sort((a, b) => {
         let valA = '', valB = '';
+        const stuA = state.allStudents.find(s => s.id === a.student_doc_id) || {};
+        const stuB = state.allStudents.find(s => s.id === b.student_doc_id) || {};
+        const instA = state.allInsts.find(i => i.id === a.inst_id) || {};
+        const instB = state.allInsts.find(i => i.id === b.inst_id) || {};
+
         if (state.sortCol === 'created_at') { valA = getTime(a.created_at); valB = getTime(b.created_at); }
         else if (state.sortCol === 'academic_year') { valA = a.academic_year || ''; valB = b.academic_year || ''; }
-        else if (state.sortCol === 'student_id') { valA = a.student_id || ''; valB = b.student_id || ''; }
-        else if (state.sortCol === 'student_name') { 
-            const stuA = state.allStudents.find(s => s.student_id === a.student_id); valA = stuA ? stuA.name : ''; 
-            const stuB = state.allStudents.find(s => s.student_id === b.student_id); valB = stuB ? stuB.name : ''; 
-        }
-        else if (state.sortCol === 'dept') {
-            const stuA = state.allStudents.find(s => s.student_id === a.student_id); valA = stuA ? getDeptShort(stuA.department) : '';
-            const stuB = state.allStudents.find(s => s.student_id === b.student_id); valB = stuB ? getDeptShort(stuB.department) : '';
-        }
-        else if (state.sortCol === 'inst_name') {
-            const instA = state.allInsts.find(i => i.id === a.inst_id); valA = instA ? instA.name : (a.inst_raw || '');
-            const instB = state.allInsts.find(i => i.id === b.inst_id); valB = instB ? instB.name : (b.inst_raw || '');
-        }
+        else if (state.sortCol === 'student_id') { valA = stuA.student_id || ''; valB = stuB.student_id || ''; }
+        else if (state.sortCol === 'student_name') { valA = stuA.name || ''; valB = stuB.name || ''; }
+        else if (state.sortCol === 'dept') { valA = stuA.department ? getDeptShort(stuA.department) : ''; valB = stuB.department ? getDeptShort(stuB.department) : ''; }
+        else if (state.sortCol === 'inst_name') { valA = instA.name || ''; valB = instB.name || ''; }
         else if (state.sortCol === 'resp_dept') { valA = a.resp_dept ? getDeptShort(a.resp_dept) : ''; valB = b.resp_dept ? getDeptShort(b.resp_dept) : ''; }
         else if (state.sortCol === 'hours') { valA = a.hours || 0; valB = b.hours || 0; }
         else { valA = (a[state.sortCol] || '').toString().toLowerCase(); valB = (b[state.sortCol] || '').toString().toLowerCase(); }
@@ -117,18 +115,19 @@ export function renderTable() {
 
     let tHtml = '';
     items.forEach(data => {
-        // 🌟 [修正] 100% ID 化，由資料庫抓取真實內容
-        const stu = state.allStudents.find(s => s.student_id === data.student_id);
-        const stuName = stu ? stu.name : '未知學生';
-        const stuDept = stu ? getDeptShort(stu.department) : '未綁定學系';
+        // 從資料庫找回關聯的主檔
+        const stu = state.allStudents.find(s => s.id === data.student_doc_id) || {};
+        const stuIdStr = stu.student_id || '';
+        const stuNameStr = stu.name || '未知學生';
+        const stuDeptStr = stu.department ? getDeptShort(stu.department) : '未綁定學系';
         
-        const inst = state.allInsts.find(i => i.id === data.inst_id);
-        const instName = inst ? inst.name : (data.inst_raw || '未知機構');
+        const inst = state.allInsts.find(i => i.id === data.inst_id) || {};
+        const instNameStr = inst.name || '未知機構';
 
         const displayYear = Utils.highlightKeyword(data.academic_year, rawSearchTerm);
-        const displayStuId = Utils.highlightKeyword(data.student_id, rawSearchTerm);
-        const displayStuName = Utils.highlightKeyword(stuName, rawSearchTerm);
-        const displayInstRaw = Utils.highlightKeyword(instName, rawSearchTerm);
+        const displayStuId = Utils.highlightKeyword(stuIdStr, rawSearchTerm);
+        const displayStuName = Utils.highlightKeyword(stuNameStr, rawSearchTerm);
+        const displayInstRaw = Utils.highlightKeyword(instNameStr, rawSearchTerm);
 
         let totalCredits = 0;
         let coursesHtml = '-'; let courseAlign = 'center';
@@ -141,12 +140,13 @@ export function renderTable() {
                 return c;
             }).filter(Boolean);
 
-            // 🌟 [新增] 動態計算學期
             if (courseObjs.length > 0) {
-                const terms = [...new Set(courseObjs.map(c => c.term))].sort();
+                // 🌟 計算學期並顯示 (過濾不重複後排序)
+                const terms = [...new Set(courseObjs.map(c => c.term))].filter(Boolean).sort();
                 termDisplay = terms.join('、') || '-';
 
                 const badgeStyle = 'max-width: 100%; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle;';
+                // 列表介面只顯示 0002_名稱
                 const firstCourseTag = `<span class="badge badge-outline-blue" style="${badgeStyle}" title="${formatCourseForExport(courseObjs[0])}">${formatCourseForTable(courseObjs[0])}</span>`;
                 if (courseObjs.length > 1) {
                     coursesHtml = `
@@ -180,7 +180,7 @@ export function renderTable() {
         const actionHtml = state.isReadOnly ? '-' : `
             <div class="row-actions">
                 <button class="btn btn-secondary btn-icon sm btn-row-edit" data-id="${data.id}" title="編輯"><i class="ti ti-edit"></i></button>
-                <button class="btn btn-danger btn-icon sm btn-row-delete" data-id="${data.id}" data-name="${stuName}" title="刪除"><i class="ti ti-trash"></i></button>
+                <button class="btn btn-danger btn-icon sm btn-row-delete" data-id="${data.id}" data-name="${stuNameStr}" title="刪除"><i class="ti ti-trash"></i></button>
             </div>
         `;
 
@@ -193,7 +193,7 @@ export function renderTable() {
             <td data-col="2" class="col-term" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${termDisplay}</div></td>
             <td data-col="3" class="col-student_id" style="text-align: center;"><div class="cell-primary bold">${displayStuId}</div></td>
             <td data-col="4" class="col-student_name" style="text-align: center;"><div class="cell-primary bold">${displayStuName}</div></td>
-            <td data-col="5" class="col-dept" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${stuDept}</div></td>
+            <td data-col="5" class="col-dept" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${stuDeptStr}</div></td>
             <td data-col="6" class="col-grade" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.grade || '-'}</div></td>
             <td data-col="7" class="col-inst_name" style="text-align: left;"><div class="cell-primary bold">${displayInstRaw}</div></td>
             <td data-col="8" class="col-course" style="text-align: ${courseAlign};">${coursesHtml}</td>
@@ -222,15 +222,14 @@ export function renderFilterDropdowns() {
     const uniqueUsedCourses = [...new Set(state.allRecords.flatMap(r => r.courses || []))];
     const courseOptions = uniqueUsedCourses.map(cid => {
         const c = state.allCourses.find(x => x.id === cid);
-        // 🌟 下拉篩選使用完整詳細命名格式
         return { value: cid, label: c ? formatCourseForExport(c) : cid };
     }).filter(opt => opt.label !== opt.value);
     courseOptions.sort((a,b) => a.label.localeCompare(b.label));
 
-    // 使用實際機構名稱產生下拉清單
+    // 使用真實機構名稱生成過濾清單
     const instNames = state.allRecords.map(r => {
         const inst = state.allInsts.find(i => i.id === r.inst_id);
-        return inst ? inst.name : r.inst_raw;
+        return inst ? inst.name : '';
     }).filter(Boolean);
 
     const filterOptions = {
@@ -369,8 +368,9 @@ export function renderStudentDropdown(list, term) {
     
     let html = '';
     filtered.slice(0, 30).forEach(s => {
+        // 🌟 綁定 Firebase Doc ID 給 dataset.docid
         html += `
-        <div class="search-item student-item" data-id="${s.student_id}" data-name="${s.name}">
+        <div class="search-item student-item" data-stuid="${s.student_id}" data-name="${s.name}" data-docid="${s.id}">
             <div class="search-item-title">${s.student_id} - ${s.name}</div>
             <div class="search-item-desc">${getColShort(s.college)} / ${getDeptShort(s.department)}</div>
         </div>`;
@@ -380,8 +380,8 @@ export function renderStudentDropdown(list, term) {
     dropdown.querySelectorAll('.student-item').forEach(item => {
         item.addEventListener('click', () => {
             const input = document.getElementById('input-student');
-            input.value = `${item.dataset.id} - ${item.dataset.name}`;
-            input.dataset.id = item.dataset.id;
+            input.value = `${item.dataset.stuid} - ${item.dataset.name}`;
+            input.dataset.docid = item.dataset.docid;
             dropdown.classList.remove('show');
             document.getElementById('btn-info-student').disabled = false;
             if(UI.updateRespDeptOptions) UI.updateRespDeptOptions();
@@ -398,8 +398,9 @@ export function renderInstDropdown(list, term) {
     
     let html = '';
     filtered.slice(0, 30).forEach(i => {
+        // 🌟 綁定 Firebase Doc ID
         html += `
-        <div class="search-item inst-item" data-id="${i.id}" data-name="${i.name}">
+        <div class="search-item inst-item" data-name="${i.name}" data-docid="${i.id}">
             <div class="search-item-title">${i.name}</div>
             <div class="search-item-desc">${i.tax_id || '統編：無統一編號'} | ${i.address || ''}</div>
         </div>`;
@@ -410,7 +411,7 @@ export function renderInstDropdown(list, term) {
         item.addEventListener('click', () => {
             const instIn = document.getElementById('input-institution');
             instIn.value = item.dataset.name;
-            instIn.dataset.id = item.dataset.id;
+            instIn.dataset.docid = item.dataset.docid;
             dropdown.classList.remove('show');
             document.getElementById('btn-info-inst').disabled = false;
         });
@@ -466,7 +467,6 @@ export function renderCourseDropdown(list, term) {
     });
 }
 
-// 🌟 [修正] 尚未加入課程的 UI 修復 (高度置中對齊)
 export function renderSelectedCourseChips(skipRespUpdate = false) {
     const container = document.getElementById('selected-courses-container');
     if (!container) return;
@@ -474,10 +474,11 @@ export function renderSelectedCourseChips(skipRespUpdate = false) {
     const countSpan = document.getElementById('selected-course-count');
     if (countSpan) countSpan.innerText = `已選 ${state.selectedCourseIds.length} 門`;
 
+    // 🌟 [修正] 尚未加入課程 UI 置中防版
     if (state.selectedCourseIds.length === 0) { 
         container.innerHTML = `
-            <div style="height: 100%; display: flex; justify-content: center; align-items: center; border: none; background: transparent;">
-                <div style="color: var(--text-muted); font-weight: 600; font-size: 13px;"><i class="ti ti-inbox" style="margin-right: 4px;"></i>尚未加入課程</div>
+            <div class="empty-state" style="margin: auto; color: var(--text-muted); font-weight: 600; font-size: 13px;">
+                <i class="ti ti-inbox" style="margin-right: 4px;"></i>尚未加入課程
             </div>`; 
         if (!skipRespUpdate && UI.updateRespDeptOptions) UI.updateRespDeptOptions(); 
         return; 
