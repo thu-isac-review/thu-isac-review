@@ -6,16 +6,15 @@ import * as Data from './data.js';
 export function bindEvents(container) {
     if (!container) return;
 
-    // 1. 鍵盤快捷鍵綁定
     if (!state.isKeyboardShortcutBound) {
         document.addEventListener('keydown', (e) => {
             const targetTag = e.target.tagName.toLowerCase();
             const isInput = targetTag === 'input' || targetTag === 'textarea' || targetTag === 'select';
 
-            // Esc 關閉層級視窗或取消 Focus
             if (e.key === 'Escape') {
                 const openModals = document.querySelectorAll('.dialog-overlay.open, .info-modal-overlay.open, .fs-modal.open');
                 const openDropdowns = document.querySelectorAll('.filter-dropdown.show');
+                const displayMenu = document.getElementById('display-settings-menu');
                 
                 if (openModals.length > 0) {
                     const topModal = openModals[openModals.length - 1];
@@ -24,6 +23,8 @@ export function bindEvents(container) {
                 } else if (openDropdowns.length > 0) {
                     openDropdowns.forEach(d => d.classList.remove('show'));
                     document.querySelectorAll('.filter-pill-wrap.open').forEach(w => w.classList.remove('open'));
+                } else if (displayMenu && displayMenu.style.display === 'block') {
+                    displayMenu.style.display = 'none';
                 } else if (isInput) {
                     e.target.blur();
                     if (e.target.id === 'search-input' && e.target.value !== '') {
@@ -33,14 +34,12 @@ export function bindEvents(container) {
                 }
             }
             
-            // Ctrl/Cmd + F 快速搜尋
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
                 e.preventDefault();
                 const searchInput = document.getElementById('search-input');
                 if (searchInput) { searchInput.focus(); searchInput.select(); }
             }
 
-            // Ctrl/Cmd + S 快速儲存
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
                 if (state.isReadOnly) return;
                 e.preventDefault();
@@ -52,7 +51,6 @@ export function bindEvents(container) {
         state.isKeyboardShortcutBound = true;
     }
 
-    // 2. 搜尋輸入 (防抖)
     container.querySelector('#search-input')?.addEventListener('input', () => { 
         clearTimeout(state.searchDebounceTimer);
         state.searchDebounceTimer = setTimeout(() => {
@@ -61,7 +59,6 @@ export function bindEvents(container) {
         }, 250);
     });
 
-    // 3. 匯出 CSV 邏輯
     container.querySelector('#btn-export-csv')?.addEventListener('click', () => {
         if (state.filteredRecords.length === 0) { UI.showToast("沒有資料可供匯出！", "error"); return; }
         let csv = '\uFEFF學號,姓名,學系,年級,機構名稱,修習課程(學年-學期_代號：課程名稱),總學分,實習起訖時間,總時數,實習時間,證明文件,投保情形,勞雇關係,填報系所,備註\n';
@@ -89,7 +86,6 @@ export function bindEvents(container) {
         link.download = `實習紀錄總表_${new Date().toISOString().split('T')[0]}.csv`; link.click();
     });
 
-    // 4. 批次匯入與報告邏輯
     container.querySelector('#btn-import-trigger')?.addEventListener('click', () => {
         if(state.isReadOnly) return;
         container.querySelector('#import-file').click();
@@ -262,7 +258,6 @@ export function bindEvents(container) {
         btn.addEventListener('click', () => { document.getElementById('import-report-modal').classList.remove('open'); });
     });
     
-    // 5. 新增按鈕與表單互動
     container.querySelector('#btn-create-record')?.addEventListener('click', () => {
         if(state.isReadOnly) return;
         state.editingId = null; state.selectedCourseIds = [];
@@ -287,9 +282,24 @@ export function bindEvents(container) {
         UI.openFormModal(false);
     });
 
-    // 全域下拉選單關閉監聽
+    // 🌟 [新增] 顯示設定按鈕與委派事件 (包含全域關閉邏輯)
+    container.querySelector('#btn-display-settings')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const menu = document.getElementById('display-settings-menu');
+        if (menu) menu.style.display = menu.style.display === 'none' || menu.style.display === '' ? 'block' : 'none';
+        
+        document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
+        document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
+    });
+
     if (!state.isGlobalListenerBound) {
         document.addEventListener('click', (e) => {
+            // 點擊非選單區自動關閉顯示設定下拉框
+            if (!e.target.closest('#display-settings-wrap')) {
+                const menu = document.getElementById('display-settings-menu');
+                if (menu) menu.style.display = 'none';
+            }
+
             if (!e.target.closest('.filter-pill-wrap')) {
                 document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
                 document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
@@ -301,7 +311,26 @@ export function bindEvents(container) {
         state.isGlobalListenerBound = true;
     }
 
-    // 6. 批次操作列事件
+    // 顯示欄位 Checkbox 事件綁定 (使用委派)
+    container.addEventListener('change', (e) => {
+        if (e.target.classList.contains('col-toggle-chk')) {
+            const index = Number(e.target.dataset.index);
+            const col = state.tableColumns.find(c => c.index === index);
+            if (col && !col.disableToggle) col.visible = e.target.checked;
+            if (UI.updateColumnVisibility) UI.updateColumnVisibility();
+        } else if (Array.from(e.target.classList).some(c => c.startsWith('filter-chk-'))) {
+            const classMatch = Array.from(e.target.classList).find(c => c.startsWith('filter-chk-'));
+            const type = classMatch.replace('filter-chk-', '');
+            const val = e.target.value;
+            const set = state.filterSelections[type];
+            if (set.has(val)) set.delete(val); else set.add(val);
+            container.querySelectorAll(`.${classMatch}`).forEach(c => c.checked = set.has(c.value));
+            state.currentPage = 1; 
+            if(UI.updatePillActive) UI.updatePillActive(type); 
+            Render.renderTable();
+        }
+    });
+
     container.querySelector('#selectAll')?.addEventListener('change', (e) => {
         const isChecked = e.target.checked;
         const startIndex = (state.currentPage - 1) * state.itemsPerPage;
@@ -329,7 +358,6 @@ export function bindEvents(container) {
     container.querySelector('#btn-info-close')?.addEventListener('click', UI.closeInfoPopup);
     container.querySelector('#btn-info-footer-close')?.addEventListener('click', UI.closeInfoPopup);
 
-    // 7. 提交表單
     container.querySelector('#btn-submit')?.addEventListener('click', async () => {
         if(state.isReadOnly) return;
         
@@ -374,7 +402,6 @@ export function bindEvents(container) {
         finally { if(btn) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> 儲存紀錄'; } }
     });
 
-    // 8. 表格委派事件與分頁
     container.querySelector('#per-page-select')?.addEventListener('change', (e) => { state.itemsPerPage = Number(e.target.value); state.currentPage = 1; Render.renderTable(); });
     
     container.addEventListener('click', (e) => {
@@ -463,7 +490,6 @@ export function bindEvents(container) {
         }
     });
 
-    // 9. 搜尋下拉連動
     container.querySelector('#input-student')?.addEventListener('input', (e) => { 
         document.getElementById('student-dropdown').classList.add('show'); 
         Render.renderStudentDropdown(state.allStudents, e.target.value); 
