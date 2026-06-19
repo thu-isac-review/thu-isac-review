@@ -21,20 +21,21 @@ export let state = {
     isKeyboardShortcutBound: false,
     tableColumns: [
         { index: 1, label: '學年度', visible: true, disableToggle: true },
-        { index: 2, label: '學號', visible: true, disableToggle: true },
-        { index: 3, label: '姓名', visible: true, disableToggle: true },
-        { index: 4, label: '學系', visible: true, disableToggle: true },
-        { index: 5, label: '年級', visible: true },
-        { index: 6, label: '機構名稱', visible: true },
-        { index: 7, label: '修習課程', visible: true },
-        { index: 8, label: '總學分', visible: true },
-        { index: 9, label: '實習起訖時間', visible: true },
-        { index: 10, label: '總時數', visible: true },
-        { index: 11, label: '實習時間', visible: true },
-        { index: 12, label: '證明文件', visible: true },
-        { index: 13, label: '投保情形', visible: true },
-        { index: 14, label: '勞雇關係', visible: true },
-        { index: 15, label: '填報系所', visible: true }
+        { index: 2, label: '學期', visible: true, disableToggle: true },
+        { index: 3, label: '學號', visible: true, disableToggle: true },
+        { index: 4, label: '姓名', visible: true, disableToggle: true },
+        { index: 5, label: '學系', visible: true, disableToggle: true },
+        { index: 6, label: '年級', visible: true },
+        { index: 7, label: '機構名稱', visible: true },
+        { index: 8, label: '修習課程', visible: true },
+        { index: 9, label: '總學分', visible: true },
+        { index: 10, label: '實習起訖時間', visible: true },
+        { index: 11, label: '總時數', visible: true },
+        { index: 12, label: '實習時間', visible: true },
+        { index: 13, label: '證明文件', visible: true },
+        { index: 14, label: '投保情形', visible: true },
+        { index: 15, label: '勞雇關係', visible: true },
+        { index: 16, label: '填報系所', visible: true }
     ],
     filterSelections: {
         academic_year: new Set(), dept: new Set(), grade: new Set(), inst_raw: new Set(), course: new Set(), 
@@ -77,15 +78,15 @@ export const Utils = {
     }
 };
 
-// 🌟 [新增] 智慧獲取學生資訊 (向下相容舊有只有 student_raw 的資料)
-export function getStudentInfo(data, allStudents) {
-    const id = data.student_id || (data.student_raw ? data.student_raw.split(' - ')[0].trim() : '');
-    const student = allStudents.find(s => s.student_id === id);
-    const name = student ? student.name : (data.student_raw ? (data.student_raw.split(' - ')[1] || '').trim() : '');
-    return { id, name, student };
-}
-
 export function getColShort(collegeName) { const col = state.orderedColleges.find(x => x.name === collegeName); return col && col.shortName ? col.shortName : (collegeName || '未知學院'); }
 export function getDeptShort(deptName) { const dept = state.globalDepts.find(x => x.name === deptName); return dept && dept.shortName ? dept.shortName : (deptName || '未知學系'); }
 export function getTime(timestamp) { if (!timestamp) return 0; if (timestamp.toMillis) return timestamp.toMillis(); if (timestamp.seconds) return timestamp.seconds * 1000; return new Date(timestamp).getTime() || 0; }
-export function formatCourseInfo(c) { return c ? `${c.academic_year}-${c.term}_${c.course_code}：${c.course_name}` : ''; }
+
+// 🌟 [分離功能] UI 列表僅顯示 0002_文創實習
+export function formatCourseForTable(c) { 
+    return c ? `${c.course_code}_${c.course_name}` : ''; 
+}
+// 🌟 [分離功能] CSV 匯出及篩選選單顯示 114-1_0002：文創實習
+export function formatCourseForExport(c) { 
+    return c ? `${c.academic_year}-${c.term}_${c.course_code}：${c.course_name}` : ''; 
+}
