@@ -16,13 +16,14 @@ export let state = {
     globalDepts: [],
     orderedColleges: [],
     globalImportReportData: [],
-    searchDebounceTimer: null, // 🌟 [統一] 增加搜尋防抖計時器
+    searchDebounceTimer: null,
     isGlobalListenerBound: false,
-    isKeyboardShortcutBound: false, // 🌟 [統一] 增加快捷鍵綁定旗標
+    isKeyboardShortcutBound: false,
     tableColumns: [
-        { index: 1, label: '學號', visible: true },
-        { index: 2, label: '姓名', visible: true },
-        { index: 3, label: '學系', visible: true },
+        // 【修正】確保學號(1), 姓名(2), 學系(3) 永遠顯示且不可切換
+        { index: 1, label: '學號', visible: true, disableToggle: true },
+        { index: 2, label: '姓名', visible: true, disableToggle: true },
+        { index: 3, label: '學系', visible: true, disableToggle: true },
         { index: 4, label: '年級', visible: true },
         { index: 5, label: '機構名稱', visible: true },
         { index: 6, label: '修習課程', visible: true },
@@ -66,7 +67,6 @@ export function resetInternRecordState() {
     };
 }
 
-// 🌟 [統一] 抽出 Utils.highlightKeyword，並採用與 Student 模組一模一樣的底色
 export const Utils = {
     highlightKeyword(text, keyword) {
         if (!keyword || !text) return text || '';
