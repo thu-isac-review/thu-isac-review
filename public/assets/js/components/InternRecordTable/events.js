@@ -1,4 +1,4 @@
-import { state, formatCourseInfo } from './state.js';
+import { state, formatCourseInfo, getStudentInfo } from './state.js';
 import * as UI from './ui.js';
 import * as Render from './render.js';
 import * as Data from './data.js';
@@ -59,7 +59,7 @@ export function bindEvents(container) {
         }, 250);
     });
 
-    // 🌟 [修改] CSV 匯出，加入學年度在最前面
+    // 🌟 [修改] CSV 匯出：以 getStudentInfo 自動解析，匯出學號與姓名
     container.querySelector('#btn-export-csv')?.addEventListener('click', () => {
         if (state.filteredRecords.length === 0) { UI.showToast("沒有資料可供匯出！", "error"); return; }
         let csv = '\uFEFF學年度,學號,姓名,學系,年級,機構名稱,修習課程(學年-學期_代號：課程名稱),總學分,實習起訖時間,總時數,實習時間,證明文件,投保情形,勞雇關係,填報系所,備註\n';
@@ -71,14 +71,11 @@ export function bindEvents(container) {
                 return c ? formatCourseInfo(c) : ''; 
             }).filter(Boolean).join('、');
             
-            const stuParts = (d.student_raw || '').split(' - ');
-            const stuId = stuParts[0] || '';
-            const stuName = stuParts[1] || '';
-            const stu = state.allStudents.find(s => s.student_id === stuId);
-            const stuDept = stu ? stu.department : '';
+            const stuInfo = getStudentInfo(d, state.allStudents);
+            const stuDept = stuInfo.student ? stuInfo.student.department : '';
 
             csv += [
-                d.academic_year || '', stuId, stuName, stuDept, d.grade, d.inst_raw, courseNames, totalCredits, 
+                d.academic_year || '', stuInfo.id, stuInfo.name, stuDept, d.grade, d.inst_raw, courseNames, totalCredits, 
                 d.duration, d.hours !== undefined && d.hours !== '' ? d.hours : '', 
                 d.period_type, d.proof_type, d.insurance, d.employment, d.resp_dept || '', d.notes || ''
             ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
@@ -92,7 +89,7 @@ export function bindEvents(container) {
         container.querySelector('#import-file').click();
     });
 
-    // 🌟 [修改] CSV 匯入，將欄位順序對齊最新結構 (cols[0] 變為學年度)
+    // 🌟 [修改] CSV 匯入：解析第一、二、三欄為 學年度、學號、姓名，綁定 student_id
     container.querySelector('#import-file')?.addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -145,7 +142,7 @@ export function bindEvents(container) {
 
                         if (!recordsMap.has(key)) {
                             recordsMap.set(key, {
-                                academic_year: academic_year, student_raw: `${stuId} - ${stuName}`, stuId: stuId, stuName: stuName, grade, inst_raw, duration, hours: hours !== '' ? hours : 0, 
+                                academic_year: academic_year, student_id: stuId, student_raw: `${stuId} - ${stuName}`, stuId: stuId, stuName: stuName, grade, inst_raw, duration, hours: hours !== '' ? hours : 0, 
                                 period_type, proof_type, insurance, employment, notes, resp_dept, coursesRawList: [], courseIds: [], sourceRows: [] 
                             });
                         } else if (hours !== '') {
@@ -199,7 +196,9 @@ export function bindEvents(container) {
 
                     const payload = {
                         academic_year: record.academic_year,
-                        student_raw: record.student_raw, grade: record.grade, inst_raw: record.inst_raw, 
+                        student_id: record.student_id,
+                        student_raw: record.student_raw, 
+                        grade: record.grade, inst_raw: record.inst_raw, 
                         inst_id: instMatch ? instMatch.id : '', 
                         courses: record.courseIds, duration: record.duration,
                         hours: record.hours, period_type: record.period_type, proof_type: record.proof_type, insurance: record.insurance,
@@ -262,14 +261,16 @@ export function bindEvents(container) {
         btn.addEventListener('click', () => { document.getElementById('import-report-modal').classList.remove('open'); });
     });
     
-    // 🌟 [新增] 新增時自動載入可用的學年度
     container.querySelector('#btn-create-record')?.addEventListener('click', () => {
         if(state.isReadOnly) return;
         state.editingId = null; state.selectedCourseIds = [];
         
         Render.populateAcademicYearDropdown();
         document.getElementById('input-academic-year').value = '';
-        document.getElementById('input-student').value = '';
+        
+        const stuInput = document.getElementById('input-student');
+        stuInput.value = ''; stuInput.dataset.id = '';
+        
         document.getElementById('input-grade').value = '';
         const instInput = document.getElementById('input-institution');
         instInput.value = ''; instInput.dataset.id = '';
@@ -289,7 +290,6 @@ export function bindEvents(container) {
         UI.openFormModal(false);
     });
 
-    // 🌟 [新增] 監聽學年度變化，若變更則自動清理無效課程
     container.querySelector('#input-academic-year')?.addEventListener('change', (e) => {
         const newYear = e.target.value;
         if (state.selectedCourseIds.length > 0) {
@@ -364,7 +364,7 @@ export function bindEvents(container) {
     container.querySelector('#btn-info-close')?.addEventListener('click', UI.closeInfoPopup);
     container.querySelector('#btn-info-footer-close')?.addEventListener('click', UI.closeInfoPopup);
 
-    // 🌟 [新增] 寫入資料庫時攜帶學年度參數
+    // 🌟 [修改] 正式在寫入與更新資料庫時使用 student_id
     container.querySelector('#btn-submit')?.addEventListener('click', async () => {
         if(state.isReadOnly) return;
         
@@ -379,9 +379,13 @@ export function bindEvents(container) {
             return; 
         }
 
+        const stuInput = document.getElementById('input-student');
+        const studentId = stuInput.dataset.id || stuInput.value.split(' - ')[0].trim();
+
         const payload = {
             academic_year: document.getElementById('input-academic-year').value,
-            student_raw: document.getElementById('input-student').value.trim(),
+            student_id: studentId,
+            student_raw: stuInput.value.trim(),
             grade: document.getElementById('input-grade').value,
             inst_raw: document.getElementById('input-institution').value.trim(),
             inst_id: document.getElementById('input-institution').dataset.id || '',
@@ -396,7 +400,7 @@ export function bindEvents(container) {
             courses: state.selectedCourseIds
         };
         
-        if(!payload.academic_year || !payload.student_raw || !payload.inst_raw || !payload.duration || !payload.grade || !payload.period_type || !payload.proof_type || !payload.insurance || !payload.employment || !payload.resp_dept) { 
+        if(!payload.academic_year || !payload.student_id || !payload.inst_raw || !payload.duration || !payload.grade || !payload.period_type || !payload.proof_type || !payload.insurance || !payload.employment || !payload.resp_dept) { 
             UI.showToast("請完成所有包含 * 號之必填選單與欄位設定！", "warning"); return; 
         }
 
@@ -449,11 +453,15 @@ export function bindEvents(container) {
             const data = state.allRecords.find(d => d.id === id); if (!data) return;
             state.editingId = id;
 
-            // 🌟 [新增] 編輯時載入該紀錄的學年度
             Render.populateAcademicYearDropdown();
             document.getElementById('input-academic-year').value = data.academic_year || '';
 
-            document.getElementById('input-student').value = data.student_raw || '';
+            // 🌟 [修改] 編輯資料時，運用 getStudentInfo 正確拆解 ID 與 Name
+            const stuInfo = getStudentInfo(data, state.allStudents);
+            const stuInput = document.getElementById('input-student');
+            stuInput.value = stuInfo.id && stuInfo.name ? `${stuInfo.id} - ${stuInfo.name}` : data.student_raw || '';
+            stuInput.dataset.id = stuInfo.id;
+            
             const instInput = document.getElementById('input-institution');
             instInput.value = data.inst_raw || ''; 
             instInput.dataset.id = data.inst_id || '';
@@ -504,17 +512,20 @@ export function bindEvents(container) {
     });
 
     container.querySelector('#input-student')?.addEventListener('input', (e) => { 
+        e.target.dataset.id = ''; // 清除 dataset.id 防止手動亂敲
         document.getElementById('student-dropdown').classList.add('show'); 
         Render.renderStudentDropdown(state.allStudents, e.target.value); 
         document.getElementById('btn-info-student').disabled = !state.allStudents.find(x => x.student_id === e.target.value || e.target.value.startsWith(x.student_id));
         UI.updateRespDeptOptions();
     });
+    
     container.querySelector('#input-institution')?.addEventListener('input', (e) => { 
         e.target.dataset.id = ''; 
         document.getElementById('btn-info-inst').disabled = true;
         document.getElementById('institution-dropdown').classList.add('show'); 
         Render.renderInstDropdown(state.allInsts, e.target.value); 
     });
+    
     container.querySelector('#input-course-search')?.addEventListener('input', (e) => { 
         document.getElementById('course-dropdown').classList.add('show'); 
         Render.renderCourseDropdown(state.allCourses, e.target.value); 
