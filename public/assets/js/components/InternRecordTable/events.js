@@ -6,6 +6,56 @@ import * as Data from './data.js';
 export function bindEvents(container) {
     if (!container) return;
 
+    // 🌟 [新增] 控制動態顯示必填邏輯
+    function handlePaymentFieldsCascade() {
+        const yearSelect = document.getElementById('input-academic-year');
+        const allowanceSelect = document.getElementById('input-allowance');
+        const paymentTypeSelect = document.getElementById('input-payment-type');
+        const paymentDescInput = document.getElementById('input-payment-desc');
+        const reqType = document.getElementById('req-payment-type');
+        const reqDesc = document.getElementById('req-payment-desc');
+
+        const year = parseInt(yearSelect.value, 10) || 0;
+        const allowance = allowanceSelect.value;
+        const currentPaymentType = paymentTypeSelect.value;
+
+        let options = '<option value="">請選擇</option>';
+        if (allowance === '工資') {
+            options += '<option value="月薪">月薪</option><option value="時薪">時薪</option><option value="其他">其他</option>';
+        } else if (allowance === '獎學金' || allowance === '津貼') {
+            options += '<option value="月給">月給</option><option value="一次性">一次性</option><option value="其他">其他</option>';
+        }
+        paymentTypeSelect.innerHTML = options;
+        
+        if (Array.from(paymentTypeSelect.options).some(o => o.value === currentPaymentType)) {
+            paymentTypeSelect.value = currentPaymentType;
+        }
+
+        const is113OrAbove = year >= 113;
+
+        if (allowance === '無' || !allowance) {
+            paymentTypeSelect.disabled = true;
+            paymentTypeSelect.value = '';
+            paymentTypeSelect.required = false;
+            if(reqType) reqType.style.display = 'none';
+        } else {
+            paymentTypeSelect.disabled = false;
+            paymentTypeSelect.required = is113OrAbove;
+            if(reqType) reqType.style.display = is113OrAbove ? 'inline' : 'none';
+        }
+
+        if (paymentTypeSelect.value === '其他') {
+            paymentDescInput.disabled = false;
+            paymentDescInput.required = is113OrAbove;
+            if(reqDesc) reqDesc.style.display = is113OrAbove ? 'inline' : 'none';
+        } else {
+            paymentDescInput.disabled = true;
+            paymentDescInput.value = '';
+            paymentDescInput.required = false;
+            if(reqDesc) reqDesc.style.display = 'none';
+        }
+    }
+
     if (!state.isKeyboardShortcutBound) {
         document.addEventListener('keydown', (e) => {
             const targetTag = e.target.tagName.toLowerCase();
@@ -62,12 +112,12 @@ export function bindEvents(container) {
     container.querySelector('#btn-export-csv')?.addEventListener('click', () => {
         if (state.filteredRecords.length === 0) { UI.showToast("沒有資料可供匯出！", "error"); return; }
         
-        let csv = '\uFEFF學年度,學期,學號,姓名,學系,年級,機構名稱,修習課程(學年-學期_代號：課程名稱),總學分,實習起訖時間,總時數,實習時間,證明文件,投保情形,勞雇關係,填報系所,備註\n';
+        let csv = '\uFEFF學年度,學期,學號,姓名,學系,年級,機構名稱,修習課程(學年-學期_代號：課程名稱),總學分,實習起訖時間,總時數,實習時間,證明文件,投保情形,勞雇關係,實習待遇,給付類型,其他給付說明,補助經費來源,實習機會來源,實習職缺類型,填報系所,備註\n';
         state.filteredRecords.forEach(d => {
             let totalCredits = 0;
             const courseObjs = (Array.isArray(d.courses) ? d.courses : []).map(cid => state.allCourses.find(x => x.id === cid)).filter(Boolean);
             
-            const termDisplay = [...new Set(courseObjs.map(c => c.term))].sort().join('、') || '';
+            const termDisplay = [...new Set(courseObjs.map(c => c.term))].filter(Boolean).sort().join('、') || '';
             const courseNames = courseObjs.map(c => { 
                 if (c.credits) totalCredits += Number(c.credits);
                 return formatCourseForExport(c); 
@@ -79,7 +129,9 @@ export function bindEvents(container) {
             csv += [
                 d.academic_year || '', termDisplay, stu.student_id || '', stu.name || '', stu.department || '', d.grade, inst.name || d.inst_raw || '', courseNames, totalCredits, 
                 d.duration, d.hours !== undefined && d.hours !== '' ? d.hours : '', 
-                d.period_type, d.proof_type, d.insurance, d.employment, d.resp_dept || '', d.notes || ''
+                d.period_type, d.proof_type, d.insurance, d.employment, 
+                d.allowance || '', d.payment_type || '', d.payment_desc || '', d.funding || '', d.opp_source || '', d.job_type || '', 
+                d.resp_dept || '', d.notes || ''
             ].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(',') + '\n';
         });
         const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
@@ -126,6 +178,12 @@ export function bindEvents(container) {
                 const idxProof = headers.indexOf('證明文件');
                 const idxIns = headers.indexOf('投保情形');
                 const idxEmp = headers.indexOf('勞雇關係');
+                const idxAllowance = headers.indexOf('實習待遇');
+                const idxPaymentType = headers.indexOf('給付類型');
+                const idxPaymentDesc = headers.findIndex(h => h.includes('其他給付說明'));
+                const idxFunding = headers.indexOf('補助經費來源');
+                const idxOppSource = headers.indexOf('實習機會來源');
+                const idxJobType = headers.findIndex(h => h.includes('實習職缺'));
                 const idxResp = headers.indexOf('填報系所');
                 const idxNotes = headers.indexOf('備註');
 
@@ -158,21 +216,47 @@ export function bindEvents(container) {
                     const proof_type = idxProof !== -1 ? cols[idxProof] : '';
                     const insurance = idxIns !== -1 ? cols[idxIns] : '';
                     const employment = idxEmp !== -1 ? cols[idxEmp] : '';
+                    
+                    // 新增欄位解析
+                    const allowance = idxAllowance !== -1 ? cols[idxAllowance] : '';
+                    const payment_type = idxPaymentType !== -1 ? cols[idxPaymentType] : '';
+                    const payment_desc = idxPaymentDesc !== -1 ? cols[idxPaymentDesc] : '';
+                    const funding = idxFunding !== -1 ? cols[idxFunding] : '';
+                    const opp_source = idxOppSource !== -1 ? cols[idxOppSource] : '';
+                    const job_type = idxJobType !== -1 ? cols[idxJobType] : '';
+
                     const resp_dept = idxResp !== -1 ? cols[idxResp] : '';
                     const notes = idxNotes !== -1 ? cols[idxNotes] : '';
 
-                    if (!academic_year || !stuId || !inst_raw || !duration || !period_type || !proof_type || !insurance || !employment || !grade) {
+                    // 檢查必填項目
+                    if (!academic_year || !stuId || !inst_raw || !duration || !period_type || !proof_type || !insurance || !employment || !grade || !allowance || !funding || !opp_source || !job_type) {
                         errorCount++;
-                        state.globalImportReportData.push({ status: '錯誤', rows: `第 ${i+1} 列`, student: stuId || '未知', message: '缺少必填欄位' });
+                        state.globalImportReportData.push({ status: '錯誤', rows: `第 ${i+1} 列`, student: stuId || '未知', message: '缺少必填欄位 (包含待遇與經費等新欄位)' });
                         continue;
                     }
 
-                    const key = `${academic_year}|${stuId}|${inst_raw}|${duration}|${grade}|${period_type}|${proof_type}|${insurance}|${employment}`;
+                    // 113 學年度給付類型防呆
+                    if (parseInt(academic_year, 10) >= 113) {
+                        if (allowance !== '無' && !payment_type) {
+                            errorCount++;
+                            state.globalImportReportData.push({ status: '錯誤', rows: `第 ${i+1} 列`, student: stuId, message: '113學年度起，實習待遇非「無」者必須填寫「給付類型」' });
+                            continue;
+                        }
+                        if (payment_type === '其他' && !payment_desc) {
+                            errorCount++;
+                            state.globalImportReportData.push({ status: '錯誤', rows: `第 ${i+1} 列`, student: stuId, message: '給付類型為「其他」時，必須填寫「其他給付說明」' });
+                            continue;
+                        }
+                    }
+
+                    const key = `${academic_year}|${stuId}|${inst_raw}|${duration}|${grade}|${period_type}|${proof_type}|${insurance}|${employment}|${allowance}|${funding}|${opp_source}|${job_type}`;
 
                     if (!recordsMap.has(key)) {
                         recordsMap.set(key, {
                             academic_year, student_id: stuId, grade, inst_raw, duration, hours: hours !== '' ? hours : 0, 
-                            period_type, proof_type, insurance, employment, notes, resp_dept, coursesRawList: [], courseIds: [], sourceRows: [] 
+                            period_type, proof_type, insurance, employment,
+                            allowance, payment_type, payment_desc, funding, opp_source, job_type,
+                            notes, resp_dept, coursesRawList: [], courseIds: [], sourceRows: [] 
                         });
                     } else if (hours !== '') {
                         const groupRecord = recordsMap.get(key);
@@ -202,7 +286,6 @@ export function bindEvents(container) {
 
                     let uniqueCourses = [...new Set(record.coursesRawList)];
                     uniqueCourses.forEach(token => {
-                        // 🌟 [強固] 正規表達式精準匹配 CSV 的 "114-1_0002：文創實習"
                         const cMatch = token.match(/^(\d+)-(\d+)_([^：:]+)[：:](.+)$/);
                         if (cMatch) {
                             const year = cMatch[1]; 
@@ -229,12 +312,16 @@ export function bindEvents(container) {
 
                     const payload = {
                         academic_year: record.academic_year,
-                        student_doc_id: studentMatch.id, // 寫入 Firebase Document ID
+                        student_doc_id: studentMatch.id,
                         grade: record.grade,
-                        inst_id: instMatch.id, // 寫入 Firebase Document ID
+                        inst_id: instMatch.id, 
+                        inst_raw: record.inst_raw,
                         courses: record.courseIds, duration: record.duration,
                         hours: record.hours, period_type: record.period_type, proof_type: record.proof_type, insurance: record.insurance,
-                        employment: record.employment, notes: record.notes, 
+                        employment: record.employment, 
+                        allowance: record.allowance, payment_type: record.payment_type, payment_desc: record.payment_desc,
+                        funding: record.funding, opp_source: record.opp_source, job_type: record.job_type,
+                        notes: record.notes, 
                         resp_dept: record.resp_dept || studentMatch.department
                     };
 
@@ -293,6 +380,10 @@ export function bindEvents(container) {
         btn.addEventListener('click', () => { document.getElementById('import-report-modal').classList.remove('open'); });
     });
     
+    // 🌟 [新增事件綁定] 實習待遇、給付類型的聯動邏輯
+    container.querySelector('#input-allowance')?.addEventListener('change', handlePaymentFieldsCascade);
+    container.querySelector('#input-payment-type')?.addEventListener('change', handlePaymentFieldsCascade);
+
     container.querySelector('#btn-create-record')?.addEventListener('click', () => {
         if(state.isReadOnly) return;
         state.editingId = null; state.selectedCourseIds = [];
@@ -312,10 +403,21 @@ export function bindEvents(container) {
         document.getElementById('input-proof-type').value = '';
         document.getElementById('input-insurance').value = '';
         document.getElementById('input-employment').value = '';
+        
+        // 新增欄位清空
+        document.getElementById('input-allowance').value = '';
+        document.getElementById('input-payment-type').value = '';
+        document.getElementById('input-payment-desc').value = '';
+        document.getElementById('input-funding').value = '';
+        document.getElementById('input-opp-source').value = '';
+        document.getElementById('input-job-type').value = '';
+
         document.getElementById('input-notes').value = '';
         
         document.getElementById('btn-info-student').disabled = true;
         document.getElementById('btn-info-inst').disabled = true;
+
+        handlePaymentFieldsCascade();
 
         Render.renderSelectedCourseChips();
         document.getElementById('input-resp-dept').innerHTML = '<option value="">請先選擇學生與關聯課程...</option>';
@@ -340,6 +442,8 @@ export function bindEvents(container) {
         if (dropdown && dropdown.classList.contains('show')) {
             Render.renderCourseDropdown(state.allCourses, document.getElementById('input-course-search').value);
         }
+        
+        handlePaymentFieldsCascade();
     });
 
     container.querySelector('#btn-display-settings')?.addEventListener('click', (e) => {
@@ -396,7 +500,6 @@ export function bindEvents(container) {
     container.querySelector('#btn-info-close')?.addEventListener('click', UI.closeInfoPopup);
     container.querySelector('#btn-info-footer-close')?.addEventListener('click', UI.closeInfoPopup);
 
-    // 🌟 寫入資料庫時攜帶 Document ID 作為關聯
     container.querySelector('#btn-submit')?.addEventListener('click', async () => {
         if(state.isReadOnly) return;
         
@@ -428,13 +531,26 @@ export function bindEvents(container) {
             employment: document.getElementById('input-employment').value,
             proof_type: document.getElementById('input-proof-type').value,
             hours: document.getElementById('input-hours').value ? Number(document.getElementById('input-hours').value) : '',
+            allowance: document.getElementById('input-allowance').value,
+            payment_type: document.getElementById('input-payment-type').value,
+            payment_desc: document.getElementById('input-payment-desc').value.trim(),
+            funding: document.getElementById('input-funding').value,
+            opp_source: document.getElementById('input-opp-source').value,
+            job_type: document.getElementById('input-job-type').value,
             resp_dept: document.getElementById('input-resp-dept').value,
             notes: document.getElementById('input-notes').value.trim(),
             courses: state.selectedCourseIds
         };
         
-        if(!payload.academic_year || !payload.grade || !payload.period_type || !payload.proof_type || !payload.insurance || !payload.employment || !payload.resp_dept) { 
+        const yearVal = parseInt(payload.academic_year, 10);
+        if(!payload.academic_year || !payload.grade || !payload.period_type || !payload.proof_type || !payload.insurance || !payload.employment || !payload.resp_dept || !payload.allowance || !payload.funding || !payload.opp_source || !payload.job_type) { 
             UI.showToast("請完成所有包含 * 號之必填選單與欄位設定！", "warning"); return; 
+        }
+        if (yearVal >= 113 && payload.allowance !== '無' && !payload.payment_type) {
+            UI.showToast("113學年度起，若有實習待遇請務必填寫「給付類型」！", "warning"); return;
+        }
+        if (yearVal >= 113 && payload.payment_type === '其他' && !payload.payment_desc) {
+            UI.showToast("選擇其他給付類型時，請填寫說明！", "warning"); return;
         }
 
         const btn = document.getElementById('btn-submit');
@@ -507,9 +623,25 @@ export function bindEvents(container) {
             document.getElementById('input-proof-type').value = data.proof_type || '';
             document.getElementById('input-insurance').value = data.insurance || '';
             document.getElementById('input-employment').value = data.employment || '';
+
+            // 載入新欄位並強制觸發一次 Cascade 以載入對應選項
+            document.getElementById('input-allowance').value = data.allowance || '';
+            
+            let options = '<option value="">請選擇</option>';
+            if (data.allowance === '工資') options += '<option value="月薪">月薪</option><option value="時薪">時薪</option><option value="其他">其他</option>';
+            else if (data.allowance === '獎學金' || data.allowance === '津貼') options += '<option value="月給">月給</option><option value="一次性">一次性</option><option value="其他">其他</option>';
+            document.getElementById('input-payment-type').innerHTML = options;
+
+            document.getElementById('input-payment-type').value = data.payment_type || '';
+            document.getElementById('input-payment-desc').value = data.payment_desc || '';
+            document.getElementById('input-funding').value = data.funding || '';
+            document.getElementById('input-opp-source').value = data.opp_source || '';
+            document.getElementById('input-job-type').value = data.job_type || '';
             
             document.getElementById('btn-info-student').disabled = !stu;
             document.getElementById('btn-info-inst').disabled = !inst;
+
+            handlePaymentFieldsCascade();
 
             state.selectedCourseIds = Array.isArray(data.courses) ? [...data.courses] : [];
             Render.renderSelectedCourseChips(true);
