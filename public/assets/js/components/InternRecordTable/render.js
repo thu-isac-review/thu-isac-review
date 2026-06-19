@@ -27,7 +27,6 @@ export function renderTable() {
         return ok;
     });
 
-    // 🌟 [修正] 採用繁體中文筆畫進行精準排序
     state.filteredRecords.sort((a, b) => {
         let valA = '', valB = '';
         if (state.sortCol === 'created_at') { valA = getTime(a.created_at); valB = getTime(b.created_at); }
@@ -47,7 +46,6 @@ export function renderTable() {
              return 0;
         }
 
-        // 使用 zh-TW-u-co-stroke 強制啟用中文筆畫排序
         const diff = String(valA).localeCompare(String(valB), 'zh-TW-u-co-stroke');
         return state.sortDir === 'asc' ? diff : -diff;
     });
@@ -144,14 +142,15 @@ export function renderTable() {
         else if (data.insurance === '僅勞保') insBadge = 'badge-outline-blue';
         else if (data.insurance === '兩者皆無') insBadge = 'badge-outline-red';
 
+        // 🌟 對齊機構與學生模組的按鈕顏色 (btn-secondary / btn-danger) 與 .btn-icon / .sm 大小
         const actionHtml = state.isReadOnly ? '-' : `
             <div class="row-actions">
                 <button class="btn btn-secondary btn-icon sm btn-row-edit" data-id="${data.id}" title="編輯"><i class="ti ti-edit"></i></button>
-                <button class="btn btn-icon sm btn-row-delete" data-id="${data.id}" data-name="${stuName}" style="color:var(--danger); border-color:var(--danger-border);" title="刪除"><i class="ti ti-trash"></i></button>
+                <button class="btn btn-danger btn-icon sm btn-row-delete" data-id="${data.id}" data-name="${stuName}" title="刪除"><i class="ti ti-trash"></i></button>
             </div>
         `;
 
-        // 🌟 [修正] 每個 tr 補上 .col-spacer 確保剩餘空間被正確吸收
+        // 加入 .col-spacer 並且在 checkbox 拿掉多餘的 div
         tHtml += `
         <tr class="${state.selectedIds.includes(data.id)?'selected':''}">
             <td class="col-checkbox" style="text-align: center;">
@@ -172,7 +171,7 @@ export function renderTable() {
             <td data-col="13" class="col-employment" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.employment || '-'}</div></td>
             <td data-col="14" class="col-resp_dept" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</div></td>
             <td class="col-spacer" style="padding: 0; pointer-events: none; border: none;"></td>
-            <td class="col-actions">${actionHtml}</td>
+            <td class="col-actions" style="text-align: center;">${actionHtml}</td>
         </tr>`;
     });
     tbody.innerHTML = tHtml;
@@ -218,7 +217,6 @@ export function renderFilterDropdowns() {
             </label>`;
         });
 
-        // 🌟 確保過濾器結構含有「全選」以及正確的 CSS Layout
         let searchAndToggleHtml = `
             <div class="filter-dropdown-search">
                 ${def.searchable ? `<input type="text" id="search-${def.key}-input" placeholder="搜尋${def.label}...">` : ''}
@@ -244,15 +242,17 @@ export function renderFilterDropdowns() {
 
     container.innerHTML = html;
 
-    // 🌟 [修正] 將欄位顯示設定選單掛載至 #column-toggles-container 中
+    // 🌟 [修改] 顯示設定隱藏不必要的欄位 (disableToggle 欄位直接不顯示)
     const colContainer = document.getElementById('column-toggles-container');
     if (colContainer) {
-        colContainer.innerHTML = state.tableColumns.map(c => `
-            <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:${c.disableToggle ? 'not-allowed' : 'pointer'}; opacity:${c.disableToggle ? '0.5' : '1'};">
-                <input type="checkbox" class="col-toggle-chk" data-index="${c.index}" ${c.visible ? 'checked' : ''} ${c.disableToggle ? 'disabled' : ''}>
-                <span style="${c.disableToggle ? 'font-weight:600; color:var(--text-muted);' : ''}">${c.label}</span>
-            </label>
-        `).join('');
+        colContainer.innerHTML = state.tableColumns
+            .filter(c => !c.disableToggle) // 過濾掉無法隱藏的項目
+            .map(c => `
+                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;">
+                    <input type="checkbox" class="col-toggle-chk" data-index="${c.index}" ${c.visible ? 'checked' : ''}>
+                    <span>${c.label}</span>
+                </label>
+            `).join('');
     }
 
     container.querySelectorAll('.filter-pill').forEach(btn => {
@@ -271,7 +271,6 @@ export function renderFilterDropdowns() {
         }
     });
 
-    // 將事件綁定在更外層的 intern-record-page-wrapper，避免重繪後事件失效
     const wrapper = document.getElementById('intern-record-page-wrapper');
     if (wrapper && !wrapper.dataset.filterBound) {
         wrapper.addEventListener('change', (e) => {
@@ -318,8 +317,7 @@ export function renderFilterDropdowns() {
     }
 }
 
-// ... 後續輔助 Dropdown 渲染代碼維持不變 (renderStudentDropdown, renderInstDropdown 等) ...
-
+// (保留其餘 Dropdown 渲染代碼不動...)
 export function renderStudentDropdown(list, term) {
     const dropdown = document.getElementById('student-dropdown');
     if (!dropdown) return;
