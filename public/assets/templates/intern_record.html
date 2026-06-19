@@ -47,7 +47,7 @@
                 <button id="btn-display-settings" class="btn btn-secondary btn-sm" style="font-weight: 500;"><i class="ti ti-settings"></i> 顯示設定</button>
                 <div id="display-settings-menu" style="position:absolute; right:0; top:calc(100% + 4px); width:200px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); padding:8px; z-index:100; display:none;" class="menu-popup">
                     <div style="font-size:11px; font-weight:700; color:var(--text-muted); padding:4px 8px;">顯示欄位設定</div>
-                    <div id="column-toggles-container"></div>
+                    <div id="column-toggles-container" class="custom-scroll" style="max-height:280px; overflow-y:auto;"></div>
                 </div>
             </div>
 
@@ -62,7 +62,7 @@
 
         <div class="table-wrap">
             <div class="table-scroll custom-scroll">
-                <table style="table-layout: fixed; width: 100%; min-width: 2050px;">
+                <table style="table-layout: fixed; width: 100%; min-width: 2800px;">
                     <thead id="intern-record-table-head">
                         <tr>
                             <th class="col-checkbox" style="width: 48px; min-width: 48px; max-width: 48px; text-align: center;">
@@ -84,6 +84,14 @@
                             <th data-col="14" class="col-insurance" style="width: 120px; min-width: 120px; max-width: 120px; text-align: center;">投保情形</th>
                             <th data-col="15" class="col-employment" style="width: 90px; min-width: 90px; max-width: 90px; text-align: center;">勞雇關係</th>
                             <th data-sort="resp_dept" data-col="16" class="col-resp_dept" style="width: 90px; min-width: 90px; max-width: 90px; text-align: center;">填報系所 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            
+                            <th data-sort="allowance" data-col="17" class="col-allowance" style="width: 100px; min-width: 100px; max-width: 100px; text-align: center;">實習待遇 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="payment_type" data-col="18" class="col-payment_type" style="width: 100px; min-width: 100px; max-width: 100px; text-align: center;">給付類型 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="payment_desc" data-col="19" class="col-payment_desc" style="width: 150px; min-width: 150px; max-width: 150px; text-align: left;">其他給付說明 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="funding" data-col="20" class="col-funding" style="width: 140px; min-width: 140px; max-width: 140px; text-align: center;">補助經費來源 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="opp_source" data-col="21" class="col-opp_source" style="width: 120px; min-width: 120px; max-width: 120px; text-align: center;">實習機會來源 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="job_type" data-col="22" class="col-job_type" style="width: 100px; min-width: 100px; max-width: 100px; text-align: center;">實習職缺 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            
                             <th class="col-spacer" style="width: 100%; min-width: auto; padding: 0; pointer-events: none;"></th>
                             <th class="col-actions" style="width: 90px; min-width: 90px; max-width: 90px; text-align: center;">操作</th>
                         </tr>
@@ -218,20 +226,62 @@
                                             <option value="">請選擇</option><option value="是">是</option><option value="否">否</option>
                                         </select>
                                     </div>
-                                </div>
-                            </div>
-                    
-                            <div class="clean-section stretch-section">
-                                <div class="clean-section-title"><i class="ti ti-building-community"></i> 填報系所與備註說明</div>
-                                <div class="field">
-                                    <label class="field-label">負責填報系所 <span class="req">*</span></label>
-                                    <select id="input-resp-dept" class="field-select" required>
-                                        <option value="">請先選擇學生與關聯課程...</option>
-                                    </select>
-                                </div>
-                                <div class="field" style="margin-top: 16px; flex: 1; display: flex; flex-direction: column;">
-                                    <label class="field-label">備註 (選填)</label>
-                                    <textarea id="input-notes" class="field-input custom-scroll" placeholder="選填備註..." style="height: 100px; resize: none; padding-top: 10px;"></textarea>
+
+                                    <div class="field">
+                                        <label class="field-label">實習待遇 <span class="req">*</span></label>
+                                        <select id="input-allowance" class="field-select" required>
+                                            <option value="">請選擇</option><option value="無">無</option><option value="工資">工資</option><option value="獎學金">獎學金</option><option value="津貼">津貼</option>
+                                        </select>
+                                    </div>
+                                    <div class="field">
+                                        <label class="field-label">給付類型 <span class="req" id="req-payment-type" style="display:none;">*</span></label>
+                                        <select id="input-payment-type" class="field-select" disabled>
+                                            <option value="">請先選擇實習待遇</option>
+                                        </select>
+                                    </div>
+                                    <div class="field" style="grid-column: span 2;">
+                                        <label class="field-label">其他給付類型說明 <span class="req" id="req-payment-desc" style="display:none;">*</span></label>
+                                        <input type="text" id="input-payment-desc" class="field-input" placeholder="限20中文字，選擇其他時填寫" maxlength="20" disabled>
+                                    </div>
+                                    <div class="field">
+                                        <label class="field-label">補助經費來源 <span class="req">*</span></label>
+                                        <select id="input-funding" class="field-select" required>
+                                            <option value="">請選擇</option>
+                                            <option value="教育部補助-高等教育深耕計畫">教育部補助-高等教育深耕計畫</option>
+                                            <option value="教育部補助-學海築夢">教育部補助-學海築夢</option>
+                                            <option value="國內民間單位">國內民間單位</option>
+                                            <option value="無經費補助">無經費補助</option>
+                                            <option value="校內經費預算">校內經費預算</option>
+                                        </select>
+                                    </div>
+                                    <div class="field">
+                                        <label class="field-label">實習機會來源 <span class="req">*</span></label>
+                                        <select id="input-opp-source" class="field-select" required>
+                                            <option value="">請選擇</option>
+                                            <option value="系所開發">系所開發</option>
+                                            <option value="實習中心轉介">實習中心轉介</option>
+                                            <option value="實習機構主動洽詢">實習機構主動洽詢</option>
+                                            <option value="學生自尋">學生自尋</option>
+                                        </select>
+                                    </div>
+                                    <div class="field">
+                                        <label class="field-label">實習職缺類型 <span class="req">*</span></label>
+                                        <select id="input-job-type" class="field-select" required>
+                                            <option value="">請選擇</option>
+                                            <option value="見習型">見習型</option>
+                                            <option value="儲備型">儲備型</option>
+                                        </select>
+                                    </div>
+                                    <div class="field" style="margin-top: 16px; grid-column: span 2; display: flex; flex-direction: column;">
+                                        <label class="field-label">負責填報系所 <span class="req">*</span></label>
+                                        <select id="input-resp-dept" class="field-select" required>
+                                            <option value="">請先選擇學生與關聯課程...</option>
+                                        </select>
+                                    </div>
+                                    <div class="field" style="margin-top: 16px; grid-column: span 2; display: flex; flex-direction: column;">
+                                        <label class="field-label">備註 (選填)</label>
+                                        <textarea id="input-notes" class="field-input custom-scroll" placeholder="選填備註..." style="height: 100px; resize: none; padding-top: 10px;"></textarea>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -280,16 +330,12 @@
                         <div style="font-size: 11px; font-weight: 700; color: var(--danger);">嚴重錯誤 (筆)</div>
                     </div>
                 </div>
-                
                 <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;">
                     <div style="display: grid; grid-template-columns: 15% 15% 25% 45%; padding: 8px 12px; background: var(--bg); border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 700; color: var(--text-muted);">
                         <div>狀態</div><div>Excel來源列</div><div>學號 / 姓名</div><div>詳細說明</div>
                     </div>
                     <div id="report-details-container" class="custom-scroll" style="max-height: 240px; overflow-y: auto; font-size: 13px;">
                     </div>
-                </div>
-                <div style="font-size: 11px; color: var(--text-muted); margin-top: 12px; font-weight: 500;">
-                    <i class="ti ti-search" style="color: var(--brand);"></i> 提示：帶有「異常綁定」的資料依然會被匯入系統，您可以事後透過編輯功能或補齊主檔來修正。
                 </div>
             </div>
             <div class="dialog-footer">
