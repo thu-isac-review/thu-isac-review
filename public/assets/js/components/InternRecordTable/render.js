@@ -1,13 +1,5 @@
-import { state, getDeptShort, getTime, getColShort, formatCourseForTable, formatCourseForExport, Utils } from './state.js';
+import { state, getDeptShort, getTime, getColShort, formatCourseForTable, formatCourseForExport, Utils, getRecordTerm } from './state.js';
 import * as UI from './ui.js';
-
-function getRecordTerm(d) {
-    if (!d.courses || d.courses.length === 0) return '-';
-    const courseObjs = d.courses.map(cid => state.allCourses.find(x => x.id === cid)).filter(Boolean);
-    if (courseObjs.length === 0) return '-';
-    const terms = [...new Set(courseObjs.map(c => c.term))].filter(Boolean).sort();
-    return terms.join('、') || '-';
-}
 
 export function populateAcademicYearDropdown() {
     const select = document.getElementById('input-academic-year');
@@ -29,7 +21,6 @@ export function renderTable() {
     const searchTerm = rawSearchTerm.toLowerCase();
 
     state.filteredRecords = state.allRecords.filter(d => {
-        // 🌟 絕對使用 Firebase ID 來尋找關聯主檔
         const stu = state.allStudents.find(s => s.id === d.student_doc_id) || {};
         const inst = state.allInsts.find(i => i.id === d.inst_id) || {};
         const stuIdStr = stu.student_id || '';
@@ -52,6 +43,12 @@ export function renderTable() {
         if (ok && state.filterSelections.proof.size > 0) ok = state.filterSelections.proof.has(d.proof_type);
         if (ok && state.filterSelections.insurance.size > 0) ok = state.filterSelections.insurance.has(d.insurance);
         if (ok && state.filterSelections.employment.size > 0) ok = state.filterSelections.employment.has(d.employment);
+        // 新增的進階篩選條件
+        if (ok && state.filterSelections.allowance.size > 0) ok = state.filterSelections.allowance.has(d.allowance);
+        if (ok && state.filterSelections.payment_type.size > 0) ok = state.filterSelections.payment_type.has(d.payment_type);
+        if (ok && state.filterSelections.funding.size > 0) ok = state.filterSelections.funding.has(d.funding);
+        if (ok && state.filterSelections.opp_source.size > 0) ok = state.filterSelections.opp_source.has(d.opp_source);
+        if (ok && state.filterSelections.job_type.size > 0) ok = state.filterSelections.job_type.has(d.job_type);
         return ok;
     });
 
@@ -125,7 +122,6 @@ export function renderTable() {
 
     let tHtml = '';
     items.forEach(data => {
-        // 從資料庫找回關聯的主檔
         const stu = state.allStudents.find(s => s.id === data.student_doc_id) || {};
         const stuIdStr = stu.student_id || '';
         const stuNameStr = stu.name || '未知學生';
@@ -151,12 +147,10 @@ export function renderTable() {
             }).filter(Boolean);
 
             if (courseObjs.length > 0) {
-                // 🌟 計算學期並顯示 (過濾不重複後排序)
                 const terms = [...new Set(courseObjs.map(c => c.term))].filter(Boolean).sort();
                 termDisplay = terms.join('、') || '-';
 
                 const badgeStyle = 'max-width: 100%; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle;';
-                // 列表介面只顯示 0002_名稱
                 const firstCourseTag = `<span class="badge badge-outline-blue" style="${badgeStyle}" title="${formatCourseForExport(courseObjs[0])}">${formatCourseForTable(courseObjs[0])}</span>`;
                 if (courseObjs.length > 1) {
                     coursesHtml = `
@@ -187,6 +181,10 @@ export function renderTable() {
         else if (data.insurance === '僅勞保') insBadge = 'badge-outline-blue';
         else if (data.insurance === '兩者皆無') insBadge = 'badge-outline-red';
 
+        let allowanceBadge = 'badge-outline-gray';
+        if (data.allowance === '工資') allowanceBadge = 'badge-outline-green';
+        else if (data.allowance === '獎學金' || data.allowance === '津貼') allowanceBadge = 'badge-outline-blue';
+
         const actionHtml = state.isReadOnly ? '-' : `
             <div class="row-actions">
                 <button class="btn btn-secondary btn-icon sm btn-row-edit" data-id="${data.id}" title="編輯"><i class="ti ti-edit"></i></button>
@@ -215,6 +213,14 @@ export function renderTable() {
             <td data-col="14" class="col-insurance" style="text-align: center;"><div class="badge ${insBadge}">${data.insurance || '-'}</div></td>
             <td data-col="15" class="col-employment" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.employment || '-'}</div></td>
             <td data-col="16" class="col-resp_dept" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</div></td>
+            
+            <td data-col="17" class="col-allowance" style="text-align: center;"><div class="badge ${allowanceBadge}">${data.allowance || '-'}</div></td>
+            <td data-col="18" class="col-payment_type" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.payment_type || '-'}</div></td>
+            <td data-col="19" class="col-payment_desc" style="text-align: left;"><div class="cell-primary" style="font-weight: normal;">${data.payment_desc || '-'}</div></td>
+            <td data-col="20" class="col-funding" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.funding || '-'}</div></td>
+            <td data-col="21" class="col-opp_source" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.opp_source || '-'}</div></td>
+            <td data-col="22" class="col-job_type" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.job_type || '-'}</div></td>
+            
             <td class="col-spacer" style="padding: 0; pointer-events: none;"></td>
             <td class="col-actions" style="text-align: center;">${actionHtml}</td>
         </tr>`;
@@ -237,7 +243,6 @@ export function renderFilterDropdowns() {
     }).filter(opt => opt.label !== opt.value);
     courseOptions.sort((a,b) => a.label.localeCompare(b.label));
 
-    // 使用真實機構名稱生成過濾清單
     const instNames = state.allRecords.map(r => {
         const inst = state.allInsts.find(i => i.id === r.inst_id);
         return inst ? inst.name : '';
@@ -254,7 +259,12 @@ export function renderFilterDropdowns() {
         period: ['寒假實習', '暑假實習', '學期期間實習', '單一學期實習', '全學年'].map(v=>({value:v, label:v})),
         proof: ['合約', '公函', '其他證明文件'].map(v=>({value:v, label:v})),
         insurance: ['僅校外實習保險', '僅勞保', '兩者皆有', '兩者皆無'].map(v=>({value:v, label:v})),
-        employment: ['是', '否'].map(v=>({value:v, label:v}))
+        employment: ['是', '否'].map(v=>({value:v, label:v})),
+        allowance: ['無', '工資', '獎學金', '津貼'].map(v=>({value:v, label:v})),
+        payment_type: ['月薪', '時薪', '月給', '一次性', '其他'].map(v=>({value:v, label:v})),
+        funding: ['教育部補助-高等教育深耕計畫', '教育部補助-學海築夢', '國內民間單位', '無經費補助', '校內經費預算'].map(v=>({value:v, label:v})),
+        opp_source: ['系所開發', '實習中心轉介', '實習機構主動洽詢', '學生自尋'].map(v=>({value:v, label:v})),
+        job_type: ['見習型', '儲備型'].map(v=>({value:v, label:v}))
     };
 
     let html = '';
@@ -380,7 +390,6 @@ export function renderStudentDropdown(list, term) {
     
     let html = '';
     filtered.slice(0, 30).forEach(s => {
-        // 🌟 綁定 Firebase Doc ID 給 dataset.docid
         html += `
         <div class="search-item student-item" data-stuid="${s.student_id}" data-name="${s.name}" data-docid="${s.id}">
             <div class="search-item-title">${s.student_id} - ${s.name}</div>
@@ -410,7 +419,6 @@ export function renderInstDropdown(list, term) {
     
     let html = '';
     filtered.slice(0, 30).forEach(i => {
-        // 🌟 綁定 Firebase Doc ID
         html += `
         <div class="search-item inst-item" data-name="${i.name}" data-docid="${i.id}">
             <div class="search-item-title">${i.name}</div>
@@ -486,7 +494,6 @@ export function renderSelectedCourseChips(skipRespUpdate = false) {
     const countSpan = document.getElementById('selected-course-count');
     if (countSpan) countSpan.innerText = `已選 ${state.selectedCourseIds.length} 門`;
 
-    // 🌟 [修正] 尚未加入課程 UI 置中防版
     if (state.selectedCourseIds.length === 0) { 
         container.innerHTML = `
             <div class="empty-state" style="margin: auto; color: var(--text-muted); font-weight: 600; font-size: 13px;">
