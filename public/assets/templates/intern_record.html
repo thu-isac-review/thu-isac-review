@@ -1,27 +1,6 @@
 <link rel="stylesheet" href="./assets/css/intern_record.css">
 <style id="dynamic-col-styles"></style>
 
-<style>
-    #intern-record-table-head th.col-checkbox,
-    #intern-record-table-body td.col-checkbox {
-        position: sticky; left: 0; z-index: 15;
-        background: var(--surface, #ffffff);
-    }
-    #intern-record-table-head th.col-checkbox { z-index: 25; box-shadow: inset 0 -2px 0 var(--border), 2px 0 5px rgba(0,0,0,0.05); }
-    #intern-record-table-body td.col-checkbox { box-shadow: 2px 0 5px rgba(0,0,0,0.05); border-right: 1px solid var(--border); }
-
-    #intern-record-table-head th.col-actions,
-    #intern-record-table-body td.col-actions {
-        position: sticky; right: 0; z-index: 15;
-        background: var(--surface, #ffffff);
-    }
-    #intern-record-table-head th.col-actions { z-index: 25; box-shadow: inset 0 -2px 0 var(--border), -2px 0 5px rgba(0,0,0,0.05); }
-    #intern-record-table-body td.col-actions { box-shadow: -2px 0 5px rgba(0,0,0,0.05); border-left: 1px solid var(--border); }
-
-    tr:hover td.col-checkbox, tr:hover td.col-actions { background: #fafbff; }
-    tr.selected td.col-checkbox, tr.selected td.col-actions { background: #f0f4ff; }
-</style>
-
 <div id="intern-record-page-wrapper" style="height: 100%; display: flex; flex-direction: column; overflow: hidden; position: relative;">
     <div id="main-view" style="display: flex; flex-direction: column; height: 100%;">
         <div class="toolbar">
@@ -45,7 +24,18 @@
             <input type="file" id="import-file" accept=".csv" style="display:none;">
         </div>
 
-        <div class="filter-row" id="filter-container">
+        <div class="filter-row">
+            <div class="filters-scroll-area custom-scroll" id="filter-container">
+                </div>
+
+            <div class="relative inline-block text-left" id="display-settings-wrap">
+                <button id="btn-display-settings" class="btn btn-secondary btn-sm" style="font-weight: 500;"><i class="ti ti-settings"></i> 顯示設定</button>
+                <div id="display-settings-menu" style="position:absolute; right:0; top:calc(100% + 4px); width:200px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); padding:8px; z-index:100; display:none;" class="menu-popup">
+                    <div style="font-size:11px; font-weight:700; color:var(--text-muted); padding:4px 8px;">顯示欄位設定</div>
+                    <div id="column-toggles-container"></div>
+                </div>
+            </div>
+
             <div id="batch-bar">
                 <div class="batch-info"><i class="ti ti-checks" style="font-size:18px;"></i> 已選 <span id="selected-count">0</span> 筆紀錄</div>
                 <button id="btn-select-all-filtered" class="btn btn-sm btn-secondary">選取全部符合條件</button>
@@ -60,38 +50,36 @@
                 <table style="table-layout: fixed; width: 100%; min-width: 1800px;">
                     <thead id="intern-record-table-head">
                         <tr>
-                            <th class="col-checkbox" style="width: 48px; text-align: center; padding: 0;">
-                                <div class="flex-center" style="display:flex; justify-content:center; align-items:center; height:100%;">
+                            <th class="col-checkbox" style="width: 48px;">
+                                <div class="flex-center">
                                     <input type="checkbox" id="selectAll" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                                 </div>
                             </th>
-                            <th data-sort="student_id" data-col="1" style="width: 100px;">學號 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="student_name" data-col="2" style="width: 90px;">姓名 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="dept" data-col="3" style="width: 120px;">學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="grade" data-col="4" style="width: 80px;">年級 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="inst_raw" data-col="5" style="width: 220px;">機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-col="6" style="width: 250px;">修習課程</th>
-                            <th data-col="7" style="width: 80px;">總學分</th>
-                            <th data-sort="duration" data-col="8" style="width: 160px;">實習起訖時間 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="hours" data-col="9" style="width: 80px;">總時數 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-col="10" style="width: 110px;">實習時間</th>
-                            <th data-col="11" style="width: 100px;">證明文件</th>
-                            <th data-col="12" style="width: 120px;">投保情形</th>
-                            <th data-col="13" style="width: 90px;">勞雇關係</th>
-                            <th data-sort="resp_dept" data-col="14" style="width: 120px;">填報系所 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th class="col-spacer" style="width: 100%; min-width: auto; padding: 0; pointer-events: none;"></th>
-                            <th class="col-actions" style="width: 90px; text-align: center; padding: 0;">操作</th>
+                            <th data-sort="student_id" data-col="1" class="col-student_id" style="width: 100px; text-align: center;">學號 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="student_name" data-col="2" class="col-student_name" style="width: 100px; text-align: center;">姓名 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="dept" data-col="3" class="col-dept" style="width: 120px; text-align: center;">學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="grade" data-col="4" class="col-grade" style="width: 80px; text-align: center;">年級 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="inst_raw" data-col="5" class="col-inst_raw" style="width: 220px; text-align: left;">機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-col="6" class="col-course" style="width: 250px; text-align: left;">修習課程</th>
+                            <th data-col="7" class="col-credits" style="width: 80px; text-align: center;">總學分</th>
+                            <th data-sort="duration" data-col="8" class="col-duration" style="width: 150px; text-align: center;">實習起訖時間 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="hours" data-col="9" class="col-hours" style="width: 80px; text-align: center;">總時數 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-col="10" class="col-period" style="width: 110px; text-align: center;">實習時間</th>
+                            <th data-col="11" class="col-proof" style="width: 100px; text-align: center;">證明文件</th>
+                            <th data-col="12" class="col-insurance" style="width: 120px; text-align: center;">投保情形</th>
+                            <th data-col="13" class="col-employment" style="width: 90px; text-align: center;">勞雇關係</th>
+                            <th data-sort="resp_dept" data-col="14" class="col-resp_dept" style="width: 120px; text-align: center;">填報系所 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th class="col-actions" style="width: 90px; text-align: center;">操作</th>
                         </tr>
                     </thead>
                     <tbody id="intern-record-table-body">
-                        <tr>
-                            <td colspan="17" class="empty-state">
-                                <i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i>
-                                <div class="empty-text">資料載入與驗證中...</div>
-                            </td>
-                        </tr>
-                    </tbody>
+                        </tbody>
                 </table>
+            </div>
+            
+            <div id="empty-state-container" class="empty-state" style="display: none;">
+                <i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i>
+                <div class="empty-text">資料載入與驗證中...</div>
             </div>
             
             <div class="pagination-bar">
@@ -254,7 +242,32 @@
                 <button type="button" class="dialog-close btn-close-report"><i class="ti ti-x"></i></button>
             </div>
             <div class="dialog-body custom-scroll" style="background: var(--bg);">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                    <div style="background: var(--success-bg); border: 1px solid var(--success-border); padding: 16px; border-radius: var(--radius); text-align: center;">
+                        <div id="report-success-count" style="font-size: 28px; font-weight: 700; color: var(--success); margin-bottom: 4px;">0</div>
+                        <div style="font-size: 11px; font-weight: 700; color: var(--success);">成功匯入 (筆)</div>
+                    </div>
+                    <div style="background: var(--warning-bg); border: 1px solid var(--warning-border); padding: 16px; border-radius: var(--radius); text-align: center;">
+                        <div id="report-warning-count" style="font-size: 28px; font-weight: 700; color: var(--warning); margin-bottom: 4px;">0</div>
+                        <div style="font-size: 11px; font-weight: 700; color: var(--warning);">異常綁定 (筆)</div>
+                    </div>
+                    <div style="background: var(--danger-bg); border: 1px solid var(--danger-border); padding: 16px; border-radius: var(--radius); text-align: center;">
+                        <div id="report-error-count" style="font-size: 28px; font-weight: 700; color: var(--danger); margin-bottom: 4px;">0</div>
+                        <div style="font-size: 11px; font-weight: 700; color: var(--danger);">嚴重錯誤 (筆)</div>
+                    </div>
                 </div>
+                
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;">
+                    <div style="display: grid; grid-template-columns: 15% 15% 25% 45%; padding: 8px 12px; background: var(--bg); border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 700; color: var(--text-muted);">
+                        <div>狀態</div><div>Excel來源列</div><div>學號 / 姓名</div><div>詳細說明</div>
+                    </div>
+                    <div id="report-details-container" class="custom-scroll" style="max-height: 240px; overflow-y: auto; font-size: 13px;">
+                    </div>
+                </div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 12px; font-weight: 500;">
+                    <i class="ti ti-search" style="color: var(--brand);"></i> 提示：帶有「異常綁定」的資料依然會被匯入系統，您可以事後透過編輯功能或補齊主檔來修正。
+                </div>
+            </div>
             <div class="dialog-footer">
                 <button type="button" class="btn btn-secondary btn-close-report">關閉視窗</button>
                 <button type="button" class="btn btn-primary" id="btn-download-report">
