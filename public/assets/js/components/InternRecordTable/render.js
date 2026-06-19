@@ -27,7 +27,7 @@ export function renderTable() {
         return ok;
     });
 
-    // 【修正】採用繁體中文筆畫進行精準排序
+    // 🌟 [修正] 採用繁體中文筆畫進行精準排序
     state.filteredRecords.sort((a, b) => {
         let valA = '', valB = '';
         if (state.sortCol === 'created_at') { valA = getTime(a.created_at); valB = getTime(b.created_at); }
@@ -47,7 +47,7 @@ export function renderTable() {
              return 0;
         }
 
-        // 使用 zh-TW-u-co-stroke 強制啟用中文筆畫排序
+        // 🌟 使用 zh-TW-u-co-stroke 強制啟用中文筆畫排序
         const diff = String(valA).localeCompare(String(valB), 'zh-TW-u-co-stroke');
         return state.sortDir === 'asc' ? diff : -diff;
     });
@@ -83,9 +83,15 @@ export function renderTable() {
     const selectAll = document.getElementById('selectAll');
     if(selectAll) selectAll.checked = items.length > 0 && items.every(i => state.selectedIds.includes(i.id));
 
-    if (total === 0) { 
-        tbody.innerHTML = `<tr><td colspan="17" class="empty-state"><i class="ti ti-inbox empty-icon"></i><div class="empty-text">找不到符合條件的紀錄。</div></td></tr>`; 
-        return; 
+    const emptyStateContainer = document.getElementById('empty-state-container');
+    if (total === 0) {
+        tbody.innerHTML = ''; 
+        if (emptyStateContainer) {
+            emptyStateContainer.style.display = 'flex';
+        }
+        return;
+    } else {
+        if (emptyStateContainer) emptyStateContainer.style.display = 'none';
     }
 
     let tHtml = '';
@@ -147,35 +153,150 @@ export function renderTable() {
             </div>
         `;
 
-        // 【修正】在 Actions 的前方加入了 <td class="col-spacer">
+        // 🌟 [修正] 勾選框對齊機構模組的 UIUX
         tHtml += `
         <tr class="${state.selectedIds.includes(data.id)?'selected':''}">
             <td class="col-checkbox" style="text-align: center; padding: 0;">
-                <div style="display:flex; justify-content:center; align-items:center; height:100%;">
+                <div class="flex-center" style="display:flex; justify-content:center; align-items:center; height:100%;">
                     <input type="checkbox" class="row-select-chk" value="${data.id}" ${state.selectedIds.includes(data.id)?'checked':''} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
                 </div>
             </td>
-            <td data-col="1" style="text-align: center;"><div class="cell-primary bold">${displayStuId}</div></td>
-            <td data-col="2" style="text-align: center;"><div class="cell-primary bold">${displayStuName}</div></td>
-            <td data-col="3" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${stuDept}</div></td>
-            <td data-col="4" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.grade || '-'}</div></td>
-            <td data-col="5" style="text-align: left;"><div class="cell-primary bold">${displayInstRaw}</div></td>
-            <td data-col="6" style="text-align: ${courseAlign};">${coursesHtml}</td>
-            <td data-col="7" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${totalCredits}</div></td>
-            <td data-col="8" style="text-align: center;"><div class="cell-primary bold">${data.duration || '-'}</div></td>
-            <td data-col="9" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.hours !== undefined && data.hours !== '' ? data.hours : '-'}</div></td>
-            <td data-col="10" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.period_type || '-'}</div></td>
-            <td data-col="11" style="text-align: center;"><div class="badge ${proofBadge}">${data.proof_type || '-'}</div></td>
-            <td data-col="12" style="text-align: center;"><div class="badge ${insBadge}">${data.insurance || '-'}</div></td>
-            <td data-col="13" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.employment || '-'}</div></td>
-            <td data-col="14" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</div></td>
-            <td class="col-spacer" style="padding: 0; pointer-events: none;"></td>
+            <td data-col="1" class="col-student_id" style="text-align: center;"><div class="cell-primary bold">${displayStuId}</div></td>
+            <td data-col="2" class="col-student_name" style="text-align: center;"><div class="cell-primary bold">${displayStuName}</div></td>
+            <td data-col="3" class="col-dept" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${stuDept}</div></td>
+            <td data-col="4" class="col-grade" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.grade || '-'}</div></td>
+            <td data-col="5" class="col-inst_raw" style="text-align: left;"><div class="cell-primary bold">${displayInstRaw}</div></td>
+            <td data-col="6" class="col-course" style="text-align: ${courseAlign};">${coursesHtml}</td>
+            <td data-col="7" class="col-credits" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${totalCredits}</div></td>
+            <td data-col="8" class="col-duration" style="text-align: center;"><div class="cell-primary bold">${data.duration || '-'}</div></td>
+            <td data-col="9" class="col-hours" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.hours !== undefined && data.hours !== '' ? data.hours : '-'}</div></td>
+            <td data-col="10" class="col-period" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.period_type || '-'}</div></td>
+            <td data-col="11" class="col-proof" style="text-align: center;"><div class="badge ${proofBadge}">${data.proof_type || '-'}</div></td>
+            <td data-col="12" class="col-insurance" style="text-align: center;"><div class="badge ${insBadge}">${data.insurance || '-'}</div></td>
+            <td data-col="13" class="col-employment" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.employment || '-'}</div></td>
+            <td data-col="14" class="col-resp_dept" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</div></td>
             <td class="col-actions" style="text-align: center; padding: 0;">${actionHtml}</td>
         </tr>`;
     });
     tbody.innerHTML = tHtml;
     if (UI.updateColumnVisibility) UI.updateColumnVisibility();
 }
+
+export function renderFilterDropdowns() {
+    const container = document.getElementById('filter-container');
+    if (!container) return;
+    
+    const uniqueSortedDepts = [...new Set(state.globalDepts.map(d=>d.name))];
+    const uniqueUsedCourses = [...new Set(state.allRecords.flatMap(r => r.courses || []))];
+    const courseOptions = uniqueUsedCourses.map(cid => {
+        const c = state.allCourses.find(x => x.id === cid);
+        return { value: cid, label: c ? formatCourseInfo(c) : cid };
+    }).filter(opt => opt.label !== opt.value);
+    courseOptions.sort((a,b) => a.label.localeCompare(b.label));
+
+    const filterOptions = {
+        dept: uniqueSortedDepts.map(v=>({value:v, label: getDeptShort(v)})),
+        grade: ['1', '2', '3', '4', '5'].map(v=>({value:v, label: `${v} 年級${v==='5'?'以上':''}`})),
+        inst_raw: [...new Set(state.allRecords.map(r=>r.inst_raw))].filter(Boolean).sort().map(v=>({value:v, label:v})),
+        course: courseOptions,
+        resp_dept: uniqueSortedDepts.map(v=>({value:v, label: getDeptShort(v)})),
+        period: ['寒假實習', '暑假實習', '學期期間實習', '單一學期實習', '全學年'].map(v=>({value:v, label:v})),
+        proof: ['合約', '公函', '其他證明文件'].map(v=>({value:v, label:v})),
+        insurance: ['僅校外實習保險', '僅勞保', '兩者皆有', '兩者皆無'].map(v=>({value:v, label:v})),
+        employment: ['是', '否'].map(v=>({value:v, label:v}))
+    };
+
+    let html = '';
+    state.filterDefinitions.forEach(def => {
+        const opts = filterOptions[def.key] || [];
+        let optionsHtml = '';
+        opts.forEach(opt => {
+            const val = typeof opt === 'object' ? opt.value : opt;
+            const lbl = typeof opt === 'object' ? opt.label : opt;
+            const isChecked = state.filterSelections[def.key].has(val) ? 'checked' : '';
+            optionsHtml += `
+            <label class="filter-option">
+                <input type="checkbox" class="filter-chk-${def.key}" value="${val}" ${isChecked}> 
+                <span>${lbl}</span>
+            </label>`;
+        });
+
+        // 🌟 [修正] 確保每個下拉清單都有「全選」按鈕，無論是否具備搜尋框
+        let searchAndToggleHtml = `
+            <div class="filter-dropdown-search">
+                ${def.searchable ? `<input type="text" id="search-${def.key}-input" placeholder="搜尋${def.label}...">` : ''}
+                <div style="margin-top:8px; padding:0 4px; display: flex; justify-content: flex-end;">
+                    <button type="button" class="btn-light-blue btn-filter-toggle" data-type="${def.key}" data-state="none">全選</button>
+                </div>
+            </div>`;
+
+        const isActive = state.filterSelections[def.key].size > 0 ? 'active' : '';
+        const btnContent = state.filterSelections[def.key].size > 0 ? `${def.label} <span class="pill-count">${state.filterSelections[def.key].size}</span>` : def.label;
+
+        html += `
+        <div class="filter-pill-wrap" id="pill-wrap-${def.key}">
+            <button class="filter-pill ${isActive}" id="pill-${def.key}">
+                ${btnContent} <i class="ti ti-chevron-down"></i>
+            </button>
+            <div class="filter-dropdown" id="drop-${def.key}">
+                ${searchAndToggleHtml}
+                <div class="filter-dropdown-list custom-scroll" id="${def.key}-options-container">${optionsHtml}</div>
+            </div>
+        </div>`;
+    });
+
+    container.innerHTML = html;
+
+    // 🌟 [修正] 將顯示欄位設定抽離到外層獨立的選單中 (仿機構模組)
+    const colContainer = document.getElementById('column-toggles-container');
+    if (colContainer) {
+        colContainer.innerHTML = state.tableColumns.map(c => `
+            <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:${c.disableToggle ? 'not-allowed' : 'pointer'}; opacity:${c.disableToggle ? '0.5' : '1'};">
+                <input type="checkbox" class="col-toggle-chk" data-index="${c.index}" ${c.visible ? 'checked' : ''} ${c.disableToggle ? 'disabled' : ''}>
+                <span style="${c.disableToggle ? 'font-weight:600; color:var(--text-muted);' : ''}">${c.label}</span>
+            </label>
+        `).join('');
+    }
+
+    container.querySelectorAll('.filter-pill').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const type = btn.id.replace('pill-', '');
+            if (UI.toggleDropdown) UI.toggleDropdown(type);
+        });
+    });
+
+    state.filterDefinitions.forEach(def => {
+        if(def.searchable) {
+            container.querySelector(`#search-${def.key}-input`)?.addEventListener('keyup', (e) => {
+                if(UI.filterDropdownItems) UI.filterDropdownItems(e.target, `${def.key}-options-container`);
+            });
+        }
+    });
+
+    container.querySelectorAll('.btn-filter-toggle').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const type = btn.dataset.type;
+            const isSelectAll = btn.dataset.state !== 'all';
+            btn.dataset.state = isSelectAll ? 'all' : 'none';
+            btn.innerText = isSelectAll ? '取消選取' : '全選';
+            
+            const set = state.filterSelections[type];
+            container.querySelectorAll(`.filter-chk-${type}`).forEach(c => {
+                if(c.closest('.filter-option').style.display !== 'none') { 
+                    c.checked = isSelectAll; 
+                    if(isSelectAll) set.add(c.value); else set.delete(c.value); 
+                }
+            });
+            state.currentPage = 1; 
+            if(UI.updatePillActive) UI.updatePillActive(type); 
+            renderTable();
+        });
+    });
+}
+
+// ... renderStudentDropdown / renderInstDropdown / renderCourseDropdown / renderSelectedCourseChips 保持原樣不變 ...
 
 export function renderStudentDropdown(list, term) {
     const dropdown = document.getElementById('student-dropdown');
@@ -313,148 +434,4 @@ export function renderSelectedCourseChips(skipRespUpdate = false) {
     });
 
     if (!skipRespUpdate && UI.updateRespDeptOptions) UI.updateRespDeptOptions();
-}
-
-export function renderFilterDropdowns() {
-    const container = document.getElementById('filter-container');
-    if (!container) return;
-    
-    const uniqueSortedDepts = [...new Set(state.globalDepts.map(d=>d.name))];
-    const uniqueUsedCourses = [...new Set(state.allRecords.flatMap(r => r.courses || []))];
-    const courseOptions = uniqueUsedCourses.map(cid => {
-        const c = state.allCourses.find(x => x.id === cid);
-        return { value: cid, label: c ? formatCourseInfo(c) : cid };
-    }).filter(opt => opt.label !== opt.value);
-    courseOptions.sort((a,b) => a.label.localeCompare(b.label));
-
-    const filterOptions = {
-        dept: uniqueSortedDepts.map(v=>({value:v, label: getDeptShort(v)})),
-        grade: ['1', '2', '3', '4', '5'].map(v=>({value:v, label: `${v} 年級${v==='5'?'以上':''}`})),
-        inst_raw: [...new Set(state.allRecords.map(r=>r.inst_raw))].filter(Boolean).sort().map(v=>({value:v, label:v})),
-        course: courseOptions,
-        resp_dept: uniqueSortedDepts.map(v=>({value:v, label: getDeptShort(v)})),
-        period: ['寒假實習', '暑假實習', '學期期間實習', '單一學期實習', '全學年'].map(v=>({value:v, label:v})),
-        proof: ['合約', '公函', '其他證明文件'].map(v=>({value:v, label:v})),
-        insurance: ['僅校外實習保險', '僅勞保', '兩者皆有', '兩者皆無'].map(v=>({value:v, label:v})),
-        employment: ['是', '否'].map(v=>({value:v, label:v}))
-    };
-
-    let html = '';
-    state.filterDefinitions.forEach(def => {
-        const opts = filterOptions[def.key] || [];
-        let optionsHtml = '';
-        opts.forEach(opt => {
-            const val = typeof opt === 'object' ? opt.value : opt;
-            const lbl = typeof opt === 'object' ? opt.label : opt;
-            const isChecked = state.filterSelections[def.key].has(val) ? 'checked' : '';
-            optionsHtml += `
-            <label class="filter-option">
-                <input type="checkbox" class="filter-chk-${def.key}" value="${val}" ${isChecked}> 
-                <span>${lbl}</span>
-            </label>`;
-        });
-
-        // 【修正】確保每個下拉清單都有「全選」按鈕，無論是否具備搜尋框
-        let searchAndToggleHtml = `
-            <div class="filter-dropdown-header" style="padding: 8px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px;">
-                ${def.searchable ? `<input type="text" id="search-${def.key}-input" placeholder="搜尋${def.label}..." style="width:100%; height:30px; border:1px solid var(--border); border-radius:4px; padding:0 8px; font-size:12px; outline:none; font-family: inherit;">` : ''}
-                <div style="display: flex; justify-content: flex-end;">
-                    <button type="button" class="btn-light-blue btn-filter-toggle" data-type="${def.key}" data-state="none" style="padding: 4px 8px; font-size: 11px; background: var(--bg); color: var(--text-primary); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; font-weight: 600;">全選</button>
-                </div>
-            </div>`;
-
-        const isActive = state.filterSelections[def.key].size > 0 ? 'active' : '';
-        const btnContent = state.filterSelections[def.key].size > 0 ? `${def.label} <span class="pill-count">${state.filterSelections[def.key].size}</span>` : def.label;
-
-        html += `
-        <div class="filter-pill-wrap" id="pill-wrap-${def.key}">
-            <button class="filter-pill ${isActive}" id="pill-${def.key}">
-                ${btnContent} <i class="ti ti-chevron-down"></i>
-            </button>
-            <div class="filter-dropdown" id="drop-${def.key}">
-                ${searchAndToggleHtml}
-                <div class="filter-dropdown-list custom-scroll" id="${def.key}-options-container">${optionsHtml}</div>
-            </div>
-        </div>`;
-    });
-
-    // 【修正】顯示欄位開關限制（包含被設定 disableToggle 的選項將被置灰禁止取消）
-    html += `
-    <div class="flex-spacer"></div>
-    <div class="filter-pill-wrap" id="pill-wrap-col-toggle">
-        <button class="filter-pill" id="pill-col-toggle" style="font-weight: 700; color: var(--text-primary);">
-            <i class="ti ti-adjustments-horizontal" style="font-size: 16px;"></i> 顯示欄位 <i class="ti ti-chevron-down"></i>
-        </button>
-        <div class="filter-dropdown" id="drop-col-toggle" style="right: 0; left: auto; min-width: 160px;">
-            <div class="filter-dropdown-list custom-scroll" style="max-height: 250px; padding: 8px;">
-                ${state.tableColumns.map(c => `
-                    <label class="filter-option" style="padding: 6px 8px; display: flex; align-items: center; gap: 8px; cursor: ${c.disableToggle ? 'not-allowed' : 'pointer'}; opacity: ${c.disableToggle ? '0.5' : '1'};">
-                        <input type="checkbox" class="col-toggle-chk" data-index="${c.index}" ${c.visible ? 'checked' : ''} ${c.disableToggle ? 'disabled' : ''}>
-                        <span style="${c.disableToggle ? 'font-weight: 600; color: var(--text-muted);' : ''}">${c.label}</span>
-                    </label>
-                `).join('')}
-            </div>
-        </div>
-    </div>`;
-    
-    const existingBatchBar = container.querySelector('#batch-bar');
-    container.innerHTML = html;
-    if (existingBatchBar) container.appendChild(existingBatchBar);
-
-    container.querySelectorAll('.filter-pill').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const type = btn.id.replace('pill-', '');
-            if (UI.toggleDropdown) UI.toggleDropdown(type);
-        });
-    });
-
-    state.filterDefinitions.forEach(def => {
-        if(def.searchable) {
-            container.querySelector(`#search-${def.key}-input`)?.addEventListener('keyup', (e) => {
-                if(UI.filterDropdownItems) UI.filterDropdownItems(e.target, `${def.key}-options-container`);
-            });
-        }
-    });
-
-    container.addEventListener('change', (e) => {
-        const isFilterChk = Array.from(e.target.classList).some(c => c.startsWith('filter-chk-'));
-        if (isFilterChk) {
-            const classMatch = Array.from(e.target.classList).find(c => c.startsWith('filter-chk-'));
-            const type = classMatch.replace('filter-chk-', '');
-            const val = e.target.value;
-            const set = state.filterSelections[type];
-            if (set.has(val)) set.delete(val); else set.add(val);
-            container.querySelectorAll(`.${classMatch}`).forEach(c => c.checked = set.has(c.value));
-            state.currentPage = 1; 
-            if(UI.updatePillActive) UI.updatePillActive(type); 
-            renderTable();
-        } else if (e.target.classList.contains('col-toggle-chk')) {
-            const index = Number(e.target.dataset.index);
-            const col = state.tableColumns.find(c => c.index === index);
-            if (col && !col.disableToggle) col.visible = e.target.checked;
-            if (UI.updateColumnVisibility) UI.updateColumnVisibility();
-        }
-    });
-
-    container.querySelectorAll('.btn-filter-toggle').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const type = btn.dataset.type;
-            const isSelectAll = btn.dataset.state !== 'all';
-            btn.dataset.state = isSelectAll ? 'all' : 'none';
-            btn.innerText = isSelectAll ? '取消選取' : '全選';
-            
-            const set = state.filterSelections[type];
-            container.querySelectorAll(`.filter-chk-${type}`).forEach(c => {
-                if(c.closest('.filter-option').style.display !== 'none') { 
-                    c.checked = isSelectAll; 
-                    if(isSelectAll) set.add(c.value); else set.delete(c.value); 
-                }
-            });
-            state.currentPage = 1; 
-            if(UI.updatePillActive) UI.updatePillActive(type); 
-            renderTable();
-        });
-    });
 }
