@@ -47,7 +47,7 @@ export function renderTable() {
              return 0;
         }
 
-        // 🌟 使用 zh-TW-u-co-stroke 強制啟用中文筆畫排序
+        // 使用 zh-TW-u-co-stroke 強制啟用中文筆畫排序
         const diff = String(valA).localeCompare(String(valB), 'zh-TW-u-co-stroke');
         return state.sortDir === 'asc' ? diff : -diff;
     });
@@ -86,9 +86,7 @@ export function renderTable() {
     const emptyStateContainer = document.getElementById('empty-state-container');
     if (total === 0) {
         tbody.innerHTML = ''; 
-        if (emptyStateContainer) {
-            emptyStateContainer.style.display = 'flex';
-        }
+        if (emptyStateContainer) emptyStateContainer.style.display = 'flex';
         return;
     } else {
         if (emptyStateContainer) emptyStateContainer.style.display = 'none';
@@ -153,7 +151,7 @@ export function renderTable() {
             </div>
         `;
 
-        // 🌟 [修正] 勾選框對齊機構模組的 UIUX
+        // 🌟 [修正] 每個 tr 補上 .col-spacer 確保剩餘空間被正確吸收
         tHtml += `
         <tr class="${state.selectedIds.includes(data.id)?'selected':''}">
             <td class="col-checkbox" style="text-align: center; padding: 0;">
@@ -175,6 +173,7 @@ export function renderTable() {
             <td data-col="12" class="col-insurance" style="text-align: center;"><div class="badge ${insBadge}">${data.insurance || '-'}</div></td>
             <td data-col="13" class="col-employment" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.employment || '-'}</div></td>
             <td data-col="14" class="col-resp_dept" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</div></td>
+            <td class="col-spacer" style="padding: 0; pointer-events: none; border: none;"></td>
             <td class="col-actions" style="text-align: center; padding: 0;">${actionHtml}</td>
         </tr>`;
     });
@@ -221,7 +220,7 @@ export function renderFilterDropdowns() {
             </label>`;
         });
 
-        // 🌟 [修正] 確保每個下拉清單都有「全選」按鈕，無論是否具備搜尋框
+        // 🌟 確保過濾器結構含有「全選」以及正確的 CSS Layout
         let searchAndToggleHtml = `
             <div class="filter-dropdown-search">
                 ${def.searchable ? `<input type="text" id="search-${def.key}-input" placeholder="搜尋${def.label}...">` : ''}
@@ -247,7 +246,7 @@ export function renderFilterDropdowns() {
 
     container.innerHTML = html;
 
-    // 🌟 [修正] 將顯示欄位設定抽離到外層獨立的選單中 (仿機構模組)
+    // 🌟 [修正] 將欄位顯示設定選單掛載至 #column-toggles-container 中
     const colContainer = document.getElementById('column-toggles-container');
     if (colContainer) {
         colContainer.innerHTML = state.tableColumns.map(c => `
@@ -274,29 +273,54 @@ export function renderFilterDropdowns() {
         }
     });
 
-    container.querySelectorAll('.btn-filter-toggle').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const type = btn.dataset.type;
-            const isSelectAll = btn.dataset.state !== 'all';
-            btn.dataset.state = isSelectAll ? 'all' : 'none';
-            btn.innerText = isSelectAll ? '取消選取' : '全選';
-            
-            const set = state.filterSelections[type];
-            container.querySelectorAll(`.filter-chk-${type}`).forEach(c => {
-                if(c.closest('.filter-option').style.display !== 'none') { 
-                    c.checked = isSelectAll; 
-                    if(isSelectAll) set.add(c.value); else set.delete(c.value); 
-                }
-            });
-            state.currentPage = 1; 
-            if(UI.updatePillActive) UI.updatePillActive(type); 
-            renderTable();
+    // 將事件綁定在更外層的 intern-record-page-wrapper，避免重繪後事件失效
+    const wrapper = document.getElementById('intern-record-page-wrapper');
+    if (wrapper && !wrapper.dataset.filterBound) {
+        wrapper.addEventListener('change', (e) => {
+            if (e.target.classList.contains('col-toggle-chk')) {
+                const index = Number(e.target.dataset.index);
+                const col = state.tableColumns.find(c => c.index === index);
+                if (col && !col.disableToggle) col.visible = e.target.checked;
+                if (UI.updateColumnVisibility) UI.updateColumnVisibility();
+            } else if (Array.from(e.target.classList).some(c => c.startsWith('filter-chk-'))) {
+                const classMatch = Array.from(e.target.classList).find(c => c.startsWith('filter-chk-'));
+                const type = classMatch.replace('filter-chk-', '');
+                const val = e.target.value;
+                const set = state.filterSelections[type];
+                if (set.has(val)) set.delete(val); else set.add(val);
+                document.querySelectorAll(`.${classMatch}`).forEach(c => c.checked = set.has(c.value));
+                state.currentPage = 1; 
+                if(UI.updatePillActive) UI.updatePillActive(type); 
+                renderTable();
+            }
         });
-    });
+
+        wrapper.addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn-filter-toggle')) {
+                e.stopPropagation();
+                const btn = e.target;
+                const type = btn.dataset.type;
+                const isSelectAll = btn.dataset.state !== 'all';
+                btn.dataset.state = isSelectAll ? 'all' : 'none';
+                btn.innerText = isSelectAll ? '取消選取' : '全選';
+                
+                const set = state.filterSelections[type];
+                document.querySelectorAll(`.filter-chk-${type}`).forEach(c => {
+                    if(c.closest('.filter-option').style.display !== 'none') { 
+                        c.checked = isSelectAll; 
+                        if(isSelectAll) set.add(c.value); else set.delete(c.value); 
+                    }
+                });
+                state.currentPage = 1; 
+                if(UI.updatePillActive) UI.updatePillActive(type); 
+                renderTable();
+            }
+        });
+        wrapper.dataset.filterBound = "true";
+    }
 }
 
-// ... renderStudentDropdown / renderInstDropdown / renderCourseDropdown / renderSelectedCourseChips 保持原樣不變 ...
+// ... 後續輔助 Dropdown 渲染代碼維持不變 (renderStudentDropdown, renderInstDropdown 等) ...
 
 export function renderStudentDropdown(list, term) {
     const dropdown = document.getElementById('student-dropdown');
