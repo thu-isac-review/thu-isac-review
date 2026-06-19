@@ -170,7 +170,7 @@ export function renderTable() {
             <td data-col="12" class="col-insurance" style="text-align: center;"><div class="badge ${insBadge}">${data.insurance || '-'}</div></td>
             <td data-col="13" class="col-employment" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.employment || '-'}</div></td>
             <td data-col="14" class="col-resp_dept" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</div></td>
-            <td class="col-spacer" style="padding: 0; pointer-events: none; border: none;"></td>
+            <td class="col-spacer" style="padding: 0; pointer-events: none;"></td>
             <td class="col-actions" style="text-align: center;">${actionHtml}</td>
         </tr>`;
     });
