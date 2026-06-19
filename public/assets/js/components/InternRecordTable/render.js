@@ -1,6 +1,17 @@
 import { state, getDeptShort, getTime, getColShort, formatCourseInfo, Utils } from './state.js';
 import * as UI from './ui.js';
 
+export function populateAcademicYearDropdown() {
+    const select = document.getElementById('input-academic-year');
+    if (!select) return;
+    const currentVal = select.value;
+    const years = [...new Set(state.allCourses.map(c => c.academic_year))].filter(Boolean).sort((a,b) => b.localeCompare(a));
+    let html = '<option value="">請選擇學年度</option>';
+    years.forEach(y => html += `<option value="${y}">${y} 學年度</option>`);
+    select.innerHTML = html;
+    if (years.includes(currentVal)) select.value = currentVal;
+}
+
 export function renderTable() {
     const tbody = document.getElementById('intern-record-table-body'); 
     if (!tbody) return;
@@ -10,7 +21,10 @@ export function renderTable() {
     const searchTerm = rawSearchTerm.toLowerCase();
 
     state.filteredRecords = state.allRecords.filter(d => {
-        let ok = (d.student_raw || '').toLowerCase().includes(searchTerm) || (d.inst_raw || '').toLowerCase().includes(searchTerm);
+        let ok = (d.academic_year || '').toLowerCase().includes(searchTerm) || 
+                 (d.student_raw || '').toLowerCase().includes(searchTerm) || 
+                 (d.inst_raw || '').toLowerCase().includes(searchTerm);
+        if (ok && state.filterSelections.academic_year.size > 0) ok = state.filterSelections.academic_year.has(d.academic_year);
         if (ok && state.filterSelections.dept.size > 0) {
             const stuId = (d.student_raw || '').split(' - ')[0];
             const stu = state.allStudents.find(s => s.student_id === stuId);
@@ -97,6 +111,7 @@ export function renderTable() {
         const stu = state.allStudents.find(s => s.student_id === stuId);
         const stuDept = stu ? getDeptShort(stu.department) : '未綁定學系';
 
+        const displayYear = Utils.highlightKeyword(data.academic_year, rawSearchTerm);
         const displayStuId = Utils.highlightKeyword(stuId, rawSearchTerm);
         const displayStuName = Utils.highlightKeyword(stuName, rawSearchTerm);
         const displayInstRaw = Utils.highlightKeyword(data.inst_raw, rawSearchTerm);
@@ -142,7 +157,6 @@ export function renderTable() {
         else if (data.insurance === '僅勞保') insBadge = 'badge-outline-blue';
         else if (data.insurance === '兩者皆無') insBadge = 'badge-outline-red';
 
-        // 🌟 對齊機構與學生模組的按鈕顏色 (btn-secondary / btn-danger) 與 .btn-icon / .sm 大小
         const actionHtml = state.isReadOnly ? '-' : `
             <div class="row-actions">
                 <button class="btn btn-secondary btn-icon sm btn-row-edit" data-id="${data.id}" title="編輯"><i class="ti ti-edit"></i></button>
@@ -150,26 +164,26 @@ export function renderTable() {
             </div>
         `;
 
-        // 加入 .col-spacer 並且在 checkbox 拿掉多餘的 div
         tHtml += `
         <tr class="${state.selectedIds.includes(data.id)?'selected':''}">
             <td class="col-checkbox" style="text-align: center;">
                 <input type="checkbox" class="row-select-chk" value="${data.id}" ${state.selectedIds.includes(data.id)?'checked':''} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
             </td>
-            <td data-col="1" class="col-student_id" style="text-align: center;"><div class="cell-primary bold">${displayStuId}</div></td>
-            <td data-col="2" class="col-student_name" style="text-align: center;"><div class="cell-primary bold">${displayStuName}</div></td>
-            <td data-col="3" class="col-dept" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${stuDept}</div></td>
-            <td data-col="4" class="col-grade" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.grade || '-'}</div></td>
-            <td data-col="5" class="col-inst_raw" style="text-align: left;"><div class="cell-primary bold">${displayInstRaw}</div></td>
-            <td data-col="6" class="col-course" style="text-align: ${courseAlign};">${coursesHtml}</td>
-            <td data-col="7" class="col-credits" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${totalCredits}</div></td>
-            <td data-col="8" class="col-duration" style="text-align: center;"><div class="cell-primary bold">${data.duration || '-'}</div></td>
-            <td data-col="9" class="col-hours" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.hours !== undefined && data.hours !== '' ? data.hours : '-'}</div></td>
-            <td data-col="10" class="col-period" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.period_type || '-'}</div></td>
-            <td data-col="11" class="col-proof" style="text-align: center;"><div class="badge ${proofBadge}">${data.proof_type || '-'}</div></td>
-            <td data-col="12" class="col-insurance" style="text-align: center;"><div class="badge ${insBadge}">${data.insurance || '-'}</div></td>
-            <td data-col="13" class="col-employment" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.employment || '-'}</div></td>
-            <td data-col="14" class="col-resp_dept" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</div></td>
+            <td data-col="1" class="col-academic_year" style="text-align: center;"><div class="cell-primary bold">${displayYear || '-'}</div></td>
+            <td data-col="2" class="col-student_id" style="text-align: center;"><div class="cell-primary bold">${displayStuId}</div></td>
+            <td data-col="3" class="col-student_name" style="text-align: center;"><div class="cell-primary bold">${displayStuName}</div></td>
+            <td data-col="4" class="col-dept" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${stuDept}</div></td>
+            <td data-col="5" class="col-grade" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.grade || '-'}</div></td>
+            <td data-col="6" class="col-inst_raw" style="text-align: left;"><div class="cell-primary bold">${displayInstRaw}</div></td>
+            <td data-col="7" class="col-course" style="text-align: ${courseAlign};">${coursesHtml}</td>
+            <td data-col="8" class="col-credits" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${totalCredits}</div></td>
+            <td data-col="9" class="col-duration" style="text-align: center;"><div class="cell-primary bold">${data.duration || '-'}</div></td>
+            <td data-col="10" class="col-hours" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.hours !== undefined && data.hours !== '' ? data.hours : '-'}</div></td>
+            <td data-col="11" class="col-period" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.period_type || '-'}</div></td>
+            <td data-col="12" class="col-proof" style="text-align: center;"><div class="badge ${proofBadge}">${data.proof_type || '-'}</div></td>
+            <td data-col="13" class="col-insurance" style="text-align: center;"><div class="badge ${insBadge}">${data.insurance || '-'}</div></td>
+            <td data-col="14" class="col-employment" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.employment || '-'}</div></td>
+            <td data-col="15" class="col-resp_dept" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</div></td>
             <td class="col-spacer" style="padding: 0; pointer-events: none;"></td>
             <td class="col-actions" style="text-align: center;">${actionHtml}</td>
         </tr>`;
@@ -182,6 +196,7 @@ export function renderFilterDropdowns() {
     const container = document.getElementById('filter-container');
     if (!container) return;
     
+    const uniqueYears = [...new Set(state.allRecords.map(r=>r.academic_year))].filter(Boolean).sort((a,b) => b.localeCompare(a));
     const uniqueSortedDepts = [...new Set(state.globalDepts.map(d=>d.name))];
     const uniqueUsedCourses = [...new Set(state.allRecords.flatMap(r => r.courses || []))];
     const courseOptions = uniqueUsedCourses.map(cid => {
@@ -191,6 +206,7 @@ export function renderFilterDropdowns() {
     courseOptions.sort((a,b) => a.label.localeCompare(b.label));
 
     const filterOptions = {
+        academic_year: uniqueYears.map(v=>({value:v, label: `${v} 學年度`})),
         dept: uniqueSortedDepts.map(v=>({value:v, label: getDeptShort(v)})),
         grade: ['1', '2', '3', '4', '5'].map(v=>({value:v, label: `${v} 年級${v==='5'?'以上':''}`})),
         inst_raw: [...new Set(state.allRecords.map(r=>r.inst_raw))].filter(Boolean).sort().map(v=>({value:v, label:v})),
@@ -242,11 +258,10 @@ export function renderFilterDropdowns() {
 
     container.innerHTML = html;
 
-    // 🌟 [修改] 顯示設定隱藏不必要的欄位 (disableToggle 欄位直接不顯示)
     const colContainer = document.getElementById('column-toggles-container');
     if (colContainer) {
         colContainer.innerHTML = state.tableColumns
-            .filter(c => !c.disableToggle) // 過濾掉無法隱藏的項目
+            .filter(c => !c.disableToggle)
             .map(c => `
                 <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;">
                     <input type="checkbox" class="col-toggle-chk" data-index="${c.index}" ${c.visible ? 'checked' : ''}>
@@ -317,7 +332,6 @@ export function renderFilterDropdowns() {
     }
 }
 
-// (保留其餘 Dropdown 渲染代碼不動...)
 export function renderStudentDropdown(list, term) {
     const dropdown = document.getElementById('student-dropdown');
     if (!dropdown) return;
@@ -376,8 +390,17 @@ export function renderInstDropdown(list, term) {
 export function renderCourseDropdown(list, term) {
     const dropdown = document.getElementById('course-dropdown');
     if (!dropdown) return;
+    
+    // 🌟 [新增] 強制綁定學年度：沒選擇就不顯示課程
+    const selectedYear = document.getElementById('input-academic-year').value;
+    if (!selectedYear) {
+        dropdown.innerHTML = '<div style="padding:12px; text-align:center; font-size:12px; color:var(--danger); font-weight:bold;"><i class="ti ti-alert-triangle"></i> 請先於上方選擇「學年度」</div>';
+        return;
+    }
+
     const val = term.trim().toLowerCase();
-    const available = list.filter(c => !state.selectedCourseIds.includes(c.id));
+    // 🌟 [修改] 新增學年度的嚴格篩選條件
+    const available = list.filter(c => !state.selectedCourseIds.includes(c.id) && c.academic_year === selectedYear);
     
     const filtered = available.filter(c => {
         const deptShort = getDeptShort(c.department).toLowerCase();
@@ -387,7 +410,7 @@ export function renderCourseDropdown(list, term) {
                deptShort.includes(val); 
     });
     
-    if (filtered.length === 0) { dropdown.innerHTML = '<div style="padding:12px; text-align:center; font-size:11px; color:var(--text-muted);">查無相符或可選擇之課程</div>'; return; }
+    if (filtered.length === 0) { dropdown.innerHTML = `<div style="padding:12px; text-align:center; font-size:11px; color:var(--text-muted);">查無符合 ${selectedYear} 學年度 的課程</div>`; return; }
 
     let html = '';
     filtered.slice(0, 30).forEach(c => {
