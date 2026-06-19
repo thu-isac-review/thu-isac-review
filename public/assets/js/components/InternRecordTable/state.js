@@ -16,7 +16,9 @@ export let state = {
     globalDepts: [],
     orderedColleges: [],
     globalImportReportData: [],
+    searchDebounceTimer: null, // 🌟 [統一] 增加搜尋防抖計時器
     isGlobalListenerBound: false,
+    isKeyboardShortcutBound: false, // 🌟 [統一] 增加快捷鍵綁定旗標
     tableColumns: [
         { index: 1, label: '學號', visible: true },
         { index: 2, label: '姓名', visible: true },
@@ -49,17 +51,30 @@ export let state = {
 export function resetInternRecordState() {
     const preserveDb = state.db;
     const preserveGlobalListener = state.isGlobalListenerBound;
+    const preserveKeyboardShortcut = state.isKeyboardShortcutBound;
     state = {
         db: preserveDb,
         isReadOnly: false, allRecords: [], allStudents: [], allInsts: [], allCourses: [], filteredRecords: [],
         selectedIds: [], selectedCourseIds: [], currentPage: 1, itemsPerPage: 15, sortCol: 'created_at', sortDir: 'desc',
         editingId: null, globalDepts: [], orderedColleges: [], globalImportReportData: [],
+        searchDebounceTimer: null,
         isGlobalListenerBound: preserveGlobalListener,
+        isKeyboardShortcutBound: preserveKeyboardShortcut,
         tableColumns: [...state.tableColumns],
         filterSelections: { dept: new Set(), grade: new Set(), inst_raw: new Set(), course: new Set(), resp_dept: new Set(), period: new Set(), proof: new Set(), insurance: new Set(), employment: new Set() },
         filterDefinitions: [...state.filterDefinitions]
     };
 }
+
+// 🌟 [統一] 抽出 Utils.highlightKeyword，並採用與 Student 模組一模一樣的底色
+export const Utils = {
+    highlightKeyword(text, keyword) {
+        if (!keyword || !text) return text || '';
+        const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(`(${escapedKeyword})`, 'gi');
+        return text.toString().replace(regex, '<mark style="background-color: #ffeb3b; color: #000; padding: 0;">$1</mark>');
+    }
+};
 
 export function getColShort(collegeName) { const col = state.orderedColleges.find(x => x.name === collegeName); return col && col.shortName ? col.shortName : (collegeName || '未知學院'); }
 export function getDeptShort(deptName) { const dept = state.globalDepts.find(x => x.name === deptName); return dept && dept.shortName ? dept.shortName : (deptName || '未知學系'); }
