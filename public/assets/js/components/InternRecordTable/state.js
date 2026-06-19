@@ -77,6 +77,14 @@ export const Utils = {
     }
 };
 
+// 🌟 [新增] 智慧獲取學生資訊 (向下相容舊有只有 student_raw 的資料)
+export function getStudentInfo(data, allStudents) {
+    const id = data.student_id || (data.student_raw ? data.student_raw.split(' - ')[0].trim() : '');
+    const student = allStudents.find(s => s.student_id === id);
+    const name = student ? student.name : (data.student_raw ? (data.student_raw.split(' - ')[1] || '').trim() : '');
+    return { id, name, student };
+}
+
 export function getColShort(collegeName) { const col = state.orderedColleges.find(x => x.name === collegeName); return col && col.shortName ? col.shortName : (collegeName || '未知學院'); }
 export function getDeptShort(deptName) { const dept = state.globalDepts.find(x => x.name === deptName); return dept && dept.shortName ? dept.shortName : (deptName || '未知學系'); }
 export function getTime(timestamp) { if (!timestamp) return 0; if (timestamp.toMillis) return timestamp.toMillis(); if (timestamp.seconds) return timestamp.seconds * 1000; return new Date(timestamp).getTime() || 0; }
