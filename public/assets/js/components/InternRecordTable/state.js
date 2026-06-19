@@ -82,11 +82,11 @@ export function getColShort(collegeName) { const col = state.orderedColleges.fin
 export function getDeptShort(deptName) { const dept = state.globalDepts.find(x => x.name === deptName); return dept && dept.shortName ? dept.shortName : (deptName || '未知學系'); }
 export function getTime(timestamp) { if (!timestamp) return 0; if (timestamp.toMillis) return timestamp.toMillis(); if (timestamp.seconds) return timestamp.seconds * 1000; return new Date(timestamp).getTime() || 0; }
 
-// 🌟 [分離功能] UI 列表僅顯示 0002_文創實習
+// 🌟 表格列表介面顯示：0002_文創實習
 export function formatCourseForTable(c) { 
     return c ? `${c.course_code}_${c.course_name}` : ''; 
 }
-// 🌟 [分離功能] CSV 匯出及篩選選單顯示 114-1_0002：文創實習
+// 🌟 匯出、下拉選單與 CSV 匹配：114-1_0002：文創實習
 export function formatCourseForExport(c) { 
     return c ? `${c.academic_year}-${c.term}_${c.course_code}：${c.course_name}` : ''; 
 }
