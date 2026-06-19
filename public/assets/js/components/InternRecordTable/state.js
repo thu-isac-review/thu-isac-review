@@ -64,3 +64,4 @@ export function resetInternRecordState() {
 export function getColShort(collegeName) { const col = state.orderedColleges.find(x => x.name === collegeName); return col && col.shortName ? col.shortName : (collegeName || '未知學院'); }
 export function getDeptShort(deptName) { const dept = state.globalDepts.find(x => x.name === deptName); return dept && dept.shortName ? dept.shortName : (deptName || '未知學系'); }
 export function getTime(timestamp) { if (!timestamp) return 0; if (timestamp.toMillis) return timestamp.toMillis(); if (timestamp.seconds) return timestamp.seconds * 1000; return new Date(timestamp).getTime() || 0; }
+export function formatCourseInfo(c) { return c ? `${c.academic_year}-${c.term}_${c.course_code}：${c.course_name}` : ''; }
