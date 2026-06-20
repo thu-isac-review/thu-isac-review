@@ -10,7 +10,7 @@ export function updateTableWidth() {
     const table = document.getElementById('intern-record-table');
     if (table) {
         table.style.width = totalWidth + 'px';
-        table.style.minWidth = totalWidth + 'px';
+        // 移除手動覆寫 minWidth，讓 HTML 的 min-width: 100% 生效
     }
 }
 
