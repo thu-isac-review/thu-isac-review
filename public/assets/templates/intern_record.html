@@ -2,7 +2,7 @@
 <style id="dynamic-col-styles"></style>
 
 <style>
-    /* 🌟 強制單列橫向滾動且絕對不換行 (修復問題 3) */
+    /* 確保過濾器單列橫向滾動且絕對不換行 */
     .filters-scroll-wrapper { display: flex; align-items: center; flex: 1; min-width: 0; position: relative; padding: 0 4px; }
     .filters-scroll-area { display: flex; flex-wrap: nowrap !important; gap: 8px; overflow-x: auto; scroll-behavior: smooth; flex: 1; padding-bottom: 4px; }
     .filters-scroll-area::-webkit-scrollbar { display: none; }
@@ -13,18 +13,19 @@
     tr { background-color: var(--surface); transition: background-color 0.15s; }
     tr:hover { background-color: #f3f6ff; }
     tr.selected { background-color: #eef2ff !important; }
-    
-    /* 🌟 確保所有 td 都有底線 (修復問題 1 橫線斷掉) */
     td { background-color: inherit; border-bottom: 1px solid var(--border); } 
 
     /* 左側凍結 */
     th.col-checkbox, td.col-checkbox { position: sticky !important; left: 0 !important; z-index: 5; background-color: inherit; border-right: none !important; }
     th.col-checkbox { z-index: 30 !important; background-color: var(--surface) !important; }
 
-    /* 右側凍結 */
+    /* 右側凍結：徹底鎖死在最右邊並加上陰影 */
     th.col-actions, td.col-actions { position: sticky !important; right: 0 !important; z-index: 5; background-color: inherit; border-left: 1px solid var(--border) !important; }
     th.col-actions { z-index: 30 !important; background-color: var(--surface) !important; box-shadow: -2px 0 5px rgba(0,0,0,0.05) !important; }
     td.col-actions { background-color: var(--surface) !important; box-shadow: -2px 0 5px rgba(0,0,0,0.05) !important; }
+
+    /* 🌟 空白佔位符：不要設定寬度，讓它自然吸收剩餘空間，表格就不會變形！ */
+    th.col-spacer, td.col-spacer { pointer-events: none; border-left: none !important; border-right: none !important; }
 </style>
 
 <div id="intern-record-page-wrapper" style="height: 100%; display: flex; flex-direction: column; overflow: hidden; position: relative;">
@@ -115,7 +116,7 @@
                             <th data-sort="is_moe_compliant" data-col="22" class="col-is_moe_compliant" style="width: 120px; text-align: center;">符合校庫填報 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="moe_reason" data-col="23" class="col-moe_reason" style="width: 180px; text-align: left;">不符合校庫填報原因 <i class="ti ti-arrows-sort sort-icon"></i></th>
                             <th data-sort="resp_dept" data-col="24" class="col-resp_dept" style="width: 90px; text-align: center;">填報系所 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th class="col-spacer" style="width: 100%; min-width: auto; padding: 0; border: none;"></th>
+                            <th class="col-spacer"></th>
                             <th class="col-actions" style="width: 90px; min-width: 90px; max-width: 90px; text-align: center;">操作</th>
                         </tr>
                     </thead>
