@@ -255,6 +255,7 @@ export function renderTable() {
             <td data-col="22" class="col-is_moe_compliant" style="text-align: center;"><div class="badge ${moeBadge}">${data.is_moe_compliant || '-'}</div></td>
             <td data-col="23" class="col-moe_reason" style="text-align: left;"><div class="cell-primary" style="font-weight: normal;">${data.moe_reason || '-'}</div></td>
             <td data-col="24" class="col-resp_dept" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</div></td>
+            <td class="col-spacer" style="padding: 0;"></td>
             <td class="col-actions" style="text-align: center;">${actionHtml}</td>
         </tr>`;
     });
