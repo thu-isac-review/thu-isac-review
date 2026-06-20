@@ -9,8 +9,8 @@ export function updateTableWidth() {
     });
     const table = document.getElementById('intern-record-table');
     if (table) {
-        table.style.width = totalWidth + 'px';
-        // 移除手動覆寫 minWidth，讓 HTML 的 min-width: 100% 生效
+        table.style.width = '100%';
+        table.style.minWidth = `${totalWidth}px`; // 讓表格至少跟欄位總和一樣寬，不足時由 Spacer 吸收
     }
 }
 
@@ -547,8 +547,8 @@ export function renderSelectedCourseChips(skipRespUpdate = false) {
 
     if (state.selectedCourseIds.length === 0) { 
         container.innerHTML = `
-            <div class="empty-state" style="margin: auto; color: var(--text-muted); font-weight: 600; font-size: 13px;">
-                <i class="ti ti-inbox" style="margin-right: 4px;"></i>尚未加入課程
+            <div style="height: 100%; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-weight: 600; font-size: 13px;">
+                <i class="ti ti-inbox" style="margin-right: 6px; font-size: 16px;"></i>尚未加入課程
             </div>`; 
         if (!skipRespUpdate && UI.updateRespDeptOptions) UI.updateRespDeptOptions(); 
         return; 
