@@ -544,6 +544,7 @@ export function bindEvents(container) {
     });
 
     container.querySelector('#btn-close-modal-x')?.addEventListener('click', UI.closeFormModal);
+    container.querySelector('#btn-cancel-modal')?.addEventListener('click', UI.closeFormModal); // 🌟 新增這行：綁定底部的取消按鈕
     container.querySelector('#btn-info-student')?.addEventListener('click', () => UI.showInfoPopup('student'));
     container.querySelector('#btn-info-inst')?.addEventListener('click', () => UI.showInfoPopup('inst'));
     container.querySelector('#btn-info-close')?.addEventListener('click', UI.closeInfoPopup);
