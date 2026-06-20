@@ -2,29 +2,29 @@
 <style id="dynamic-col-styles"></style>
 
 <style>
+    /* 🌟 強制單列橫向滾動且絕對不換行 (修復問題 3) */
     .filters-scroll-wrapper { display: flex; align-items: center; flex: 1; min-width: 0; position: relative; padding: 0 4px; }
-    .filters-scroll-area { display: flex; gap: 8px; overflow-x: auto; scroll-behavior: smooth; flex: 1; padding-bottom: 4px; white-space: nowrap; }
+    .filters-scroll-area { display: flex; flex-wrap: nowrap !important; gap: 8px; overflow-x: auto; scroll-behavior: smooth; flex: 1; padding-bottom: 4px; }
     .filters-scroll-area::-webkit-scrollbar { display: none; }
     .btn-scroll { flex-shrink: 0; z-index: 10; background: var(--surface); box-shadow: 0 0 5px rgba(0,0,0,0.1); }
-    .filter-pill-wrap { flex-shrink: 0; }
+    .filter-pill-wrap { flex-shrink: 0; display: inline-flex; }
     
     #intern-record-table-head th { box-sizing: border-box; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
     tr { background-color: var(--surface); transition: background-color 0.15s; }
     tr:hover { background-color: #f3f6ff; }
     tr.selected { background-color: #eef2ff !important; }
-    td { background-color: inherit; } 
+    
+    /* 🌟 確保所有 td 都有底線 (修復問題 1 橫線斷掉) */
+    td { background-color: inherit; border-bottom: 1px solid var(--border); } 
 
     /* 左側凍結 */
     th.col-checkbox, td.col-checkbox { position: sticky !important; left: 0 !important; z-index: 5; background-color: inherit; border-right: none !important; }
     th.col-checkbox { z-index: 30 !important; background-color: var(--surface) !important; }
 
-    /* 🌟 右側凍結：徹底鎖死在最右邊並加上陰影 */
+    /* 右側凍結 */
     th.col-actions, td.col-actions { position: sticky !important; right: 0 !important; z-index: 5; background-color: inherit; border-left: 1px solid var(--border) !important; }
     th.col-actions { z-index: 30 !important; background-color: var(--surface) !important; box-shadow: -2px 0 5px rgba(0,0,0,0.05) !important; }
     td.col-actions { background-color: var(--surface) !important; box-shadow: -2px 0 5px rgba(0,0,0,0.05) !important; }
-
-    /* 隱藏佔位符的框線 */
-    th.col-spacer, td.col-spacer { pointer-events: none; border-left: none !important; border-right: none !important; background: transparent !important; }
 </style>
 
 <div id="intern-record-page-wrapper" style="height: 100%; display: flex; flex-direction: column; overflow: hidden; position: relative;">
@@ -86,7 +86,7 @@
         <div class="table-wrap">
             <div class="table-scroll custom-scroll">
                 <table id="intern-record-table" style="table-layout: fixed; width: 0; min-width: 0;">
-                    <thead id="intern-record-table-head">
+                    <th class="col-spacer" style="width: 100%; min-width: auto; pointer-events: none;"></th>
                         <tr>
                             <th class="col-checkbox" style="width: 48px; text-align: center;">
                                 <input type="checkbox" id="selectAll" style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
