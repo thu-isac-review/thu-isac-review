@@ -371,6 +371,9 @@ export function renderFilterDropdowns() {
             document.querySelectorAll('.filter-dropdown').forEach(d => {
                 d.classList.remove('show');
                 d.style.position = ''; 
+                d.style.top = '';
+                d.style.left = '';
+                d.style.width = '';
             });
             document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
             
@@ -379,17 +382,25 @@ export function renderFilterDropdowns() {
                 drop.classList.add('show'); 
                 wrap.classList.add('open'); 
                 
-                // 動態計算按鈕在螢幕上的實際位置
+                // 動態計算按鈕在螢幕上的實際位置，強制彈出在最上層
                 const rect = targetBtn.getBoundingClientRect();
                 drop.style.position = 'fixed';
                 drop.style.top = `${rect.bottom + 4}px`;
-                drop.style.left = `${rect.left}px`;
-                drop.style.zIndex = '9999';
+                
+                // 防止選單超出版面右側邊界
+                let leftPos = rect.left;
+                if (leftPos + 220 > window.innerWidth) {
+                    leftPos = window.innerWidth - 230;
+                }
+                
+                drop.style.left = `${leftPos}px`;
+                drop.style.width = '220px'; // 固定寬度防止被擠壓
+                drop.style.zIndex = '99999';
             }
         });
     });
 
-    // 🌟 滾動時自動關閉選單，避免選單漂浮在畫面上
+    // 🌟 滾動時自動關閉選單，避免選單像幽靈一樣漂浮在畫面上
     const filterScrollArea = document.getElementById('filter-container');
     if (filterScrollArea && !filterScrollArea.dataset.scrollBound) {
         filterScrollArea.addEventListener('scroll', () => {
