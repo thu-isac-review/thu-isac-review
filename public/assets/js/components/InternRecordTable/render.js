@@ -255,7 +255,7 @@ export function renderTable() {
             <td data-col="22" class="col-is_moe_compliant" style="text-align: center;"><div class="badge ${moeBadge}">${data.is_moe_compliant || '-'}</div></td>
             <td data-col="23" class="col-moe_reason" style="text-align: left;"><div class="cell-primary" style="font-weight: normal;">${data.moe_reason || '-'}</div></td>
             <td data-col="24" class="col-resp_dept" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</div></td>
-            <td class="col-spacer" style="padding: 0; border: none !important;"></td>
+            <td class="col-spacer" style="pointer-events: none;"></td>
             <td class="col-actions" style="text-align: center;">${actionHtml}</td>
         </tr>`;
     });
@@ -367,18 +367,41 @@ export function renderFilterDropdowns() {
             
             const isOpen = drop.classList.contains('show');
             
-            // 先關閉所有的下拉選單
-            document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
+            // 先關閉所有的下拉選單並重置 position
+            document.querySelectorAll('.filter-dropdown').forEach(d => {
+                d.classList.remove('show');
+                d.style.position = ''; 
+            });
             document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
             
             // 點擊開啟
             if (!isOpen) { 
                 drop.classList.add('show'); 
                 wrap.classList.add('open'); 
+                
+                // 動態計算按鈕在螢幕上的實際位置
+                const rect = targetBtn.getBoundingClientRect();
+                drop.style.position = 'fixed';
+                drop.style.top = `${rect.bottom + 4}px`;
+                drop.style.left = `${rect.left}px`;
+                drop.style.zIndex = '9999';
             }
         });
     });
 
+    // 🌟 滾動時自動關閉選單，避免選單漂浮在畫面上
+    const filterScrollArea = document.getElementById('filter-container');
+    if (filterScrollArea && !filterScrollArea.dataset.scrollBound) {
+        filterScrollArea.addEventListener('scroll', () => {
+            document.querySelectorAll('.filter-dropdown.show').forEach(d => {
+                d.classList.remove('show');
+                d.style.position = '';
+            });
+            document.querySelectorAll('.filter-pill-wrap.open').forEach(w => w.classList.remove('open'));
+        });
+        filterScrollArea.dataset.scrollBound = 'true';
+    }
+    
     state.filterDefinitions.forEach(def => {
         if(def.searchable) {
             container.querySelector(`#search-${def.key}-input`)?.addEventListener('keyup', (e) => {
