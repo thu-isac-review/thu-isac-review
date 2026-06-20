@@ -17,26 +17,30 @@ export function updateTableWidth() {
 export function populateAcademicYearDropdown() {
     const globalSelect = document.getElementById('global-academic-year');
     const modalSelect = document.getElementById('input-academic-year');
-    const years = [...new Set(state.allCourses.map(c => c.academic_year))].filter(Boolean).sort((a,b) => b.localeCompare(a));
     
-    // 全域切換
+    // 🌟 全域按鈕：從「已建立的實習紀錄 (allRecords)」抓取實際存在的學年度 (Bug 1 修復)
+    const recordYears = [...new Set(state.allRecords.map(r => r.academic_year))].filter(Boolean).sort((a,b) => b.localeCompare(a));
+    // 🌟 彈窗新增：從「系統主檔課程 (allCourses)」抓取
+    const courseYears = [...new Set(state.allCourses.map(c => c.academic_year))].filter(Boolean).sort((a,b) => b.localeCompare(a));
+    
+    // 處理最上方的全域切換
     if (globalSelect) {
-        let globalHtml = '<option value="">全學年度</option>';
-        years.forEach(y => globalHtml += `<option value="${y}">${y} 學年度</option>`);
         const currGlobal = globalSelect.value;
+        let globalHtml = '<option value="">全學年度</option>';
+        recordYears.forEach(y => globalHtml += `<option value="${y}">${y} 學年度</option>`);
         globalSelect.innerHTML = globalHtml;
-        if (years.includes(currGlobal)) globalSelect.value = currGlobal;
-        else if (years.length > 0 && !currGlobal) globalSelect.value = years[0]; 
+        if (recordYears.includes(currGlobal)) globalSelect.value = currGlobal;
+        else if (recordYears.length > 0 && !currGlobal) globalSelect.value = recordYears[0]; 
         state.currentAcademicYear = globalSelect.value;
     }
 
-    // Modal 切換
+    // 處理新增/編輯彈窗的選項
     if (modalSelect) {
         let modalHtml = '<option value="">請選擇</option>';
-        years.forEach(y => modalHtml += `<option value="${y}">${y} 學年度</option>`);
+        courseYears.forEach(y => modalHtml += `<option value="${y}">${y} 學年度</option>`);
         const currModal = modalSelect.value;
         modalSelect.innerHTML = modalHtml;
-        if (years.includes(currModal)) modalSelect.value = currModal;
+        if (courseYears.includes(currModal)) modalSelect.value = currModal;
     }
 }
 
@@ -251,7 +255,6 @@ export function renderTable() {
             <td data-col="22" class="col-is_moe_compliant" style="text-align: center;"><div class="badge ${moeBadge}">${data.is_moe_compliant || '-'}</div></td>
             <td data-col="23" class="col-moe_reason" style="text-align: left;"><div class="cell-primary" style="font-weight: normal;">${data.moe_reason || '-'}</div></td>
             <td data-col="24" class="col-resp_dept" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</div></td>
-            
             <td class="col-actions" style="text-align: center;">${actionHtml}</td>
         </tr>`;
     });
@@ -263,6 +266,8 @@ export function renderTable() {
 }
 
 export function renderFilterDropdowns() {
+    populateAcademicYearDropdown(); // 🌟 確保每次重繪篩選器時，全域學年度選單也會更新
+
     const container = document.getElementById('filter-container');
     if (!container) return;
     
@@ -352,7 +357,17 @@ export function renderFilterDropdowns() {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
             const type = btn.id.replace('pill-', '');
-            if (UI.toggleDropdown) UI.toggleDropdown(type);
+            const drop = document.getElementById(`drop-${type}`);
+            const wrap = document.getElementById(`pill-wrap-${type}`);
+            const isOpen = drop.classList.contains('show');
+            
+            document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
+            document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
+            
+            if (!isOpen) { 
+                drop.classList.add('show'); 
+                wrap.classList.add('open'); 
+            }
         });
     });
 
