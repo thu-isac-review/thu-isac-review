@@ -10,7 +10,7 @@ export function updateTableWidth() {
     const table = document.getElementById('intern-record-table');
     if (table) {
         table.style.width = '100%';
-        table.style.minWidth = `${totalWidth}px`; // 讓表格至少跟欄位總和一樣寬，不足時由 Spacer 吸收
+        table.style.minWidth = `${totalWidth}px`; 
     }
 }
 
