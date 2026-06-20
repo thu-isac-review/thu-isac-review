@@ -2,11 +2,14 @@
 <style id="dynamic-col-styles"></style>
 
 <style>
-    /* 確保過濾器可以單列橫向滾動 */
+    /* 確保過濾器單列橫向滾動且不換行 */
     .filters-scroll-wrapper { display: flex; align-items: center; flex: 1; min-width: 0; position: relative; padding: 0 4px; }
-    .filters-scroll-area { display: flex; gap: 8px; overflow-x: auto; scroll-behavior: smooth; flex: 1; padding-bottom: 4px; white-space: nowrap; }
+    .filters-scroll-area { display: flex; flex-wrap: nowrap; gap: 8px; overflow-x: auto; scroll-behavior: smooth; flex: 1; padding-bottom: 4px; }
     .filters-scroll-area::-webkit-scrollbar { display: none; }
     .btn-scroll { flex-shrink: 0; z-index: 10; background: var(--surface); box-shadow: 0 0 5px rgba(0,0,0,0.1); }
+    
+    /* 🌟 強制篩選按鈕不換行且不被擠壓 (修復問題 2) */
+    .filter-pill-wrap { flex-shrink: 0; }
     
     #intern-record-table-head th { box-sizing: border-box; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
     tr { background-color: var(--surface); transition: background-color 0.15s; }
@@ -15,21 +18,13 @@
     td { background-color: inherit; } 
 
     /* 左側凍結 */
-    .col-checkbox { position: sticky; left: 0; width: 48px; text-align: center; z-index: 5; background-color: inherit; border-right: none !important; }
-    th.col-checkbox { z-index: 30 !important; background-color: var(--surface); }
+    th.col-checkbox, td.col-checkbox { position: sticky !important; left: 0 !important; z-index: 5; background-color: inherit; border-right: none !important; }
+    th.col-checkbox { z-index: 30 !important; background-color: var(--surface) !important; }
 
-    /* 🌟 操作凍結在最右側 (Bug 4 修復) */
-    #intern-record-table th.col-actions, #intern-record-table td.col-actions {
-        position: sticky !important; right: 0 !important; text-align: center;
-    }
-    #intern-record-table th.col-actions {
-        z-index: 30 !important; background-color: var(--surface) !important;
-        box-shadow: inset 0 -2px 0 var(--border), -2px 0 5px rgba(0,0,0,0.05) !important;
-    }
-    #intern-record-table td.col-actions {
-        z-index: 5 !important; background-color: inherit;
-        box-shadow: -2px 0 5px rgba(0,0,0,0.05) !important;
-    }
+    /* 🌟 右側凍結：徹底鎖死操作按鈕 (修復問題 1) */
+    th.col-actions, td.col-actions { position: sticky !important; right: 0 !important; z-index: 5; background-color: inherit; border-left: none !important; }
+    th.col-actions { z-index: 30 !important; background-color: var(--surface) !important; box-shadow: inset 0 -2px 0 var(--border), -2px 0 5px rgba(0,0,0,0.05) !important; }
+    td.col-actions { box-shadow: -2px 0 5px rgba(0,0,0,0.05) !important; }
 </style>
 
 <div id="intern-record-page-wrapper" style="height: 100%; display: flex; flex-direction: column; overflow: hidden; position: relative;">
