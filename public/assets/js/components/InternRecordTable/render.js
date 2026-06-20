@@ -357,17 +357,21 @@ export function renderFilterDropdowns() {
     container.querySelectorAll('.filter-pill').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
-            const type = btn.id.replace('pill-', '');
+            const targetBtn = e.target.closest('.filter-pill');
+            if (!targetBtn) return;
+            
+            const type = targetBtn.id.replace('pill-', '');
             const drop = document.getElementById(`drop-${type}`);
             const wrap = document.getElementById(`pill-wrap-${type}`);
             if (!drop || !wrap) return;
+            
             const isOpen = drop.classList.contains('show');
             
-            // 先關閉所有選單
+            // 先關閉所有的下拉選單
             document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
             document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
             
-            // 如果剛剛是關閉的，就把它打開
+            // 點擊開啟
             if (!isOpen) { 
                 drop.classList.add('show'); 
                 wrap.classList.add('open'); 
