@@ -1,15 +1,43 @@
 import { state, getDeptShort, getTime, getColShort, formatCourseForTable, formatCourseForExport, Utils, getRecordTerm } from './state.js';
 import * as UI from './ui.js';
 
+// 動態更新 Table Width 避免後方留白
+export function updateTableWidth() {
+    let totalWidth = 48 + 90; // checkbox + actions
+    state.tableColumns.forEach(c => {
+        if (c.visible) totalWidth += c.width;
+    });
+    const table = document.getElementById('intern-record-table');
+    if (table) {
+        table.style.width = totalWidth + 'px';
+        table.style.minWidth = totalWidth + 'px';
+    }
+}
+
 export function populateAcademicYearDropdown() {
-    const select = document.getElementById('input-academic-year');
-    if (!select) return;
-    const currentVal = select.value;
+    const globalSelect = document.getElementById('global-academic-year');
+    const modalSelect = document.getElementById('input-academic-year');
     const years = [...new Set(state.allCourses.map(c => c.academic_year))].filter(Boolean).sort((a,b) => b.localeCompare(a));
-    let html = '<option value="">請選擇學年度</option>';
-    years.forEach(y => html += `<option value="${y}">${y} 學年度</option>`);
-    select.innerHTML = html;
-    if (years.includes(currentVal)) select.value = currentVal;
+    
+    // 全域切換
+    if (globalSelect) {
+        let globalHtml = '<option value="">全學年度</option>';
+        years.forEach(y => globalHtml += `<option value="${y}">${y} 學年度</option>`);
+        const currGlobal = globalSelect.value;
+        globalSelect.innerHTML = globalHtml;
+        if (years.includes(currGlobal)) globalSelect.value = currGlobal;
+        else if (years.length > 0 && !currGlobal) globalSelect.value = years[0]; 
+        state.currentAcademicYear = globalSelect.value;
+    }
+
+    // Modal 切換
+    if (modalSelect) {
+        let modalHtml = '<option value="">請選擇</option>';
+        years.forEach(y => modalHtml += `<option value="${y}">${y} 學年度</option>`);
+        const currModal = modalSelect.value;
+        modalSelect.innerHTML = modalHtml;
+        if (years.includes(currModal)) modalSelect.value = currModal;
+    }
 }
 
 export function renderTable() {
@@ -21,6 +49,9 @@ export function renderTable() {
     const searchTerm = rawSearchTerm.toLowerCase();
 
     state.filteredRecords = state.allRecords.filter(d => {
+        // 🌟 優先依據頂端 Global Academic Year 進行切換
+        if (state.currentAcademicYear && d.academic_year !== state.currentAcademicYear) return false;
+
         const stu = state.allStudents.find(s => s.id === d.student_doc_id) || {};
         const inst = state.allInsts.find(i => i.id === d.inst_id) || {};
         const stuIdStr = stu.student_id || '';
@@ -32,7 +63,6 @@ export function renderTable() {
                  stuNameStr.toLowerCase().includes(searchTerm) || 
                  instNameStr.toLowerCase().includes(searchTerm);
                  
-        if (ok && state.filterSelections.academic_year.size > 0) ok = state.filterSelections.academic_year.has(d.academic_year);
         if (ok && state.filterSelections.term.size > 0) ok = state.filterSelections.term.has(getRecordTerm(d));
         if (ok && state.filterSelections.dept.size > 0) ok = stu.department && state.filterSelections.dept.has(stu.department);
         if (ok && state.filterSelections.grade.size > 0) ok = state.filterSelections.grade.has(d.grade);
@@ -43,12 +73,9 @@ export function renderTable() {
         if (ok && state.filterSelections.proof.size > 0) ok = state.filterSelections.proof.has(d.proof_type);
         if (ok && state.filterSelections.insurance.size > 0) ok = state.filterSelections.insurance.has(d.insurance);
         if (ok && state.filterSelections.employment.size > 0) ok = state.filterSelections.employment.has(d.employment);
-        // 新增的進階篩選條件
         if (ok && state.filterSelections.allowance.size > 0) ok = state.filterSelections.allowance.has(d.allowance);
         if (ok && state.filterSelections.payment_type.size > 0) ok = state.filterSelections.payment_type.has(d.payment_type);
-        if (ok && state.filterSelections.funding.size > 0) ok = state.filterSelections.funding.has(d.funding);
-        if (ok && state.filterSelections.opp_source.size > 0) ok = state.filterSelections.opp_source.has(d.opp_source);
-        if (ok && state.filterSelections.job_type.size > 0) ok = state.filterSelections.job_type.has(d.job_type);
+        if (ok && state.filterSelections.is_moe_compliant.size > 0) ok = state.filterSelections.is_moe_compliant.has(d.is_moe_compliant);
         return ok;
     });
 
@@ -60,7 +87,6 @@ export function renderTable() {
         const instB = state.allInsts.find(i => i.id === b.inst_id) || {};
 
         if (state.sortCol === 'created_at') { valA = getTime(a.created_at); valB = getTime(b.created_at); }
-        else if (state.sortCol === 'academic_year') { valA = a.academic_year || ''; valB = b.academic_year || ''; }
         else if (state.sortCol === 'term') { valA = getRecordTerm(a); valB = getRecordTerm(b); }
         else if (state.sortCol === 'student_id') { valA = stuA.student_id || ''; valB = stuB.student_id || ''; }
         else if (state.sortCol === 'student_name') { valA = stuA.name || ''; valB = stuB.name || ''; }
@@ -115,6 +141,7 @@ export function renderTable() {
     if (total === 0) {
         tbody.innerHTML = ''; 
         if (emptyStateContainer) emptyStateContainer.style.display = 'flex';
+        updateTableWidth(); // 🌟 空狀態也更新寬度
         return;
     } else {
         if (emptyStateContainer) emptyStateContainer.style.display = 'none';
@@ -130,7 +157,6 @@ export function renderTable() {
         const inst = state.allInsts.find(i => i.id === data.inst_id) || {};
         const instNameStr = inst.name || '未知機構';
 
-        const displayYear = Utils.highlightKeyword(data.academic_year, rawSearchTerm);
         const displayStuId = Utils.highlightKeyword(stuIdStr, rawSearchTerm);
         const displayStuName = Utils.highlightKeyword(stuNameStr, rawSearchTerm);
         const displayInstRaw = Utils.highlightKeyword(instNameStr, rawSearchTerm);
@@ -184,6 +210,10 @@ export function renderTable() {
         let allowanceBadge = 'badge-outline-gray';
         if (data.allowance === '工資') allowanceBadge = 'badge-outline-green';
         else if (data.allowance === '獎學金' || data.allowance === '津貼') allowanceBadge = 'badge-outline-blue';
+        
+        let moeBadge = 'badge-outline-gray';
+        if (data.is_moe_compliant === '符合') moeBadge = 'badge-outline-green';
+        else if (data.is_moe_compliant === '不符合') moeBadge = 'badge-outline-red';
 
         const actionHtml = state.isReadOnly ? '-' : `
             <div class="row-actions">
@@ -197,35 +227,38 @@ export function renderTable() {
             <td class="col-checkbox" style="text-align: center;">
                 <input type="checkbox" class="row-select-chk" value="${data.id}" ${state.selectedIds.includes(data.id)?'checked':''} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
             </td>
-            <td data-col="1" class="col-academic_year" style="text-align: center;"><div class="cell-primary bold">${displayYear || '-'}</div></td>
-            <td data-col="2" class="col-term" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${termDisplay}</div></td>
-            <td data-col="3" class="col-student_id" style="text-align: center;"><div class="cell-primary bold">${displayStuId}</div></td>
-            <td data-col="4" class="col-student_name" style="text-align: center;"><div class="cell-primary bold">${displayStuName}</div></td>
-            <td data-col="5" class="col-dept" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${stuDeptStr}</div></td>
-            <td data-col="6" class="col-grade" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.grade || '-'}</div></td>
-            <td data-col="7" class="col-inst_name" style="text-align: left;"><div class="cell-primary bold">${displayInstRaw}</div></td>
-            <td data-col="8" class="col-course" style="text-align: ${courseAlign};">${coursesHtml}</td>
-            <td data-col="9" class="col-credits" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${totalCredits}</div></td>
+            <td data-col="1" class="col-term" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${termDisplay}</div></td>
+            <td data-col="2" class="col-student_id" style="text-align: center;"><div class="cell-primary bold">${displayStuId}</div></td>
+            <td data-col="3" class="col-student_name" style="text-align: center;"><div class="cell-primary bold">${displayStuName}</div></td>
+            <td data-col="4" class="col-dept" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${stuDeptStr}</div></td>
+            <td data-col="5" class="col-grade" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.grade || '-'}</div></td>
+            <td data-col="6" class="col-inst_name" style="text-align: left;"><div class="cell-primary bold">${displayInstRaw}</div></td>
+            <td data-col="7" class="col-course" style="text-align: ${courseAlign};">${coursesHtml}</td>
+            <td data-col="8" class="col-credits" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${totalCredits}</div></td>
+            <td data-col="9" class="col-period" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.period_type || '-'}</div></td>
             <td data-col="10" class="col-duration" style="text-align: center;"><div class="cell-primary bold">${data.duration || '-'}</div></td>
             <td data-col="11" class="col-hours" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.hours !== undefined && data.hours !== '' ? data.hours : '-'}</div></td>
-            <td data-col="12" class="col-period" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.period_type || '-'}</div></td>
-            <td data-col="13" class="col-proof" style="text-align: center;"><div class="badge ${proofBadge}">${data.proof_type || '-'}</div></td>
+            <td data-col="12" class="col-proof" style="text-align: center;"><div class="badge ${proofBadge}">${data.proof_type || '-'}</div></td>
+            <td data-col="13" class="col-employment" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.employment || '-'}</div></td>
             <td data-col="14" class="col-insurance" style="text-align: center;"><div class="badge ${insBadge}">${data.insurance || '-'}</div></td>
-            <td data-col="15" class="col-employment" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.employment || '-'}</div></td>
-            <td data-col="16" class="col-resp_dept" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</div></td>
+            <td data-col="15" class="col-allowance" style="text-align: center;"><div class="badge ${allowanceBadge}">${data.allowance || '-'}</div></td>
+            <td data-col="16" class="col-payment_type" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.payment_type || '-'}</div></td>
+            <td data-col="17" class="col-payment_desc" style="text-align: left;"><div class="cell-primary" style="font-weight: normal;">${data.payment_desc || '-'}</div></td>
+            <td data-col="18" class="col-payment_amount" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.payment_amount !== undefined && data.payment_amount !== '' ? '$' + data.payment_amount : '-'}</div></td>
+            <td data-col="19" class="col-funding" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.funding || '-'}</div></td>
+            <td data-col="20" class="col-opp_source" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.opp_source || '-'}</div></td>
+            <td data-col="21" class="col-job_type" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.job_type || '-'}</div></td>
+            <td data-col="22" class="col-is_moe_compliant" style="text-align: center;"><div class="badge ${moeBadge}">${data.is_moe_compliant || '-'}</div></td>
+            <td data-col="23" class="col-moe_reason" style="text-align: left;"><div class="cell-primary" style="font-weight: normal;">${data.moe_reason || '-'}</div></td>
+            <td data-col="24" class="col-resp_dept" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</div></td>
             
-            <td data-col="17" class="col-allowance" style="text-align: center;"><div class="badge ${allowanceBadge}">${data.allowance || '-'}</div></td>
-            <td data-col="18" class="col-payment_type" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.payment_type || '-'}</div></td>
-            <td data-col="19" class="col-payment_desc" style="text-align: left;"><div class="cell-primary" style="font-weight: normal;">${data.payment_desc || '-'}</div></td>
-            <td data-col="20" class="col-funding" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.funding || '-'}</div></td>
-            <td data-col="21" class="col-opp_source" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.opp_source || '-'}</div></td>
-            <td data-col="22" class="col-job_type" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.job_type || '-'}</div></td>
-            
-            <td class="col-spacer" style="padding: 0; pointer-events: none;"></td>
             <td class="col-actions" style="text-align: center;">${actionHtml}</td>
         </tr>`;
     });
     tbody.innerHTML = tHtml;
+    
+    // 🌟 更新動態欄寬
+    updateTableWidth();
     if (UI.updateColumnVisibility) UI.updateColumnVisibility();
 }
 
@@ -233,7 +266,6 @@ export function renderFilterDropdowns() {
     const container = document.getElementById('filter-container');
     if (!container) return;
     
-    const uniqueYears = [...new Set(state.allRecords.map(r=>r.academic_year))].filter(Boolean).sort((a,b) => b.localeCompare(a));
     const uniqueTerms = [...new Set(state.allRecords.map(r=>getRecordTerm(r)))].filter(t => t !== '-').sort();
     const uniqueSortedDepts = [...new Set(state.globalDepts.map(d=>d.name))];
     const uniqueUsedCourses = [...new Set(state.allRecords.flatMap(r => r.courses || []))];
@@ -249,7 +281,6 @@ export function renderFilterDropdowns() {
     }).filter(Boolean);
 
     const filterOptions = {
-        academic_year: uniqueYears.map(v=>({value:v, label: `${v} 學年度`})),
         term: uniqueTerms.map(v=>({value:v, label: `${v} 學期`})),
         dept: uniqueSortedDepts.map(v=>({value:v, label: getDeptShort(v)})),
         grade: ['1', '2', '3', '4', '5'].map(v=>({value:v, label: `${v} 年級${v==='5'?'以上':''}`})),
@@ -262,9 +293,7 @@ export function renderFilterDropdowns() {
         employment: ['是', '否'].map(v=>({value:v, label:v})),
         allowance: ['無', '工資', '獎學金', '津貼'].map(v=>({value:v, label:v})),
         payment_type: ['月薪', '時薪', '月給', '一次性', '其他'].map(v=>({value:v, label:v})),
-        funding: ['教育部補助-高等教育深耕計畫', '教育部補助-學海築夢', '國內民間單位', '無經費補助', '校內經費預算'].map(v=>({value:v, label:v})),
-        opp_source: ['系所開發', '實習中心轉介', '實習機構主動洽詢', '學生自尋'].map(v=>({value:v, label:v})),
-        job_type: ['見習型', '儲備型'].map(v=>({value:v, label:v}))
+        is_moe_compliant: ['符合', '不符合'].map(v=>({value:v, label:v}))
     };
 
     let html = '';
@@ -341,8 +370,11 @@ export function renderFilterDropdowns() {
             if (e.target.classList.contains('col-toggle-chk')) {
                 const index = Number(e.target.dataset.index);
                 const col = state.tableColumns.find(c => c.index === index);
-                if (col && !col.disableToggle) col.visible = e.target.checked;
-                if (UI.updateColumnVisibility) UI.updateColumnVisibility();
+                if (col && !col.disableToggle) {
+                    col.visible = e.target.checked;
+                    updateTableWidth(); // 🌟 重算寬度
+                    if (UI.updateColumnVisibility) UI.updateColumnVisibility();
+                }
             } else if (Array.from(e.target.classList).some(c => c.startsWith('filter-chk-'))) {
                 const classMatch = Array.from(e.target.classList).find(c => c.startsWith('filter-chk-'));
                 const type = classMatch.replace('filter-chk-', '');
