@@ -30,7 +30,8 @@
             --indigo: #4f46e5; --indigo-bg: #e0e7ff; --indigo-border: #c7d2fe;
             
             /* 3. 佈局與基礎色 */
-            --sidebar-w: 250px; --sidebar-collapsed-w: 72px; --topbar-h: 56px;
+            --sidebar-w: 280px; /* 稍微加寬以符合抽屜式設計 */
+            --topbar-h: 56px;
             --bg: #f8f9fc; --surface: #ffffff; --border: #e5e7ef; --border-strong: #cdd0dd;
             --text-primary: #111827; --text-secondary: #4b5563; --text-muted: #9ca3af;
             
@@ -44,28 +45,58 @@
             --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
             --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
             --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.04);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
             
-            --transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
         }
         html, body, #app { height: 100%; overflow: hidden; font-family: 'Noto Sans TC', sans-serif; color: var(--text-primary); background: var(--bg); -webkit-font-smoothing: antialiased; }
         
         /* 隱藏直到身分驗證完成 */
         body { visibility: hidden; }
 
-        #sidebar { width: var(--sidebar-w); background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; z-index: 30; transition: width var(--transition), transform var(--transition); }
-        #sidebar.collapsed { width: var(--sidebar-collapsed-w); }
-        #sidebar.collapsed .logo-text, #sidebar.collapsed .logo-sub, #sidebar.collapsed .nav-item span, #sidebar.collapsed .user-info, #sidebar.collapsed .settings-icon { display: none; }
-        #sidebar.collapsed .nav-group-label { text-align: center; font-size: 0; padding: 10px 0; margin: 8px 0 0; }
-        #sidebar.collapsed .nav-group-label::after { content: '•••'; font-size: 12px; }
-        #sidebar.collapsed .nav-item { justify-content: center; padding: 10px 0; }
-        .sidebar-logo { height: var(--topbar-h); padding: 0 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); flex-shrink: 0; overflow: hidden; }
+        /* GitHub Style Drawer Sidebar */
+        #sidebar { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            height: 100%; 
+            width: var(--sidebar-w); 
+            background: var(--surface); 
+            border-right: 1px solid var(--border); 
+            display: flex; 
+            flex-direction: column; 
+            z-index: 50; 
+            transform: translateX(-100%); 
+            transition: transform var(--transition); 
+            box-shadow: var(--shadow-lg);
+        }
+        #sidebar.open { 
+            transform: translateX(0); 
+        }
+        
+        /* 統一遮罩層 (桌機與手機共用) */
+        .drawer-overlay { 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(0,0,0,0.4); 
+            z-index: 40; 
+            opacity: 0; 
+            visibility: hidden; 
+            transition: opacity var(--transition), visibility var(--transition); 
+        }
+        .drawer-overlay.show { 
+            opacity: 1; 
+            visibility: visible; 
+        }
+
+        .sidebar-logo { height: var(--topbar-h); padding: 0 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); flex-shrink: 0; }
         .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius); cursor: pointer; color: var(--text-secondary); font-size: 13px; font-weight: 500; transition: all 0.2s; user-select: none; margin-bottom: 2px; white-space: nowrap; }
         .nav-item i { font-size: 18px; flex-shrink: 0; text-align: center; width: 20px; }
         .nav-item:hover { background: var(--bg); color: var(--text-primary); }
         .nav-item.active { background: var(--brand-light); color: var(--brand); font-weight: 700; }
         .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
-        @media (max-width: 768px) { #sidebar { position: fixed; height: 100%; transform: translateX(-100%); } #sidebar.open { transform: translateX(0); } .mobile-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 25; } }
+        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade { animation: fadeIn 0.25s ease-out forwards; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -82,19 +113,23 @@
         <p id="loadingText" class="mt-4 text-sm font-bold text-gray-500 max-w-md leading-relaxed loading-text-transition opacity-0">系統載入中...</p>
     </div>
 
-    <div id="mobileOverlay" class="mobile-overlay hidden" onclick="toggleMobileSidebar(false)"></div>
+    <div id="drawerOverlay" class="drawer-overlay" onclick="toggleSidebar(false)"></div>
 
     <div id="app" class="flex w-full h-full overflow-hidden">
         
-        <nav id="sidebar" class="custom-scroll overflow-y-auto overflow-x-hidden flex-shrink-0">
+        <nav id="sidebar" class="custom-scroll flex-shrink-0">
             <div class="sidebar-logo">
-                <div class="flex-shrink-0 w-8 h-8 rounded-md flex items-center justify-center text-white font-bold" style="background: var(--brand)">
-                    <i class="ti ti-briefcase-2 text-lg"></i>
+                <div class="flex items-center gap-2">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-md flex items-center justify-center text-white font-bold" style="background: var(--brand)">
+                        <i class="ti ti-briefcase-2 text-lg"></i>
+                    </div>
+                    <div class="logo-info">
+                        <div class="logo-text font-bold text-sm text-gray-900 leading-tight">東海大學實習中心</div>
+                    </div>
                 </div>
-                <div class="logo-info">
-                    <div class="logo-text font-bold text-sm text-gray-900 leading-tight">東海大學實習中心</div>
-                    <div class="logo-sub text-[10px] text-gray-400">學生校外實習管理系統</div>
-                </div>
+                <button class="text-gray-400 hover:text-gray-800 transition p-1 rounded-md hover:bg-gray-100" onclick="toggleSidebar(false)">
+                    <i class="ti ti-x text-lg"></i>
+                </button>
             </div>
             
             <div class="flex-1 px-2 py-3 overflow-y-auto custom-scroll" id="sidebarMenu">
@@ -117,7 +152,6 @@
                 <div class="nav-item" data-hash="intern_view/student/main" data-roles="all">
                     <i class="ti ti-users"></i><span>實習學生列表</span>
                 </div>
-                <!-- 🌟 修正實習記錄列表路由，使其對齊模組結構 (指向 intern_record/main) -->
                 <div class="nav-item" data-hash="intern_view/intern_record/main" data-roles="all">
                     <i class="ti ti-file-text"></i><span>實習記錄列表</span>
                 </div>
@@ -133,7 +167,6 @@
                 <div class="nav-item" data-hash="intern_manage/student/main" data-roles="admin">
                     <i class="ti ti-user-cog"></i><span>實習學生管理</span>
                 </div>
-                <!-- 🌟 修正實習記錄管理路由，使其對齊模組結構 (指向 intern_record/main) -->
                 <div class="nav-item" data-hash="intern_manage/intern_record/main" data-roles="admin">
                     <i class="ti ti-file-settings"></i><span>實習記錄管理</span>
                 </div>
@@ -162,14 +195,11 @@
 
         <div id="main" class="flex-1 flex flex-col overflow-hidden min-w-0">
             <header id="topbar" class="h-14 bg-white flex items-center px-4 md:px-6 gap-3 flex-shrink-0 z-20 border-b border-gray-200">
-                <button class="hidden md:flex p-1.5 rounded-md border border-gray-200 text-gray-500 hover:text-blue-600 hover:bg-gray-50 transition" onclick="toggleDesktopSidebar()">
+                <button class="flex p-1.5 rounded-md border border-gray-200 text-gray-500 hover:text-blue-600 hover:bg-gray-50 transition" onclick="toggleSidebar(true)">
                     <i class="ti ti-menu-2 text-lg"></i>
                 </button>
-                <button class="flex md:hidden text-gray-500 hover:text-blue-600" onclick="toggleMobileSidebar(true)">
-                    <i class="ti ti-menu-2 text-xl"></i>
-                </button>
                 
-                <div class="flex items-center gap-1.5 text-xs font-medium text-gray-400 flex-1 truncate">
+                <div class="flex items-center gap-1.5 text-xs font-medium text-gray-400 flex-1 truncate ml-2">
                     <span class="hidden sm:inline">首頁</span>
                     <i class="ti ti-chevron-right hidden sm:inline"></i>
                     <span id="breadcrumbChild" class="text-gray-900 font-semibold">載入中...</span>
@@ -376,7 +406,11 @@
             document.querySelectorAll('#sidebar .nav-item, #profileBtn').forEach(item => {
                 item.addEventListener('click', () => {
                     const path = item.getAttribute('data-hash');
-                    if(path) { window.location.hash = path; toggleMobileSidebar(false); }
+                    if(path) { 
+                        window.location.hash = path; 
+                        // 點擊選項後自動收起側邊欄
+                        toggleSidebar(false); 
+                    }
                 });
             });
         }
@@ -387,10 +421,18 @@
     </script>
 
     <script>
-        function toggleDesktopSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
-        function toggleMobileSidebar(open) {
-            if (open) { document.getElementById('sidebar').classList.add('open'); document.getElementById('mobileOverlay').classList.remove('hidden'); }
-            else { document.getElementById('sidebar').classList.remove('open'); document.getElementById('mobileOverlay').classList.add('hidden'); }
+        // 統一整合的 Drawer 側邊欄開關函數
+        function toggleSidebar(open) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('drawerOverlay');
+            
+            if (open) { 
+                sidebar.classList.add('open'); 
+                overlay.classList.add('show'); 
+            } else { 
+                sidebar.classList.remove('open'); 
+                overlay.classList.remove('show'); 
+            }
         }
     </script>
 </body>
