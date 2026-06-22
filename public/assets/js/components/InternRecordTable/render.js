@@ -1,29 +1,13 @@
 import { state, getDeptShort, getTime, getColShort, formatCourseForTable, formatCourseForExport, Utils, getRecordTerm } from './state.js';
 import * as UI from './ui.js';
 
-// 動態更新 Table Width 避免後方留白
-export function updateTableWidth() {
-    let totalWidth = 48 + 90; // checkbox + actions
-    state.tableColumns.forEach(c => {
-        if (c.visible) totalWidth += c.width;
-    });
-    const table = document.getElementById('intern-record-table');
-    if (table) {
-        table.style.width = '100%';
-        table.style.minWidth = `${totalWidth}px`; 
-    }
-}
-
 export function populateAcademicYearDropdown() {
     const globalSelect = document.getElementById('global-academic-year');
     const modalSelect = document.getElementById('input-academic-year');
     
-    // 🌟 全域按鈕：從「已建立的實習紀錄 (allRecords)」抓取實際存在的學年度 (Bug 1 修復)
     const recordYears = [...new Set(state.allRecords.map(r => r.academic_year))].filter(Boolean).sort((a,b) => b.localeCompare(a));
-    // 🌟 彈窗新增：從「系統主檔課程 (allCourses)」抓取
     const courseYears = [...new Set(state.allCourses.map(c => c.academic_year))].filter(Boolean).sort((a,b) => b.localeCompare(a));
     
-    // 處理最上方的全域切換
     if (globalSelect) {
         const currGlobal = globalSelect.value;
         let globalHtml = '<option value="">全學年度</option>';
@@ -34,7 +18,6 @@ export function populateAcademicYearDropdown() {
         state.currentAcademicYear = globalSelect.value;
     }
 
-    // 處理新增/編輯彈窗的選項
     if (modalSelect) {
         let modalHtml = '<option value="">請選擇</option>';
         courseYears.forEach(y => modalHtml += `<option value="${y}">${y} 學年度</option>`);
@@ -53,7 +36,6 @@ export function renderTable() {
     const searchTerm = rawSearchTerm.toLowerCase();
 
     state.filteredRecords = state.allRecords.filter(d => {
-        // 🌟 優先依據頂端 Global Academic Year 進行切換
         if (state.currentAcademicYear && d.academic_year !== state.currentAcademicYear) return false;
 
         const stu = state.allStudents.find(s => s.id === d.student_doc_id) || {};
@@ -145,7 +127,7 @@ export function renderTable() {
     if (total === 0) {
         tbody.innerHTML = ''; 
         if (emptyStateContainer) emptyStateContainer.style.display = 'flex';
-        updateTableWidth(); // 🌟 空狀態也更新寬度
+        UI.updateColumnVisibility(); // 🌟 表格空白也確保重算配置
         return;
     } else {
         if (emptyStateContainer) emptyStateContainer.style.display = 'none';
@@ -228,7 +210,7 @@ export function renderTable() {
 
         tHtml += `
         <tr class="${state.selectedIds.includes(data.id)?'selected':''}">
-            <td class="col-checkbox" style="text-align: center;">
+            <td class="col-checkbox">
                 <input type="checkbox" class="row-select-chk" value="${data.id}" ${state.selectedIds.includes(data.id)?'checked':''} style="accent-color: var(--brand); cursor: pointer; width: 14px; height: 14px; margin: 0;">
             </td>
             <td data-col="1" class="col-term" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${termDisplay}</div></td>
@@ -255,19 +237,18 @@ export function renderTable() {
             <td data-col="22" class="col-is_moe_compliant" style="text-align: center;"><div class="badge ${moeBadge}">${data.is_moe_compliant || '-'}</div></td>
             <td data-col="23" class="col-moe_reason" style="text-align: left;"><div class="cell-primary" style="font-weight: normal;">${data.moe_reason || '-'}</div></td>
             <td data-col="24" class="col-resp_dept" style="text-align: center;"><div class="cell-primary" style="font-weight: normal;">${data.resp_dept ? getDeptShort(data.resp_dept) : '-'}</div></td>
-            <td class="col-spacer" style="pointer-events: none;"></td>
-            <td class="col-actions" style="text-align: center;">${actionHtml}</td>
+            <td class="col-spacer"></td>
+            <td class="col-actions">${actionHtml}</td>
         </tr>`;
     });
     tbody.innerHTML = tHtml;
     
-    // 🌟 更新動態欄寬
-    updateTableWidth();
-    if (UI.updateColumnVisibility) UI.updateColumnVisibility();
+    // 🌟 確保渲染完成後，套用精確的 UI CSS 鎖定
+    UI.updateColumnVisibility();
 }
 
 export function renderFilterDropdowns() {
-    populateAcademicYearDropdown(); // 🌟 確保每次重繪篩選器時，全域學年度選單也會更新
+    populateAcademicYearDropdown();
 
     const container = document.getElementById('filter-container');
     if (!container) return;
@@ -367,7 +348,6 @@ export function renderFilterDropdowns() {
             
             const isOpen = drop.classList.contains('show');
             
-            // 先關閉所有的下拉選單並重置 position
             document.querySelectorAll('.filter-dropdown').forEach(d => {
                 d.classList.remove('show');
                 d.style.position = ''; 
@@ -377,30 +357,26 @@ export function renderFilterDropdowns() {
             });
             document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
             
-            // 點擊開啟
             if (!isOpen) { 
                 drop.classList.add('show'); 
                 wrap.classList.add('open'); 
                 
-                // 動態計算按鈕在螢幕上的實際位置，強制彈出在最上層
                 const rect = targetBtn.getBoundingClientRect();
                 drop.style.position = 'fixed';
                 drop.style.top = `${rect.bottom + 4}px`;
                 
-                // 防止選單超出版面右側邊界
                 let leftPos = rect.left;
                 if (leftPos + 220 > window.innerWidth) {
                     leftPos = window.innerWidth - 230;
                 }
                 
                 drop.style.left = `${leftPos}px`;
-                drop.style.width = '220px'; // 固定寬度防止被擠壓
+                drop.style.width = '220px';
                 drop.style.zIndex = '99999';
             }
         });
     });
 
-    // 🌟 滾動時自動關閉選單，避免選單像幽靈一樣漂浮在畫面上
     const filterScrollArea = document.getElementById('filter-container');
     if (filterScrollArea && !filterScrollArea.dataset.scrollBound) {
         filterScrollArea.addEventListener('scroll', () => {
@@ -429,8 +405,8 @@ export function renderFilterDropdowns() {
                 const col = state.tableColumns.find(c => c.index === index);
                 if (col && !col.disableToggle) {
                     col.visible = e.target.checked;
-                    updateTableWidth(); // 🌟 重算寬度
-                    if (UI.updateColumnVisibility) UI.updateColumnVisibility();
+                    // 🌟 改變顯示狀態後，重繪佈局
+                    UI.updateColumnVisibility();
                 }
             } else if (Array.from(e.target.classList).some(c => c.startsWith('filter-chk-'))) {
                 const classMatch = Array.from(e.target.classList).find(c => c.startsWith('filter-chk-'));
