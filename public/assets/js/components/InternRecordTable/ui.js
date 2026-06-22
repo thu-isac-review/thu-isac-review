@@ -141,28 +141,28 @@ export function updateColumnVisibility() {
         document.head.appendChild(styleEl);
     }
     
+    // 防呆：如果 tableColumns 不存在直接返回
+    if (!state.tableColumns || !Array.isArray(state.tableColumns)) return;
+    
     let css = '';
     let totalDataWidth = 0;
-    const fixedWidth = 48 + 90; // col-checkbox + col-actions 的寬度
-
-    if (!state.tableColumns || state.tableColumns.length === 0) {
-        console.warn("tableColumns is empty. Defaulting to all visible.");
-        return;
-    }
+    const fixedWidth = 48 + 90; // 勾選框(48) + 操作(90) 的寬度
 
     state.tableColumns.forEach(c => {
-        // 防呆：確保 width 是一個數字
-        const width = c.width || 120; 
+        // 🌟 修正1：預設為可見，除非明確被設為 false
+        const isVisible = c.visible !== false;
+        // 🌟 修正2：給予預設寬度 120px，防止原資料沒寫寬度導致破版
+        const colWidth = c.width || 120; 
 
-        if (c.visible !== false) { // 預設為 true
+        if (isVisible) {
             css += `#intern-record-table th[data-col="${c.index}"], 
                     #intern-record-table td[data-col="${c.index}"] { 
-                        width: ${width}px !important; 
-                        min-width: ${width}px !important; 
-                        max-width: ${width}px !important; 
+                        width: ${colWidth}px !important; 
+                        min-width: ${colWidth}px !important; 
+                        max-width: ${colWidth}px !important; 
                         display: table-cell !important; 
                     }\n`;
-            totalDataWidth += width;
+            totalDataWidth += colWidth;
         } else {
             css += `#intern-record-table th[data-col="${c.index}"], 
                     #intern-record-table td[data-col="${c.index}"] { 
@@ -171,7 +171,6 @@ export function updateColumnVisibility() {
         }
     });
 
-    // 總必要寬度，確保如果螢幕過小能出現卷軸
     const totalRequiredWidth = fixedWidth + totalDataWidth;
     css += `#intern-record-table { min-width: ${totalRequiredWidth}px; }\n`;
 
