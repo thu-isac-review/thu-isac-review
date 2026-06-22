@@ -329,7 +329,8 @@ export function renderFilterDropdowns() {
             .filter(c => !c.disableToggle)
             .map(c => `
                 <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:13px; cursor:pointer;">
-                    <input type="checkbox" class="col-toggle-chk" data-index="${c.index}" ${c.visible ? 'checked' : ''}>
+                    <!-- 🌟 修正：這裡的 c.visible 判斷也要改成 !== false -->
+                    <input type="checkbox" class="col-toggle-chk" data-index="${c.index}" ${c.visible !== false ? 'checked' : ''}>
                     <span>${c.label}</span>
                 </label>
             `).join('');
