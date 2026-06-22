@@ -22,7 +22,9 @@ export const InternRecordTable = {
         const container = document.getElementById('intern-record-page-wrapper');
         if (!container) return;
 
-        // 【修復跨頁面 BUG】：進入模組前，先清除任何殘留的全域唯讀樣式
+        // 【終極防呆】：初始化時立刻強制生成一版表頭 CSS 寬度鎖定，預防非同步載入過程中的破版。
+        UI.updateColumnVisibility();
+
         const residualStyle = document.getElementById('view-only-styles');
         if (residualStyle) residualStyle.remove();
 
@@ -37,7 +39,6 @@ export const InternRecordTable = {
             if (batchBar) batchBar.remove();
             if (selectAllChk) selectAllChk.closest('th').innerHTML = '';
 
-            // 使用「限定範圍 (Scoped)」的 CSS 選擇器，確保絕不污染其他模組(學生/機構/課程)
             let styleEl = document.createElement('style');
             styleEl.id = 'view-only-styles';
             document.head.appendChild(styleEl);
