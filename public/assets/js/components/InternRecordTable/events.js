@@ -22,9 +22,9 @@ export function bindEvents(container) {
         const reqType = document.getElementById('req-payment-type');
         const reqDesc = document.getElementById('req-payment-desc');
 
-        const year = parseInt(yearSelect.value, 10) || 0;
-        const allowance = allowanceSelect.value;
-        const currentPaymentType = paymentTypeSelect.value;
+        const year = parseInt(yearSelect?.value, 10) || 0;
+        const allowance = allowanceSelect?.value;
+        const currentPaymentType = paymentTypeSelect?.value;
 
         let options = '<option value="">請選擇</option>';
         if (allowance === '工資') {
@@ -32,34 +32,38 @@ export function bindEvents(container) {
         } else if (allowance === '獎學金' || allowance === '津貼') {
             options += '<option value="月給">月給</option><option value="一次性">一次性</option><option value="其他">其他</option>';
         }
-        paymentTypeSelect.innerHTML = options;
+        if(paymentTypeSelect) paymentTypeSelect.innerHTML = options;
         
-        if (Array.from(paymentTypeSelect.options).some(o => o.value === currentPaymentType)) {
+        if (paymentTypeSelect && Array.from(paymentTypeSelect.options).some(o => o.value === currentPaymentType)) {
             paymentTypeSelect.value = currentPaymentType;
         }
 
         const is113OrAbove = year >= 113;
 
-        if (allowance === '無' || !allowance) {
-            paymentTypeSelect.disabled = true;
-            paymentTypeSelect.value = '';
-            paymentTypeSelect.required = false;
-            if(reqType) reqType.style.display = 'none';
-        } else {
-            paymentTypeSelect.disabled = false;
-            paymentTypeSelect.required = is113OrAbove;
-            if(reqType) reqType.style.display = is113OrAbove ? 'inline' : 'none';
+        if (paymentTypeSelect) {
+            if (allowance === '無' || !allowance) {
+                paymentTypeSelect.disabled = true;
+                paymentTypeSelect.value = '';
+                paymentTypeSelect.required = false;
+                if(reqType) reqType.style.display = 'none';
+            } else {
+                paymentTypeSelect.disabled = false;
+                paymentTypeSelect.required = is113OrAbove;
+                if(reqType) reqType.style.display = is113OrAbove ? 'inline' : 'none';
+            }
         }
 
-        if (paymentTypeSelect.value === '其他') {
-            paymentDescInput.disabled = false;
-            paymentDescInput.required = is113OrAbove;
-            if(reqDesc) reqDesc.style.display = is113OrAbove ? 'inline' : 'none';
-        } else {
-            paymentDescInput.disabled = true;
-            paymentDescInput.value = '';
-            paymentDescInput.required = false;
-            if(reqDesc) reqDesc.style.display = 'none';
+        if (paymentDescInput && paymentTypeSelect) {
+            if (paymentTypeSelect.value === '其他') {
+                paymentDescInput.disabled = false;
+                paymentDescInput.required = is113OrAbove;
+                if(reqDesc) reqDesc.style.display = is113OrAbove ? 'inline' : 'none';
+            } else {
+                paymentDescInput.disabled = true;
+                paymentDescInput.value = '';
+                paymentDescInput.required = false;
+                if(reqDesc) reqDesc.style.display = 'none';
+            }
         }
     }
 
@@ -68,15 +72,17 @@ export function bindEvents(container) {
         const moeReasonInput = document.getElementById('input-moe-reason');
         const reqMoeReason = document.getElementById('req-moe-reason');
 
-        if (moeSelect.value === '不符合') {
-            moeReasonInput.disabled = false;
-            moeReasonInput.required = true;
-            if(reqMoeReason) reqMoeReason.style.display = 'inline';
-        } else {
-            moeReasonInput.disabled = true;
-            moeReasonInput.value = '';
-            moeReasonInput.required = false;
-            if(reqMoeReason) reqMoeReason.style.display = 'none';
+        if (moeSelect && moeReasonInput) {
+            if (moeSelect.value === '不符合') {
+                moeReasonInput.disabled = false;
+                moeReasonInput.required = true;
+                if(reqMoeReason) reqMoeReason.style.display = 'inline';
+            } else {
+                moeReasonInput.disabled = true;
+                moeReasonInput.value = '';
+                moeReasonInput.required = false;
+                if(reqMoeReason) reqMoeReason.style.display = 'none';
+            }
         }
     }
 
@@ -432,39 +438,31 @@ export function bindEvents(container) {
         document.getElementById('input-academic-year').value = state.currentAcademicYear || '';
         
         const stuInput = document.getElementById('input-student');
-        stuInput.value = ''; stuInput.dataset.docid = '';
+        if(stuInput) { stuInput.value = ''; stuInput.dataset.docid = ''; }
         
         document.getElementById('input-grade').value = '';
         const instInput = document.getElementById('input-institution');
-        instInput.value = ''; instInput.dataset.docid = '';
-        document.getElementById('input-duration').value = '';
-        document.getElementById('input-hours').value = '';
-        document.getElementById('input-period-type').value = '';
-        document.getElementById('input-proof-type').value = '';
-        document.getElementById('input-insurance').value = '';
-        document.getElementById('input-employment').value = '';
+        if(instInput) { instInput.value = ''; instInput.dataset.docid = ''; }
         
-        document.getElementById('input-allowance').value = '';
-        document.getElementById('input-payment-type').value = '';
-        document.getElementById('input-payment-desc').value = '';
-        document.getElementById('input-payment-amount').value = '';
-        document.getElementById('input-funding').value = '';
-        document.getElementById('input-opp-source').value = '';
-        document.getElementById('input-job-type').value = '';
-
-        document.getElementById('input-is-moe-compliant').value = '';
-        document.getElementById('input-moe-reason').value = '';
-        document.getElementById('input-dept-notes').value = '';
-        document.getElementById('input-notes').value = '';
+        ['input-duration', 'input-hours', 'input-period-type', 'input-proof-type', 'input-insurance', 'input-employment', 
+         'input-allowance', 'input-payment-type', 'input-payment-desc', 'input-payment-amount', 'input-funding', 
+         'input-opp-source', 'input-job-type', 'input-is-moe-compliant', 'input-moe-reason', 'input-dept-notes', 'input-notes'
+        ].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.value = '';
+        });
         
-        document.getElementById('btn-info-student').disabled = true;
-        document.getElementById('btn-info-inst').disabled = true;
+        const btnInfoStu = document.getElementById('btn-info-student');
+        if(btnInfoStu) btnInfoStu.disabled = true;
+        const btnInfoInst = document.getElementById('btn-info-inst');
+        if(btnInfoInst) btnInfoInst.disabled = true;
 
         handlePaymentFieldsCascade();
         handleMoeCascade();
 
         Render.renderSelectedCourseChips();
-        document.getElementById('input-resp-dept').innerHTML = '<option value="">請先選擇學生與關聯課程...</option>';
+        const respDept = document.getElementById('input-resp-dept');
+        if(respDept) respDept.innerHTML = '<option value="">請先選擇學生與關聯課程...</option>';
         UI.openFormModal(false);
     });
 
@@ -659,42 +657,51 @@ export function bindEvents(container) {
 
             const stu = state.allStudents.find(s => s.id === data.student_doc_id);
             const stuInput = document.getElementById('input-student');
-            stuInput.value = stu ? `${stu.student_id} - ${stu.name}` : '';
-            stuInput.dataset.docid = data.student_doc_id || '';
+            if(stuInput) {
+                stuInput.value = stu ? `${stu.student_id} - ${stu.name}` : '';
+                stuInput.dataset.docid = data.student_doc_id || '';
+            }
             
             const inst = state.allInsts.find(i => i.id === data.inst_id);
             const instInput = document.getElementById('input-institution');
-            instInput.value = inst ? inst.name : ''; 
-            instInput.dataset.docid = data.inst_id || '';
+            if(instInput) {
+                instInput.value = inst ? inst.name : ''; 
+                instInput.dataset.docid = data.inst_id || '';
+            }
             
-            document.getElementById('input-duration').value = data.duration || '';
-            document.getElementById('input-hours').value = data.hours !== undefined && data.hours !== '' ? data.hours : '';
-            document.getElementById('input-grade').value = data.grade || '';
-            document.getElementById('input-period-type').value = data.period_type || '';
-            document.getElementById('input-proof-type').value = data.proof_type || '';
-            document.getElementById('input-insurance').value = data.insurance || '';
-            document.getElementById('input-employment').value = data.employment || '';
-
-            document.getElementById('input-allowance').value = data.allowance || '';
+            const fillValue = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
+            fillValue('input-duration', data.duration || '');
+            fillValue('input-hours', data.hours !== undefined && data.hours !== '' ? data.hours : '');
+            fillValue('input-grade', data.grade || '');
+            fillValue('input-period-type', data.period_type || '');
+            fillValue('input-proof-type', data.proof_type || '');
+            fillValue('input-insurance', data.insurance || '');
+            fillValue('input-employment', data.employment || '');
+            fillValue('input-allowance', data.allowance || '');
             
             let options = '<option value="">請選擇</option>';
             if (data.allowance === '工資') options += '<option value="月薪">月薪</option><option value="時薪">時薪</option><option value="其他">其他</option>';
             else if (data.allowance === '獎學金' || data.allowance === '津貼') options += '<option value="月給">月給</option><option value="一次性">一次性</option><option value="其他">其他</option>';
-            document.getElementById('input-payment-type').innerHTML = options;
+            const ptInput = document.getElementById('input-payment-type');
+            if(ptInput) {
+                ptInput.innerHTML = options;
+                ptInput.value = data.payment_type || '';
+            }
 
-            document.getElementById('input-payment-type').value = data.payment_type || '';
-            document.getElementById('input-payment-desc').value = data.payment_desc || '';
-            document.getElementById('input-payment-amount').value = data.payment_amount !== undefined && data.payment_amount !== '' ? data.payment_amount : '';
-            document.getElementById('input-funding').value = data.funding || '';
-            document.getElementById('input-opp-source').value = data.opp_source || '';
-            document.getElementById('input-job-type').value = data.job_type || '';
-            document.getElementById('input-is-moe-compliant').value = data.is_moe_compliant || '';
-            document.getElementById('input-moe-reason').value = data.moe_reason || '';
-            document.getElementById('input-dept-notes').value = data.dept_notes || '';
-            document.getElementById('input-notes').value = data.notes || '';
+            fillValue('input-payment-desc', data.payment_desc || '');
+            fillValue('input-payment-amount', data.payment_amount !== undefined && data.payment_amount !== '' ? data.payment_amount : '');
+            fillValue('input-funding', data.funding || '');
+            fillValue('input-opp-source', data.opp_source || '');
+            fillValue('input-job-type', data.job_type || '');
+            fillValue('input-is-moe-compliant', data.is_moe_compliant || '');
+            fillValue('input-moe-reason', data.moe_reason || '');
+            fillValue('input-dept-notes', data.dept_notes || '');
+            fillValue('input-notes', data.notes || '');
             
-            document.getElementById('btn-info-student').disabled = !stu;
-            document.getElementById('btn-info-inst').disabled = !inst;
+            const btnInfoStu = document.getElementById('btn-info-student');
+            if(btnInfoStu) btnInfoStu.disabled = !stu;
+            const btnInfoInst = document.getElementById('btn-info-inst');
+            if(btnInfoInst) btnInfoInst.disabled = !inst;
 
             handlePaymentFieldsCascade();
             handleMoeCascade();
@@ -749,7 +756,9 @@ export function bindEvents(container) {
 }
 
 export function updateBatchActionBar() {
-    const bar = document.getElementById('batch-bar'); const count = document.getElementById('selected-count'); const btn = document.getElementById('btn-select-all-filtered'); 
+    const bar = document.getElementById('batch-bar'); 
+    const count = document.getElementById('selected-count'); 
+    const btn = document.getElementById('btn-select-all-filtered'); 
     if (!bar) return;
     if (state.selectedIds.length > 0) { 
         bar.classList.add('visible'); 
