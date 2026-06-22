@@ -8,7 +8,7 @@ export function showToast(msg, type = "info") {
 export function openFormModal(isEdit = false) {
     document.getElementById('main-view').style.display = 'none';
     document.getElementById('data-modal').classList.add('open');
-    document.getElementById('modal-title').innerHTML = `<i class="ti ti-briefcase text-brand" style="font-size: 20px;"></i> ${isEdit ? '編輯實習紀錄' : '新增實習紀錄'}`;
+    document.getElementById('modal-title').innerText = isEdit ? '編輯實習紀錄' : '新增實習紀錄';
 }
 
 export function closeFormModal() {
@@ -35,8 +35,10 @@ export function showInfoPopup(type) {
         `;
     } else {
         const instId = document.getElementById('input-institution').dataset.id;
-        let inst = state.allInsts.find(i => i.id === instId);
-        if (!inst) {
+        let inst;
+        if (instId) {
+            inst = state.allInsts.find(i => i.id === instId);
+        } else {
             const instName = document.getElementById('input-institution').value;
             inst = state.allInsts.find(i => i.name === instName);
         }
@@ -105,6 +107,16 @@ export function filterDropdownItems(input, containerId) {
     });
 }
 
+export function toggleDropdown(type) {
+    const drop = document.getElementById(`drop-${type}`);
+    const wrap = document.getElementById(`pill-wrap-${type}`);
+    if (!drop || !wrap) return;
+    const isOpen = drop.classList.contains('show');
+    document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
+    document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
+    if (!isOpen) { drop.classList.add('show'); wrap.classList.add('open'); }
+}
+
 export function updatePillActive(type) {
     const set = state.filterSelections[type];
     const def = state.filterDefinitions.find(d => d.key === type);
@@ -132,42 +144,41 @@ export function updateColumnVisibility() {
     // 🌟 終極防呆：確保 tableColumns 存在且有效，若無則立刻原地修復
     if (!state.tableColumns || state.tableColumns.length === 0 || !state.tableColumns[0].index) {
         state.tableColumns = [
-            { index: 1, label: '學期', width: 90, visible: true },
-            { index: 2, label: '學號', width: 110, visible: true },
-            { index: 3, label: '姓名', width: 100, visible: true },
-            { index: 4, label: '學系', width: 120, visible: true },
-            { index: 5, label: '年級', width: 80, visible: true },
-            { index: 6, label: '機構名稱', width: 220, visible: true },
-            { index: 7, label: '修習課程', width: 260, visible: true },
-            { index: 8, label: '總學分', width: 80, visible: true },
-            { index: 9, label: '實習時間', width: 110, visible: true },
-            { index: 10, label: '實習起訖時間', width: 170, visible: true },
-            { index: 11, label: '總時數', width: 80, visible: true },
+            { index: 1, label: '學期', width: 100, visible: true },
+            { index: 2, label: '學號', width: 130, visible: true },
+            { index: 3, label: '姓名', width: 110, visible: true },
+            { index: 4, label: '學系', width: 140, visible: true },
+            { index: 5, label: '年級', width: 90, visible: true },
+            { index: 6, label: '機構名稱', width: 240, visible: true },
+            { index: 7, label: '修習課程', width: 280, visible: true },
+            { index: 8, label: '總學分', width: 90, visible: true },
+            { index: 9, label: '實習時間', width: 120, visible: true },
+            { index: 10, label: '實習起訖時間', width: 200, visible: true },
+            { index: 11, label: '總時數', width: 100, visible: true },
             { index: 12, label: '證明文件', width: 110, visible: true },
-            { index: 13, label: '勞雇關係', width: 90, visible: true },
-            { index: 14, label: '投保情形', width: 130, visible: true },
-            { index: 15, label: '實習待遇', width: 100, visible: true },
-            { index: 16, label: '給付類型', width: 100, visible: true },
-            { index: 17, label: '其他給付說明', width: 150, visible: true },
-            { index: 18, label: '給付金額', width: 100, visible: true },
-            { index: 19, label: '補助經費來源', width: 180, visible: true },
-            { index: 20, label: '實習機會來源', width: 130, visible: true },
-            { index: 21, label: '實習職缺類型', width: 120, visible: true },
-            { index: 22, label: '符合校庫填報', width: 120, visible: true },
-            { index: 23, label: '不符合校庫填報原因', width: 180, visible: true },
-            { index: 24, label: '填報系所', width: 120, visible: true }
+            { index: 13, label: '勞雇關係', width: 100, visible: true },
+            { index: 14, label: '投保情形', width: 140, visible: true },
+            { index: 15, label: '實習待遇', width: 120, visible: true },
+            { index: 16, label: '給付類型', width: 120, visible: true },
+            { index: 17, label: '其他給付說明', width: 180, visible: true },
+            { index: 18, label: '給付金額', width: 120, visible: true },
+            { index: 19, label: '補助經費來源', width: 210, visible: true },
+            { index: 20, label: '實習機會來源', width: 160, visible: true },
+            { index: 21, label: '實習職缺類型', width: 150, visible: true },
+            { index: 22, label: '符合校庫填報', width: 140, visible: true },
+            { index: 23, label: '不符合校庫填報原因', width: 210, visible: true },
+            { index: 24, label: '填報系所', width: 140, visible: true }
         ];
     }
     
     let css = '';
     let totalDataWidth = 0;
-    const fixedWidth = 48 + 90; // 左側凍結 Checkbox + 右側凍結 Actions
+    const fixedWidth = 48 + 90; // col-checkbox + col-actions
 
     state.tableColumns.forEach(c => {
-        // 預設可見，除非明確設為 false
+        // 防呆：如果沒有特別設定 visible: false，一律視為 true
         const isVisible = c.visible !== false;
-        // 預設寬度 120 防擠壓
-        const colWidth = c.width || 120; 
+        const colWidth = c.width || 120; // 預設給予寬度防止擠壓
 
         if (isVisible) {
             css += `#intern-record-table th[data-col="${c.index}"], 
