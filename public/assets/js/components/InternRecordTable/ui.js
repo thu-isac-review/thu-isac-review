@@ -1,7 +1,6 @@
 import { state } from './state.js';
 
 export function showToast(msg, type = "info") {
-    // 若全域有定義 Toast 元件則使用，否則退回 alert
     if (window.showToast) { window.showToast(msg, type); } 
     else { alert(`[${type.toUpperCase()}] ${msg}`); }
 }
@@ -133,6 +132,7 @@ export function updatePillActive(type) {
     }
 }
 
+// 🌟 Notion 佈局核心邏輯
 export function updateColumnVisibility() {
     let styleEl = document.getElementById('dynamic-col-styles');
     if (!styleEl) {
@@ -140,9 +140,32 @@ export function updateColumnVisibility() {
         styleEl.id = 'dynamic-col-styles';
         document.head.appendChild(styleEl);
     }
+    
     let css = '';
+    let totalDataWidth = 0;
+    const fixedWidth = 48 + 90; // col-checkbox + col-actions 的寬度
+
     state.tableColumns.forEach(c => {
-        if (!c.visible) { css += `th[data-col="${c.index}"], td[data-col="${c.index}"] { display: none !important; }\n`; }
+        if (c.visible) {
+            css += `#intern-record-table th[data-col="${c.index}"], 
+                    #intern-record-table td[data-col="${c.index}"] { 
+                        width: ${c.width}px !important; 
+                        min-width: ${c.width}px !important; 
+                        max-width: ${c.width}px !important; 
+                        display: table-cell !important; 
+                    }\n`;
+            totalDataWidth += c.width;
+        } else {
+            css += `#intern-record-table th[data-col="${c.index}"], 
+                    #intern-record-table td[data-col="${c.index}"] { 
+                        display: none !important; 
+                    }\n`;
+        }
     });
+
+    // 總必要寬度，確保如果螢幕過小能出現卷軸
+    const totalRequiredWidth = fixedWidth + totalDataWidth;
+    css += `#intern-record-table { min-width: ${totalRequiredWidth}px; }\n`;
+
     styleEl.innerHTML = css;
 }
