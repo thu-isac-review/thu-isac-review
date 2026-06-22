@@ -6,14 +6,13 @@ export function showToast(msg, type = "info") {
 }
 
 export function openFormModal(isEdit = false) {
-    document.getElementById('main-view').style.display = 'none';
+    // 🌟 修正3：移除隱藏 main-view 的邏輯，避免背景消失導致彈窗失去依託而破版
     document.getElementById('data-modal').classList.add('open');
-    document.getElementById('modal-title').innerText = isEdit ? '編輯實習紀錄' : '新增實習紀錄';
+    document.getElementById('modal-title').innerHTML = `<i class="ti ti-briefcase text-brand" style="font-size: 20px;"></i> ${isEdit ? '編輯實習紀錄' : '新增實習紀錄'}`;
 }
 
 export function closeFormModal() {
     document.getElementById('data-modal').classList.remove('open');
-    document.getElementById('main-view').style.display = 'flex';
     state.editingId = null;
 }
 
