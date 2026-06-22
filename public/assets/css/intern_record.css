@@ -219,6 +219,12 @@ th, td {
     word-break: break-word; 
 }
 
+/* 🌟 修正：把 td (資料列) 獨立出來，強制設定高度為 64px (剛好是兩行字的高度) */
+td {
+    height: 64px;
+}
+
+/* 標題列專屬樣式 */
 th {
     font-size: 11px; font-weight: 700; color: var(--text-muted);
     text-transform: uppercase; letter-spacing: 0.05em; text-align: center;
