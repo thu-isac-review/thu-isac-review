@@ -125,12 +125,16 @@ export function renderTable() {
 
     const emptyStateContainer = document.getElementById('empty-state-container');
     if (total === 0) {
-        tbody.innerHTML = ''; 
-        if (emptyStateContainer) emptyStateContainer.style.display = 'flex';
+        tbody.innerHTML = `<tr><td colspan="100" class="empty-state" style="padding: 60px 40px; text-align: center; border-bottom: none;"><div class="empty-icon"><i class="ti ti-inbox" style="font-size: 36px; opacity: 0.4; margin-bottom: 12px; display: block;"></i></div><div class="empty-text" style="font-size: 13px; font-weight: 600; color: var(--text-muted);">找不到符合條件的實習紀錄</div></td></tr>`;
+        if (document.getElementById('empty-state-container')) {
+            document.getElementById('empty-state-container').style.display = 'none';
+        }
         UI.updateColumnVisibility();
         return;
     } else {
-        if (emptyStateContainer) emptyStateContainer.style.display = 'none';
+        if (document.getElementById('empty-state-container')) {
+            document.getElementById('empty-state-container').style.display = 'none';
+        }
     }
 
     let tHtml = '';
