@@ -6,6 +6,50 @@ import * as Data from './data.js';
 export function bindEvents(container) {
     if (!container) return;
 
+    // 🌟 新增 Tabs 切換邏輯
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    const btnPrevTab = document.getElementById('btn-prev-tab');
+    const btnNextTab = document.getElementById('btn-next-tab');
+    
+    function switchTab(tabId) {
+        tabBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabId));
+        tabContents.forEach(content => content.style.display = content.id === tabId ? 'block' : 'none');
+        
+        // 更新上下步按鈕狀態
+        const tabsArray = Array.from(tabBtns).map(b => b.dataset.tab);
+        const currentIndex = tabsArray.indexOf(tabId);
+        
+        if (btnPrevTab) btnPrevTab.style.display = currentIndex === 0 ? 'none' : 'inline-flex';
+        if (btnNextTab) btnNextTab.style.display = currentIndex === tabsArray.length - 1 ? 'none' : 'inline-flex';
+    }
+
+    // 綁定左側選單點擊
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
+    // 綁定上下一步按鈕
+    if (btnPrevTab) {
+        btnPrevTab.addEventListener('click', () => {
+            const activeTab = document.querySelector('.tab-btn.active');
+            if (!activeTab) return;
+            const tabsArray = Array.from(tabBtns);
+            const currentIndex = tabsArray.indexOf(activeTab);
+            if (currentIndex > 0) switchTab(tabsArray[currentIndex - 1].dataset.tab);
+        });
+    }
+
+    if (btnNextTab) {
+        btnNextTab.addEventListener('click', () => {
+            const activeTab = document.querySelector('.tab-btn.active');
+            if (!activeTab) return;
+            const tabsArray = Array.from(tabBtns);
+            const currentIndex = tabsArray.indexOf(activeTab);
+            if (currentIndex < tabsArray.length - 1) switchTab(tabsArray[currentIndex + 1].dataset.tab);
+        });
+    }
+
     const filterScrollArea = document.getElementById('filter-container');
     document.getElementById('btn-scroll-left')?.addEventListener('click', () => {
         filterScrollArea?.scrollBy({ left: -200, behavior: 'smooth' });
@@ -463,6 +507,7 @@ export function bindEvents(container) {
         Render.renderSelectedCourseChips();
         const respDept = document.getElementById('input-resp-dept');
         if(respDept) respDept.innerHTML = '<option value="">請先選擇學生與關聯課程...</option>';
+        switchTab('tab-student'); // 強制回到第一頁
         UI.openFormModal(false);
     });
 
@@ -709,6 +754,7 @@ export function bindEvents(container) {
             state.selectedCourseIds = Array.isArray(data.courses) ? [...data.courses] : [];
             Render.renderSelectedCourseChips(true);
             UI.updateRespDeptOptions(data.resp_dept);
+            switchTab('tab-student'); // 強制回到第一頁
             UI.openFormModal(true);
         }
 
