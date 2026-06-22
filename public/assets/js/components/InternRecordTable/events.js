@@ -6,7 +6,6 @@ import * as Data from './data.js';
 export function bindEvents(container) {
     if (!container) return;
 
-    // 🌟 [新增] 左右滾動按鈕事件
     const filterScrollArea = document.getElementById('filter-container');
     document.getElementById('btn-scroll-left')?.addEventListener('click', () => {
         filterScrollArea?.scrollBy({ left: -200, behavior: 'smooth' });
@@ -15,7 +14,6 @@ export function bindEvents(container) {
         filterScrollArea?.scrollBy({ left: 200, behavior: 'smooth' });
     });
 
-    // 🌟 [新增] 控制待遇與經費邏輯
     function handlePaymentFieldsCascade() {
         const yearSelect = document.getElementById('input-academic-year');
         const allowanceSelect = document.getElementById('input-allowance');
@@ -65,7 +63,6 @@ export function bindEvents(container) {
         }
     }
 
-    // 🌟 [新增] 控制校庫填報不符合原因邏輯
     function handleMoeCascade() {
         const moeSelect = document.getElementById('input-is-moe-compliant');
         const moeReasonInput = document.getElementById('input-moe-reason');
@@ -200,7 +197,6 @@ export function bindEvents(container) {
                 }
                 headers.push(headerVal.replace(/^\uFEFF/, '').trim());
 
-                // 彈性匹配 CSV 標題列
                 const idxYear = headers.indexOf('學年度');
                 const idxStuId = headers.indexOf('學號');
                 const idxGrade = headers.indexOf('年級');
@@ -424,7 +420,6 @@ export function bindEvents(container) {
         btn.addEventListener('click', () => { document.getElementById('import-report-modal').classList.remove('open'); });
     });
     
-    // 綁定連動機制
     container.querySelector('#input-allowance')?.addEventListener('change', handlePaymentFieldsCascade);
     container.querySelector('#input-payment-type')?.addEventListener('change', handlePaymentFieldsCascade);
     container.querySelector('#input-is-moe-compliant')?.addEventListener('change', handleMoeCascade);
@@ -544,7 +539,7 @@ export function bindEvents(container) {
     });
 
     container.querySelector('#btn-close-modal-x')?.addEventListener('click', UI.closeFormModal);
-    container.querySelector('#btn-cancel-modal')?.addEventListener('click', UI.closeFormModal); // 🌟 新增這行：綁定底部的取消按鈕
+    container.querySelector('#btn-cancel-modal')?.addEventListener('click', UI.closeFormModal);
     container.querySelector('#btn-info-student')?.addEventListener('click', () => UI.showInfoPopup('student'));
     container.querySelector('#btn-info-inst')?.addEventListener('click', () => UI.showInfoPopup('inst'));
     container.querySelector('#btn-info-close')?.addEventListener('click', UI.closeInfoPopup);
