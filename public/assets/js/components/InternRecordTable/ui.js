@@ -145,16 +145,24 @@ export function updateColumnVisibility() {
     let totalDataWidth = 0;
     const fixedWidth = 48 + 90; // col-checkbox + col-actions 的寬度
 
+    if (!state.tableColumns || state.tableColumns.length === 0) {
+        console.warn("tableColumns is empty. Defaulting to all visible.");
+        return;
+    }
+
     state.tableColumns.forEach(c => {
-        if (c.visible) {
+        // 防呆：確保 width 是一個數字
+        const width = c.width || 120; 
+
+        if (c.visible !== false) { // 預設為 true
             css += `#intern-record-table th[data-col="${c.index}"], 
                     #intern-record-table td[data-col="${c.index}"] { 
-                        width: ${c.width}px !important; 
-                        min-width: ${c.width}px !important; 
-                        max-width: ${c.width}px !important; 
+                        width: ${width}px !important; 
+                        min-width: ${width}px !important; 
+                        max-width: ${width}px !important; 
                         display: table-cell !important; 
                     }\n`;
-            totalDataWidth += c.width;
+            totalDataWidth += width;
         } else {
             css += `#intern-record-table th[data-col="${c.index}"], 
                     #intern-record-table td[data-col="${c.index}"] { 
