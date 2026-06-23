@@ -684,9 +684,27 @@ export function bindEvents(container) {
         };
         
         const yearVal = parseInt(payload.academic_year, 10);
-        if(!payload.academic_year || !payload.grade || !payload.period_type || !payload.proof_type || !payload.insurance || !payload.employment || !payload.resp_dept || !payload.allowance || !payload.funding || !payload.opp_source || !payload.job_type || !payload.is_moe_compliant) { 
-            UI.showToast("請完成所有包含 * 號之必填選單與欄位設定！", "warning"); return; 
+        
+        // ⭐ 升級：具體抓出哪些欄位沒填，明確列出清單給使用者看
+        const missing = [];
+        if (!payload.academic_year) missing.push("學年度");
+        if (!payload.grade) missing.push("當學年年級");
+        if (!payload.resp_dept) missing.push("負責填報系所");
+        if (!payload.opp_source) missing.push("實習機會來源");
+        if (!payload.job_type) missing.push("實習職缺類型");
+        if (!payload.period_type) missing.push("實習時間");
+        if (!payload.proof_type) missing.push("證明文件");
+        if (!payload.insurance) missing.push("投保情形");
+        if (!payload.employment) missing.push("勞雇關係");
+        if (!payload.allowance) missing.push("實習待遇");
+        if (!payload.funding) missing.push("補助經費來源");
+        if (!payload.is_moe_compliant) missing.push("符合校庫填報");
+
+        if (missing.length > 0) {
+            UI.showToast(`請填寫以下必填欄位：${missing.join(', ')}`, "warning"); 
+            return; 
         }
+
         if (yearVal >= 113 && payload.allowance !== '無' && !payload.payment_type) {
             UI.showToast("113學年度起，若有實習待遇請務必填寫「給付類型」！", "warning"); return;
         }
