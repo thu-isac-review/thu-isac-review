@@ -507,15 +507,33 @@ export function bindEvents(container) {
         ).slice(0, 50); 
         
         if (filtered.length === 0) {
-            dropdown.innerHTML = '<div style="padding:10px 12px; color:var(--text-muted); font-size:12px;">查無符合的學生</div>';
+            dropdown.innerHTML = '<div style="padding:10px 12px; color:var(--text-muted); font-size:13px;">查無符合的學生</div>';
             return;
         }
+        
+        // 修正 3：改變搜尋結果顯示格式 (姓名在前、學院/學系在後)
         dropdown.innerHTML = filtered.map(stu => `
-            <div class="search-item pre-search-item" data-id="${stu.id}" data-stuid="${stu.student_id}" data-name="${stu.name}">
-                <div class="search-item-title">${stu.student_id} - ${stu.name}</div>
-                <div class="search-item-desc">${stu.department} / ${stu.grade}年級</div>
+            <div class="search-item pre-search-item" data-id="${stu.id}" data-stuid="${stu.student_id}" data-name="${stu.name}" style="padding: 10px 12px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background 0.2s;">
+                <div class="search-item-title" style="font-weight: 600; color: var(--text-primary); font-size: 14px;">
+                    ${stu.name}（${stu.student_id}）
+                </div>
+                <div class="search-item-desc" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+                    ${stu.college || '未綁定學院'} / ${stu.department || '未綁定學系'}
+                </div>
             </div>
         `).join('');
+    });
+
+    // 修正 2：加入全域點擊事件，點擊輸入框與選單以外的空白處，自動隱藏下拉選單
+    document.addEventListener('click', (e) => {
+        const dropdown = document.getElementById('pre-student-dropdown');
+        const input = document.getElementById('pre-input-student');
+        if (dropdown && dropdown.classList.contains('show')) {
+            // 如果點擊的目標不是 input，且不在 dropdown 內部，就隱藏
+            if (e.target !== input && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        }
     });
 
     // --- 4. 點擊下拉選單，選擇學生 ---
