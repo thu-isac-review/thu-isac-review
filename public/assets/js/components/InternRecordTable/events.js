@@ -450,12 +450,16 @@ export function bindEvents(container) {
         if(state.isReadOnly) return;
         document.getElementById('pre-select-student-modal').classList.add('open');
         
-        Render.populateAcademicYearDropdown();
-        const mainYearSelect = document.getElementById('input-academic-year');
+        // ⭐ 修正：直接動態生成學年度選單
+        const courseYears = [...new Set(state.allCourses.map(c => c.academic_year))].filter(Boolean).sort((a,b) => b.localeCompare(a));
         const preYearSelect = document.getElementById('pre-input-academic-year');
-        if (mainYearSelect && preYearSelect) {
-            preYearSelect.innerHTML = mainYearSelect.innerHTML;
-            preYearSelect.value = state.currentAcademicYear || '';
+        if (preYearSelect) {
+            let html = '<option value="">請選擇</option>';
+            courseYears.forEach(y => html += `<option value="${y}">${y} 學年度</option>`);
+            preYearSelect.innerHTML = html;
+            if (courseYears.includes(state.currentAcademicYear)) {
+                preYearSelect.value = state.currentAcademicYear;
+            }
         }
         
         const preGrade = document.getElementById('pre-input-grade');
