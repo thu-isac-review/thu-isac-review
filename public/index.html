@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>實習管理系統 - 東海大學實習中心</title>
+    <title>校外實習管理系統 - 東海大學實習中心</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -126,14 +126,12 @@
 
     <div id="app" class="flex w-full h-full overflow-hidden">
         
-        <nav id="sidebar" class="custom-scroll flex-shrink-0">
+        <nav id="sidebar" class="custom-scroll flex-shrink-0 flex flex-col">
             <div class="sidebar-logo">
                 <div class="flex items-center gap-2">
-                    <div class="flex-shrink-0 w-8 h-8 rounded-md flex items-center justify-center text-white font-bold" style="background: var(--brand)">
-                        <i class="ti ti-briefcase-2 text-lg"></i>
-                    </div>
+                    <img src="./assets/images/thu-logo.svg" alt="東海大學校徽" class="flex-shrink-0 w-8 h-8 object-contain">
                     <div class="logo-info">
-                        <div class="logo-text font-bold text-sm text-gray-900 leading-tight">東海大學校外實習管理系統</div>
+                        <div class="logo-text font-bold text-sm text-gray-900 leading-tight">學生校外實習管理系統</div>
                     </div>
                 </div>
                 <button class="text-gray-400 hover:text-gray-800 transition p-1 rounded-md hover:bg-gray-100" onclick="toggleSidebar(false)">
@@ -188,6 +186,15 @@
                 <div class="nav-item" data-hash="manage/departments" data-roles="admin">
                     <i class="ti ti-subtask"></i><span>實習系所管理</span>
                 </div>
+            </div>
+
+            <div class="px-4 py-4 border-t border-gray-100 flex-shrink-0 bg-gray-50/50">
+                <p class="text-[9.5px] text-gray-400 leading-relaxed text-center font-medium">
+                    Copyright &copy; <span id="copyrightYear">2026</span><br>
+                    東海大學實習與學生成就中心<br>
+                    Internship and Student Achievement Center,<br>
+                    Tunghai University. All Rights Reserved.
+                </p>
             </div>
         </nav>
 
@@ -284,6 +291,14 @@
                     if (sysLoading) sysLoading.style.display = 'none';
                 }
             };
+        })();
+
+        // 動態計算並更新版權年份
+        (function() {
+            const startYear = 2026;
+            const currentYear = new Date().getFullYear();
+            const yearText = currentYear > startYear ? `${startYear}-${currentYear}` : `${startYear}`;
+            document.getElementById('copyrightYear').textContent = yearText;
         })();
     </script>
 
