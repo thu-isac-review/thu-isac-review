@@ -133,18 +133,39 @@
             
             <div class="dialog-body" style="padding: 24px; background: #ffffff; overflow: visible !important;">
                 <div style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 12px 16px; border-radius: 8px; font-size: 13px; line-height: 1.6; margin-bottom: 24px;">
-                    請在下方輸入關鍵字搜尋，指定要建立實習紀錄的學生。<br>
-                    <span style="font-weight: 700;">注意：</span>為確保資料關聯正確，建立後將無法於表單內變更該名學生。
+                    請在下方選擇學年度與年級，並搜尋指定要建立實習紀錄的學生。<br>
+                    <span style="font-weight: 700;">注意：</span>為確保資料關聯正確，建立後將無法於表單內變更這些基本資訊。
                 </div>
-    
+
+                <!-- 🌟 新增：學年度與當學年年級 -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div class="field">
+                        <label class="field-label">學年度 <span class="req">*</span></label>
+                        <select id="pre-input-academic-year" class="field-select" required>
+                            <option value="">請選擇</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">當學年年級 <span class="req">*</span></label>
+                        <select id="pre-input-grade" class="field-select" required>
+                            <option value="">請選擇</option>
+                            <option value="1">1 年級</option>
+                            <option value="2">2 年級</option>
+                            <option value="3">3 年級</option>
+                            <option value="4">4 年級</option>
+                            <option value="5">5 年級以上</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="field" style="margin-bottom: 12px;">
                     <label class="field-label">搜尋並選擇學生 <span class="req">*</span></label>
                     <div class="search-input-wrap" style="position: relative;">
+                        <!-- ... 保持你原本的搜尋框與下拉選單 HTML ... -->
                         <div style="position: absolute; left: 12px; top: 0; bottom: 0; display: flex; align-items: center; pointer-events: none;">
                             <i class="ti ti-search" style="color: var(--text-muted); font-size: 16px;"></i>
                         </div>
                         <input type="text" id="pre-input-student" class="field-input" placeholder="輸入學號或姓名搜尋..." autocomplete="off" style="padding-left: 36px; height: 42px; font-size: 14px;">
-                        
                         <div id="pre-student-dropdown" class="search-dropdown custom-scroll" style="position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #ffffff; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15); max-height: 250px; overflow-y: auto; z-index: 99999;"></div>
                     </div>
                 </div>
