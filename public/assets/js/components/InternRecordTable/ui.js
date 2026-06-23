@@ -1,8 +1,39 @@
 import { state } from './state.js';
 
-export function showToast(msg, type = "info") {
-    if (window.showToast) { window.showToast(msg, type); } 
-    else { alert(`[${type.toUpperCase()}] ${msg}`); }
+export function showToast(message, type = "info") {
+    const toast = document.createElement('div');
+    // 套用與實習機構模組相同的 Tailwind 樣式，並固定在右下角
+    toast.className = `fixed bottom-5 right-5 z-[9999] flex items-center gap-2.5 px-4 py-3.5 rounded-xl shadow-xl border transition-all duration-300 transform translate-y-5 opacity-0`;
+    
+    if (type === 'success') {
+        toast.className += ' bg-emerald-50 text-emerald-800 border-emerald-200';
+        toast.innerHTML = `<i class="ti ti-circle-check text-emerald-500 text-lg"></i><span class="font-semibold text-sm">${message}</span>`;
+    } else if (type === 'error') {
+        toast.className += ' bg-rose-50 text-rose-800 border-rose-200';
+        toast.innerHTML = `<i class="ti ti-alert-circle text-rose-500 text-lg"></i><span class="font-semibold text-sm">${message}</span>`;
+    } else if (type === 'warning') {
+        // 特別為實習紀錄模組增加 warning 的黃色樣式 (因為 events.js 中有使用到 warning)
+        toast.className += ' bg-amber-50 text-amber-800 border-amber-200';
+        toast.innerHTML = `<i class="ti ti-alert-triangle text-amber-500 text-lg"></i><span class="font-semibold text-sm">${message}</span>`;
+    } else {
+        toast.className += ' bg-blue-50 text-blue-800 border-blue-200';
+        toast.innerHTML = `<i class="ti ti-info-circle text-blue-500 text-lg"></i><span class="font-semibold text-sm">${message}</span>`;
+    }
+    
+    document.body.appendChild(toast);
+    
+    // 觸發進入動畫
+    setTimeout(() => {
+        toast.classList.remove('translate-y-5', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+    }, 50);
+    
+    // 3秒後觸發消失動畫並移除 DOM
+    setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-5', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }
 
 export function openFormModal(isEdit = false) {
