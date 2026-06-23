@@ -541,7 +541,7 @@ export function bindEvents(container) {
         const item = e.target.closest('.pre-search-item');
         if (item) {
             const input = document.getElementById('pre-input-student');
-            input.value = `${item.dataset.stuid} - ${item.dataset.name}`;
+            input.value = `${item.dataset.name}（${item.dataset.stuid}）`;
             input.dataset.docid = item.dataset.id;
             document.getElementById('pre-student-dropdown').classList.remove('show');
         }
@@ -783,7 +783,7 @@ export function bindEvents(container) {
             const stu = state.allStudents.find(s => s.id === data.student_doc_id);
             const stuInput = document.getElementById('input-student');
             if(stuInput) {
-                stuInput.value = stu ? `${stu.student_id} - ${stu.name}` : '';
+                stuInput.value = stu ? `${stu.name}（${stu.student_id}）` : '';
                 stuInput.dataset.docid = data.student_doc_id || '';
             }
             
