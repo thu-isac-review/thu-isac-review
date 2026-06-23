@@ -474,17 +474,77 @@ export function bindEvents(container) {
     container.querySelector('#input-payment-type')?.addEventListener('change', handlePaymentFieldsCascade);
     container.querySelector('#input-is-moe-compliant')?.addEventListener('change', handleMoeCascade);
 
+    // --- 1. 點擊「新增紀錄」時，改為開啟前置視窗 ---
     container.querySelector('#btn-create-record')?.addEventListener('click', () => {
         if(state.isReadOnly) return;
-        state.editingId = null; state.selectedCourseIds = [];
+        document.getElementById('pre-select-student-modal').classList.add('open');
         
+        const preInput = document.getElementById('pre-input-student');
+        if(preInput) {
+            preInput.value = '';
+            preInput.dataset.docid = '';
+        }
+        document.getElementById('pre-student-dropdown')?.classList.remove('show');
+    });
+
+    // --- 2. 前置視窗的關閉與取消 ---
+    container.querySelector('#btn-close-pre-select')?.addEventListener('click', () => {
+        document.getElementById('pre-select-student-modal').classList.remove('open');
+    });
+    container.querySelector('#btn-cancel-pre-select')?.addEventListener('click', () => {
+        document.getElementById('pre-select-student-modal').classList.remove('open');
+    });
+
+    // --- 3. 前置視窗的學生搜尋功能 ---
+    container.querySelector('#pre-input-student')?.addEventListener('input', (e) => { 
+        e.target.dataset.docid = ''; 
+        const dropdown = document.getElementById('pre-student-dropdown');
+        dropdown.classList.add('show'); 
+        
+        const term = e.target.value.toLowerCase().trim();
+        const filtered = state.allStudents.filter(s => 
+            s.student_id.toLowerCase().includes(term) || s.name.toLowerCase().includes(term)
+        ).slice(0, 50); 
+        
+        if (filtered.length === 0) {
+            dropdown.innerHTML = '<div style="padding:10px 12px; color:var(--text-muted); font-size:12px;">查無符合的學生</div>';
+            return;
+        }
+        dropdown.innerHTML = filtered.map(stu => `
+            <div class="search-item pre-search-item" data-id="${stu.id}" data-stuid="${stu.student_id}" data-name="${stu.name}">
+                <div class="search-item-title">${stu.student_id} - ${stu.name}</div>
+                <div class="search-item-desc">${stu.department} / ${stu.grade}年級</div>
+            </div>
+        `).join('');
+    });
+
+    // --- 4. 點擊下拉選單，選擇學生 ---
+    container.addEventListener('click', (e) => {
+        const item = e.target.closest('.pre-search-item');
+        if (item) {
+            const input = document.getElementById('pre-input-student');
+            input.value = `${item.dataset.stuid} - ${item.dataset.name}`;
+            input.dataset.docid = item.dataset.id;
+            document.getElementById('pre-student-dropdown').classList.remove('show');
+        }
+    });
+
+    // --- 5. 點擊「確認並繼續」，將學生帶入主表單並開啟 ---
+    container.querySelector('#btn-confirm-pre-select')?.addEventListener('click', () => {
+        const preInput = document.getElementById('pre-input-student');
+        if (!preInput || !preInput.dataset.docid) {
+            UI.showToast("請先從選單中選擇一名學生！", "warning");
+            return;
+        }
+
+        document.getElementById('pre-select-student-modal').classList.remove('open');
+
+        // 將原先「新增紀錄」該做的事情在這裡做
+        state.editingId = null; state.selectedCourseIds = [];
         Render.populateAcademicYearDropdown();
         document.getElementById('input-academic-year').value = state.currentAcademicYear || '';
-        
-        const stuInput = document.getElementById('input-student');
-        if(stuInput) { stuInput.value = ''; stuInput.dataset.docid = ''; }
-        
         document.getElementById('input-grade').value = '';
+        
         const instInput = document.getElementById('input-institution');
         if(instInput) { instInput.value = ''; instInput.dataset.docid = ''; }
         
@@ -495,19 +555,21 @@ export function bindEvents(container) {
             const el = document.getElementById(id);
             if(el) el.value = '';
         });
-        
-        const btnInfoStu = document.getElementById('btn-info-student');
-        if(btnInfoStu) btnInfoStu.disabled = true;
-        const btnInfoInst = document.getElementById('btn-info-inst');
-        if(btnInfoInst) btnInfoInst.disabled = true;
+
+        // ⭐ 最重要：把前置視窗選到的學生，直接塞進主表單
+        const stuInput = document.getElementById('input-student');
+        if(stuInput) { 
+            stuInput.value = preInput.value; 
+            stuInput.dataset.docid = preInput.dataset.docid; 
+        }
 
         handlePaymentFieldsCascade();
         handleMoeCascade();
-
         Render.renderSelectedCourseChips();
         const respDept = document.getElementById('input-resp-dept');
         if(respDept) respDept.innerHTML = '<option value="">請先選擇學生與關聯課程...</option>';
-        switchTab('tab-student'); // 強制回到第一頁
+        
+        switchTab('tab-student'); 
         UI.openFormModal(false);
     });
 
