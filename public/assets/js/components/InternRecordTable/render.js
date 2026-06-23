@@ -489,7 +489,10 @@ export function renderInstDropdown(list, term) {
             instIn.value = item.dataset.name;
             instIn.dataset.docid = item.dataset.docid;
             dropdown.classList.remove('show');
-            document.getElementById('btn-info-inst').disabled = false;
+            // document.getElementById('btn-info-inst').disabled = false; // 若原本無此按鈕可刪除
+            
+            // ⭐ 新增：觸發渲染下方資訊卡與歷史軌跡選項
+            renderSelectedInstInfo(item.dataset.docid);
         });
     });
 }
