@@ -60,6 +60,7 @@ export function bindEvents(container) {
         const allowanceSelect = document.getElementById('input-allowance');
         const paymentTypeSelect = document.getElementById('input-payment-type');
         const paymentDescInput = document.getElementById('input-payment-desc');
+        const paymentAmountInput = document.getElementById('input-payment-amount'); // ⭐ 抓取金額輸入框
         const reqType = document.getElementById('req-payment-type');
         const reqDesc = document.getElementById('req-payment-desc');
 
@@ -87,10 +88,21 @@ export function bindEvents(container) {
                 paymentTypeSelect.value = '';
                 paymentTypeSelect.required = false;
                 if(reqType) reqType.style.display = 'none';
+                
+                // ⭐ 如果待遇是「無」，金額也強制禁用並清空
+                if (paymentAmountInput) {
+                    paymentAmountInput.disabled = true;
+                    paymentAmountInput.value = '';
+                }
             } else {
                 paymentTypeSelect.disabled = false;
                 paymentTypeSelect.required = is113OrAbove;
                 if(reqType) reqType.style.display = is113OrAbove ? 'inline' : 'none';
+
+                // ⭐ 啟用金額輸入框
+                if (paymentAmountInput) {
+                    paymentAmountInput.disabled = false;
+                }
             }
         }
 
@@ -685,7 +697,6 @@ export function bindEvents(container) {
         
         const yearVal = parseInt(payload.academic_year, 10);
         
-        // ⭐ 升級：具體抓出哪些欄位沒填，明確列出清單給使用者看
         const missing = [];
         if (!payload.academic_year) missing.push("學年度");
         if (!payload.grade) missing.push("當學年年級");
@@ -693,12 +704,13 @@ export function bindEvents(container) {
         if (!payload.opp_source) missing.push("實習機會來源");
         if (!payload.job_type) missing.push("實習職缺類型");
         if (!payload.period_type) missing.push("實習時間");
-        if (!payload.proof_type) missing.push("證明文件");
+        if (!payload.proof_type) missing.push("證明文件類型");
         if (!payload.insurance) missing.push("投保情形");
         if (!payload.employment) missing.push("勞雇關係");
         if (!payload.allowance) missing.push("實習待遇");
         if (!payload.funding) missing.push("補助經費來源");
         if (!payload.is_moe_compliant) missing.push("符合校庫填報");
+        if (payload.hours === '' || payload.hours === undefined) missing.push("總時數"); // ⭐ 加入總時數必填檢查
 
         if (missing.length > 0) {
             UI.showToast(`請填寫以下必填欄位：${missing.join(', ')}`, "warning"); 
