@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "thu-intern",
     "public": "public",
     "cleanUrls": true,
     "ignore": [
