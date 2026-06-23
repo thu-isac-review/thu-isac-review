@@ -728,6 +728,7 @@ export function bindEvents(container) {
             student_doc_id: stuInput.dataset.docid,
             grade: document.getElementById('input-grade').value,
             inst_id: instInput.dataset.docid,
+            inst_history_idx: instInput.dataset.historyIdx || '', // ⭐ 儲存套用的歷史版本
             period_type: document.getElementById('input-period-type').value,
             duration: durationInput,
             insurance: document.getElementById('input-insurance').value,
@@ -937,20 +938,24 @@ export function bindEvents(container) {
     // --- 處理機構版本確認視窗事件 ---
     const instVersionModal = document.getElementById('inst-version-modal');
     
-    container.querySelector('#btn-close-inst-version')?.addEventListener('click', () => {
+    // 按下取消時，要清空輸入框與隱藏資訊卡
+    const clearInstModal = () => {
         instVersionModal.classList.remove('open');
-    });
-    
-    container.querySelector('#btn-cancel-inst-version')?.addEventListener('click', () => {
-        instVersionModal.classList.remove('open');
-    });
+        const instIn = document.getElementById('input-institution');
+        if(instIn) { instIn.value = ''; instIn.dataset.docid = ''; instIn.dataset.historyIdx = ''; }
+        const card = document.getElementById('selected-inst-info-card');
+        if(card) card.style.display = 'none';
+    };
+
+    container.querySelector('#btn-close-inst-version')?.addEventListener('click', clearInstModal);
+    container.querySelector('#btn-cancel-inst-version')?.addEventListener('click', clearInstModal);
 
     container.querySelector('#btn-confirm-inst-version')?.addEventListener('click', () => {
         const instId = instVersionModal.dataset.instId;
         const inst = state.allInsts.find(i => i.id === instId);
         if(!inst) return;
 
-        const selectedRadio = document.querySelector('input[name="modal_inst_version"]:checked');
+        const selectedRadio = instVersionModal.querySelector('input[name="modal_inst_version"]:checked');
         const val = selectedRadio ? selectedRadio.value : 'current';
         
         let displayData = inst;
@@ -961,13 +966,12 @@ export function bindEvents(container) {
             }
         }
 
-        // 呼叫 render 函式更新資訊卡
         Render.updateInstInfoCardUI(displayData);
         
-        // 將選擇的名字填回輸入框，並把版本紀錄藏在 dataset 中
         const instIn = document.getElementById('input-institution');
         if(instIn) {
             instIn.value = displayData.name;
+            instIn.dataset.docid = instId; // ⭐ 這裡補上 docid，主表單才能成功儲存
             instIn.dataset.historyIdx = val === 'current' ? '' : val;
         }
 
