@@ -71,7 +71,7 @@ export function bindEvents(container) {
         const currentPaymentType = paymentTypeSelect?.value;
 
         let options = '<option value="">請選擇</option>';
-        if (allowance === '工資') {
+        if (allowance === '工意') {
             options += '<option value="月薪">月薪</option><option value="時薪">時薪</option><option value="其他">其他</option>';
         } else if (allowance === '獎學金' || allowance === '津貼') {
             options += '<option value="月給">月給</option><option value="一次性">一次性</option><option value="其他">其他</option>';
@@ -136,7 +136,7 @@ export function bindEvents(container) {
             const isInput = targetTag === 'input' || targetTag === 'textarea' || targetTag === 'select';
 
             if (e.key === 'Escape') {
-                const openModals = document.querySelectorAll('.dialog-overlay.open, .info-modal-overlay.open, .fs-modal.open');
+                const openModals = document.querySelectorAll('.dialog-overlay.open, .fs-modal.open');
                 const openDropdowns = document.querySelectorAll('.filter-dropdown.show');
                 const displayMenu = document.getElementById('display-settings-menu');
                 
@@ -583,10 +583,6 @@ export function bindEvents(container) {
 
     container.querySelector('#btn-close-modal-x')?.addEventListener('click', UI.closeFormModal);
     container.querySelector('#btn-cancel-modal')?.addEventListener('click', UI.closeFormModal);
-    container.querySelector('#btn-info-student')?.addEventListener('click', () => UI.showInfoPopup('student'));
-    container.querySelector('#btn-info-inst')?.addEventListener('click', () => UI.showInfoPopup('inst'));
-    container.querySelector('#btn-info-close')?.addEventListener('click', UI.closeInfoPopup);
-    container.querySelector('#btn-info-footer-close')?.addEventListener('click', UI.closeInfoPopup);
 
     container.querySelector('#btn-submit')?.addEventListener('click', async () => {
         if(state.isReadOnly) return;
@@ -742,11 +738,6 @@ export function bindEvents(container) {
             fillValue('input-moe-reason', data.moe_reason || '');
             fillValue('input-dept-notes', data.dept_notes || '');
             fillValue('input-notes', data.notes || '');
-            
-            const btnInfoStu = document.getElementById('btn-info-student');
-            if(btnInfoStu) btnInfoStu.disabled = !stu;
-            const btnInfoInst = document.getElementById('btn-info-inst');
-            if(btnInfoInst) btnInfoInst.disabled = !inst;
 
             handlePaymentFieldsCascade();
             handleMoeCascade();
@@ -784,13 +775,11 @@ export function bindEvents(container) {
         e.target.dataset.docid = ''; 
         document.getElementById('student-dropdown').classList.add('show'); 
         Render.renderStudentDropdown(state.allStudents, e.target.value); 
-        document.getElementById('btn-info-student').disabled = true;
         UI.updateRespDeptOptions();
     });
     
     container.querySelector('#input-institution')?.addEventListener('input', (e) => { 
         e.target.dataset.docid = ''; 
-        document.getElementById('btn-info-inst').disabled = true;
         document.getElementById('institution-dropdown').classList.add('show'); 
         Render.renderInstDropdown(state.allInsts, e.target.value); 
     });
