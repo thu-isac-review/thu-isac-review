@@ -60,9 +60,10 @@ export function updateRespDeptOptions(preselectedValue = '') {
     const selectEl = document.getElementById('input-resp-dept');
     if (!selectEl) return;
 
+    // ⭐ 修正：改用 dataset.docid 精準抓取學生，不受顯示格式改變的影響
     const stuIn = document.getElementById('input-student');
-    const stuMatch = stuIn ? stuIn.value.split(' - ')[0] : '';
-    const stu = state.allStudents.find(s => s.student_id === stuMatch);
+    const stuDocId = stuIn ? stuIn.dataset.docid : '';
+    const stu = state.allStudents.find(s => s.id === stuDocId);
     const stuDept = stu ? stu.department : null;
 
     const courseDepts = state.selectedCourseIds.map(cid => {
@@ -71,8 +72,8 @@ export function updateRespDeptOptions(preselectedValue = '') {
     }).filter(Boolean);
 
     const deptsSet = new Set();
-    if (stuDept) deptsSet.add(stuDept);
-    courseDepts.forEach(d => deptsSet.add(d));
+    if (stuDept) deptsSet.add(stuDept); // 加入學生所屬學系
+    courseDepts.forEach(d => deptsSet.add(d)); // 加入開課學系
 
     const uniqueDepts = Array.from(deptsSet);
 
