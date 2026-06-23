@@ -856,8 +856,25 @@ export function bindEvents(container) {
             const inst = state.allInsts.find(i => i.id === data.inst_id);
             const instInput = document.getElementById('input-institution');
             if(instInput) {
-                instInput.value = inst ? inst.name : ''; 
                 instInput.dataset.docid = data.inst_id || '';
+                instInput.dataset.historyIdx = data.inst_history_idx || '';
+                
+                if (inst) {
+                    let displayData = inst;
+                    // 如果這筆紀錄有綁定歷史版本，就抓出歷史資料
+                    // (匯入的資料 data.inst_history_idx 會是空值，所以自動 fallback 為現況最新資料)
+                    if (data.inst_history_idx !== undefined && data.inst_history_idx !== '' && inst.history && inst.history[data.inst_history_idx]) {
+                        displayData = inst.history[data.inst_history_idx];
+                    }
+                    instInput.value = displayData.name;
+                    
+                    // 編輯時不跳視窗，直接在下方靜態渲染該版本的資訊卡
+                    Render.updateInstInfoCardUI(displayData); 
+                } else {
+                    instInput.value = '';
+                    const card = document.getElementById('selected-inst-info-card');
+                    if (card) card.style.display = 'none';
+                }
             }
             
             const fillValue = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
