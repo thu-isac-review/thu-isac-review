@@ -580,7 +580,13 @@ export function bindEvents(container) {
         document.getElementById('input-grade').value = preGrade;
 
         const instInput = document.getElementById('input-institution');
-        if(instInput) { instInput.value = ''; instInput.dataset.docid = ''; }
+        if(instInput) { 
+            instInput.value = ''; 
+            instInput.dataset.docid = ''; 
+            instInput.dataset.historyIdx = ''; 
+        }
+        const instCard = document.getElementById('selected-inst-info-card');
+        if(instCard) instCard.style.display = 'none';
         
         ['input-duration', 'input-hours', 'input-period-type', 'input-proof-type', 'input-insurance', 'input-employment', 
          'input-allowance', 'input-payment-type', 'input-payment-desc', 'input-payment-amount', 'input-funding', 
