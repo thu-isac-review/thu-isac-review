@@ -551,9 +551,11 @@ export function bindEvents(container) {
 
         handlePaymentFieldsCascade();
         handleMoeCascade();
+        
+        // ⭐ 渲染課程標籤時，會順便自動更新「負責填報系所」選單
         Render.renderSelectedCourseChips();
-        const respDept = document.getElementById('input-resp-dept');
-        if(respDept) respDept.innerHTML = '<option value="">請先選擇學生與關聯課程...</option>';
+        
+        // (把原本那兩行異常清空選單的舊代碼刪掉)
         
         switchTab('tab-course'); // 預設跳到修課紀錄
         UI.openFormModal(false);
