@@ -81,6 +81,19 @@ export function updatePillActive(type) {
     }
 }
 
+// 🌟 動態判斷是否需要顯示左右滑動按鈕
+export function updateFilterScrollButtons() {
+    const scrollArea = document.getElementById('filter-container');
+    const leftBtn = document.getElementById('btn-scroll-left');
+    const rightBtn = document.getElementById('btn-scroll-right');
+    if (scrollArea && leftBtn && rightBtn) {
+        // 當內容寬度大於容器寬度時才顯示按鈕
+        const isScrollable = scrollArea.scrollWidth > scrollArea.clientWidth;
+        leftBtn.style.display = isScrollable ? 'flex' : 'none';
+        rightBtn.style.display = isScrollable ? 'flex' : 'none';
+    }
+}
+
 // 🌟 Notion 佈局核心邏輯 (加入終極防呆機制)
 export function updateColumnVisibility() {
     let styleEl = document.getElementById('dynamic-col-styles');
