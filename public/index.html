@@ -8,8 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- 1. 引入 Phosphor Icons Web (供外層框架與選單使用) -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- 1. 引入 Lucide Icons (供外層框架與選單使用) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     
     <!-- 2. 補回 Tabler Icons (為了讓 dashboard.js 等子頁面原本的圖示正常顯示) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
@@ -106,8 +106,8 @@
         .nav-item:hover { background: var(--bg); color: var(--text-primary); }
         .nav-item.active { background: var(--brand-light); color: var(--brand); font-weight: 700; }
         
-        /* 針對 Phosphor Icons 的大小微調 */
-        .nav-item i { font-size: 20px; flex-shrink: 0; text-align: center; width: 22px; }
+        /* 針對 Lucide Icons 轉換後的 svg 大小微調 */
+        .nav-item svg { width: 20px; height: 20px; flex-shrink: 0; }
 
         /* 全新高質感載入動畫 (Modern Spinner) */
         .modern-spinner {
@@ -156,9 +156,9 @@
                         <div class="logo-text font-bold text-sm text-gray-900 leading-tight">學生校外實習資料庫</div>
                     </div>
                 </div>
-                <!-- 無框圓角正方形關閉按鈕 (改為粗體) -->
+                <!-- 無框圓角正方形關閉按鈕 -->
                 <button class="w-8 h-8 flex items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600" onclick="toggleSidebar(false)">
-                    <i class="ph-bold ph-x text-lg"></i>
+                    <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
             
@@ -167,54 +167,54 @@
                 <!-- 凍結首頁看板 -->
                 <div class="sticky top-0 z-10 bg-white pt-3 pb-2 -mx-2 px-2 border-b border-gray-50/50 mb-2">
                     <div class="nav-item !mb-0" data-hash="dashboard" data-roles="all">
-                        <i class="ph-bold ph-house"></i><span>首頁看板</span>
+                        <i data-lucide="home"></i><span>首頁看板</span>
                     </div>
                 </div>
                 
                 <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-2 mb-1" data-roles="all">實習資料清單</div>
                 
                 <div class="nav-item" data-hash="intern_view/course/main" data-roles="all">
-                    <i class="ph-bold ph-book-open"></i><span>實習課程列表</span>
+                    <i data-lucide="book-open"></i><span>實習課程列表</span>
                 </div>
                 <div class="nav-item" data-hash="intern_view/institution/main" data-roles="all">
-                    <i class="ph-bold ph-buildings"></i><span>實習機構列表</span>
+                    <i data-lucide="building-2"></i><span>實習機構列表</span>
                 </div>
                 <div class="nav-item" data-hash="intern_view/student/main" data-roles="all">
-                    <i class="ph-bold ph-users"></i><span>實習學生列表</span>
+                    <i data-lucide="users"></i><span>實習學生列表</span>
                 </div>
                 <div class="nav-item" data-hash="intern_view/intern_record/main" data-roles="all">
-                    <i class="ph-bold ph-file-text"></i><span>實習記錄列表</span>
+                    <i data-lucide="file-text"></i><span>實習記錄列表</span>
                 </div>
 
                 <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-4 mb-1" data-roles="admin">實習資料管理</div>
                 
                 <div class="nav-item" data-hash="intern_manage/course/main" data-roles="admin">
-                    <i class="ph-bold ph-notebook"></i><span>實習課程管理</span>
+                    <i data-lucide="notebook"></i><span>實習課程管理</span>
                 </div>
                 <div class="nav-item" data-hash="intern_manage/institution/main" data-roles="admin">
-                    <i class="ph-bold ph-building"></i><span>實習機構管理</span>
+                    <i data-lucide="building"></i><span>實習機構管理</span>
                 </div>
                 <div class="nav-item" data-hash="intern_manage/student/main" data-roles="admin">
-                    <i class="ph-bold ph-user-gear"></i><span>實習學生管理</span>
+                    <i data-lucide="user-cog"></i><span>實習學生管理</span>
                 </div>
                 <div class="nav-item" data-hash="intern_manage/intern_record/main" data-roles="admin">
-                    <i class="ph-bold ph-clipboard-text"></i><span>實習記錄管理</span>
+                    <i data-lucide="clipboard-list"></i><span>實習記錄管理</span>
                 </div>
 
                 <!-- 資料統計區塊 -->
                 <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-4 mb-1" data-roles="admin">資料統計</div>
                 
                 <div class="nav-item" data-hash="analytics" data-roles="admin">
-                    <i class="ph-bold ph-chart-pie"></i><span>進階統計分析</span>
+                    <i data-lucide="pie-chart"></i><span>進階統計分析</span>
                 </div>
 
                 <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-4 mb-1" data-roles="admin">系統管理</div>
                 
                 <div class="nav-item" data-hash="manage/roles" data-roles="admin">
-                    <i class="ph-bold ph-shield-check"></i><span>用戶權限管理</span>
+                    <i data-lucide="shield-check"></i><span>用戶權限管理</span>
                 </div>
                 <div class="nav-item" data-hash="manage/departments" data-roles="admin">
-                    <i class="ph-bold ph-tree-structure"></i><span>實習系所管理</span>
+                    <i data-lucide="network"></i><span>實習系所管理</span>
                 </div>
             </div>
 
@@ -233,12 +233,12 @@
             <!-- 頂部導覽列 -->
             <header id="topbar" class="h-14 bg-white flex items-center px-4 md:px-6 gap-3 flex-shrink-0 z-20 border-b border-gray-200">
                 <button class="flex p-1.5 rounded-md border border-gray-200 text-gray-500 hover:text-blue-600 hover:bg-gray-50 transition" onclick="toggleSidebar(true)">
-                    <i class="ph-bold ph-list text-lg"></i>
+                    <i data-lucide="menu" class="w-5 h-5"></i>
                 </button>
                 
                 <div class="flex items-center gap-1.5 text-xs font-medium text-gray-400 flex-1 truncate ml-2">
                     <span class="hidden sm:inline">首頁</span>
-                    <i class="ph-bold ph-caret-right hidden sm:inline text-sm"></i>
+                    <i data-lucide="chevron-right" class="w-4 h-4 hidden sm:inline"></i>
                     <span id="breadcrumbChild" class="text-gray-900 font-semibold">載入中...</span>
                 </div>
                 
@@ -255,7 +255,7 @@
                     <div class="h-5 w-px bg-gray-200"></div>
                     
                     <div class="w-8 h-8 rounded-md border border-red-100 bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-100 cursor-pointer transition" id="logoutBtn">
-                        <i class="ph-bold ph-sign-out text-lg"></i>
+                        <i data-lucide="log-out" class="w-5 h-5"></i>
                     </div>
                 </div>
             </header>
@@ -440,12 +440,17 @@
                     const module = await import(`./assets/js/pages/${hash}.js?v=${new Date().getTime()}`);
                     if(module.render) {
                         await module.render('content-view-container', { db: dbInstance });
+                        
+                        // 若子頁面內部也有使用 Lucide Icons，則在這裡觸發初始化
+                        if (window.lucide) {
+                            lucide.createIcons();
+                        }
                     }
                 } catch (error) {
                     console.error("路由加載失敗:", error);
                     container.innerHTML = `
                         <div class="flex flex-col items-center justify-center h-full p-6 text-red-500 text-center">
-                            <i class="ph-bold ph-warning text-[64px] mb-3"></i>
+                            <i data-lucide="alert-triangle" class="w-16 h-16 mb-3"></i>
                             <h2 class="text-xl font-bold">模組載入失敗</h2>
                             <p class="text-sm mt-2 text-gray-500">此模組尚未部署或載入異常：<br>./assets/js/pages/${hash}.js</p>
                             <div class="mt-5 p-4 bg-red-50 rounded-xl text-sm font-mono text-red-600 max-w-2xl text-left border border-red-200 overflow-x-auto shadow-sm">
@@ -453,6 +458,10 @@
                             </div>
                         </div>
                     `;
+                    // 動態插入錯誤畫面圖示後，需呼叫初始化轉換
+                    if (window.lucide) {
+                        lucide.createIcons();
+                    }
                 }
             };
 
@@ -488,6 +497,13 @@
                 overlay.classList.remove('show'); 
             }
         }
+
+        // 頁面初次渲染完畢後，初始化所有靜態的 Lucide Icons
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        });
     </script>
 </body>
 </html>
