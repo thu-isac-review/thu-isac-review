@@ -39,8 +39,17 @@ export function showToast(message, type = "info") {
 export function openFormModal(isEdit = false) {
     document.getElementById('data-modal').classList.add('open');
     document.getElementById('modal-title').innerHTML = `<i class="ti ti-briefcase text-brand" style="font-size: 20px;"></i> ${isEdit ? '編輯實習紀錄' : '新增實習紀錄'}`;
-}
 
+    // ⭐ 新增：鎖定主表單的學生輸入框，無論是新增還是編輯都不可修改
+    const stuInput = document.getElementById('input-student');
+    if (stuInput) {
+        stuInput.disabled = true;
+        // 讓欄位看起來反灰，提示使用者無法點擊
+        stuInput.style.backgroundColor = 'var(--bg)';
+        stuInput.style.color = 'var(--text-muted)';
+        stuInput.style.cursor = 'not-allowed';
+    }
+}
 export function closeFormModal() {
     document.getElementById('data-modal').classList.remove('open');
     state.editingId = null;
