@@ -619,50 +619,30 @@ export function renderSelectedCourseChips(skipRespUpdate = false) {
 export function renderSelectedInstInfo(instId) {
     const inst = state.allInsts.find(i => i.id === instId);
     const card = document.getElementById('selected-inst-info-card');
-    const versionContainer = document.getElementById('inst-version-selector-container');
-    const versionList = document.getElementById('inst-version-list');
 
     if (!inst) {
         if (card) card.style.display = 'none';
-        if (versionContainer) versionContainer.style.display = 'none';
         return;
     }
 
-    // 1. 填寫基本資訊卡
-    document.getElementById('inst-card-name').textContent = inst.name || '-';
-    document.getElementById('inst-card-industry').textContent = inst.industry || '-';
-    document.getElementById('inst-card-country').textContent = inst.country || '-';
-    document.getElementById('inst-card-city').textContent = inst.city || '-';
-    document.getElementById('inst-card-address').textContent = inst.address || '-';
-
-    // 判斷國別：海外機構不顯示統編
-    const isOverseas = inst.country && inst.country !== '中華民國';
-    if (isOverseas) {
-        document.getElementById('inst-card-taxid').innerHTML = '<span style="color: var(--text-muted);">(海外機構免填)</span>';
-    } else {
-        document.getElementById('inst-card-taxid').textContent = inst.tax_id || '-';
-    }
-
-    card.style.display = 'block';
-
-    // 2. 歷史版本選擇防呆 (判斷是否有 history 屬性)
     const histories = inst.history || [];
     
-    let html = `
-        <label class="inst-version-label" style="display: flex; align-items: flex-start; gap: 10px; padding: 12px; border: 1px solid var(--brand-border); border-radius: 8px; background: var(--brand-light); cursor: pointer; transition: 0.2s;">
-            <input type="radio" name="inst_version" value="current" checked style="margin-top: 2px; accent-color: var(--brand);">
-            <div>
-                <div style="font-size: 13px; font-weight: 700; color: var(--brand);">使用現況最新資料</div>
-                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">${inst.name} | ${inst.address || ''}</div>
-            </div>
-        </label>
-    `;
-
+    // 如果有歷史紀錄 (總版本 >= 2)，彈出獨立視窗
     if (histories.length > 0) {
+        let html = `
+            <label class="inst-version-label" style="display: flex; align-items: flex-start; gap: 10px; padding: 12px; border: 1px solid var(--brand-border); border-radius: 8px; background: var(--brand-light); cursor: pointer; transition: 0.2s;">
+                <input type="radio" name="modal_inst_version" value="current" checked style="margin-top: 2px; accent-color: var(--brand);">
+                <div>
+                    <div style="font-size: 13px; font-weight: 700; color: var(--brand);">使用現況最新資料</div>
+                    <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">${inst.name} | ${inst.address || ''}</div>
+                </div>
+            </label>
+        `;
+
         histories.forEach((h, idx) => {
             html += `
             <label class="inst-version-label" style="display: flex; align-items: flex-start; gap: 10px; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: #ffffff; cursor: pointer; transition: 0.2s;">
-                <input type="radio" name="inst_version" value="history_${idx}" style="margin-top: 2px; accent-color: var(--brand);">
+                <input type="radio" name="modal_inst_version" value="${idx}" style="margin-top: 2px; accent-color: var(--brand);">
                 <div>
                     <div style="font-size: 13px; font-weight: 700; color: var(--text-primary);">歷史快照 (適用於 ${h.end_date} 前)</div>
                     <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">${h.name} | ${h.address || ''}</div>
@@ -671,23 +651,52 @@ export function renderSelectedInstInfo(instId) {
             </label>
             `;
         });
+
+        const listContainer = document.getElementById('inst-version-modal-list');
+        listContainer.innerHTML = html;
+        
+        listContainer.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                listContainer.querySelectorAll('.inst-version-label').forEach(lbl => {
+                    lbl.style.borderColor = 'var(--border)';
+                    lbl.style.background = '#ffffff';
+                    lbl.querySelector('div > div:first-child').style.color = 'var(--text-primary)';
+                });
+                const selectedLabel = e.target.closest('label');
+                selectedLabel.style.borderColor = 'var(--brand-border)';
+                selectedLabel.style.background = 'var(--brand-light)';
+                selectedLabel.querySelector('div > div:first-child').style.color = 'var(--brand)';
+            });
+        });
+
+        // 把 ID 記錄在視窗 DOM 上，等待使用者按下確認
+        const versionModal = document.getElementById('inst-version-modal');
+        versionModal.dataset.instId = instId;
+        versionModal.classList.add('open');
+        
+    } else {
+        // 只有 1 個版本，不開視窗，直接畫下方資訊卡
+        updateInstInfoCardUI(inst);
+    }
+}
+
+// 專責渲染資訊卡內容的 Helper
+export function updateInstInfoCardUI(displayData) {
+    const card = document.getElementById('selected-inst-info-card');
+    if (!card) return;
+    
+    document.getElementById('inst-card-name').textContent = displayData.name || '-';
+    document.getElementById('inst-card-industry').textContent = displayData.industry || '-';
+    document.getElementById('inst-card-country').textContent = displayData.country || '-';
+    document.getElementById('inst-card-city').textContent = displayData.city || '-';
+    document.getElementById('inst-card-address').textContent = displayData.address || '-';
+
+    const isOverseas = displayData.country && displayData.country !== '中華民國';
+    if (isOverseas) {
+        document.getElementById('inst-card-taxid').innerHTML = '<span style="color: var(--text-muted);">(海外機構免填)</span>';
+    } else {
+        document.getElementById('inst-card-taxid').textContent = displayData.tax_id || '-';
     }
 
-    versionList.innerHTML = html;
-    versionContainer.style.display = 'block';
-
-    // 綁定 Radio 切換時的高亮樣式
-    versionList.querySelectorAll('input[type="radio"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            versionList.querySelectorAll('.inst-version-label').forEach(lbl => {
-                lbl.style.borderColor = 'var(--border)';
-                lbl.style.background = '#ffffff';
-                lbl.querySelector('div > div:first-child').style.color = 'var(--text-primary)';
-            });
-            const selectedLabel = e.target.closest('label');
-            selectedLabel.style.borderColor = 'var(--brand-border)';
-            selectedLabel.style.background = 'var(--brand-light)';
-            selectedLabel.querySelector('div > div:first-child').style.color = 'var(--brand)';
-        });
-    });
+    card.style.display = 'block';
 }
