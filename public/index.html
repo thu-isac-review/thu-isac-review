@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>學生校外實習管理系統 - 東海大學實習中心</title>
+    <title>學生校外實实习管理系統 - 東海大學實習中心</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -30,7 +30,7 @@
             --indigo: #4f46e5; --indigo-bg: #e0e7ff; --indigo-border: #c7d2fe;
             
             /* 3. 佈局與基礎色 */
-            --sidebar-w: 280px; /* 稍微加寬以符合抽屜式設計 */
+            --sidebar-w: 280px; 
             --topbar-h: 56px;
             --bg: #f8f9fc; --surface: #ffffff; --border: #e5e7ef; --border-strong: #cdd0dd;
             --text-primary: #111827; --text-secondary: #4b5563; --text-muted: #9ca3af;
@@ -54,7 +54,7 @@
         /* 隱藏直到身分驗證完成 */
         body { visibility: hidden; }
 
-        /* GitHub Style Drawer Sidebar */
+        /* GitHub Style Drawer Sidebar + 右側圓角 */
         #sidebar { 
             position: fixed; 
             top: 0; 
@@ -69,12 +69,16 @@
             transform: translateX(-100%); 
             transition: transform var(--transition); 
             box-shadow: var(--shadow-lg);
+            /* 🌟 右側圓角設定 */
+            border-top-right-radius: var(--radius-xl);
+            border-bottom-right-radius: var(--radius-xl);
+            overflow: hidden;
         }
         #sidebar.open { 
             transform: translateX(0); 
         }
         
-        /* 統一遮罩層 (桌機與手機共用) */
+        /* 統一遮罩層 */
         .drawer-overlay { 
             position: fixed; 
             inset: 0; 
@@ -94,6 +98,11 @@
         .nav-item i { font-size: 18px; flex-shrink: 0; text-align: center; width: 20px; }
         .nav-item:hover { background: var(--bg); color: var(--text-primary); }
         .nav-item.active { background: var(--brand-light); color: var(--brand); font-weight: 700; }
+        
+        /* 🌟 右上角使用者帳號點選啟用時的高亮效果 */
+        #profileBtn.active { background: var(--brand-light); }
+        #profileBtn.active #userTitleName { color: var(--brand); }
+
         .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
         
@@ -180,17 +189,6 @@
                     <i class="ti ti-subtask"></i><span>實習系所管理</span>
                 </div>
             </div>
-            
-            <div class="p-2 border-t border-gray-200 bg-white flex-shrink-0">
-                <div class="nav-item !mb-0" id="profileBtn" data-hash="profile" data-roles="all">
-                    <div class="w-7 h-7 rounded-full text-xs font-bold flex items-center justify-center" style="background: var(--brand-light); color: var(--brand); border: 1.5px solid var(--brand-border)" id="userAvatar">U</div>
-                    <div class="user-info flex-1 min-w-0">
-                        <div class="text-xs font-bold text-gray-900 truncate" id="userTitleName">載入中...</div>
-                        <div class="text-[10px] text-gray-400 truncate" id="userRoleTag">讀取權限中...</div>
-                    </div>
-                    <i class="ti ti-settings settings-icon text-gray-400 text-sm"></i>
-                </div>
-            </div>
         </nav>
 
         <div id="main" class="flex-1 flex flex-col overflow-hidden min-w-0">
@@ -205,7 +203,17 @@
                     <span id="breadcrumbChild" class="text-gray-900 font-semibold">載入中...</span>
                 </div>
                 
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <div class="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-gray-50 cursor-pointer transition select-none" id="profileBtn" data-hash="profile" data-roles="all">
+                        <div class="w-7 h-7 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0" style="background: var(--brand-light); color: var(--brand); border: 1.5px solid var(--brand-border)" id="userAvatar">U</div>
+                        <div class="user-info hidden sm:block text-left min-w-0 max-w-[120px]">
+                            <div class="text-xs font-bold text-gray-900 truncate leading-tight" id="userTitleName">載入中...</div>
+                            <div class="text-[10px] text-gray-400 truncate mt-0.5" id="userRoleTag">讀取權限中...</div>
+                        </div>
+                    </div>
+                    
+                    <div class="h-5 w-px bg-gray-200"></div>
+                    
                     <div class="w-8 h-8 rounded-md border border-red-100 bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-100 cursor-pointer transition" id="logoutBtn">
                         <i class="ti ti-logout text-lg"></i>
                     </div>
