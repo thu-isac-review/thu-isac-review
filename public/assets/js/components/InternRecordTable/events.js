@@ -574,11 +574,19 @@ export function bindEvents(container) {
             if(el) el.value = '';
         });
 
-        // ⭐ 最重要：把前置視窗選到的學生，直接塞進主表單
-        const stuInput = document.getElementById('input-student');
-        if(stuInput) { 
-            stuInput.value = preInput.value; 
-            stuInput.dataset.docid = preInput.dataset.docid; 
+        // ⭐ 將學生資訊寫入全局 Banner 與隱藏欄位
+        const docId = preInput.dataset.docid;
+        const stu = state.allStudents.find(s => s.id === docId);
+        if (stu) {
+            document.getElementById('global-student-name').textContent = stu.name;
+            document.getElementById('global-student-id').textContent = stu.student_id;
+            document.getElementById('global-student-dept').textContent = `${getColShort(stu.college)} / ${getDeptShort(stu.department)}`;
+            
+            const stuInput = document.getElementById('input-student');
+            if(stuInput) { 
+                stuInput.value = `${stu.name}（${stu.student_id}）`; 
+                stuInput.dataset.docid = docId; 
+            }
         }
 
         handlePaymentFieldsCascade();
@@ -781,10 +789,21 @@ export function bindEvents(container) {
             document.getElementById('input-academic-year').value = data.academic_year || '';
 
             const stu = state.allStudents.find(s => s.id === data.student_doc_id);
-            const stuInput = document.getElementById('input-student');
-            if(stuInput) {
-                stuInput.value = stu ? `${stu.name}（${stu.student_id}）` : '';
-                stuInput.dataset.docid = data.student_doc_id || '';
+            if (stu) {
+                document.getElementById('global-student-name').textContent = stu.name;
+                document.getElementById('global-student-id').textContent = stu.student_id;
+                document.getElementById('global-student-dept').textContent = `${getColShort(stu.college)} / ${getDeptShort(stu.department)}`;
+                
+                const stuInput = document.getElementById('input-student');
+                if(stuInput) {
+                    stuInput.value = `${stu.name}（${stu.student_id}）`;
+                    stuInput.dataset.docid = data.student_doc_id || '';
+                }
+            } else {
+                // 防呆：如果學生已被刪除，但紀錄還在
+                document.getElementById('global-student-name').textContent = data.student_name || '未知學生';
+                document.getElementById('global-student-id').textContent = data.student_id || '';
+                document.getElementById('global-student-dept').textContent = getDeptShort(data.dept) || '-';
             }
             
             const inst = state.allInsts.find(i => i.id === data.inst_id);
