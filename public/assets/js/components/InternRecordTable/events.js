@@ -599,13 +599,17 @@ export function bindEvents(container) {
         if (stu) {
             document.getElementById('global-student-name').textContent = stu.name;
             document.getElementById('global-student-id').textContent = stu.student_id;
-            document.getElementById('global-student-dept').textContent = `${getColShort(stu.college)} / ${getDeptShort(stu.department)}`;
             
-            // ⭐ 寫入年級、性別、國籍標籤
+            // 👉 修改 1：將年級整併到學院/學系字串的最後面
+            document.getElementById('global-student-dept').textContent = `${getColShort(stu.college)} / ${getDeptShort(stu.department)} / ${preGrade} 年級`;
+            
+            // 👉 修改 2：移除年級標籤，並為性別與國籍賦予專屬配色
+            const genderColor = stu.gender === '女' ? 'bg-rose-50 text-rose-700 border-rose-200' : (stu.gender === '男' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-slate-50 text-slate-700 border-slate-200');
+            const natColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+            
             document.getElementById('global-student-tags').innerHTML = `
-                <span class="badge badge-outline-gray">${preGrade} 年級</span>
-                <span class="badge badge-outline-gray">${stu.gender || '未知性別'}</span>
-                <span class="badge badge-outline-gray">${stu.nationality || '未知國籍'}</span>
+                <span class="border px-2 py-0.5 rounded text-[11px] font-bold tracking-wide ${genderColor}">${stu.gender || '未知性別'}</span>
+                <span class="border px-2 py-0.5 rounded text-[11px] font-bold tracking-wide ${natColor}">${stu.nationality || '未知國籍'}</span>
             `;
             
             const stuInput = document.getElementById('input-student');
@@ -818,13 +822,17 @@ export function bindEvents(container) {
             if (stu) {
                 document.getElementById('global-student-name').textContent = stu.name;
                 document.getElementById('global-student-id').textContent = stu.student_id;
-                document.getElementById('global-student-dept').textContent = `${getColShort(stu.college)} / ${getDeptShort(stu.department)}`;
                 
-                // ⭐ 寫入年級、性別、國籍標籤 (年級從 data 拿，性別國籍從 stu 拿)
+                // 👉 修改 1：將年級整併到學院/學系字串的最後面
+                document.getElementById('global-student-dept').textContent = `${getColShort(stu.college)} / ${getDeptShort(stu.department)} / ${data.grade || '-'} 年級`;
+                
+                // 👉 修改 2：移除年級標籤，並為性別與國籍賦予專屬配色
+                const genderColor = stu.gender === '女' ? 'bg-rose-50 text-rose-700 border-rose-200' : (stu.gender === '男' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-slate-50 text-slate-700 border-slate-200');
+                const natColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+
                 document.getElementById('global-student-tags').innerHTML = `
-                    <span class="badge badge-outline-gray">${data.grade || '-'} 年級</span>
-                    <span class="badge badge-outline-gray">${stu.gender || '未知性別'}</span>
-                    <span class="badge badge-outline-gray">${stu.nationality || '未知國籍'}</span>
+                    <span class="border px-2 py-0.5 rounded text-[11px] font-bold tracking-wide ${genderColor}">${stu.gender || '未知性別'}</span>
+                    <span class="border px-2 py-0.5 rounded text-[11px] font-bold tracking-wide ${natColor}">${stu.nationality || '未知國籍'}</span>
                 `;
                 
                 const stuInput = document.getElementById('input-student');
@@ -833,9 +841,11 @@ export function bindEvents(container) {
                     stuInput.dataset.docid = data.student_doc_id || '';
                 }
             } else {
+                // 防呆：如果學生已被刪除，但紀錄還在
                 document.getElementById('global-student-name').textContent = data.student_name || '未知學生';
                 document.getElementById('global-student-id').textContent = data.student_id || '';
-                document.getElementById('global-student-dept').textContent = getDeptShort(data.dept) || '-';
+                // 同步防呆邏輯的年級顯示
+                document.getElementById('global-student-dept').textContent = `${getDeptShort(data.dept) || '-'} / ${data.grade || '-'} 年級`;
                 document.getElementById('global-student-tags').innerHTML = '';
             }
             
