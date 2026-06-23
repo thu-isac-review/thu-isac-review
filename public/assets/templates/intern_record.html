@@ -1,4 +1,5 @@
 <link rel="stylesheet" href="./assets/css/intern_record.css">
+<!-- 🌟 讓 JS 動態注入欄寬的專屬 Style 標籤 -->
 <style id="dynamic-col-styles"></style>
 
 <div id="intern-record-page-wrapper" style="height: 100%; display: flex; flex-direction: column; overflow: hidden; position: relative;">
@@ -11,10 +12,9 @@
                 </div>
                 <div style="position: relative; display: flex; align-items: center;">
                     <i class="ti ti-calendar-event" style="position: absolute; left: 12px; color: var(--brand); font-size: 16px; pointer-events: none; z-index: 1;"></i>
-                    <select id="global-academic-year" class="field-select" style="width: 150px; height: 34px; border: 1px solid var(--brand-border); border-radius: var(--radius); padding: 0 30px 0 36px; font-size: 13px; outline: none; cursor: pointer; background: var(--brand-light); color: var(--brand); font-weight: 700; appearance: none; -webkit-appearance: none;">
+                    <select id="global-academic-year" class="field-select" style="width: 160px; height: 34px; border: 1px solid var(--brand-border); border-radius: var(--radius); padding-left: 36px; font-size: 13px; font-weight: 700; color: var(--brand); background-color: var(--brand-light); cursor: pointer; outline: none;">
                         <option value="">全學年度</option>
                     </select>
-                    <i class="ti ti-chevron-down" style="position: absolute; right: 12px; color: var(--brand); font-size: 14px; pointer-events: none; z-index: 1;"></i>
                 </div>
             </div>
             <div class="flex-spacer"></div>
@@ -35,9 +35,10 @@
 
         <div class="filter-row" style="position: relative; display: flex; align-items: center; padding: 10px 24px;">
             <div class="filters-scroll-wrapper">
-                <button id="btn-scroll-left" class="btn btn-icon sm btn-scroll"><i class="ti ti-chevron-left"></i></button>
+                <!-- 🌟 優化左右滑動按鈕樣式 -->
+                <button id="btn-scroll-left" class="btn btn-icon sm btn-scroll-nav"><i class="ti ti-chevron-left"></i></button>
                 <div class="filters-scroll-area custom-scroll" id="filter-container" style="margin: 0 8px;"></div>
-                <button id="btn-scroll-right" class="btn btn-icon sm btn-scroll"><i class="ti ti-chevron-right"></i></button>
+                <button id="btn-scroll-right" class="btn btn-icon sm btn-scroll-nav"><i class="ti ti-chevron-right"></i></button>
             </div>
 
             <div class="relative inline-block text-left" id="display-settings-wrap" style="flex-shrink: 0; margin-left: 12px;">
@@ -119,6 +120,7 @@
         </div>
     </div>
 
+    <!-- 🌟 表單彈窗 -->
     <div id="data-modal" class="dialog-overlay">
         <!-- 放大寬度以容納左選單與右內容 -->
         <div class="dialog-box" style="max-width: 1000px; width: 95vw; height: 85vh; display: flex; flex-direction: column;">
@@ -171,7 +173,6 @@
                                     <input type="text" id="input-student" class="field-input" placeholder="搜尋學號或姓名..." autocomplete="off">
                                     <div id="student-dropdown" class="search-dropdown custom-scroll"></div>
                                 </div>
-                                <button type="button" id="btn-info-student" class="btn-info-pop" disabled title="查看學生詳情"><i class="ti ti-info-circle"></i></button>
                             </div>
                         </div>
                         <div class="field" style="margin-top: 16px;">
@@ -197,7 +198,7 @@
                                 <div class="field-label" style="font-size: 13px;">已選擇的修習課程明細</div>
                                 <span id="selected-course-count" class="badge badge-outline-blue">已選 0 門</span>
                             </div>
-                            <div id="selected-courses-container" class="custom-scroll" style="display: flex; flex-direction: column; overflow-y: scroll; min-height: 200px; border: 1px solid var(--border); border-radius: var(--radius); padding: 0 8px; background: #f8f9fc;">
+                            <div id="selected-courses-container" class="custom-scroll" style="display: flex; flex-direction: column; overflow-y: auto; min-height: 200px; border: 1px solid var(--border); border-radius: var(--radius); padding: 0 8px; background: #f8f9fc;">
                             </div>
                         </div>
                     </div>
@@ -212,7 +213,6 @@
                                     <input type="text" id="input-institution" class="field-input" placeholder="搜尋機構名稱或統編..." autocomplete="off">
                                     <div id="institution-dropdown" class="search-dropdown custom-scroll"></div>
                                 </div>
-                                <button type="button" id="btn-info-inst" class="btn-info-pop" disabled title="查看機構詳情"><i class="ti ti-info-circle"></i></button>
                             </div>
                         </div>
                         <div class="field" style="margin-top: 16px;">
@@ -355,19 +355,6 @@
                 </div>
                 <button type="button" class="btn btn-secondary" id="btn-cancel-modal">取消</button>
                 <button type="button" id="btn-submit" class="btn btn-primary"><i class="ti ti-check"></i> 確認儲存</button>
-            </div>
-        </div>
-    </div>
-    
-    <div id="info-popup" class="info-modal-overlay">
-        <div class="info-modal-box" style="z-index: 1000; position: relative;">
-            <div class="info-modal-header">
-                <h4 id="info-popup-title" style="font-weight: 700; font-size: 14px; margin: 0;">詳情確認</h4>
-                <button id="btn-info-close" class="btn btn-icon sm" style="background:transparent; color: var(--text-muted);"><i class="ti ti-x"></i></button>
-            </div>
-            <div id="info-popup-body" class="info-modal-body"></div>
-            <div style="padding: 12px 24px; border-top: 1px solid var(--border); text-align: right; background: var(--bg);">
-                <button id="btn-info-footer-close" class="btn btn-secondary btn-sm">關閉</button>
             </div>
         </div>
     </div>
