@@ -538,11 +538,8 @@ export function bindEvents(container) {
     document.addEventListener('click', (e) => {
         const dropdown = document.getElementById('pre-student-dropdown');
         const input = document.getElementById('pre-input-student');
-        if (dropdown && dropdown.classList.contains('show')) {
-            // 如果點擊的目標不是 input，且不在 dropdown 內部，就隱藏
-            if (e.target !== input && !dropdown.contains(e.target)) {
-                dropdown.classList.remove('show');
-            }
+            if (!e.target.closest('#input-course-search') && !e.target.closest('#course-dropdown')) {
+            document.getElementById('course-dropdown')?.classList.remove('show');
         }
     });
 
@@ -930,8 +927,10 @@ export function bindEvents(container) {
         Render.renderInstDropdown(state.allInsts, e.target.value); 
     });
     
+    // 1. 綁定課程搜尋輸入事件
     container.querySelector('#input-course-search')?.addEventListener('input', (e) => { 
-        document.getElementById('course-dropdown').classList.add('show'); 
+        const dropdown = document.getElementById('course-dropdown');
+        dropdown.classList.add('show'); 
         Render.renderCourseDropdown(state.allCourses, e.target.value); 
     });
 }
