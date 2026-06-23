@@ -93,7 +93,7 @@
             visibility: visible; 
         }
 
-        .sidebar-logo { height: var(--topbar-h); padding: 0 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+        .sidebar-logo { height: var(--topbar-h); padding: 0 16px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
         .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius); cursor: pointer; color: var(--text-secondary); font-size: 13px; font-weight: 500; transition: all 0.2s; user-select: none; margin-bottom: 2px; white-space: nowrap; }
         .nav-item i { font-size: 18px; flex-shrink: 0; text-align: center; width: 20px; }
         .nav-item:hover { background: var(--bg); color: var(--text-primary); }
@@ -139,16 +139,15 @@
                 </button>
             </div>
             
-            <div class="flex-1 px-2 py-3 overflow-y-auto custom-scroll" id="sidebarMenu">
-                <div class="nav-item" data-hash="dashboard" data-roles="all">
-                    <i class="ti ti-home"></i><span>首頁看板</span>
-                </div>
-
-                <div class="nav-item" data-hash="analytics" data-roles="admin">
-                    <i class="ti ti-chart-pie"></i><span>進階統計分析</span>
+            <div class="flex-1 px-2 pt-0 pb-3 overflow-y-auto custom-scroll relative" id="sidebarMenu">
+                
+                <div class="sticky top-0 z-10 bg-white pt-3 pb-2 -mx-2 px-2 border-b border-gray-50/50 mb-2">
+                    <div class="nav-item !mb-0" data-hash="dashboard" data-roles="all">
+                        <i class="ti ti-home"></i><span>首頁</span>
+                    </div>
                 </div>
                 
-                <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-4 mb-1" data-roles="all">實習資料清單</div>
+                <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-2 mb-1" data-roles="all">實習資料清單</div>
                 
                 <div class="nav-item" data-hash="intern_view/course/main" data-roles="all">
                     <i class="ti ti-book-2"></i><span>實習課程列表</span>
@@ -176,6 +175,12 @@
                 </div>
                 <div class="nav-item" data-hash="intern_manage/intern_record/main" data-roles="admin">
                     <i class="ti ti-file-settings"></i><span>實習記錄管理</span>
+                </div>
+
+                <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-4 mb-1" data-roles="admin">資料統計</div>
+                
+                <div class="nav-item" data-hash="analytics" data-roles="admin">
+                    <i class="ti ti-chart-pie"></i><span>進階統計分析</span>
                 </div>
 
                 <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-4 mb-1" data-roles="admin">系統管理</div>
