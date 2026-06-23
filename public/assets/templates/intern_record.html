@@ -234,22 +234,20 @@
 
             <!-- 取消原本的 border-top，避免雙重線條 -->
             <div class="dialog-body-container" style="flex: 1; display: flex; overflow: hidden;">
-                <!-- 🌟 左側 Tabs 選單 -->
+                <!-- 🌟 左側 Tabs 選單 (移除了「其他備註」) -->
                 <div class="modal-sidebar">
                     <button type="button" class="tab-btn active" data-tab="tab-course"><i class="ti ti-book"></i> 修課紀錄</button>
                     <button type="button" class="tab-btn" data-tab="tab-inst"><i class="ti ti-building-skyscraper"></i> 實習機構</button>
                     <button type="button" class="tab-btn" data-tab="tab-info"><i class="ti ti-clipboard-text"></i> 實習資訊</button>
                     <button type="button" class="tab-btn" data-tab="tab-allowance"><i class="ti ti-coin"></i> 實習待遇</button>
                     <button type="button" class="tab-btn" data-tab="tab-moe"><i class="ti ti-building-community"></i> 校庫填報</button>
-                    <button type="button" class="tab-btn" data-tab="tab-notes"><i class="ti ti-notes"></i> 其他備註</button>
                 </div>
 
                 <!-- 🌟 右側表單內容區 -->
                 <form id="data-form" class="modal-content-area custom-scroll">
                     
-                    <!-- TAB: 修課紀錄 (已整合學年度、年級與負責填報系所) -->
+                    <!-- TAB: 修課紀錄 (維持不動) -->
                     <div id="tab-course" class="tab-content active">
-                    
                         <div class="field" style="margin-bottom: 16px;">
                             <label class="field-label">搜尋課程 <span class="req">*</span></label>
                             <div class="search-input-wrap" style="position: relative;">
@@ -258,7 +256,7 @@
                                 <div id="course-dropdown" class="search-dropdown custom-scroll"></div>
                             </div>
                         </div>
-                    
+
                         <div class="clean-section stretch-section" style="display: flex; flex-direction: column; margin-bottom: 16px;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                                 <div class="field-label" style="font-size: 13px;">已選擇的修習課程明細</div>
@@ -267,24 +265,23 @@
                             <div id="selected-courses-container" class="custom-scroll" style="display: flex; flex-direction: column; overflow-y: auto; height: 210px; border: 1px solid var(--border); border-radius: var(--radius); padding: 8px; background: #f8f9fc; gap: 8px;">
                             </div>
                         </div>
-                    
+
                         <div class="field">
                             <label class="field-label">負責填報系所 <span class="req">*</span></label>
                             <select id="input-resp-dept" class="field-select" required>
                                 <option value="">請先選擇學生與關聯課程...</option>
                             </select>
                         </div>
-                    
+
                         <div style="display: none;">
                             <input type="text" id="input-student">
                             <input type="text" id="input-academic-year">
                             <input type="text" id="input-grade">
-                        </div>            
+                        </div>
                     </div>
 
-                    <!-- TAB: 實習機構 -->
+                    <!-- TAB: 實習機構 (移出職缺與來源) -->
                     <div id="tab-inst" class="tab-content" style="display: none;">
-                        
                         <div class="field">
                             <label class="field-label">搜尋並選擇實習機構 <span class="req">*</span></label>
                             <div class="search-input-wrap" style="position: relative;">
@@ -294,7 +291,6 @@
                             </div>
                         </div>
 
-                        <!-- 🌟 選取後的機構資訊卡 -->
                         <div id="selected-inst-info-card" style="display: none; background: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-top: 12px; margin-bottom: 24px;">
                             <div style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
                                 <i class="ti ti-building-skyscraper text-brand"></i> <span id="inst-card-name">機構名稱</span>
@@ -307,30 +303,9 @@
                                 <div style="grid-column: span 2;"><span style="color: var(--text-muted); font-size: 11px; display: block; margin-bottom: 2px;">實習場所地址</span><span id="inst-card-address">-</span></div>
                             </div>
                         </div>
-
-                        <div class="form-grid">
-                            <div class="field">
-                                <label class="field-label">實習機會來源 <span class="req">*</span></label>
-                                <select id="input-opp-source" class="field-select" required>
-                                    <option value="">請選擇</option>
-                                    <option value="系所開發">系所開發</option>
-                                    <option value="實習中心轉介">實習中心轉介</option>
-                                    <option value="實習機構主動洽詢">實習機構主動洽詢</option>
-                                    <option value="學生自尋">學生自尋</option>
-                                </select>
-                            </div>
-                            <div class="field">
-                                <label class="field-label">實習職缺類型 <span class="req">*</span></label>
-                                <select id="input-job-type" class="field-select" required>
-                                    <option value="">請選擇</option>
-                                    <option value="見習型">見習型</option>
-                                    <option value="儲備型">儲備型</option>
-                                </select>
-                            </div>
-                        </div>
                     </div>
 
-                    <!-- TAB: 實習資訊 -->
+                    <!-- TAB: 實習資訊 (大匯集) -->
                     <div id="tab-info" class="tab-content" style="display: none;">
                         <div class="form-grid">
                             <div class="field">
@@ -344,21 +319,15 @@
                                 <input type="text" id="input-duration" class="field-input" placeholder="YYY/MM/DD-YYY/MM/DD" required>
                             </div>
                             <div class="field">
-                                <label class="field-label">總時數</label>
-                                <input type="number" id="input-hours" class="field-input" placeholder="可留空 (待補)" min="0">
+                                <label class="field-label">總時數 <span class="req">*</span></label>
+                                <input type="number" id="input-hours" class="field-input" placeholder="請輸入總時數" min="0" required>
                             </div>
                             <div class="field">
-                                <label class="field-label">證明文件 <span class="req">*</span></label>
+                                <label class="field-label">證明文件類型 <span class="req">*</span></label>
                                 <select id="input-proof-type" class="field-select" required>
                                     <option value="">請選擇</option><option value="合約">合約</option><option value="公函">公函</option><option value="其他證明文件">其他證明文件</option>
                                 </select>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- TAB: 實習待遇 -->
-                    <div id="tab-allowance" class="tab-content" style="display: none;">
-                        <div class="form-grid">
                             <div class="field">
                                 <label class="field-label">勞雇關係 <span class="req">*</span></label>
                                 <select id="input-employment" class="field-select" required>
@@ -372,14 +341,34 @@
                                 </select>
                             </div>
                             <div class="field">
+                                <label class="field-label">實習機會來源 <span class="req">*</span></label>
+                                <select id="input-opp-source" class="field-select" required>
+                                    <option value="">請選擇</option><option value="系所開發">系所開發</option><option value="實習中心轉介">實習中心轉介</option><option value="實習機構主動洽詢">實習機構主動洽詢</option><option value="學生自尋">學生自尋</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label class="field-label">實習職缺類型 <span class="req">*</span></label>
+                                <select id="input-job-type" class="field-select" required>
+                                    <option value="">請選擇</option><option value="見習型">見習型</option><option value="儲備型">儲備型</option>
+                                </select>
+                            </div>
+                            <div class="field" style="grid-column: span 2;">
+                                <label class="field-label">補助經費來源 <span class="req">*</span></label>
+                                <select id="input-funding" class="field-select" required>
+                                    <option value="">請選擇</option><option value="教育部補助-高等教育深耕計畫">教育部補助-高等教育深耕計畫</option><option value="教育部補助-學海築夢">教育部補助-學海築夢</option><option value="國內民間單位">國內民間單位</option><option value="無經費補助">無經費補助</option><option value="校內經費預算">校內經費預算</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB: 實習待遇 (簡化版) -->
+                    <div id="tab-allowance" class="tab-content" style="display: none;">
+                        <div class="form-grid">
+                            <div class="field">
                                 <label class="field-label">實習待遇 <span class="req">*</span></label>
                                 <select id="input-allowance" class="field-select" required>
                                     <option value="">請選擇</option><option value="無">無</option><option value="工資">工資</option><option value="獎學金">獎學金</option><option value="津貼">津貼</option>
                                 </select>
-                            </div>
-                            <div class="field">
-                                <label class="field-label">給付金額</label>
-                                <input type="number" id="input-payment-amount" class="field-input" placeholder="選填" min="0">
                             </div>
                             <div class="field">
                                 <label class="field-label">給付類型 <span class="req" id="req-payment-type" style="display:none;">*</span></label>
@@ -388,13 +377,17 @@
                                 </select>
                             </div>
                             <div class="field">
+                                <label class="field-label">給付金額</label>
+                                <input type="number" id="input-payment-amount" class="field-input" placeholder="給付金額" min="0">
+                            </div>
+                            <div class="field">
                                 <label class="field-label">其他給付類型說明 <span class="req" id="req-payment-desc" style="display:none;">*</span></label>
                                 <input type="text" id="input-payment-desc" class="field-input" placeholder="限20中文字" maxlength="20" disabled>
                             </div>
                         </div>
                     </div>
 
-                    <!-- TAB: 校庫填報 -->
+                    <!-- TAB: 校庫填報 (併入原備註欄位) -->
                     <div id="tab-moe" class="tab-content" style="display: none;">
                         <div class="form-grid">
                             <div class="field">
@@ -409,28 +402,13 @@
                                 <label class="field-label">不符合原因 <span class="req" id="req-moe-reason" style="display:none;">*</span></label>
                                 <input type="text" id="input-moe-reason" class="field-input" placeholder="選擇不符合時填寫" disabled>
                             </div>
-                            <div class="field" style="grid-column: span 2;">
-                                <label class="field-label">補助經費來源 <span class="req">*</span></label>
-                                <select id="input-funding" class="field-select" required>
-                                    <option value="">請選擇</option>
-                                    <option value="教育部補助-高等教育深耕計畫">教育部補助-高等教育深耕計畫</option>
-                                    <option value="教育部補助-學海築夢">教育部補助-學海築夢</option>
-                                    <option value="國內民間單位">國內民間單位</option>
-                                    <option value="無經費補助">無經費補助</option>
-                                    <option value="校內經費預算">校內經費預算</option>
-                                </select>
-                            </div>
                         </div>
-                    </div>
-
-                    <!-- TAB: 其他備註 -->
-                    <div id="tab-notes" class="tab-content" style="display: none;">
-                        <div class="field" style="display: flex; flex-direction: column;">
+                        <div class="field" style="display: flex; flex-direction: column; margin-top: 16px;">
                             <label class="field-label">系所備註說明</label>
                             <textarea id="input-dept-notes" class="field-input custom-scroll" placeholder="專給系所備註使用..." style="height: 120px; resize: none; padding-top: 10px;"></textarea>
                         </div>
                         <div class="field" style="display: flex; flex-direction: column; margin-top: 16px;">
-                            <label class="field-label">備註 (選填)</label>
+                            <label class="field-label">實習中心備註 (選填)</label>
                             <textarea id="input-notes" class="field-input custom-scroll" placeholder="選填備註..." style="height: 120px; resize: none; padding-top: 10px;"></textarea>
                         </div>
                     </div>
