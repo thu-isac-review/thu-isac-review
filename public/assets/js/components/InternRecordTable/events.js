@@ -595,7 +595,7 @@ export function bindEvents(container) {
         const respDept = document.getElementById('input-resp-dept');
         if(respDept) respDept.innerHTML = '<option value="">請先選擇學生與關聯課程...</option>';
         
-        switchTab('tab-student'); 
+        switchTab('tab-course'); 
         UI.openFormModal(false);
     });
 
@@ -848,7 +848,7 @@ export function bindEvents(container) {
             state.selectedCourseIds = Array.isArray(data.courses) ? [...data.courses] : [];
             Render.renderSelectedCourseChips(true);
             UI.updateRespDeptOptions(data.resp_dept);
-            switchTab('tab-student'); // 強制回到第一頁
+            switchTab('tab-course'); // 強制回到第一頁
             UI.openFormModal(true);
         }
 
