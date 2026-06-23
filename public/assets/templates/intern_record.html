@@ -120,29 +120,54 @@
         </div>
     </div>
 
-    <!-- 前置選擇學生視窗 -->
-    <div id="pre-select-student-modal" class="dialog-overlay">
-        <div class="dialog-box" style="max-width: 500px;">
-            <div class="dialog-header">
-                <h3 style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700;">
-                    <i class="ti ti-user-search text-brand" style="font-size: 20px;"></i> 選擇要新增紀錄的學生
+    <!-- 前置選擇學生視窗 (優化版) -->
+<div id="pre-select-student-modal" class="dialog-overlay">
+    <!-- 加上 overflow: visible 允許下拉選單超出視窗邊界，不會再被截斷 -->
+    <div class="dialog-box" style="max-width: 550px; overflow: visible !important;">
+        
+        <!-- 標題區 (增加淺灰色背景與圓角) -->
+        <div class="dialog-header flex-col items-start p-0 border-none">
+            <div style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 20px 24px 16px; border-bottom: 1px solid var(--border); background: #f8fafc; border-radius: 12px 12px 0 0;">
+                <h3 style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700; color: var(--text-primary);">
+                    <i class="ti ti-user-search" style="color: var(--brand); font-size: 22px;"></i> 選擇要新增紀錄的學生
                 </h3>
                 <button type="button" class="dialog-close" id="btn-close-pre-select"><i class="ti ti-x"></i></button>
             </div>
-            <div class="dialog-body custom-scroll" style="padding: 24px;">
-                <div class="field">
-                    <label class="field-label">搜尋並選擇學生 <span class="req">*</span></label>
-                    <div class="search-input-wrap">
-                        <!-- 給予獨立的 ID，避免跟主表單衝突 -->
-                        <input type="text" id="pre-input-student" class="field-input" placeholder="輸入學號或姓名搜尋..." autocomplete="off">
-                        <div id="pre-student-dropdown" class="search-dropdown custom-scroll"></div>
+        </div>
+        
+        <!-- 內容區 (取消 overflow: auto 避免截斷下拉選單) -->
+        <div class="dialog-body" style="padding: 24px; background: #ffffff; overflow: visible !important;">
+            
+            <!-- 提示說明區塊 (增加質感) -->
+            <div style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 12px 16px; border-radius: 8px; font-size: 13px; line-height: 1.6; margin-bottom: 24px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                請在下方輸入關鍵字搜尋，指定要建立實習紀錄的學生。<br>
+                <span style="font-weight: 700;">注意：</span>為確保資料關聯正確，建立後將無法於表單內變更該名學生。
+            </div>
+
+            <div class="field" style="margin-bottom: 12px;">
+                <label class="field-label" style="color: var(--text-secondary);">搜尋並選擇學生 <span class="req">*</span></label>
+                
+                <div class="search-input-wrap" style="position: relative;">
+                    <!-- 搜尋放大鏡圖示 -->
+                    <div style="position: absolute; left: 12px; top: 0; bottom: 0; display: flex; align-items: center; pointer-events: none;">
+                        <i class="ti ti-search" style="color: var(--text-muted); font-size: 16px;"></i>
                     </div>
+                    
+                    <!-- 輸入框 (加高、加寬 padding 給 icon) -->
+                    <input type="text" id="pre-input-student" class="field-input" placeholder="輸入學號或姓名搜尋..." autocomplete="off" style="padding-left: 36px; background: #f8fafc; transition: all 0.2s; height: 42px; font-size: 14px;">
+                    
+                    <!-- 下拉選單 (修正 z-index 層級與陰影，並確保可以懸浮於彈窗外) -->
+                    <div id="pre-student-dropdown" class="search-dropdown custom-scroll" style="position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #ffffff; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15); max-height: 250px; overflow-y: auto; z-index: 99999;"></div>
                 </div>
             </div>
-            <div class="dialog-footer" style="padding: 16px 24px; border-top: 1px solid var(--border);">
-                <button type="button" class="btn btn-secondary" id="btn-cancel-pre-select">取消</button>
-                <button type="button" id="btn-confirm-pre-select" class="btn btn-primary">確認並繼續</button>
-            </div>
+        </div>
+        
+        <!-- 底部按鈕區 (對齊整體設計語言) -->
+        <div class="dialog-footer" style="padding: 16px 24px; border-top: 1px solid var(--border); background: #f8fafc; border-radius: 0 0 12px 12px; display: flex; justify-content: flex-end; gap: 10px;">
+            <button type="button" class="btn btn-secondary" id="btn-cancel-pre-select" style="background: #ffffff; height: 36px; padding: 0 16px;">取消</button>
+            <button type="button" id="btn-confirm-pre-select" class="btn btn-primary" style="height: 36px; padding: 0 16px; box-shadow: 0 2px 4px rgba(26,86,219,0.2);">
+                確認並繼續 <i class="ti ti-arrow-right" style="margin-left: 4px; font-size: 16px;"></i>
+            </button>
         </div>
     </div>
 
