@@ -547,13 +547,34 @@ export function renderSelectedCourseChips(skipRespUpdate = false) {
     const container = document.getElementById('selected-courses-container');
     if (!container) return;
     
-    // ⭐ 將 maxHeight 改為 height，強制鎖死容器高度
     container.style.height = '210px';
     container.style.overflowY = 'auto';
     container.style.gap = '8px';
     
+    // ⭐ 新增：計算所有已選課程的總學分
+    let totalCredits = 0;
+    state.selectedCourseIds.forEach(id => {
+        const c = state.allCourses.find(x => x.id === id);
+        // 確保該課程有學分且轉換為數字進行加總
+        if (c && c.credits) {
+            totalCredits += Number(c.credits) || 0;
+        }
+    });
+    
+    // ⭐ 更新：將計算出來的總學分顯示在標籤上
     const countSpan = document.getElementById('selected-course-count');
-    if (countSpan) countSpan.innerText = `已選 ${state.selectedCourseIds.length} 門`;
+    if (countSpan) {
+        countSpan.innerText = `已選 ${state.selectedCourseIds.length} 門，共計 ${totalCredits} 學分`;
+    }
+
+    if (state.selectedCourseIds.length === 0) { 
+        container.innerHTML = `
+            <div style="height: 100%; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-weight: 600; font-size: 13px;">
+                <i class="ti ti-inbox" style="margin-right: 6px; font-size: 16px;"></i>尚未加入課程
+            </div>`; 
+        if (!skipRespUpdate && UI.updateRespDeptOptions) UI.updateRespDeptOptions(); 
+        return; 
+    }
 
     if (state.selectedCourseIds.length === 0) { 
         container.innerHTML = `
