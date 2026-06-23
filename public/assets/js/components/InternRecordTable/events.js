@@ -479,6 +479,16 @@ export function bindEvents(container) {
         if(state.isReadOnly) return;
         document.getElementById('pre-select-student-modal').classList.add('open');
         
+        // ⭐ 新增：產生並同步學年度的選項到前置視窗
+        Render.populateAcademicYearDropdown();
+        const mainYearSelect = document.getElementById('input-academic-year');
+        const preYearSelect = document.getElementById('pre-input-academic-year');
+        if (mainYearSelect && preYearSelect) {
+            preYearSelect.innerHTML = mainYearSelect.innerHTML;
+            preYearSelect.value = state.currentAcademicYear || '';
+        }
+        document.getElementById('pre-input-grade').value = '';
+
         const preInput = document.getElementById('pre-input-student');
         if(preInput) {
             preInput.value = '';
@@ -547,9 +557,18 @@ export function bindEvents(container) {
         }
     });
 
-    // --- 5. 點擊「確認並繼續」，將學生帶入主表單並開啟 ---
+    // --- 5. 點擊「確認並繼續」，將前置資料帶入主表單並開啟 ---
     container.querySelector('#btn-confirm-pre-select')?.addEventListener('click', () => {
+        const preYear = document.getElementById('pre-input-academic-year').value;
+        const preGrade = document.getElementById('pre-input-grade').value;
         const preInput = document.getElementById('pre-input-student');
+
+        // ⭐ 新增：防呆檢查
+        if (!preYear || !preGrade) {
+            UI.showToast("請先選擇學年度與當學年年級！", "warning");
+            return;
+        }
+
         if (!preInput || !preInput.dataset.docid) {
             UI.showToast("請先從選單中選擇一名學生！", "warning");
             return;
@@ -557,12 +576,12 @@ export function bindEvents(container) {
 
         document.getElementById('pre-select-student-modal').classList.remove('open');
 
-        // 將原先「新增紀錄」該做的事情在這裡做
         state.editingId = null; state.selectedCourseIds = [];
-        Render.populateAcademicYearDropdown();
-        document.getElementById('input-academic-year').value = state.currentAcademicYear || '';
-        document.getElementById('input-grade').value = '';
         
+        // ⭐ 將前置視窗的學年度與年級寫入主表單
+        document.getElementById('input-academic-year').value = preYear;
+        document.getElementById('input-grade').value = preGrade;
+
         const instInput = document.getElementById('input-institution');
         if(instInput) { instInput.value = ''; instInput.dataset.docid = ''; }
         
@@ -574,13 +593,20 @@ export function bindEvents(container) {
             if(el) el.value = '';
         });
 
-        // ⭐ 將學生資訊寫入全局 Banner 與隱藏欄位
+        // ⭐ 將學生資訊寫入全局 Banner 
         const docId = preInput.dataset.docid;
         const stu = state.allStudents.find(s => s.id === docId);
         if (stu) {
             document.getElementById('global-student-name').textContent = stu.name;
             document.getElementById('global-student-id').textContent = stu.student_id;
             document.getElementById('global-student-dept').textContent = `${getColShort(stu.college)} / ${getDeptShort(stu.department)}`;
+            
+            // ⭐ 寫入年級、性別、國籍標籤
+            document.getElementById('global-student-tags').innerHTML = `
+                <span class="badge badge-outline-gray">${preGrade} 年級</span>
+                <span class="badge badge-outline-gray">${stu.gender || '未知性別'}</span>
+                <span class="badge badge-outline-gray">${stu.nationality || '未知國籍'}</span>
+            `;
             
             const stuInput = document.getElementById('input-student');
             if(stuInput) { 
@@ -794,16 +820,23 @@ export function bindEvents(container) {
                 document.getElementById('global-student-id').textContent = stu.student_id;
                 document.getElementById('global-student-dept').textContent = `${getColShort(stu.college)} / ${getDeptShort(stu.department)}`;
                 
+                // ⭐ 寫入年級、性別、國籍標籤 (年級從 data 拿，性別國籍從 stu 拿)
+                document.getElementById('global-student-tags').innerHTML = `
+                    <span class="badge badge-outline-gray">${data.grade || '-'} 年級</span>
+                    <span class="badge badge-outline-gray">${stu.gender || '未知性別'}</span>
+                    <span class="badge badge-outline-gray">${stu.nationality || '未知國籍'}</span>
+                `;
+                
                 const stuInput = document.getElementById('input-student');
                 if(stuInput) {
                     stuInput.value = `${stu.name}（${stu.student_id}）`;
                     stuInput.dataset.docid = data.student_doc_id || '';
                 }
             } else {
-                // 防呆：如果學生已被刪除，但紀錄還在
                 document.getElementById('global-student-name').textContent = data.student_name || '未知學生';
                 document.getElementById('global-student-id').textContent = data.student_id || '';
                 document.getElementById('global-student-dept').textContent = getDeptShort(data.dept) || '-';
+                document.getElementById('global-student-tags').innerHTML = '';
             }
             
             const inst = state.allInsts.find(i => i.id === data.inst_id);
