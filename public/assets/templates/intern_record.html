@@ -191,8 +191,7 @@
             <div class="dialog-body-container" style="flex: 1; display: flex; overflow: hidden;">
                 <!-- 🌟 左側 Tabs 選單 -->
                 <div class="modal-sidebar">
-                    <button type="button" class="tab-btn active" data-tab="tab-student"><i class="ti ti-user"></i> 學生資訊</button>
-                    <button type="button" class="tab-btn" data-tab="tab-course"><i class="ti ti-book"></i> 修課紀錄</button>
+                    <button type="button" class="tab-btn active" data-tab="tab-course"><i class="ti ti-book"></i> 修課紀錄</button>
                     <button type="button" class="tab-btn" data-tab="tab-inst"><i class="ti ti-building-skyscraper"></i> 實習機構</button>
                     <button type="button" class="tab-btn" data-tab="tab-info"><i class="ti ti-clipboard-text"></i> 實習資訊</button>
                     <button type="button" class="tab-btn" data-tab="tab-allowance"><i class="ti ti-coin"></i> 實習待遇</button>
@@ -203,9 +202,10 @@
                 <!-- 🌟 右側表單內容區 -->
                 <form id="data-form" class="modal-content-area custom-scroll">
                     
-                    <!-- TAB: 學生資訊 -->
-                    <div id="tab-student" class="tab-content active">
-                        <div class="tab-header">學生資訊</div>
+                    <!-- TAB: 修課紀錄 (已整合學年度、年級與負責填報系所) -->
+                    <div id="tab-course" class="tab-content active">
+                        <div class="tab-header">修課紀錄</div>
+                        
                         <div class="form-grid">
                             <div class="field">
                                 <label class="field-label">學年度 <span class="req">*</span></label>
@@ -221,31 +221,31 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="field" style="margin-top: 16px; display: none;">
-                            <label class="field-label">實習學生 <span class="req">*</span></label>
-                            <div class="search-input-wrap">
-                                <input type="text" id="input-student" class="field-input" placeholder="搜尋學號或姓名..." autocomplete="off">
-                                <div id="student-dropdown" class="search-dropdown custom-scroll"></div>
-                            </div>
-                        </div>
+
                         <div class="field" style="margin-top: 16px;">
                             <label class="field-label">負責填報系所 <span class="req">*</span></label>
                             <select id="input-resp-dept" class="field-select" required>
                                 <option value="">請先選擇學生與關聯課程...</option>
                             </select>
                         </div>
-                    </div>
 
-                    <!-- TAB: 修課紀錄 -->
-                    <div id="tab-course" class="tab-content" style="display: none;">
-                        <div class="tab-header">修課紀錄</div>
-                        <div class="field">
+                        <div class="field" style="margin-top: 16px;">
                             <label class="field-label">實習機構 <span class="req">*</span></label>
                             <div class="search-input-wrap">
                                 <input type="text" id="input-institution" class="field-input" placeholder="搜尋機構名稱或統編..." autocomplete="off">
                                 <div id="institution-dropdown" class="search-dropdown custom-scroll"></div>
                             </div>
                         </div>
+
+                        <!-- 隱藏的實習學生輸入框 (保留給後端邏輯使用) -->
+                        <div class="field" style="display: none;">
+                            <label class="field-label">實習學生 <span class="req">*</span></label>
+                            <div class="search-input-wrap">
+                                <input type="text" id="input-student" class="field-input" placeholder="搜尋學號或姓名..." autocomplete="off">
+                                <div id="student-dropdown" class="search-dropdown custom-scroll"></div>
+                            </div>
+                        </div>
+
                         <div class="clean-section stretch-section" style="display: flex; flex-direction: column; margin-top: 24px;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                                 <div class="field-label" style="font-size: 13px;">已選擇的修習課程明細</div>
