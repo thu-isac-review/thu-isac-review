@@ -8,10 +8,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- 1. 引入 Lucide Icons (供外層框架與選單使用) -->
+    <!-- 1. 引入 Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
-    <!-- 2. 補回 Tabler Icons (為了讓 dashboard.js 等子頁面原本的圖示正常顯示) -->
+    <!-- 2. 補回 Tabler Icons (供子頁面使用) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -174,10 +174,12 @@
                 <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-2 mb-1" data-roles="all">實習資料清單</div>
                 
                 <div class="nav-item" data-hash="intern_view/course/main" data-roles="all">
-                    <i data-lucide="book-open"></i><span>實習課程列表</span>
+                    <!-- 課程修改為 library -->
+                    <i data-lucide="library"></i><span>實習課程列表</span>
                 </div>
                 <div class="nav-item" data-hash="intern_view/institution/main" data-roles="all">
-                    <i data-lucide="building-2"></i><span>實習機構列表</span>
+                    <!-- 機構修改為 building -->
+                    <i data-lucide="building"></i><span>實習機構列表</span>
                 </div>
                 <div class="nav-item" data-hash="intern_view/student/main" data-roles="all">
                     <i data-lucide="users"></i><span>實習學生列表</span>
@@ -186,19 +188,20 @@
                     <i data-lucide="file-text"></i><span>實習記錄列表</span>
                 </div>
 
+                <!-- 實習資料管理的 icon 比照列表 -->
                 <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-4 mb-1" data-roles="admin">實習資料管理</div>
                 
                 <div class="nav-item" data-hash="intern_manage/course/main" data-roles="admin">
-                    <i data-lucide="notebook"></i><span>實習課程管理</span>
+                    <i data-lucide="library"></i><span>實習課程管理</span>
                 </div>
                 <div class="nav-item" data-hash="intern_manage/institution/main" data-roles="admin">
                     <i data-lucide="building"></i><span>實習機構管理</span>
                 </div>
                 <div class="nav-item" data-hash="intern_manage/student/main" data-roles="admin">
-                    <i data-lucide="user-cog"></i><span>實習學生管理</span>
+                    <i data-lucide="users"></i><span>實習學生管理</span>
                 </div>
                 <div class="nav-item" data-hash="intern_manage/intern_record/main" data-roles="admin">
-                    <i data-lucide="clipboard-list"></i><span>實習記錄管理</span>
+                    <i data-lucide="file-text"></i><span>實習記錄管理</span>
                 </div>
 
                 <!-- 資料統計區塊 -->
