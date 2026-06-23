@@ -518,7 +518,7 @@ export function bindEvents(container) {
                     ${stu.name}（${stu.student_id}）
                 </div>
                 <div class="search-item-desc" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
-                    ${stu.college || '未綁定學院'} / ${stu.department || '未綁定學系'}
+                    ${getColShort(stu.college)} / ${getDeptShort(stu.department)}
                 </div>
             </div>
         `).join('');
