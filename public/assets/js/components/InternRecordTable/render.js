@@ -433,6 +433,8 @@ export function renderFilterDropdowns() {
         });
         wrapper.dataset.filterBound = "true";
     }
+    
+    UI.updateFilterScrollButtons();
 }
 
 export function renderStudentDropdown(list, term) {
