@@ -228,54 +228,35 @@
                     <!-- TAB: 修課紀錄 (已整合學年度、年級與負責填報系所) -->
                     <div id="tab-course" class="tab-content active">
                         <div class="tab-header">修課紀錄</div>
-                        
-                        <div class="form-grid">
-                            <div class="field">
-                                <label class="field-label">學年度 <span class="req">*</span></label>
-                                <select id="input-academic-year" class="field-select" required>
-                                    <option value="">請選擇</option>
-                                </select>
-                            </div>
-                            <div class="field">
-                                <label class="field-label">當學年年級 <span class="req">*</span></label>
-                                <select id="input-grade" required class="field-select">
-                                    <option value="">請選擇</option>
-                                    <option value="1">1 年級</option><option value="2">2 年級</option><option value="3">3 年級</option><option value="4">4 年級</option><option value="5">5 年級以上</option>
-                                </select>
+                    
+                        <div class="field" style="margin-bottom: 16px;">
+                            <label class="field-label">搜尋課程 <span class="req">*</span></label>
+                            <div class="search-input-wrap" style="position: relative;">
+                                <i class="ti ti-search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:16px;"></i>
+                                <input type="text" id="input-course-search" class="field-input" placeholder="輸入課程代號或名稱搜尋..." autocomplete="off" style="padding-left: 36px;">
+                                <div id="course-dropdown" class="search-dropdown custom-scroll"></div>
                             </div>
                         </div>
-
-                        <div class="field" style="margin-top: 16px;">
-                            <label class="field-label">負責填報系所 <span class="req">*</span></label>
-                            <select id="input-resp-dept" class="field-select" required>
-                                <option value="">請先選擇學生與關聯課程...</option>
-                            </select>
-                        </div>
-
-                        <div class="field" style="margin-top: 16px;">
-                            <label class="field-label">實習機構 <span class="req">*</span></label>
-                            <div class="search-input-wrap">
-                                <input type="text" id="input-institution" class="field-input" placeholder="搜尋機構名稱或統編..." autocomplete="off">
-                                <div id="institution-dropdown" class="search-dropdown custom-scroll"></div>
-                            </div>
-                        </div>
-
-                        <!-- 隱藏的實習學生輸入框 (保留給後端邏輯使用) -->
-                        <div class="field" style="display: none;">
-                            <label class="field-label">實習學生 <span class="req">*</span></label>
-                            <div class="search-input-wrap">
-                                <input type="text" id="input-student" class="field-input" placeholder="搜尋學號或姓名..." autocomplete="off">
-                                <div id="student-dropdown" class="search-dropdown custom-scroll"></div>
-                            </div>
-                        </div>
-
-                        <div class="clean-section stretch-section" style="display: flex; flex-direction: column; margin-top: 24px;">
+                    
+                        <div class="clean-section stretch-section" style="display: flex; flex-direction: column; margin-bottom: 16px;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                                 <div class="field-label" style="font-size: 13px;">已選擇的修習課程明細</div>
                                 <span id="selected-course-count" class="badge badge-outline-blue">已選 0 門</span>
                             </div>
                             <div id="selected-courses-container" class="custom-scroll" style="display: flex; flex-direction: column; overflow-y: auto; min-height: 200px; border: 1px solid var(--border); border-radius: var(--radius); padding: 0 8px; background: #f8f9fc;">
                             </div>
+                        </div>
+                    
+                        <div class="field">
+                            <label class="field-label">負責填報系所 <span class="req">*</span></label>
+                            <select id="input-resp-dept" class="field-select" required>
+                                <option value="">請先選擇學生與關聯課程...</option>
+                            </select>
+                        </div>
+                    
+                        <div style="display: none;">
+                            <select id="input-academic-year"></select>
+                            <select id="input-grade"></select>
                         </div>
                     </div>
 
