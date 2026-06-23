@@ -547,7 +547,7 @@ export function renderSelectedCourseChips(skipRespUpdate = false) {
     const container = document.getElementById('selected-courses-container');
     if (!container) return;
     
-    container.style.height = '210px';
+    container.style.height = '230px';
     container.style.overflowY = 'auto';
     container.style.gap = '8px';
     
