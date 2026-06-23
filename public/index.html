@@ -8,7 +8,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- 1. 引入 Phosphor Icons Web (供外層框架與選單使用) -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- 2. 補回 Tabler Icons (為了讓 dashboard.js 等子頁面原本的圖示正常顯示) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+    
     <script src="https://cdn.tailwindcss.com"></script>
 
     <link rel="stylesheet" href="./assets/css/institution.css">
@@ -131,15 +136,18 @@
 </head>
 <body>
 
+    <!-- 系統初始載入畫面 -->
     <div id="sysLoading" class="fixed inset-0 flex flex-col items-center justify-center bg-[#f8f9fc] z-[9999] p-4 text-center">
         <div class="modern-spinner"></div>
         <p id="loadingText" class="mt-5 text-sm font-bold text-gray-500 max-w-md leading-relaxed loading-text-transition opacity-0">系統載入中...</p>
     </div>
 
+    <!-- 抽屜側邊欄遮罩 -->
     <div id="drawerOverlay" class="drawer-overlay" onclick="toggleSidebar(false)"></div>
 
     <div id="app" class="flex w-full h-full overflow-hidden">
         
+        <!-- 側邊欄 -->
         <nav id="sidebar" class="custom-scroll flex-shrink-0 flex flex-col">
             <div class="sidebar-logo">
                 <div class="flex items-center gap-2">
@@ -148,65 +156,69 @@
                         <div class="logo-text font-bold text-sm text-gray-900 leading-tight">學生校外實習資料庫</div>
                     </div>
                 </div>
+                <!-- 無框圓角正方形關閉按鈕 (改為粗體) -->
                 <button class="w-8 h-8 flex items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600" onclick="toggleSidebar(false)">
-                    <i class="ph-light ph-x text-lg"></i>
+                    <i class="ph-bold ph-x text-lg"></i>
                 </button>
             </div>
             
             <div class="flex-1 px-2 pt-0 pb-3 overflow-y-auto custom-scroll relative" id="sidebarMenu">
                 
+                <!-- 凍結首頁看板 -->
                 <div class="sticky top-0 z-10 bg-white pt-3 pb-2 -mx-2 px-2 border-b border-gray-50/50 mb-2">
                     <div class="nav-item !mb-0" data-hash="dashboard" data-roles="all">
-                        <i class="ph-light ph-house"></i><span>首頁看板</span>
+                        <i class="ph-bold ph-house"></i><span>首頁看板</span>
                     </div>
                 </div>
                 
                 <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-2 mb-1" data-roles="all">實習資料清單</div>
                 
                 <div class="nav-item" data-hash="intern_view/course/main" data-roles="all">
-                    <i class="ph-light ph-book-open"></i><span>實習課程列表</span>
+                    <i class="ph-bold ph-book-open"></i><span>實習課程列表</span>
                 </div>
                 <div class="nav-item" data-hash="intern_view/institution/main" data-roles="all">
-                    <i class="ph-light ph-buildings"></i><span>實習機構列表</span>
+                    <i class="ph-bold ph-buildings"></i><span>實習機構列表</span>
                 </div>
                 <div class="nav-item" data-hash="intern_view/student/main" data-roles="all">
-                    <i class="ph-light ph-users"></i><span>實習學生列表</span>
+                    <i class="ph-bold ph-users"></i><span>實習學生列表</span>
                 </div>
                 <div class="nav-item" data-hash="intern_view/intern_record/main" data-roles="all">
-                    <i class="ph-light ph-file-text"></i><span>實習記錄列表</span>
+                    <i class="ph-bold ph-file-text"></i><span>實習記錄列表</span>
                 </div>
 
                 <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-4 mb-1" data-roles="admin">實習資料管理</div>
                 
                 <div class="nav-item" data-hash="intern_manage/course/main" data-roles="admin">
-                    <i class="ph-light ph-notebook"></i><span>實習課程管理</span>
+                    <i class="ph-bold ph-notebook"></i><span>實習課程管理</span>
                 </div>
                 <div class="nav-item" data-hash="intern_manage/institution/main" data-roles="admin">
-                    <i class="ph-light ph-building"></i><span>實習機構管理</span>
+                    <i class="ph-bold ph-building"></i><span>實習機構管理</span>
                 </div>
                 <div class="nav-item" data-hash="intern_manage/student/main" data-roles="admin">
-                    <i class="ph-light ph-user-gear"></i><span>實習學生管理</span>
+                    <i class="ph-bold ph-user-gear"></i><span>實習學生管理</span>
                 </div>
                 <div class="nav-item" data-hash="intern_manage/intern_record/main" data-roles="admin">
-                    <i class="ph-light ph-clipboard-text"></i><span>實習記錄管理</span>
+                    <i class="ph-bold ph-clipboard-text"></i><span>實習記錄管理</span>
                 </div>
 
+                <!-- 資料統計區塊 -->
                 <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-4 mb-1" data-roles="admin">資料統計</div>
                 
                 <div class="nav-item" data-hash="analytics" data-roles="admin">
-                    <i class="ph-light ph-chart-pie"></i><span>進階統計分析</span>
+                    <i class="ph-bold ph-chart-pie"></i><span>進階統計分析</span>
                 </div>
 
                 <div class="nav-group-label text-[10px] font-bold text-gray-400 tracking-wider px-2 mt-4 mb-1" data-roles="admin">系統管理</div>
                 
                 <div class="nav-item" data-hash="manage/roles" data-roles="admin">
-                    <i class="ph-light ph-shield-check"></i><span>用戶權限管理</span>
+                    <i class="ph-bold ph-shield-check"></i><span>用戶權限管理</span>
                 </div>
                 <div class="nav-item" data-hash="manage/departments" data-roles="admin">
-                    <i class="ph-light ph-tree-structure"></i><span>實習系所管理</span>
+                    <i class="ph-bold ph-tree-structure"></i><span>實習系所管理</span>
                 </div>
             </div>
 
+            <!-- 版權宣告區塊 -->
             <div class="px-4 py-4 border-t border-gray-100 flex-shrink-0 bg-gray-50/50">
                 <p class="text-[9.5px] text-gray-400 leading-relaxed text-center font-medium">
                     Copyright &copy; <span id="copyrightYear">2026</span><br>
@@ -218,17 +230,19 @@
         </nav>
 
         <div id="main" class="flex-1 flex flex-col overflow-hidden min-w-0">
+            <!-- 頂部導覽列 -->
             <header id="topbar" class="h-14 bg-white flex items-center px-4 md:px-6 gap-3 flex-shrink-0 z-20 border-b border-gray-200">
                 <button class="flex p-1.5 rounded-md border border-gray-200 text-gray-500 hover:text-blue-600 hover:bg-gray-50 transition" onclick="toggleSidebar(true)">
-                    <i class="ph-light ph-list text-lg"></i>
+                    <i class="ph-bold ph-list text-lg"></i>
                 </button>
                 
                 <div class="flex items-center gap-1.5 text-xs font-medium text-gray-400 flex-1 truncate ml-2">
                     <span class="hidden sm:inline">首頁</span>
-                    <i class="ph-light ph-caret-right hidden sm:inline text-sm"></i>
+                    <i class="ph-bold ph-caret-right hidden sm:inline text-sm"></i>
                     <span id="breadcrumbChild" class="text-gray-900 font-semibold">載入中...</span>
                 </div>
                 
+                <!-- 帳號資訊與登出區塊 -->
                 <div class="flex items-center gap-2 sm:gap-3">
                     <div class="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-gray-50 cursor-pointer transition select-none" id="profileBtn" data-hash="profile" data-roles="all">
                         <div class="w-7 h-7 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0" style="background: var(--brand-light); color: var(--brand); border: 1.5px solid var(--brand-border)" id="userAvatar">U</div>
@@ -241,7 +255,7 @@
                     <div class="h-5 w-px bg-gray-200"></div>
                     
                     <div class="w-8 h-8 rounded-md border border-red-100 bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-100 cursor-pointer transition" id="logoutBtn">
-                        <i class="ph-light ph-sign-out text-lg"></i>
+                        <i class="ph-bold ph-sign-out text-lg"></i>
                     </div>
                 </div>
             </header>
@@ -431,7 +445,7 @@
                     console.error("路由加載失敗:", error);
                     container.innerHTML = `
                         <div class="flex flex-col items-center justify-center h-full p-6 text-red-500 text-center">
-                            <i class="ph-light ph-warning text-[64px] mb-3"></i>
+                            <i class="ph-bold ph-warning text-[64px] mb-3"></i>
                             <h2 class="text-xl font-bold">模組載入失敗</h2>
                             <p class="text-sm mt-2 text-gray-500">此模組尚未部署或載入異常：<br>./assets/js/pages/${hash}.js</p>
                             <div class="mt-5 p-4 bg-red-50 rounded-xl text-sm font-mono text-red-600 max-w-2xl text-left border border-red-200 overflow-x-auto shadow-sm">
