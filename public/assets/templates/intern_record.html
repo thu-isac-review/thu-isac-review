@@ -12,7 +12,7 @@
                 </div>
                 <div style="position: relative; display: flex; align-items: center;">
                     <i class="ti ti-calendar-event" style="position: absolute; left: 12px; color: var(--brand); font-size: 16px; pointer-events: none; z-index: 1;"></i>
-                    <select id="global-academic-year" class="field-select" style="width: 160px; height: 34px; border: 1px solid var(--brand-border); border-radius: var(--radius); padding-left: 36px; font-size: 13px; font-weight: 700; color: var(--brand); background-color: var(--brand-light); cursor: pointer; outline: none;">
+                    <select id="global-academic-year" style="width: 140px; height: 34px; border: 1px solid var(--brand-border); border-radius: var(--radius); padding: 0 30px 0 36px; font-size: 13px; font-weight: 700; color: var(--brand); background-color: var(--brand-light); cursor: pointer; outline: none; appearance: none; -webkit-appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%231a56db%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpolyline points=%226 9 12 15 18 9%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 10px center;">
                         <option value="">全學年度</option>
                     </select>
                 </div>
@@ -168,11 +168,9 @@
                         </div>
                         <div class="field" style="margin-top: 16px;">
                             <label class="field-label">實習學生 <span class="req">*</span></label>
-                            <div style="display:flex; gap:8px;">
-                                <div class="search-input-wrap" style="flex:1;">
-                                    <input type="text" id="input-student" class="field-input" placeholder="搜尋學號或姓名..." autocomplete="off">
-                                    <div id="student-dropdown" class="search-dropdown custom-scroll"></div>
-                                </div>
+                            <div class="search-input-wrap">
+                                <input type="text" id="input-student" class="field-input" placeholder="搜尋學號或姓名..." autocomplete="off">
+                                <div id="student-dropdown" class="search-dropdown custom-scroll"></div>
                             </div>
                         </div>
                         <div class="field" style="margin-top: 16px;">
@@ -187,10 +185,10 @@
                     <div id="tab-course" class="tab-content" style="display: none;">
                         <div class="tab-header">修課紀錄</div>
                         <div class="field">
-                            <label class="field-label">搜尋並加入課程 <span class="req">*</span></label>
+                            <label class="field-label">實習機構 <span class="req">*</span></label>
                             <div class="search-input-wrap">
-                                <input type="text" id="input-course-search" class="field-input" placeholder="搜尋課程名稱、選課代號或系所名稱..." autocomplete="off">
-                                <div id="course-dropdown" class="search-dropdown custom-scroll"></div>
+                                <input type="text" id="input-institution" class="field-input" placeholder="搜尋機構名稱或統編..." autocomplete="off">
+                                <div id="institution-dropdown" class="search-dropdown custom-scroll"></div>
                             </div>
                         </div>
                         <div class="clean-section stretch-section" style="display: flex; flex-direction: column; margin-top: 24px;">
