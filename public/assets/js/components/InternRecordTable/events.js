@@ -933,6 +933,46 @@ export function bindEvents(container) {
         dropdown.classList.add('show'); 
         Render.renderCourseDropdown(state.allCourses, e.target.value); 
     });
+
+    // --- 處理機構版本確認視窗事件 ---
+    const instVersionModal = document.getElementById('inst-version-modal');
+    
+    container.querySelector('#btn-close-inst-version')?.addEventListener('click', () => {
+        instVersionModal.classList.remove('open');
+    });
+    
+    container.querySelector('#btn-cancel-inst-version')?.addEventListener('click', () => {
+        instVersionModal.classList.remove('open');
+    });
+
+    container.querySelector('#btn-confirm-inst-version')?.addEventListener('click', () => {
+        const instId = instVersionModal.dataset.instId;
+        const inst = state.allInsts.find(i => i.id === instId);
+        if(!inst) return;
+
+        const selectedRadio = document.querySelector('input[name="modal_inst_version"]:checked');
+        const val = selectedRadio ? selectedRadio.value : 'current';
+        
+        let displayData = inst;
+        if(val !== 'current') {
+            const idx = parseInt(val, 10);
+            if(inst.history && inst.history[idx]) {
+                displayData = inst.history[idx];
+            }
+        }
+
+        // 呼叫 render 函式更新資訊卡
+        Render.updateInstInfoCardUI(displayData);
+        
+        // 將選擇的名字填回輸入框，並把版本紀錄藏在 dataset 中
+        const instIn = document.getElementById('input-institution');
+        if(instIn) {
+            instIn.value = displayData.name;
+            instIn.dataset.historyIdx = val === 'current' ? '' : val;
+        }
+
+        instVersionModal.classList.remove('open');
+    });
 }
 
 export function updateBatchActionBar() {
