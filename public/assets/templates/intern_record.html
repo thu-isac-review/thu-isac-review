@@ -35,9 +35,10 @@
 
         <div class="filter-row" style="position: relative; display: flex; align-items: center; padding: 10px 24px;">
             <div class="filters-scroll-wrapper">
-                <button id="btn-scroll-left" class="btn btn-icon sm btn-scroll-nav"><i class="ti ti-chevron-left"></i></button>
-                <div class="filters-scroll-area custom-scroll" id="filter-container" style="margin: 0 8px;"></div>
-                <button id="btn-scroll-right" class="btn btn-icon sm btn-scroll-nav"><i class="ti ti-chevron-right"></i></button>
+                <!-- 🌟 移除 btn、btn-icon 等多餘 Class，純粹套用 btn-scroll-nav -->
+                <button type="button" id="btn-scroll-left" class="btn-scroll-nav" style="display: none;"><i class="ti ti-chevron-left"></i></button>
+                <div class="filters-scroll-area custom-scroll" id="filter-container" style="margin: 0 4px;"></div>
+                <button type="button" id="btn-scroll-right" class="btn-scroll-nav" style="display: none;"><i class="ti ti-chevron-right"></i></button>
             </div>
             
             <div class="relative inline-block text-left" id="display-settings-wrap" style="flex-shrink: 0; margin-left: 12px;">
