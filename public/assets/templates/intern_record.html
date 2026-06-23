@@ -120,6 +120,32 @@
         </div>
     </div>
 
+    <!-- 前置選擇學生視窗 -->
+    <div id="pre-select-student-modal" class="dialog-overlay">
+        <div class="dialog-box" style="max-width: 500px;">
+            <div class="dialog-header">
+                <h3 style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700;">
+                    <i class="ti ti-user-search text-brand" style="font-size: 20px;"></i> 選擇要新增紀錄的學生
+                </h3>
+                <button type="button" class="dialog-close" id="btn-close-pre-select"><i class="ti ti-x"></i></button>
+            </div>
+            <div class="dialog-body custom-scroll" style="padding: 24px;">
+                <div class="field">
+                    <label class="field-label">搜尋並選擇學生 <span class="req">*</span></label>
+                    <div class="search-input-wrap">
+                        <!-- 給予獨立的 ID，避免跟主表單衝突 -->
+                        <input type="text" id="pre-input-student" class="field-input" placeholder="輸入學號或姓名搜尋..." autocomplete="off">
+                        <div id="pre-student-dropdown" class="search-dropdown custom-scroll"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="dialog-footer" style="padding: 16px 24px; border-top: 1px solid var(--border);">
+                <button type="button" class="btn btn-secondary" id="btn-cancel-pre-select">取消</button>
+                <button type="button" id="btn-confirm-pre-select" class="btn btn-primary">確認並繼續</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 🌟 表單彈窗 -->
     <div id="data-modal" class="dialog-overlay">
         <!-- 放大寬度以容納左選單與右內容 -->
@@ -393,4 +419,5 @@
             </div>
         </div>
     </div>
+    
 </div>
