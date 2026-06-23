@@ -6,7 +6,6 @@ export function showToast(msg, type = "info") {
 }
 
 export function openFormModal(isEdit = false) {
-    // 🌟 修正3：移除隱藏 main-view 的邏輯，避免背景消失導致彈窗失去依託而破版
     document.getElementById('data-modal').classList.add('open');
     document.getElementById('modal-title').innerHTML = `<i class="ti ti-briefcase text-brand" style="font-size: 20px;"></i> ${isEdit ? '編輯實習紀錄' : '新增實習紀錄'}`;
 }
@@ -15,45 +14,6 @@ export function closeFormModal() {
     document.getElementById('data-modal').classList.remove('open');
     state.editingId = null;
 }
-
-export function showInfoPopup(type) {
-    const container = document.getElementById('info-popup-body');
-    const title = document.getElementById('info-popup-title');
-    let html = '';
-
-    if (type === 'student') {
-        const stuId = document.getElementById('input-student').value.split(' - ')[0];
-        const stu = state.allStudents.find(s => s.student_id === stuId);
-        if (!stu) return;
-        title.innerHTML = '<i class="ti ti-user" style="color:var(--brand); margin-right:4px;"></i> 學生詳細資訊';
-        html = `
-            <div class="info-item"><span class="info-item-label">學號</span><div class="info-item-value">${stu.student_id}</div></div>
-            <div class="info-item"><span class="info-item-label">姓名</span><div class="info-item-value">${stu.name}</div></div>
-            <div class="info-item"><span class="info-item-label">所屬系所</span><div class="info-item-value">${stu.department}</div></div>
-            <div class="info-item"><span class="info-item-label">所屬學院</span><div class="info-item-value">${stu.college}</div></div>
-        `;
-    } else {
-        const instId = document.getElementById('input-institution').dataset.id;
-        let inst;
-        if (instId) {
-            inst = state.allInsts.find(i => i.id === instId);
-        } else {
-            const instName = document.getElementById('input-institution').value;
-            inst = state.allInsts.find(i => i.name === instName);
-        }
-        if (!inst) return;
-        title.innerHTML = '<i class="ti ti-building-skyscraper" style="color:var(--success); margin-right:4px;"></i> 機構詳細資訊';
-        html = `
-            <div class="info-item"><span class="info-item-label">機構名稱</span><div class="info-item-value">${inst.name}</div></div>
-            <div class="info-item"><span class="info-item-label">統一編號</span><div class="info-item-value">${inst.tax_id || '無'}</div></div>
-            <div class="info-item"><span class="info-item-label">通訊地址</span><div class="info-item-value">${inst.address || '無'}</div></div>
-        `;
-    }
-    container.innerHTML = html;
-    document.getElementById('info-popup').classList.add('open');
-}
-
-export function closeInfoPopup() { document.getElementById('info-popup').classList.remove('open'); }
 
 export function updateRespDeptOptions(preselectedValue = '') {
     const selectEl = document.getElementById('input-resp-dept');
@@ -104,16 +64,6 @@ export function filterDropdownItems(input, containerId) {
         if (text.includes(term)) { lbl.style.display = 'flex'; } 
         else { lbl.style.display = 'none'; }
     });
-}
-
-export function toggleDropdown(type) {
-    const drop = document.getElementById(`drop-${type}`);
-    const wrap = document.getElementById(`pill-wrap-${type}`);
-    if (!drop || !wrap) return;
-    const isOpen = drop.classList.contains('show');
-    document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
-    document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
-    if (!isOpen) { drop.classList.add('show'); wrap.classList.add('open'); }
 }
 
 export function updatePillActive(type) {
@@ -172,12 +122,13 @@ export function updateColumnVisibility() {
     
     let css = '';
     let totalDataWidth = 0;
-    const fixedWidth = 48 + 90; // col-checkbox + col-actions
+    const fixedWidth = 48 + 90; // 左側凍結 Checkbox + 右側凍結 Actions
 
     state.tableColumns.forEach(c => {
-        // 防呆：如果沒有特別設定 visible: false，一律視為 true
+        // 預設可見，除非明確設為 false
         const isVisible = c.visible !== false;
-        const colWidth = c.width || 120; // 預設給予寬度防止擠壓
+        // 預設寬度 120 防擠壓
+        const colWidth = c.width || 120; 
 
         if (isVisible) {
             css += `#intern-record-table th[data-col="${c.index}"], 
