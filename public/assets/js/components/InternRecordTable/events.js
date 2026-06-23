@@ -557,6 +557,10 @@ export function bindEvents(container) {
             if (!e.target.closest('#input-institution') && !e.target.closest('#institution-dropdown')) document.getElementById('institution-dropdown')?.classList.remove('show');
             if (!e.target.closest('#input-course-search') && !e.target.closest('#course-dropdown')) document.getElementById('course-dropdown')?.classList.remove('show');
         });
+        window.addEventListener('resize', () => {
+            if (UI.updateFilterScrollButtons) UI.updateFilterScrollButtons();
+        });
+        
         state.isGlobalListenerBound = true;
     }
 
