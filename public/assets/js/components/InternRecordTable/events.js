@@ -1,4 +1,4 @@
-import { state, formatCourseForExport, getRecordTerm } from './state.js';
+import { state, formatCourseForExport, getRecordTerm, getColShort, getDeptShort } from './state.js';
 import * as UI from './ui.js';
 import * as Render from './render.js';
 import * as Data from './data.js';
