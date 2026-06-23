@@ -83,25 +83,31 @@ export function bindEvents(container) {
         const is113OrAbove = year >= 113;
 
         if (paymentTypeSelect) {
+            const reqAmt = document.getElementById('req-payment-amount'); // ⭐ 抓取星號元素
+
             if (allowance === '無' || !allowance) {
                 paymentTypeSelect.disabled = true;
                 paymentTypeSelect.value = '';
                 paymentTypeSelect.required = false;
                 if(reqType) reqType.style.display = 'none';
                 
-                // ⭐ 如果待遇是「無」，金額也強制禁用並清空
+                // ⭐ 金額強制禁用並取消必填
                 if (paymentAmountInput) {
                     paymentAmountInput.disabled = true;
                     paymentAmountInput.value = '';
+                    paymentAmountInput.required = false;
+                    if(reqAmt) reqAmt.style.display = 'none';
                 }
             } else {
                 paymentTypeSelect.disabled = false;
                 paymentTypeSelect.required = is113OrAbove;
                 if(reqType) reqType.style.display = is113OrAbove ? 'inline' : 'none';
 
-                // ⭐ 啟用金額輸入框
+                // ⭐ 啟用金額輸入框並設為必填
                 if (paymentAmountInput) {
                     paymentAmountInput.disabled = false;
+                    paymentAmountInput.required = true;
+                    if(reqAmt) reqAmt.style.display = 'inline';
                 }
             }
         }
@@ -554,11 +560,13 @@ export function bindEvents(container) {
             document.getElementById('global-student-id').textContent = stu.student_id;
             document.getElementById('global-student-dept').textContent = `${getColShort(stu.college)} / ${getDeptShort(stu.department)} / ${preGrade} 年級`;
             
-            const genderColor = stu.gender === '女' ? 'bg-rose-50 text-rose-700 border-rose-200' : (stu.gender === '男' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-slate-50 text-slate-700 border-slate-200');
-            const natColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+            const baseTagStyle = "font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px;";
+            const genderStyle = stu.gender === '女' ? 'background:#ffe4e6; color:#e11d48;' : (stu.gender === '男' ? 'background:#dbeafe; color:#2563eb;' : 'background:#f1f5f9; color:#475569;');
+            const natStyle = 'background:#d1fae5; color:#059669;';
+            
             document.getElementById('global-student-tags').innerHTML = `
-                <span class="border px-2 py-0.5 rounded text-[11px] font-bold tracking-wide ${genderColor}">${stu.gender || '未知性別'}</span>
-                <span class="border px-2 py-0.5 rounded text-[11px] font-bold tracking-wide ${natColor}">${stu.nationality || '未知國籍'}</span>
+                <span style="${baseTagStyle} ${genderStyle}">${stu.gender || '未知性別'}</span>
+                <span style="${baseTagStyle} ${natStyle}">${stu.nationality || '未知國籍'}</span>
             `;
             
             const stuInput = document.getElementById('input-student');
@@ -711,6 +719,9 @@ export function bindEvents(container) {
         if (!payload.funding) missing.push("補助經費來源");
         if (!payload.is_moe_compliant) missing.push("符合校庫填報");
         if (payload.hours === '' || payload.hours === undefined) missing.push("總時數"); // ⭐ 加入總時數必填檢查
+        if (payload.allowance !== '無' && (payload.payment_amount === '' || payload.payment_amount === undefined || payload.payment_amount === null)) {
+            missing.push("給付金額");
+        }
 
         if (missing.length > 0) {
             UI.showToast(`請填寫以下必填欄位：${missing.join(', ')}`, "warning"); 
