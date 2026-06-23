@@ -180,6 +180,28 @@
         </div>
     </div>
 
+    <div id="inst-version-modal" class="dialog-overlay">
+        <div class="dialog-box" style="max-width: 500px;">
+            <div class="dialog-header">
+                <h3 style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700;">
+                    <i class="ti ti-history text-brand" style="font-size: 20px;"></i> 請選擇機構套用版本
+                </h3>
+                <button type="button" class="dialog-close" id="btn-close-inst-version"><i class="ti ti-x"></i></button>
+            </div>
+            <div class="dialog-body custom-scroll" style="padding: 24px; background: var(--bg); max-height: 60vh; overflow-y: auto;">
+                <div style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 12px 16px; border-radius: 8px; font-size: 13px; line-height: 1.6; margin-bottom: 16px;">
+                    系統偵測到此機構有歷史變更軌跡，請確認本次實習紀錄要套用的機構資料版本。
+                </div>
+                <div id="inst-version-modal-list" style="display: flex; flex-direction: column; gap: 8px;">
+                    </div>
+            </div>
+            <div class="dialog-footer">
+                <button type="button" class="btn btn-secondary" id="btn-cancel-inst-version">取消</button>
+                <button type="button" id="btn-confirm-inst-version" class="btn btn-primary">確認套用</button>
+            </div>
+        </div>
+    </div>
+
     <div id="data-modal" class="dialog-overlay">
         <!-- 放大寬度以容納左選單與右內容 -->
         <div class="dialog-box" style="max-width: 1000px; width: 95vw; height: 85vh; display: flex; flex-direction: column;">
@@ -282,14 +304,6 @@
                                 <div><span style="color: var(--text-muted); font-size: 11px; display: block; margin-bottom: 2px;">實習場所國別</span><span id="inst-card-country">-</span></div>
                                 <div><span style="color: var(--text-muted); font-size: 11px; display: block; margin-bottom: 2px;">縣市別</span><span id="inst-card-city">-</span></div>
                                 <div style="grid-column: span 2;"><span style="color: var(--text-muted); font-size: 11px; display: block; margin-bottom: 2px;">實習場所地址</span><span id="inst-card-address">-</span></div>
-                            </div>
-                        </div>
-
-                        <!-- 🌟 歷史變更軌跡版本選擇 (二次防呆) -->
-                        <div id="inst-version-selector-container" style="display: none; margin-bottom: 24px;">
-                            <label class="field-label" style="color: var(--brand);">請確認套用版本 (二次防呆) <span class="req">*</span></label>
-                            <div id="inst-version-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px;">
-                                <!-- 由 JS 動態產生 Radio 按鈕 -->
                             </div>
                         </div>
 
