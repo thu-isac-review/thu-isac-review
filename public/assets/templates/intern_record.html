@@ -261,32 +261,57 @@
 
                     <!-- TAB: 實習機構 -->
                     <div id="tab-inst" class="tab-content" style="display: none;">
+                        
                         <div class="field">
-                            <label class="field-label">實習機構 <span class="req">*</span></label>
-                            <div style="display:flex; gap:8px;">
-                                <div class="search-input-wrap" style="flex:1;">
-                                    <input type="text" id="input-institution" class="field-input" placeholder="搜尋機構名稱或統編..." autocomplete="off">
-                                    <div id="institution-dropdown" class="search-dropdown custom-scroll"></div>
-                                </div>
+                            <label class="field-label">搜尋並選擇實習機構 <span class="req">*</span></label>
+                            <div class="search-input-wrap" style="position: relative;">
+                                <i class="ti ti-search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:16px;"></i>
+                                <input type="text" id="input-institution" class="field-input" placeholder="搜尋機構名稱或統編..." autocomplete="off" style="padding-left: 36px;">
+                                <div id="institution-dropdown" class="search-dropdown custom-scroll"></div>
                             </div>
                         </div>
-                        <div class="field" style="margin-top: 16px;">
-                            <label class="field-label">實習機會來源 <span class="req">*</span></label>
-                            <select id="input-opp-source" class="field-select" required>
-                                <option value="">請選擇</option>
-                                <option value="系所開發">系所開發</option>
-                                <option value="實習中心轉介">實習中心轉介</option>
-                                <option value="實習機構主動洽詢">實習機構主動洽詢</option>
-                                <option value="學生自尋">學生自尋</option>
-                            </select>
+
+                        <!-- 🌟 選取後的機構資訊卡 -->
+                        <div id="selected-inst-info-card" style="display: none; background: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-top: 12px; margin-bottom: 24px;">
+                            <div style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                                <i class="ti ti-building-skyscraper text-brand"></i> <span id="inst-card-name">機構名稱</span>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px; color: var(--text-secondary);">
+                                <div><span style="color: var(--text-muted); font-size: 11px; display: block; margin-bottom: 2px;">統一編號</span><span id="inst-card-taxid">-</span></div>
+                                <div><span style="color: var(--text-muted); font-size: 11px; display: block; margin-bottom: 2px;">行業別</span><span id="inst-card-industry">-</span></div>
+                                <div><span style="color: var(--text-muted); font-size: 11px; display: block; margin-bottom: 2px;">實習場所國別</span><span id="inst-card-country">-</span></div>
+                                <div><span style="color: var(--text-muted); font-size: 11px; display: block; margin-bottom: 2px;">縣市別</span><span id="inst-card-city">-</span></div>
+                                <div style="grid-column: span 2;"><span style="color: var(--text-muted); font-size: 11px; display: block; margin-bottom: 2px;">實習場所地址</span><span id="inst-card-address">-</span></div>
+                            </div>
                         </div>
-                        <div class="field" style="margin-top: 16px;">
-                            <label class="field-label">實習職缺類型 <span class="req">*</span></label>
-                            <select id="input-job-type" class="field-select" required>
-                                <option value="">請選擇</option>
-                                <option value="見習型">見習型</option>
-                                <option value="儲備型">儲備型</option>
-                            </select>
+
+                        <!-- 🌟 歷史變更軌跡版本選擇 (二次防呆) -->
+                        <div id="inst-version-selector-container" style="display: none; margin-bottom: 24px;">
+                            <label class="field-label" style="color: var(--brand);">請確認套用版本 (二次防呆) <span class="req">*</span></label>
+                            <div id="inst-version-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px;">
+                                <!-- 由 JS 動態產生 Radio 按鈕 -->
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="field">
+                                <label class="field-label">實習機會來源 <span class="req">*</span></label>
+                                <select id="input-opp-source" class="field-select" required>
+                                    <option value="">請選擇</option>
+                                    <option value="系所開發">系所開發</option>
+                                    <option value="實習中心轉介">實習中心轉介</option>
+                                    <option value="實習機構主動洽詢">實習機構主動洽詢</option>
+                                    <option value="學生自尋">學生自尋</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label class="field-label">實習職缺類型 <span class="req">*</span></label>
+                                <select id="input-job-type" class="field-select" required>
+                                    <option value="">請選擇</option>
+                                    <option value="見習型">見習型</option>
+                                    <option value="儲備型">儲備型</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
