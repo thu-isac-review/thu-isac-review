@@ -80,6 +80,14 @@
 .btn-scroll-nav:hover { background: var(--bg); color: var(--text-primary); border-color: var(--border-strong); transform: scale(1.05); }
 
 /* ─── FILTER ROW 篩選區 ─── */
+.btn-scroll-nav {
+    background: transparent; border: none; color: var(--text-secondary);
+    border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; cursor: pointer; z-index: 10;
+}
+.btn-scroll-nav:hover { 
+    background: var(--border); color: var(--text-primary); transform: scale(1.1); 
+}
 .filters-scroll-wrapper { display: flex; align-items: center; flex: 1; min-width: 0; position: relative; padding: 0 4px; }
 .filters-scroll-area { display: flex; flex-wrap: nowrap !important; gap: 8px; overflow-x: auto; scroll-behavior: smooth; flex: 1; padding: 4px 0; }
 .filters-scroll-area::-webkit-scrollbar { display: none; }
