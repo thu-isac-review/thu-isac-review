@@ -547,10 +547,10 @@ export function renderSelectedCourseChips(skipRespUpdate = false) {
     const container = document.getElementById('selected-courses-container');
     if (!container) return;
     
-    // ⭐ 新增：強制設定最大高度與垂直捲軸，超過 3 門課自動出現拖曳桿
-    container.style.maxHeight = '210px';
+    // ⭐ 將 maxHeight 改為 height，強制鎖死容器高度
+    container.style.height = '210px';
     container.style.overflowY = 'auto';
-    container.style.gap = '8px'; // 讓課程之間有一點間距
+    container.style.gap = '8px';
     
     const countSpan = document.getElementById('selected-course-count');
     if (countSpan) countSpan.innerText = `已選 ${state.selectedCourseIds.length} 門`;
