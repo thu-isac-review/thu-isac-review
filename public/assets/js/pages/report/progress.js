@@ -75,28 +75,29 @@ export async function render(containerId, context) {
         const defaultYear = reportSettingsSnap.data().default_academic_year.toString().trim();
         subtitleEl.textContent = `當前統計學年度：${defaultYear} 學年度`;
 
-        // 3. 抓出該學年度的所有課程清單，並依據開課系所彙整
-        const coursesSnap = await getDocs(collection(db, "courses"));
+        // 🌟【修正核心】：不再盲撈全域 courses，改用精準的學年度 query
+        const coursesQuery = query(
+            collection(db, "courses"), 
+            where("academic_year", "==", defaultYear)
+        );
+        const coursesSnap = await getDocs(coursesQuery);
         
-        // 紀錄該學年度有哪些課程代碼，以及屬於哪個系所
-        // 結構: { course_code: department_name }
         const targetCourseMap = {};
-        // 記錄所有有開課的系所 Set
         const departmentSet = new Set();
 
         coursesSnap.forEach(d => {
             const cData = d.data();
-            if (cData.academic_year && cData.academic_year.toString().trim() === defaultYear) {
-                const code = cData.course_code ? cData.course_code.trim() : '';
-                const dept = cData.department ? cData.department.trim() : '';
-                
-                if (code && dept) {
-                    targetCourseMap[code] = dept;
-                    departmentSet.add(dept);
-                }
+            const code = cData.course_code ? cData.course_code.trim() : '';
+            // 依據你現有的欄位，若是 department 則取 department，若是 dept 則取 dept
+            const dept = cData.department ? cData.department.trim() : (cData.dept ? cData.dept.trim() : '');
+            
+            if (code && dept) {
+                targetCourseMap[code] = dept;
+                departmentSet.add(dept);
             }
         });
 
+        // 如果該年份真的完全沒課
         if (departmentSet.size === 0) {
             tbodyEl.innerHTML = `
                 <tr>
@@ -108,18 +109,15 @@ export async function render(containerId, context) {
             return;
         }
 
-        // 4. 計算已上傳人次 (處理一筆實習紀錄包含多門課的多人次邏輯)
-        // 結構: { department_name: uploaded_count }
+        // 4. 計算已上傳人次
         const uploadedCountMap = {};
         departmentSet.forEach(dept => uploadedCountMap[dept] = 0);
 
+        // 這裡同樣建議改為精準撈取，但因紀錄中通常沒直接帶 academic_year，先以全域或依課代碼比對
         const recordsSnap = await getDocs(collection(db, "intern_records"));
         
         recordsSnap.forEach(d => {
             const rData = d.data();
-            
-            // 檢查該筆實習紀錄內含的課程資訊
-            // 支援欄位為單一字串陣列、物件陣列、或是單一欄位字串
             let assignedCodes = [];
             if (Array.isArray(rData.course_codes)) {
                 assignedCodes = rData.course_codes.map(c => typeof c === 'object' ? c.course_code : c);
@@ -127,13 +125,10 @@ export async function render(containerId, context) {
                 assignedCodes = [rData.course_code];
             }
 
-            // 遍歷這筆實習紀錄對應到的所有代碼
             assignedCodes.forEach(code => {
                 const cleanedCode = code ? code.toString().trim() : '';
-                // 如果這門課是屬於該預設學年度的開課群
                 if (targetCourseMap[cleanedCode]) {
                     const deptOfCourse = targetCourseMap[cleanedCode];
-                    // 該系所的已上傳人次增加 (縱使同紀錄，多門課即視為多人次)
                     if (uploadedCountMap[deptOfCourse] !== undefined) {
                         uploadedCountMap[deptOfCourse]++;
                     }
@@ -141,11 +136,11 @@ export async function render(containerId, context) {
             });
         });
 
-        // 5. 撈取使用者先前手動填入的「應填報人次」目標設定值
+        // 5. 撈取應填報人次
         const progressTargetSnap = await getDoc(doc(db, "report_progress", defaultYear));
         const savedTargets = progressTargetSnap.exists() ? (progressTargetSnap.data().targets || {}) : {};
 
-        // 6. 排序系所並動態渲染表格項目
+        // 6. 排序並渲染表格
         const sortedDepts = Array.from(departmentSet).sort();
         tbodyEl.innerHTML = '';
 
@@ -153,7 +148,6 @@ export async function render(containerId, context) {
             const uploaded = uploadedCountMap[dept] || 0;
             const target = savedTargets[dept] !== undefined ? savedTargets[dept] : '';
             
-            // 計算百分比
             let percentText = '-';
             let progressBarColor = 'bg-gray-200';
             let percentVal = 0;
@@ -188,7 +182,7 @@ export async function render(containerId, context) {
             tbodyEl.appendChild(tr);
         });
 
-        // 7. 綁定「應填報人次」輸入框的動態儲存事件 (防抖、自動計算與即時更新百分比)
+        // 7. 綁定輸入儲存事件
         const inputs = tbodyEl.querySelectorAll('.target-input');
         inputs.forEach(input => {
             input.addEventListener('change', async (e) => {
@@ -196,14 +190,12 @@ export async function render(containerId, context) {
                 let inputVal = e.target.value.trim();
                 
                 if (inputVal !== '') {
-                    inputVal = Math.max(0, parseInt(inputVal, 10)); // 防呆負數
+                    inputVal = Math.max(0, parseInt(inputVal, 10));
                     e.target.value = inputVal;
                 }
 
-                // 立即更新畫面的百分比與進度條
                 updateRowUi(trOfInput(e.target), inputVal, uploadedCountMap[currentDept]);
 
-                // 彙整目前畫面上所有的目標人次設定，非同步寫入資料庫
                 const newTargets = {};
                 inputs.forEach(inp => {
                     const d = inp.getAttribute('data-dept');
@@ -230,18 +222,14 @@ export async function render(containerId, context) {
         tbodyEl.innerHTML = `
             <tr>
                 <td colspan="4" class="py-8 text-center text-red-500 font-medium">
-                    <i class="ti ti-alert-triangle mr-1"></i> 資料整合載入異常，請確認資料庫權限或重試。
+                    <i class="ti ti-alert-triangle mr-1"></i> 資料整合載入異常：${error.message}
                 </td>
             </tr>
         `;
     }
 
-    // 輔助函式：尋找 input 隸屬的 tr 節點
-    function trOfInput(inputEl) {
-        return inputEl.closest('tr');
-    }
+    function trOfInput(inputEl) { return inputEl.closest('tr'); }
 
-    // 輔助函式：即時局部更新填報率與進度條 UI
     function updateRowUi(trEl, targetVal, uploadedVal) {
         const rateCell = trEl.cells[3];
         if (targetVal === '' || parseInt(targetVal, 10) <= 0) {
@@ -261,7 +249,6 @@ export async function render(containerId, context) {
         `;
     }
 
-    // 頂部小標籤自動存檔狀態提示
     let statusTimeout = null;
     function showGlobalStatus(text, type) {
         clearTimeout(statusTimeout);
