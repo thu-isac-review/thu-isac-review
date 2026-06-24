@@ -4,7 +4,7 @@ export async function render(containerId, context) {
     const db = context.db;
     const container = document.getElementById(containerId);
 
-    // 1. 渲染 UI
+    // 1. 渲染 UI 
     container.innerHTML = `
     <div class="p-6 space-y-6 h-full custom-scroll overflow-y-auto" style="background: var(--bg);">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between">
