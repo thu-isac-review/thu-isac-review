@@ -3,7 +3,7 @@ import { doc, getDoc, setDoc, updateDoc, collection, getDocs, query, where } fro
 export async function render(containerId, context) {
     const db = context.db;
     const container = document.getElementById(containerId);
-
+ 
     // 1. 初始渲染：加入名單管理的 Modal 結構
     container.innerHTML = `
     <div style="height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 16px; background: var(--bg); gap: 16px; position: relative;">
