@@ -4,7 +4,7 @@ export async function render(containerId, context) {
     const db = context.db;
     const container = document.getElementById(containerId);
 
-    // 1. 初始渲染基礎外框與讀取動畫
+    // 1. 初始渲染基礎外框與讀取動畫 (維持原樣)
     container.innerHTML = `
     <div class="p-6 space-y-6 h-full custom-scroll overflow-y-auto" style="background: var(--bg);">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between">
@@ -58,7 +58,7 @@ export async function render(containerId, context) {
     const globalStatusEl = document.getElementById('global-save-status');
 
     try {
-        // 2. 獲取填報格式設定中的「預設學年度」
+        // 2. 獲取預設學年度
         const reportSettingsSnap = await getDoc(doc(db, "settings", "report"));
         if (!reportSettingsSnap.exists() || !reportSettingsSnap.data().default_academic_year) {
             tbodyEl.innerHTML = `
@@ -75,9 +75,9 @@ export async function render(containerId, context) {
         const defaultYear = reportSettingsSnap.data().default_academic_year.toString().trim();
         subtitleEl.textContent = `當前統計學年度：${defaultYear} 學年度`;
 
-        // 🌟【修正核心】：不再盲撈全域 courses，改用精準的學年度 query
+        // 🌟【修正一】：改抓 internship_courses
         const coursesQuery = query(
-            collection(db, "courses"), 
+            collection(db, "internship_courses"), 
             where("academic_year", "==", defaultYear)
         );
         const coursesSnap = await getDocs(coursesQuery);
@@ -88,7 +88,6 @@ export async function render(containerId, context) {
         coursesSnap.forEach(d => {
             const cData = d.data();
             const code = cData.course_code ? cData.course_code.trim() : '';
-            // 依據你現有的欄位，若是 department 則取 department，若是 dept 則取 dept
             const dept = cData.department ? cData.department.trim() : (cData.dept ? cData.dept.trim() : '');
             
             if (code && dept) {
@@ -97,7 +96,6 @@ export async function render(containerId, context) {
             }
         });
 
-        // 如果該年份真的完全沒課
         if (departmentSet.size === 0) {
             tbodyEl.innerHTML = `
                 <tr>
@@ -113,14 +111,21 @@ export async function render(containerId, context) {
         const uploadedCountMap = {};
         departmentSet.forEach(dept => uploadedCountMap[dept] = 0);
 
-        // 這裡同樣建議改為精準撈取，但因紀錄中通常沒直接帶 academic_year，先以全域或依課代碼比對
-        const recordsSnap = await getDocs(collection(db, "intern_records"));
+        // 🌟【修正二】：改抓 internship_records
+        const recordsSnap = await getDocs(collection(db, "internship_records"));
         
         recordsSnap.forEach(d => {
             const rData = d.data();
+            
+            // 由於您的 records 中紀錄課程的欄位可能是 courses (陣列, 裝著 course id 或 object)
+            // 我們這裡擴充相容性，以防 records 裡面存的是 course_code 或 courses
             let assignedCodes = [];
+            
             if (Array.isArray(rData.course_codes)) {
                 assignedCodes = rData.course_codes.map(c => typeof c === 'object' ? c.course_code : c);
+            } else if (Array.isArray(rData.courses)) {
+                // 如果存的是字串陣列，假設裡面有包含代碼或是ID
+                assignedCodes = rData.courses.map(c => typeof c === 'object' ? c.course_code : c);
             } else if (rData.course_code) {
                 assignedCodes = [rData.course_code];
             }
