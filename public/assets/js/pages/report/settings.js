@@ -4,7 +4,7 @@ export async function render(containerId, context) {
     const db = context.db;
     const container = document.getElementById(containerId);
 
-    // 1. 渲染畫面 UI
+    // 1. 渲染頁面 UI 結構（維持系統一貫的極簡、柔和色調風格）
     container.innerHTML = `
     <div class="p-6 space-y-6 h-full custom-scroll overflow-y-auto" style="background: var(--bg);">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between">
@@ -35,7 +35,7 @@ export async function render(containerId, context) {
                             class="w-full h-10 border border-gray-200 rounded-lg px-3 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all max-w-xs bg-gray-50 cursor-wait">
                             <option value="" disabled selected>系統資料讀取中...</option>
                         </select>
-                        <p class="text-xs text-gray-400 mt-1">此學年度將作為「學2、學10資料匯出」及「填報進度追蹤」時的系統預設值（僅顯示系統內已建立過課程的學年度）。</p>
+                        <p class="text-xs text-gray-400 mt-1">此學年度將作為「學2、學10資料匯出」及「填報進度追蹤」時的系統預設值。</p>
                     </div>
                     
                     <div class="pt-4 flex items-center gap-3">
@@ -50,67 +50,81 @@ export async function render(containerId, context) {
     </div>
     `;
 
-    // 2. DOM 元素綁定
     const inputYear = document.getElementById('input-default-year');
     const form = document.getElementById('report-settings-form');
     const btnSave = document.getElementById('btn-save-settings');
     const statusMsg = document.getElementById('save-status-msg');
 
-    // 定義 Firestore 的存取路徑
     const docRef = doc(db, "settings", "report");
 
-    // 3. 從資料庫抓取系統現有學年度並生成選項
     try {
-        // 去抓取 courses 集合 (您也可以改成 intern_records 集合)
+        // 2. 讀取現有學年度資料並進行格式清洗與防呆
         const coursesSnap = await getDocs(collection(db, "courses"));
         const yearSet = new Set();
         
         coursesSnap.forEach(doc => {
             const data = doc.data();
-            if (data.academic_year) {
-                // 將抓到的學年度加入 Set 自動去除重複
-                yearSet.add(data.academic_year.toString());
+            if (data.academic_year !== undefined && data.academic_year !== null) {
+                // 強制轉字串並過濾掉可能誤填的空白，確保對比準確
+                const yStr = data.academic_year.toString().trim();
+                if (yStr) yearSet.add(yStr);
             }
         });
 
-        // 轉回陣列並由大到小排序 (越新的學年度排越上面)
-        const sortedYears = Array.from(yearSet).sort((a, b) => parseInt(b) - parseInt(a));
+        // 將 Set 轉換回陣列並依照學年度從大到小（新至舊）排序
+        const sortedYears = Array.from(yearSet).sort((a, b) => parseInt(b, 10) - parseInt(a, 10));
 
-        // 清空選項並重新放入
-        inputYear.innerHTML = `<option value="" disabled selected>請選擇學年度...</option>`;
-        
-        if (sortedYears.length > 0) {
-            sortedYears.forEach(y => {
-                const opt = document.createElement('option');
-                opt.value = y;
-                opt.textContent = `${y} 學年度`;
-                inputYear.appendChild(opt);
-            });
-        } else {
-            // 防呆：如果系統裡一筆資料都沒有
-            inputYear.innerHTML = `<option value="" disabled selected>系統內尚無任何學年度資料</option>`;
+        // 3. 如果系統 courses 還沒有資料，自動提供基本的學年度選項作為備用防呆
+        if (sortedYears.length === 0) {
+            console.warn("Firestore 'courses' 集合中未發現 academic_year 資料，啟用基本年份備用選單。");
+            const currentYear = new Date().getFullYear() - 1911; // 轉民國年
+            for (let i = 0; i < 5; i++) {
+                sortedYears.push((currentYear - i).toString());
+            }
         }
 
-        // 解除 disabled 狀態
+        // 4. 渲染選單選項
+        inputYear.innerHTML = `<option value="" disabled selected>請選擇學年度...</option>`;
+        sortedYears.forEach(y => {
+            const opt = document.createElement('option');
+            opt.value = y;
+            opt.textContent = `${y} 學年度`;
+            inputYear.appendChild(opt);
+        });
+
+        // 恢復選單可用狀態
         inputYear.disabled = false;
         inputYear.classList.remove('bg-gray-50', 'cursor-wait');
         inputYear.classList.add('bg-white', 'cursor-pointer');
 
-        // 4. 載入目前的設定值 (如果有存過的話，自動選取它)
+        // 5. 載入已儲存的設定值
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
             const data = docSnap.data();
-            if (data.default_academic_year && sortedYears.includes(data.default_academic_year)) {
-                inputYear.value = data.default_academic_year;
+            if (data.default_academic_year) {
+                inputYear.value = data.default_academic_year.toString().trim();
             }
         }
     } catch (error) {
         console.error("載入系統學年度失敗:", error);
-        showStatus("資料庫讀取失敗，請檢查網路連線", "error");
-        inputYear.innerHTML = `<option value="" disabled selected>資料載入失敗</option>`;
+        showStatus("資料庫讀取失敗，已啟用備用選單", "error");
+        
+        // 發生錯誤（如安全性規則拒絕無條件讀取）時的備用選單生成
+        inputYear.innerHTML = `<option value="" disabled selected>請選擇學年度...</option>`;
+        const currentYear = new Date().getFullYear() - 1911;
+        for (let i = 2; i >= -2; i--) {
+            const y = (currentYear + i).toString();
+            const opt = document.createElement('option');
+            opt.value = y;
+            opt.textContent = `${y} 學年度`;
+            inputYear.appendChild(opt);
+        }
+        inputYear.disabled = false;
+        inputYear.classList.remove('bg-gray-50', 'cursor-wait');
+        inputYear.classList.add('bg-white', 'cursor-pointer');
     }
 
-    // 5. 表單提交儲存邏輯
+    // 6. 儲存表單事件
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const yearVal = inputYear.value;
@@ -140,7 +154,6 @@ export async function render(containerId, context) {
         }
     });
 
-    // 6. 狀態訊息顯示函式
     function showStatus(msg, type) {
         statusMsg.textContent = msg;
         statusMsg.className = `text-xs font-bold transition-opacity duration-300 opacity-100 ${type === 'success' ? 'text-emerald-600' : 'text-red-600'}`;
