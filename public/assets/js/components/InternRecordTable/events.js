@@ -6,7 +6,7 @@ import * as Data from './data.js';
 export function bindEvents(container) {
     if (!container) return;
 
-    // 🌟 Tabs 切換邏輯 
+    // 🌟 Tabs 切換邏輯
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
     const btnPrevTab = document.getElementById('btn-prev-tab');
