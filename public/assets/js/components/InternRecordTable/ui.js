@@ -127,18 +127,42 @@ export function updatePillActive(type) {
 export function toggleDropdown(type) {
     const drop = document.getElementById(`drop-${type}`);
     const wrap = document.getElementById(`pill-wrap-${type}`);
-    if (!drop || !wrap) return;
+    const pill = document.getElementById(`pill-${type}`); // 取得點擊的按鈕本體
+    
+    if (!drop || !wrap || !pill) return;
 
     const isOpen = drop.classList.contains('show');
     
-    // 先關閉所有開啟的選單
-    document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
+    // 1. 先關閉所有開啟的選單，並「清除殘留的內聯座標設定」
+    document.querySelectorAll('.filter-dropdown').forEach(d => {
+        d.classList.remove('show');
+        d.style.top = ''; 
+        d.style.left = '';
+    });
     document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
     
-    // 若原本是關閉狀態則開啟
+    // 2. 如果原本是關閉狀態，則展開
     if (!isOpen) { 
         drop.classList.add('show'); 
         wrap.classList.add('open'); 
+        
+        // ✨ 核心修復：判斷若是手機版螢幕 (<768px)，靠 JS 動態寫入絕對座標
+        if (window.innerWidth <= 768) {
+            // 取得按鈕目前在螢幕上的真實位置
+            const rect = pill.getBoundingClientRect(); 
+            
+            // 設定選單的 top (按鈕底部 + 6px 的距離)
+            drop.style.top = `${rect.bottom + 6}px`;
+            
+            // 防呆機制：確保選單不會超出螢幕右側邊界
+            const dropWidth = 220; // 對應 CSS 設定的 220px
+            let leftPos = rect.left;
+            if (leftPos + dropWidth > window.innerWidth) {
+                leftPos = window.innerWidth - dropWidth - 16; // 留一點安全邊距
+            }
+            // 確保也不會超出左側界線，寫入 left 座標
+            drop.style.left = `${Math.max(10, leftPos)}px`; 
+        }
     }
 }
 
