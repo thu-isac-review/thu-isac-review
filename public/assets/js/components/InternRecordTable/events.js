@@ -235,7 +235,7 @@ export function bindEvents(container) {
         container.querySelector('#import-file').click();
     });
 
-    // 批次匯入 (省略過長內容，保留你原有的載入與解析邏輯)
+    // 批次匯入 (省略過長內容，保留你原有的載入與解析邏輯) 
     container.querySelector('#import-file')?.addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file) return;
