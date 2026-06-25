@@ -123,6 +123,25 @@ export function updatePillActive(type) {
     }
 }
 
+// 🌟 新增：處理選單的展開與收合
+export function toggleDropdown(type) {
+    const drop = document.getElementById(`drop-${type}`);
+    const wrap = document.getElementById(`pill-wrap-${type}`);
+    if (!drop || !wrap) return;
+
+    const isOpen = drop.classList.contains('show');
+    
+    // 先關閉所有開啟的選單
+    document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
+    document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
+    
+    // 若原本是關閉狀態則開啟
+    if (!isOpen) { 
+        drop.classList.add('show'); 
+        wrap.classList.add('open'); 
+    }
+}
+
 // 🌟 動態判斷是否需要顯示左右滑動按鈕
 export function updateFilterScrollButtons() {
     const scrollArea = document.getElementById('filter-container');
