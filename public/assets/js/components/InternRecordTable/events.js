@@ -765,14 +765,15 @@ export function bindEvents(container) {
             const col = th.dataset.sort;
             if (state.sortCol === col) state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
             else { state.sortCol = col; state.sortDir = 'asc'; }
+            
+            // 🌟 清除所有標題的排序狀態，不再去覆寫 icon 的 className 避免弄壞 Lucide SVG
             container.querySelectorAll('th[data-sort]').forEach(t => {
                 t.classList.remove('sort-asc', 'sort-desc');
-                const icon = t.querySelector('.sort-icon');
-                if(icon) icon.className = 'ti ti-arrows-sort sort-icon';
             });
+            
+            // 加上當前的排序狀態
             th.classList.add(state.sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
-            const targetIcon = th.querySelector('.sort-icon');
-            if(targetIcon) targetIcon.className = `ti ti-sort-${state.sortDir === 'asc' ? 'ascending' : 'descending'} sort-icon`;
+            
             Render.renderTable();
         }
 
