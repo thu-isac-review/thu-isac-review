@@ -276,16 +276,20 @@ input[type=number] { -moz-appearance: textfield; }
   .col-checkbox { display: none !important; }
   #batch-bar { display: none !important; }
   
-  /* 顯示手機版專屬分隔線 */
-  .mobile-divider { display: block; }
+  /* 🌟 1. 修正：縮小學年度選單左側的日曆 icon，防止撐破版面 */
+  .search-wrap svg.lucide[data-lucide="calendar"] {
+      width: 13px !important;
+      height: 13px !important;
+      left: 10px !important;
+  }
   
-  /* 將搜尋與學年度並排 */
+  /* 🌟 4. 修正：手機版搜尋框跟學年度選單並列同一行優化 */
   .toolbar { padding: 12px 16px; flex-direction: column; align-items: stretch; gap: 12px; }
-  .search-wrap { flex: none; width: 100%; order: 1; margin-bottom: 0; display: flex; flex-direction: row !important; gap: 8px !important; }
+  .search-wrap { flex: none; width: 100%; order: 1; margin-bottom: 0; display: flex; flex-direction: row !important; gap: 8px !important; align-items: center; }
   .search-wrap > div:first-child { flex: 1; min-width: 0; }
-  .search-wrap > div:last-child { flex: 0 0 130px; width: 130px; }
-  .search-input { width: 100% !important; }
-  #global-academic-year { width: 100% !important; }
+  .search-wrap > div:last-child { flex: 0 0 125px; width: 125px; }
+  .search-input { width: 100% !important; height: 36px !important; }
+  #global-academic-year { width: 100% !important; height: 36px !important; padding: 0 20px 0 28px !important; font-size: 12px !important; background-position: right 6px center !important; }
   
   .toolbar .flex-spacer, .filter-row .flex-spacer { display: none; }
   .toolbar-actions { order: 2; width: 100%; justify-content: space-between; display: flex; gap: 8px; flex-wrap: wrap; }
@@ -294,65 +298,99 @@ input[type=number] { -moz-appearance: textfield; }
   .v-divider { display: none; }
   .form-grid { grid-template-columns: 1fr; gap: 12px; }
   
-  /* ⭐ 1. 徹底解除 iOS Safari 的層級與裁切限制 */
-  .filter-row { flex-wrap: nowrap; padding: 10px 16px; display: flex; }
-  
-  .filter-row, 
-  .filters-scroll-wrapper, 
-  #display-settings-wrap { 
-      position: static !important; /* 強制解除 relative，讓 fixed 能真正對齊螢幕 */
-      overflow: visible !important; 
-      transform: none !important;
+  /* 🌟 3. 修正：修復手機版顯示設定旁邊的分隔線位置與顏色 */
+  .mobile-divider { 
+      display: block !important; 
+      width: 1px !important; 
+      height: 18px !important; 
+      background: var(--border-strong) !important; 
+      margin: 0 4px 0 8px !important; 
+      flex-shrink: 0; 
   }
   
-  .filters-scroll-wrapper { flex: 1; min-width: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  /* 🌟 2. 【重新設計】篩選與顯示設定：全面還原成與電腦版一模一樣的浮動下拉樣式 */
+  .filter-row { flex-wrap: nowrap; padding: 10px 16px; display: flex; align-items: center; position: relative !important; }
+  .filters-scroll-wrapper { flex: 1; min-width: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; position: relative !important; }
   .filters-scroll-wrapper::-webkit-scrollbar { display: none; }
-  #display-settings-wrap { margin-left: auto; background: transparent; }
+  .filters-scroll-area { display: flex; flex-wrap: nowrap !important; gap: 8px; }
+  
+  /* 解除之前的固定居中，讓顯示設定容器恢復相對定位，使選單能精準對齊按鈕下方 */
+  #display-settings-wrap { 
+      position: relative !important; 
+      margin-left: 0 !important; 
+      z-index: 50; 
+      background: transparent; 
+  }
   #display-settings-wrap::before { display: none; }
   
-  /* ⭐ 2. 底部抽屜選單 (iOS 終極防呆版，純 opacity 控制，不用 transform 避免 render 錯誤) */
-  #display-settings-menu, 
+  /* 🚀 終極破解 iPhone Safari 裁切限制 🚀
+     當任何篩選選單或顯示設定開啟時，動態將滾動容器改為 overflow: visible，防止被遮罩切斷 */
+  .filter-row:has(.filter-dropdown.show),
+  .filters-scroll-wrapper:has(.filter-dropdown.show),
+  #filter-container:has(.filter-dropdown.show),
+  .filter-row:has(#display-settings-menu[style*="display: block"]) {
+      overflow: visible !important;
+  }
+  
+  /* 篩選下拉選單：外觀尺寸與電腦版完全一致（懸浮視窗） */
   .filter-dropdown { 
-      position: fixed !important; 
-      top: auto !important; 
-      bottom: 0 !important; 
-      left: 0 !important; 
-      right: 0 !important; 
-      width: 100vw !important; 
-      max-width: 100% !important;
-      border-radius: 20px 20px 0 0 !important; 
-      box-shadow: 0 -10px 50px rgba(0,0,0,0.3) !important; 
-      max-height: 85dvh !important; 
-      z-index: 2147483647 !important; /* iOS 最大安全層級 */
-      padding: 16px 16px max(env(safe-area-inset-bottom), 24px) 16px !important; 
-      margin: 0 !important;
+      position: fixed !important; /* 配合 JS 的動態固定定位計算 */
+      width: 220px !important; 
+      max-width: 220px !important;
+      border-radius: var(--radius-lg) !important; 
+      box-shadow: var(--shadow-md) !important; 
+      border: 1px solid var(--border) !important;
       background: var(--surface) !important;
-      
-      transform: none !important; /* 不使用 transform */
+      max-height: 260px !important;
+      padding: 6px !important;
+      margin: 0 !important;
+      bottom: auto !important;
+      left: auto !important;
+      right: auto !important;
+      transform: none !important;
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
-      transition: opacity 0.3s ease, visibility 0.3s ease !important;
+      transition: opacity 0.15s ease, visibility 0.15s ease;
+      display: flex !important;
+      flex-direction: column;
   }
-  
-  /* 攔截 JS 樣式來觸發顯示 */
-  #display-settings-menu[style*="display: block"], 
   .filter-dropdown.show {
       opacity: 1 !important;
       visibility: visible !important;
       pointer-events: auto !important;
   }
-
-  /* 確保清單獨立滑動，防橡皮筋效應 */
-  .filter-dropdown-list,
-  #column-toggles-container { 
-      max-height: 60dvh !important; 
-      overflow-y: auto !important; 
-      -webkit-overflow-scrolling: touch !important; 
-      overscroll-behavior: contain !important;
+  
+  /* 顯示設定下拉選單：外觀尺寸與電腦版完全一致（絕對定位懸浮視窗） */
+  #display-settings-menu {
+      position: absolute !important;
+      top: calc(100% + 6px) !important;
+      right: 0 !important;
+      left: auto !important;
+      width: 200px !important;
+      max-width: 200px !important;
+      border-radius: var(--radius-lg) !important; 
+      box-shadow: var(--shadow-md) !important; 
+      border: 1px solid var(--border) !important;
+      background: var(--surface) !important;
+      max-height: 280px !important;
+      padding: 8px !important;
+      margin: 0 !important;
+      bottom: auto !important;
+      transform: none !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      pointer-events: auto !important;
   }
 
-  /* ⭐ 3. 優化新增/編輯紀錄視窗的外觀 */
+  .filter-dropdown-list,
+  #column-toggles-container { 
+      max-height: 200px !important; 
+      overflow-y: auto !important; 
+      -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* 🌟 新增/編輯紀錄視窗的外觀優化（保持高質感結構） */
   .dialog-overlay { padding: 0; align-items: flex-end; } 
   .dialog-box { height: 100dvh !important; width: 100% !important; border-radius: 16px 16px 0 0 !important; max-height: none !important; display: flex; flex-direction: column; animation: slideUpMobile 0.3s forwards; }
   
