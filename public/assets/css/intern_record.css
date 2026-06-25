@@ -270,20 +270,20 @@ input[type=number] { -moz-appearance: textfield; }
 }
 
 /* ==========================================
-   手機版 (Mobile) 專屬響應式優化 (Safari 終極防呆版)
+   手機版 (Mobile) 專屬響應式優化 (全新精準對齊與防錯版)
    ========================================== */
 @media (max-width: 768px) {
   .col-checkbox { display: none !important; }
   #batch-bar { display: none !important; }
   
-  /* 🌟 1. 修正：縮小學年度選單左側的日曆 icon，防止撐破版面 */
+  /* ✨ 1. 縮小學年度選單左側的日曆 icon，防止撐破版面 */
   .search-wrap svg.lucide[data-lucide="calendar"] {
       width: 13px !important;
       height: 13px !important;
       left: 10px !important;
   }
   
-  /* 🌟 4. 修正：手機版搜尋框跟學年度選單並列同一行優化 */
+  /* 搜尋框跟學年度選單並列同一行優化 */
   .toolbar { padding: 12px 16px; flex-direction: column; align-items: stretch; gap: 12px; }
   .search-wrap { flex: none; width: 100%; order: 1; margin-bottom: 0; display: flex; flex-direction: row !important; gap: 8px !important; align-items: center; }
   .search-wrap > div:first-child { flex: 1; min-width: 0; }
@@ -298,43 +298,43 @@ input[type=number] { -moz-appearance: textfield; }
   .v-divider { display: none; }
   .form-grid { grid-template-columns: 1fr; gap: 12px; }
   
-  /* 🌟 3. 修正：修復手機版顯示設定旁邊的分隔線位置與顏色 */
+  /* ✨ 2. 修正：讓顯示設定按鈕與上方「新增紀錄」的右側邊緣完美對齊 */
+  .filter-row { flex-wrap: nowrap; padding: 10px 16px; display: flex; align-items: center; }
+  
+  /* ✨ 3. 修正：將分隔線樣式、高度與顏色完全還原與電腦版 (.v-divider) 一模一樣 */
   .mobile-divider { 
       display: block !important; 
       width: 1px !important; 
-      height: 18px !important; 
-      background: var(--border-strong) !important; 
+      height: 20px !important; 
+      background: var(--border) !important; 
       margin: 0 4px 0 8px !important; 
-      flex-shrink: 0; 
+      flex-shrink: 0 !important; 
   }
   
-  /* 🌟 2. 【重新設計】篩選與顯示設定：全面還原成與電腦版一模一樣的浮動下拉樣式 */
-  .filter-row { flex-wrap: nowrap; padding: 10px 16px; display: flex; align-items: center; position: relative !important; }
-  .filters-scroll-wrapper { flex: 1; min-width: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; position: relative !important; }
-  .filters-scroll-wrapper::-webkit-scrollbar { display: none; }
-  .filters-scroll-area { display: flex; flex-wrap: nowrap !important; gap: 8px; }
-  
-  /* 解除之前的固定居中，讓顯示設定容器恢復相對定位，使選單能精準對齊按鈕下方 */
+  /* ✨ 4. 修正：降低按鈕容器層級，防止打開漢堡選單時按鈕穿透遮罩、顯得特別亮 */
   #display-settings-wrap { 
       position: relative !important; 
-      margin-left: 0 !important; 
-      z-index: 50; 
+      margin-left: auto !important; /* 確保推至最右側對齊 */
+      z-index: 5 !important; 
       background: transparent; 
   }
   #display-settings-wrap::before { display: none; }
   
-  /* 🚀 終極破解 iPhone Safari 裁切限制 🚀
-     當任何篩選選單或顯示設定開啟時，動態將滾動容器改為 overflow: visible，防止被遮罩切斷 */
-  .filter-row:has(.filter-dropdown.show),
-  .filters-scroll-wrapper:has(.filter-dropdown.show),
-  #filter-container:has(.filter-dropdown.show),
-  .filter-row:has(#display-settings-menu[style*="display: block"]) {
-      overflow: visible !important;
+  /* 保持滾動列原生特性，移除動態變更 overflow 的 :has 語法，徹底解決滑動後點選跳回與破圖問題 */
+  .filters-scroll-wrapper { 
+      flex: 1; 
+      min-width: 0; 
+      overflow-x: auto !important; 
+      position: relative !important;
+      -webkit-overflow-scrolling: touch; 
+      scrollbar-width: none; 
   }
+  .filters-scroll-wrapper::-webkit-scrollbar { display: none; }
+  .filters-scroll-area { display: flex; flex-wrap: nowrap !important; gap: 8px; }
   
-  /* 篩選下拉選單：外觀尺寸與電腦版完全一致（懸浮視窗） */
+  /* ✨ 5. 重新設計：全面還原與電腦版百分之百相同的懸浮選單外觀 */
   .filter-dropdown { 
-      position: fixed !important; /* 配合 JS 的動態固定定位計算 */
+      position: fixed !important; /* 允許 JS 透過 getBoundingClientRect 自由決定精準位置 */
       width: 220px !important; 
       max-width: 220px !important;
       border-radius: var(--radius-lg) !important; 
@@ -344,24 +344,13 @@ input[type=number] { -moz-appearance: textfield; }
       max-height: 260px !important;
       padding: 6px !important;
       margin: 0 !important;
+      /* 移除鎖死坐標，讓 JS 注入的 top/left 起作用，不再造成破圖 */
       bottom: auto !important;
-      left: auto !important;
-      right: auto !important;
       transform: none !important;
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-      transition: opacity 0.15s ease, visibility 0.15s ease;
-      display: flex !important;
-      flex-direction: column;
-  }
-  .filter-dropdown.show {
-      opacity: 1 !important;
-      visibility: visible !important;
-      pointer-events: auto !important;
+      z-index: 999999 !important;
   }
   
-  /* 顯示設定下拉選單：外觀尺寸與電腦版完全一致（絕對定位懸浮視窗） */
+  /* 顯示設定下拉選單：對齊按鈕下方的絕對定位懸浮視窗 */
   #display-settings-menu {
       position: absolute !important;
       top: calc(100% + 6px) !important;
@@ -378,9 +367,7 @@ input[type=number] { -moz-appearance: textfield; }
       margin: 0 !important;
       bottom: auto !important;
       transform: none !important;
-      opacity: 1 !important;
-      visibility: visible !important;
-      pointer-events: auto !important;
+      z-index: 999999 !important;
   }
 
   .filter-dropdown-list,
@@ -390,7 +377,7 @@ input[type=number] { -moz-appearance: textfield; }
       -webkit-overflow-scrolling: touch !important;
   }
 
-  /* 🌟 新增/編輯紀錄視窗的外觀優化（保持高質感結構） */
+  /* 新增/編輯紀錄視窗的手機版高質感佈局 */
   .dialog-overlay { padding: 0; align-items: flex-end; } 
   .dialog-box { height: 100dvh !important; width: 100% !important; border-radius: 16px 16px 0 0 !important; max-height: none !important; display: flex; flex-direction: column; animation: slideUpMobile 0.3s forwards; }
   
