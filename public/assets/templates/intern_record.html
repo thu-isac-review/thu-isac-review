@@ -7,11 +7,11 @@
         <div class="toolbar">
             <div class="search-wrap" style="display:flex; align-items:center; gap:12px;">
                 <div style="position:relative;">
-                    <i class="ti ti-search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:16px;"></i>
+                    <i data-lucide="search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted);"></i>
                     <input type="text" id="search-input" placeholder="搜尋學號、姓名、機構..." class="search-input" style="padding-left:36px; width: 220px;">
                 </div>
                 <div style="position: relative; display: flex; align-items: center;">
-                    <i class="ti ti-calendar-event" style="position: absolute; left: 12px; color: var(--brand); font-size: 16px; pointer-events: none; z-index: 1;"></i>
+                    <i data-lucide="calendar" style="position: absolute; left: 12px; color: var(--brand); pointer-events: none; z-index: 1;"></i>
                     <select id="global-academic-year" style="width: 140px; height: 34px; border: 1px solid var(--brand-border); border-radius: var(--radius); padding: 0 30px 0 36px; font-size: 13px; font-weight: 700; color: var(--brand); background-color: var(--brand-light); cursor: pointer; outline: none; appearance: none; -webkit-appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%231a56db%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpolyline points=%226 9 12 15 18 9%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 10px center;">
                         <option value="">全學年度</option>
                     </select>
@@ -20,14 +20,14 @@
             <div class="flex-spacer"></div>
             <div class="toolbar-actions">
                 <button id="btn-export-csv" class="btn btn-success-solid">
-                    <i class="ti ti-file-export"></i> <span class="btn-text">匯出清單</span>
+                    <i data-lucide="download"></i> <span class="btn-text">匯出清單</span>
                 </button>
                 <button id="btn-import-trigger" class="btn btn-indigo-solid">
-                    <i class="ti ti-file-import"></i> <span class="btn-text">批次匯入</span>
+                    <i data-lucide="upload"></i> <span class="btn-text">批次匯入</span>
                 </button>
                 <div class="v-divider"></div>
                 <button id="btn-create-record" class="btn btn-primary">
-                    <i class="ti ti-plus"></i> <span class="btn-text">新增紀錄</span>
+                    <i data-lucide="plus"></i> <span class="btn-text">新增紀錄</span>
                 </button>
             </div>
             <input type="file" id="import-file" accept=".csv" style="display:none;">
@@ -35,14 +35,15 @@
 
         <div class="filter-row" style="position: relative; display: flex; align-items: center; padding: 10px 24px;">
             <div class="filters-scroll-wrapper">
-                <!-- 🌟 移除 btn、btn-icon 等多餘 Class，純粹套用 btn-scroll-nav -->
-                <button type="button" id="btn-scroll-left" class="btn-scroll-nav" style="display: none;"><i class="ti ti-chevron-left"></i></button>
+                <!-- 移除了左右按鈕，完全依賴滑動 -->
                 <div class="filters-scroll-area custom-scroll" id="filter-container" style="margin: 0 4px;"></div>
-                <button type="button" id="btn-scroll-right" class="btn-scroll-nav" style="display: none;"><i class="ti ti-chevron-right"></i></button>
             </div>
             
+            <!-- 手機版專屬分隔線 -->
+            <div class="mobile-divider"></div>
+
             <div class="relative inline-block text-left" id="display-settings-wrap" style="flex-shrink: 0; margin-left: 12px;">
-                <button id="btn-display-settings" class="btn btn-secondary btn-sm" style="font-weight: 500;"><i class="ti ti-settings"></i> 顯示設定</button>
+                <button id="btn-display-settings" class="btn btn-secondary btn-sm" style="font-weight: 500;"><i data-lucide="settings"></i> 顯示設定</button>
                 <div id="display-settings-menu" style="position:absolute; right:0; top:calc(100% + 4px); width:200px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); padding:8px; z-index:100; display:none;" class="menu-popup">
                     <div style="font-size:11px; font-weight:700; color:var(--text-muted); padding:4px 8px;">顯示欄位設定</div>
                     <div id="column-toggles-container" class="custom-scroll" style="max-height:280px; overflow-y:auto;"></div>
@@ -50,11 +51,11 @@
             </div>
 
             <div id="batch-bar">
-                <div class="batch-info"><i class="ti ti-checks" style="font-size:18px;"></i> 已選 <span id="selected-count">0</span> 筆紀錄</div>
+                <div class="batch-info"><i data-lucide="check-square" style="font-size:18px;"></i> 已選 <span id="selected-count">0</span> 筆紀錄</div>
                 <button id="btn-select-all-filtered" class="btn btn-sm btn-secondary">選取全部符合條件</button>
                 <button id="btn-clear-selection" class="btn btn-sm btn-secondary">取消選取</button>
                 <div class="flex-spacer"></div>
-                <button id="btn-batch-delete" class="btn btn-sm btn-danger-solid"><i class="ti ti-trash"></i> 批次刪除</button>
+                <button id="btn-batch-delete" class="btn btn-sm btn-danger-solid"><i data-lucide="trash-2"></i> 批次刪除</button>
             </div>
         </div>
 
@@ -66,30 +67,30 @@
                             <th class="col-checkbox">
                                 <input type="checkbox" id="selectAll" class="row-select-chk-all">
                             </th>
-                            <th data-sort="term" data-col="1" class="col-term">學期 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="student_id" data-col="2" class="col-student_id">學號 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="student_name" data-col="3" class="col-student_name">姓名 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="dept" data-col="4" class="col-dept">學系 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="grade" data-col="5" class="col-grade">年級 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="inst_name" data-col="6" class="col-inst_name">機構名稱 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="term" data-col="1" class="col-term">學期 <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
+                            <th data-sort="student_id" data-col="2" class="col-student_id">學號 <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
+                            <th data-sort="student_name" data-col="3" class="col-student_name">姓名 <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
+                            <th data-sort="dept" data-col="4" class="col-dept">學系 <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
+                            <th data-sort="grade" data-col="5" class="col-grade">年級 <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
+                            <th data-sort="inst_name" data-col="6" class="col-inst_name">機構名稱 <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
                             <th data-col="7" class="col-course">修習課程</th>
                             <th data-col="8" class="col-credits">總學分</th>
                             <th data-col="9" class="col-period">實習時間</th>
-                            <th data-sort="duration" data-col="10" class="col-duration">實習起訖時間 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="hours" data-col="11" class="col-hours">總時數 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="duration" data-col="10" class="col-duration">實習起訖時間 <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
+                            <th data-sort="hours" data-col="11" class="col-hours">總時數 <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
                             <th data-col="12" class="col-proof">證明文件</th>
                             <th data-col="13" class="col-employment">勞雇關係</th>
                             <th data-col="14" class="col-insurance">投保情形</th>
-                            <th data-sort="allowance" data-col="15" class="col-allowance">實習待遇 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="payment_type" data-col="16" class="col-payment_type">給付類型 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="payment_desc" data-col="17" class="col-payment_desc">其他給付說明 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="payment_amount" data-col="18" class="col-payment_amount">給付金額 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="funding" data-col="19" class="col-funding">補助經費來源 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="opp_source" data-col="20" class="col-opp_source">實習機會來源 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="job_type" data-col="21" class="col-job_type">實習職缺類型 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="is_moe_compliant" data-col="22" class="col-is_moe_compliant">符合校庫填報 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="moe_reason" data-col="23" class="col-moe_reason">不符合校庫填報原因 <i class="ti ti-arrows-sort sort-icon"></i></th>
-                            <th data-sort="resp_dept" data-col="24" class="col-resp_dept">填報系所 <i class="ti ti-arrows-sort sort-icon"></i></th>
+                            <th data-sort="allowance" data-col="15" class="col-allowance">實習待遇 <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
+                            <th data-sort="payment_type" data-col="16" class="col-payment_type">給付類型 <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
+                            <th data-sort="payment_desc" data-col="17" class="col-payment_desc">其他給付說明 <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
+                            <th data-sort="payment_amount" data-col="18" class="col-payment_amount">給付金額 <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
+                            <th data-sort="funding" data-col="19" class="col-funding">補助經費來源 <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
+                            <th data-sort="opp_source" data-col="20" class="col-opp_source">實習機會來源 <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
+                            <th data-sort="job_type" data-col="21" class="col-job_type">實習職缺類型 <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
+                            <th data-sort="is_moe_compliant" data-col="22" class="col-is_moe_compliant">符合校庫填報 <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
+                            <th data-sort="moe_reason" data-col="23" class="col-moe_reason">不符合校庫填報原因 <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
+                            <th data-sort="resp_dept" data-col="24" class="col-resp_dept">填報系所 <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
                             <th class="col-spacer"></th>
                             <th class="col-actions">操作</th>
                         </tr>
@@ -99,7 +100,7 @@
             </div>
             
             <div id="empty-state-container" class="empty-state" style="display: none; justify-content: center; align-items: center; flex-direction: column; padding: 40px;">
-                <i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i>
+                <i data-lucide="loader-circle" class="empty-icon animate-spin" style="color:var(--brand); opacity:1;"></i>
                 <div class="empty-text">資料載入與驗證中...</div>
             </div>
             
@@ -120,15 +121,15 @@
         </div>
     </div>
 
-    <!-- 前置選擇學生視窗 (優化版) -->
+    <!-- 前置選擇學生視窗 -->
     <div id="pre-select-student-modal" class="dialog-overlay">
         <div class="dialog-box" style="max-width: 550px; overflow: visible !important; border-radius: 12px; background: #ffffff;">
             
             <div class="dialog-header" style="border-radius: 12px 12px 0 0;">
                 <h3 style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700;">
-                    <i class="ti ti-user-search text-brand" style="font-size: 20px;"></i> 選擇要新增紀錄的學生
+                    <i data-lucide="user-search" class="text-brand"></i> 選擇要新增紀錄的學生
                 </h3>
-                <button type="button" class="dialog-close" id="btn-close-pre-select"><i class="ti ti-x"></i></button>
+                <button type="button" class="dialog-close" id="btn-close-pre-select"><i data-lucide="x"></i></button>
             </div>
             
             <div class="dialog-body" style="padding: 24px; background: #ffffff; overflow: visible !important;">
@@ -137,7 +138,6 @@
                     <span style="font-weight: 700;">注意：</span>為確保資料關聯正確，建立後將無法於表單內變更這些基本資訊。
                 </div>
 
-                <!-- 🌟 新增：學年度與當學年年級 -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
                     <div class="field">
                         <label class="field-label">學年度 <span class="req">*</span></label>
@@ -161,9 +161,8 @@
                 <div class="field" style="margin-bottom: 12px;">
                     <label class="field-label">搜尋並選擇學生 <span class="req">*</span></label>
                     <div class="search-input-wrap" style="position: relative;">
-                        <!-- ... 保持你原本的搜尋框與下拉選單 HTML ... -->
                         <div style="position: absolute; left: 12px; top: 0; bottom: 0; display: flex; align-items: center; pointer-events: none;">
-                            <i class="ti ti-search" style="color: var(--text-muted); font-size: 16px;"></i>
+                            <i data-lucide="search" style="color: var(--text-muted);"></i>
                         </div>
                         <input type="text" id="pre-input-student" class="field-input" placeholder="輸入學號或姓名搜尋..." autocomplete="off" style="padding-left: 36px; height: 42px; font-size: 14px;">
                         <div id="pre-student-dropdown" class="search-dropdown custom-scroll" style="position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #ffffff; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15); max-height: 250px; overflow-y: auto; z-index: 99999;"></div>
@@ -174,26 +173,27 @@
             <div class="dialog-footer" style="border-radius: 0 0 12px 12px;">
                 <button type="button" class="btn btn-secondary" id="btn-cancel-pre-select">取消</button>
                 <button type="button" id="btn-confirm-pre-select" class="btn btn-primary">
-                    確認並繼續 <i class="ti ti-arrow-right" style="margin-left: 4px;"></i>
+                    確認並繼續 <i data-lucide="arrow-right" style="margin-left: 4px;"></i>
                 </button>
             </div>
         </div>
     </div>
 
+    <!-- 歷史變更軌跡視窗 -->
     <div id="inst-version-modal" class="dialog-overlay">
         <div class="dialog-box" style="max-width: 500px;">
             <div class="dialog-header">
                 <h3 style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700;">
-                    <i class="ti ti-history text-brand" style="font-size: 20px;"></i> 請選擇機構套用版本
+                    <i data-lucide="history" class="text-brand"></i> 請選擇機構套用版本
                 </h3>
-                <button type="button" class="dialog-close" id="btn-close-inst-version"><i class="ti ti-x"></i></button>
+                <button type="button" class="dialog-close" id="btn-close-inst-version"><i data-lucide="x"></i></button>
             </div>
             <div class="dialog-body custom-scroll" style="padding: 24px; background: var(--bg); max-height: 60vh; overflow-y: auto;">
                 <div style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 12px 16px; border-radius: 8px; font-size: 13px; line-height: 1.6; margin-bottom: 16px;">
                     系統偵測到此機構有歷史變更軌跡，請確認本次實習紀錄要套用的機構資料版本。
                 </div>
                 <div id="inst-version-modal-list" style="display: flex; flex-direction: column; gap: 8px;">
-                    </div>
+                </div>
             </div>
             <div class="dialog-footer">
                 <button type="button" class="btn btn-secondary" id="btn-cancel-inst-version">取消</button>
@@ -202,28 +202,27 @@
         </div>
     </div>
 
+    <!-- 主要新增/編輯表單彈窗 -->
     <div id="data-modal" class="dialog-overlay">
-        <!-- 放大寬度以容納左選單與右內容 -->
         <div class="dialog-box" style="max-width: 1000px; width: 95vw; height: 85vh; display: flex; flex-direction: column;">
             <div class="dialog-header flex-col items-start p-0 border-none" style="flex-direction: column; align-items: flex-start; padding: 0; border: none;">
                 <div style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 20px 24px 16px;">
                     <h3 id="modal-title" style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700;">
-                        <i class="ti ti-briefcase text-brand" style="font-size: 20px;"></i> 新增實習紀錄
+                        <i data-lucide="briefcase" class="text-brand"></i> 新增實習紀錄
                     </h3>
-                    <button type="button" class="dialog-close" id="btn-close-modal-x"><i class="ti ti-x"></i></button>
+                    <button type="button" class="dialog-close" id="btn-close-modal-x"><i data-lucide="x"></i></button>
                 </div>
             </div>
 
-            <!-- 🌟 全局學生資訊 Banner -->
+            <!-- 全局學生資訊 Banner -->
             <div id="global-student-banner" style="background: #f8fafc; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; gap: 16px; flex-shrink: 0;">
-                <div style="width: 42px; height: 42px; border-radius: 50%; background: #e0e7ff; color: var(--brand); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; border: 1px solid #c7d2fe;">
-                    <i class="ti ti-user"></i>
+                <div style="width: 42px; height: 42px; border-radius: 50%; background: #e0e7ff; color: var(--brand); display: flex; align-items: center; justify-content: center; border: 1px solid #c7d2fe;">
+                    <i data-lucide="user"></i>
                 </div>
                 <div style="flex: 1;">
                     <div style="font-size: 15px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
                         <span id="global-student-name">載入中...</span>
                         <span id="global-student-id" style="font-size: 13px; color: var(--text-muted); font-weight: 500;"></span>
-                        <!-- ⭐ 新增：存放年級、性別、國籍的標籤區 -->
                         <span id="global-student-tags" style="display: flex; gap: 6px; margin-left: 8px;"></span>
                     </div>
                     <div id="global-student-dept" style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
@@ -232,26 +231,25 @@
                 </div>
             </div>
 
-            <!-- 取消原本的 border-top，避免雙重線條 -->
             <div class="dialog-body-container" style="flex: 1; display: flex; overflow: hidden;">
-                <!-- 🌟 左側 Tabs 選單 (移除了「其他備註」) -->
+                <!-- 左側 Tabs 選單 -->
                 <div class="modal-sidebar">
-                    <button type="button" class="tab-btn active" data-tab="tab-course"><i class="ti ti-book"></i> 修課紀錄</button>
-                    <button type="button" class="tab-btn" data-tab="tab-inst"><i class="ti ti-building-skyscraper"></i> 實習機構</button>
-                    <button type="button" class="tab-btn" data-tab="tab-info"><i class="ti ti-clipboard-text"></i> 實習資訊</button>
-                    <button type="button" class="tab-btn" data-tab="tab-allowance"><i class="ti ti-coin"></i> 實習待遇</button>
-                    <button type="button" class="tab-btn" data-tab="tab-moe"><i class="ti ti-building-community"></i> 校庫填報</button>
+                    <button type="button" class="tab-btn active" data-tab="tab-course"><i data-lucide="book"></i> 修課紀錄</button>
+                    <button type="button" class="tab-btn" data-tab="tab-inst"><i data-lucide="building-2"></i> 實習機構</button>
+                    <button type="button" class="tab-btn" data-tab="tab-info"><i data-lucide="clipboard-list"></i> 實習資訊</button>
+                    <button type="button" class="tab-btn" data-tab="tab-allowance"><i data-lucide="coins"></i> 實習待遇</button>
+                    <button type="button" class="tab-btn" data-tab="tab-moe"><i data-lucide="landmark"></i> 校庫填報</button>
                 </div>
 
-                <!-- 🌟 右側表單內容區 -->
+                <!-- 右側表單內容區 -->
                 <form id="data-form" class="modal-content-area custom-scroll">
                     
-                    <!-- TAB: 修課紀錄 (維持不動) -->
+                    <!-- TAB: 修課紀錄 -->
                     <div id="tab-course" class="tab-content active">
                         <div class="field" style="margin-bottom: 16px;">
                             <label class="field-label">搜尋課程 <span class="req">*</span></label>
                             <div class="search-input-wrap" style="position: relative;">
-                                <i class="ti ti-search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:16px;"></i>
+                                <i data-lucide="search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted);"></i>
                                 <input type="text" id="input-course-search" class="field-input" placeholder="輸入課程代號或名稱搜尋..." autocomplete="off" style="padding-left: 36px;">
                                 <div id="course-dropdown" class="search-dropdown custom-scroll"></div>
                             </div>
@@ -280,12 +278,12 @@
                         </div>
                     </div>
 
-                    <!-- TAB: 實習機構 (移出職缺與來源) -->
+                    <!-- TAB: 實習機構 -->
                     <div id="tab-inst" class="tab-content" style="display: none;">
                         <div class="field">
                             <label class="field-label">搜尋並選擇實習機構 <span class="req">*</span></label>
                             <div class="search-input-wrap" style="position: relative;">
-                                <i class="ti ti-search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:16px;"></i>
+                                <i data-lucide="search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted);"></i>
                                 <input type="text" id="input-institution" class="field-input" placeholder="搜尋機構名稱或統編..." autocomplete="off" style="padding-left: 36px;">
                                 <div id="institution-dropdown" class="search-dropdown custom-scroll"></div>
                             </div>
@@ -293,7 +291,7 @@
 
                         <div id="selected-inst-info-card" style="display: none; background: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-top: 12px; margin-bottom: 24px;">
                             <div style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                                <i class="ti ti-building-skyscraper text-brand"></i> <span id="inst-card-name">機構名稱</span>
+                                <i data-lucide="building-2" class="text-brand"></i> <span id="inst-card-name">機構名稱</span>
                             </div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px; color: var(--text-secondary);">
                                 <div><span style="color: var(--text-muted); font-size: 11px; display: block; margin-bottom: 2px;">統一編號</span><span id="inst-card-taxid">-</span></div>
@@ -305,7 +303,7 @@
                         </div>
                     </div>
 
-                    <!-- TAB: 實習資訊 (大匯集) -->
+                    <!-- TAB: 實習資訊 -->
                     <div id="tab-info" class="tab-content" style="display: none;">
                         <div class="form-grid">
                             <div class="field">
@@ -361,7 +359,7 @@
                         </div>
                     </div>
 
-                    <!-- TAB: 實習待遇 (簡化版) -->
+                    <!-- TAB: 實習待遇 -->
                     <div id="tab-allowance" class="tab-content" style="display: none;">
                         <div class="form-grid">
                             <div class="field">
@@ -387,7 +385,7 @@
                         </div>
                     </div>
 
-                    <!-- TAB: 校庫填報 (併入原備註欄位) -->
+                    <!-- TAB: 校庫填報 -->
                     <div id="tab-moe" class="tab-content" style="display: none;">
                         <div class="form-grid">
                             <div class="field">
@@ -418,7 +416,7 @@
             
             <div class="dialog-footer" style="padding: 16px 24px; border-top: 1px solid var(--border);">
                 <button type="button" class="btn btn-secondary" id="btn-cancel-modal">取消</button>
-                <button type="button" id="btn-submit" class="btn btn-primary"><i class="ti ti-check"></i> 確認儲存</button>
+                <button type="button" id="btn-submit" class="btn btn-primary"><i data-lucide="check"></i> 確認儲存</button>
             </div>
         </div>
     </div>
@@ -426,8 +424,8 @@
     <div id="import-report-modal" class="dialog-overlay">
         <div class="dialog-box">
             <div class="dialog-header" style="justify-content: space-between;">
-                <h3><i class="ti ti-file-invoice" style="color: var(--brand);"></i> 批次匯入結果報告</h3>
-                <button type="button" class="dialog-close btn-close-report"><i class="ti ti-x"></i></button>
+                <h3><i data-lucide="file-text" style="color: var(--brand);"></i> 批次匯入結果報告</h3>
+                <button type="button" class="dialog-close btn-close-report"><i data-lucide="x"></i></button>
             </div>
             <div class="dialog-body custom-scroll" style="background: var(--bg);">
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px;">
@@ -454,7 +452,7 @@
             <div class="dialog-footer">
                 <button type="button" class="btn btn-secondary btn-close-report">關閉視窗</button>
                 <button type="button" class="btn btn-primary" id="btn-download-report">
-                    <i class="ti ti-download"></i> 下載詳細報表
+                    <i data-lucide="download"></i> 下載詳細報表
                 </button>
             </div>
         </div>
