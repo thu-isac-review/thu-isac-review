@@ -149,7 +149,7 @@ th .sort-icon {
     vertical-align: middle;  /* 確保跟文字水平對齊 */
     display: inline-block;
 }
-th.sort-asc .sort-icon { opacity: 1; color: var(--brand); transform: rotate(0deg); transition: transform 0.2s; }
+th.sort-asc .sort-icon { opacity: 1; color: var(--brand); transform: none !important; }
 th.sort-desc .sort-icon { opacity: 1; color: var(--brand); transform: rotate(180deg); transition: transform 0.2s; }
 
 tr:hover td { background: #fafbff; }
