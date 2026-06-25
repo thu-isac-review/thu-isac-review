@@ -766,13 +766,30 @@ export function bindEvents(container) {
             if (state.sortCol === col) state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
             else { state.sortCol = col; state.sortDir = 'asc'; }
             
-            // 🌟 清除所有標題的排序狀態，不再去覆寫 icon 的 className 避免弄壞 Lucide SVG
+            // 1. 清除所有標題的排序狀態，並將圖示還原為「預設雙向箭頭」
             container.querySelectorAll('th[data-sort]').forEach(t => {
                 t.classList.remove('sort-asc', 'sort-desc');
+                const svgIcon = t.querySelector('svg.sort-icon');
+                if (svgIcon) {
+                    const defaultIcon = document.createElement('i');
+                    defaultIcon.setAttribute('data-lucide', 'arrow-up-down');
+                    defaultIcon.className = 'sort-icon';
+                    svgIcon.replaceWith(defaultIcon);
+                }
             });
             
-            // 加上當前的排序狀態
+            // 2. 套用新的排序狀態，並將圖示替換為明確的「單向箭頭」
             th.classList.add(state.sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+            const targetIcon = th.querySelector('i.sort-icon, svg.sort-icon');
+            if (targetIcon) {
+                const activeIcon = document.createElement('i');
+                activeIcon.setAttribute('data-lucide', state.sortDir === 'asc' ? 'arrow-up' : 'arrow-down');
+                activeIcon.className = 'sort-icon';
+                targetIcon.replaceWith(activeIcon);
+            }
+            
+            // 3. 呼叫 Lucide 重新渲染剛剛替換的圖示
+            if (window.lucide) window.lucide.createIcons();
             
             Render.renderTable();
         }
