@@ -324,6 +324,8 @@ input[type=number] { -moz-appearance: textfield; }
 /* ─── RWD 響應式佈局優化 ─── */
 @media (max-width: 1024px) {
   .split-layout { grid-template-columns: 1fr; gap: 40px; }
+  /* 確保平板/手機版的 filter-row 不會裁切選單 */
+  .filter-row { overflow: visible !important; }
 }
 
 /* ==========================================
@@ -346,61 +348,66 @@ input[type=number] { -moz-appearance: textfield; }
   .v-divider { display: none; }
   .form-grid { grid-template-columns: 1fr; gap: 12px; }
   
-  /* ⭐ 1. 修復篩選列與顯示設定按鈕卡住的問題 */
-  /* 將 overflow 移至子層 wrappers，避免 fixed 選單被裁切或事件失效 */
+  /* ⭐ 1. 修復篩選列卡住：移除 overflow 限制 */
   .filter-row { flex-wrap: nowrap; overflow: visible !important; padding: 10px 16px; display: flex; }
   .filters-scroll-wrapper { flex: 1; min-width: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
   .filters-scroll-wrapper::-webkit-scrollbar { display: none; }
   
-  /* 解除 sticky 導致的層級與點擊衝突 */
   #display-settings-wrap { position: relative; margin-left: auto; z-index: 50; padding-left: 8px; border-left: none; right: auto; margin-right: 0; padding-right: 0; background: transparent; }
   #display-settings-wrap::before { display: none; }
   
-  /* 手機版底部抽屜選單：加入平滑彈出與 iPhone 底部安全邊距防呆 */
+  /* ⭐ 強制底部抽屜選單 (脫離父元素限制) */
   #display-settings-menu, 
-    .filter-dropdown { 
-        position: fixed !important; 
-        top: auto !important; 
-        bottom: 0 !important; 
-        left: 0 !important; 
-        right: 0 !important; 
-        width: 100% !important; 
-        border-radius: 16px 16px 0 0 !important; 
-        box-shadow: 0 -10px 40px rgba(0,0,0,0.2) !important; 
-        max-height: 80vh !important; 
-        z-index: 999999 !important; 
-        padding-bottom: max(env(safe-area-inset-bottom), 16px) !important; 
-        transform: none !important;
-    }
-    
-    /* ⭐ 2. 確保視窗內的清單內容過長時可以正常上下滾動 */
-    .filter-dropdown-list,
-    #column-toggles-container {
-        max-height: 50vh !important;
-        overflow-y: auto !important;
-    }
-}
-  /* 透過屬性選取器直接攔截 JS 改變的樣式來觸發動畫 */
-  #display-settings-menu[style*="display: block"], .filter-dropdown.show {
-      transform: translateY(0); visibility: visible; pointer-events: auto;
+  .filter-dropdown { 
+      position: fixed !important; 
+      top: auto !important; 
+      bottom: 0 !important; 
+      left: 0 !important; 
+      right: 0 !important; 
+      width: 100vw !important; 
+      max-width: 100% !important;
+      border-radius: 20px 20px 0 0 !important; 
+      box-shadow: 0 -10px 50px rgba(0,0,0,0.3) !important; 
+      max-height: 80vh !important; 
+      z-index: 9999999 !important; 
+      padding-bottom: max(env(safe-area-inset-bottom), 24px) !important; 
+      margin: 0 !important;
+      transform: translateY(100%); /* 初始隱藏在畫面下方 */
+      transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0.3s;
+      display: flex !important; 
+      visibility: hidden; 
+      pointer-events: none;
+      background: var(--surface) !important;
   }
-  .filter-dropdown-list { max-height: 50vh; }
+  
+  /* 透過攔截 JS 給的 display: block 來觸發彈出動畫 */
+  #display-settings-menu[style*="display: block"], 
+  .filter-dropdown.show {
+      transform: translateY(0) !important; 
+      visibility: visible !important; 
+      pointer-events: auto !important;
+  }
+
+  /* 清單過長時允許內部滑動 */
+  .filter-dropdown-list,
+  #column-toggles-container { 
+      max-height: 60vh !important; 
+      overflow-y: auto !important; 
+      -webkit-overflow-scrolling: touch !important; 
+  }
 
   /* ⭐ 2. 優化新增/編輯紀錄視窗的外觀 */
-  .dialog-overlay { padding: 0; align-items: flex-end; } /* 讓視窗從底部貼齊 */
+  .dialog-overlay { padding: 0; align-items: flex-end; } 
   .dialog-box { height: 100dvh !important; width: 100% !important; border-radius: 16px 16px 0 0 !important; max-height: none !important; display: flex; flex-direction: column; animation: slideUpMobile 0.3s forwards; }
   
-  /* 學生 Banner 排版修正：縮小圖示、文字自動換行 */
   #global-student-banner { padding: 12px 16px !important; align-items: flex-start !important; }
   #global-student-banner > div:first-child { width: 36px !important; height: 36px !important; font-size: 16px !important; flex-shrink: 0; }
   #global-student-banner > div:last-child > div:first-child { flex-wrap: wrap; gap: 4px; }
   #global-student-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-left: 0 !important; margin-top: 4px; width: 100%; }
 
-  /* 彈窗結構 */
   .dialog-header { padding: 16px !important; position: sticky; top: 0; z-index: 20; background: var(--surface); border-bottom: 1px solid var(--border); }
   .dialog-body-container { flex-direction: column; overflow: hidden; flex: 1; }
   
-  /* 頂部滑動 Tabs 優化：加入慣性滑動與美化 */
   .modal-sidebar { 
       width: 100%; flex-direction: row; padding: 0 16px !important; overflow-x: auto; 
       border-right: none; border-bottom: 1px solid var(--border); scroll-snap-type: x mandatory;
@@ -410,12 +417,10 @@ input[type=number] { -moz-appearance: textfield; }
   .tab-btn { padding: 14px 16px; border-left: none; border-bottom: 3px solid transparent; white-space: nowrap; scroll-snap-align: start; font-size: 13px !important; flex-shrink: 0; }
   .tab-btn.active { border-bottom-color: var(--brand); box-shadow: none; background: transparent; color: var(--brand); }
   
-  /* 表單內容與底部雙按鈕滿版對齊 */
   .modal-content-area { padding: 16px 16px 24px 16px !important; overflow-y: auto; flex: 1; }
   .dialog-footer { padding: 12px 16px max(16px, env(safe-area-inset-bottom)) !important; position: sticky; bottom: 0; background: var(--surface); z-index: 20; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); }
   .dialog-footer .btn { flex: 1; height: 42px; justify-content: center; }
 
-  /* 修課紀錄已選區塊高度自適應 */
   #selected-courses-container { height: auto !important; max-height: 250px; }
 }
 
