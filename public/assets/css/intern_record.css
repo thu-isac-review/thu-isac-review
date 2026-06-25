@@ -141,7 +141,14 @@ th.col-spacer, td.col-spacer { pointer-events: none; border-left: none !importan
 
 th[data-sort] { cursor: pointer; user-select: none; transition: background var(--transition); }
 th[data-sort]:hover { background: #eef2f6; }
-th .sort-icon { margin-left: 4px; opacity: 0.4; }
+th .sort-icon { 
+    margin-left: 4px; 
+    opacity: 0.4; 
+    width: 12px !important;  /* 強制將圖示縮小 */
+    height: 12px !important; 
+    vertical-align: middle;  /* 確保跟文字水平對齊 */
+    display: inline-block;
+}
 th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--brand); }
 
 tr:hover td { background: #fafbff; }
