@@ -55,6 +55,50 @@ export function bindEvents(container) {
         filterScrollArea?.scrollBy({ left: 200, behavior: 'smooth' });
     });
 
+    // ==========================================
+    // 🌟 新增：篩選器選單的點擊與操作事件委派
+    // ==========================================
+    container.querySelector('#filter-container')?.addEventListener('click', (e) => {
+        // 1. 點擊按鈕展開選單
+        const pill = e.target.closest('.filter-pill');
+        if (pill) {
+            e.stopPropagation();
+            const type = pill.id.replace('pill-', ''); // 取得屬性 (例如: term, dept)
+            UI.toggleDropdown(type);
+        }
+
+        // 2. 點擊「全選 / 取消全選」按鈕
+        const toggleBtn = e.target.closest('.btn-filter-toggle');
+        if (toggleBtn) {
+            e.stopPropagation();
+            const type = toggleBtn.dataset.type;
+            const isSelectAll = toggleBtn.dataset.state !== 'all';
+            toggleBtn.dataset.state = isSelectAll ? 'all' : 'none';
+            toggleBtn.innerText = isSelectAll ? '取消選取' : '全選';
+            
+            const set = state.filterSelections[type]; // 根據你的 state 資料結構取得 Set
+            if (!set) return;
+
+            container.querySelectorAll(`.filter-chk-${type}`).forEach(c => {
+                if(c.closest('.filter-option').style.display !== 'none') { 
+                    c.checked = isSelectAll; 
+                    if(isSelectAll) set.add(c.value); else set.delete(c.value); 
+                }
+            });
+            state.currentPage = 1; 
+            UI.updatePillActive(type); 
+            Render.renderTable();
+        }
+    });
+
+    // 處理篩選選單內的即時搜尋
+    container.querySelector('#filter-container')?.addEventListener('keyup', (e) => {
+        if (e.target.tagName.toLowerCase() === 'input' && e.target.id.startsWith('search-')) {
+            const type = e.target.id.split('-')[1]; // 取得 search-{type}-input 的 type
+            UI.filterDropdownItems(e.target, `${type}-options-container`);
+        }
+    });
+
     function handlePaymentFieldsCascade() {
         const yearSelect = document.getElementById('input-academic-year');
         const allowanceSelect = document.getElementById('input-allowance');
