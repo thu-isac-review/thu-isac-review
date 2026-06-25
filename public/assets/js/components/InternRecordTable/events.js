@@ -766,31 +766,35 @@ export function bindEvents(container) {
             if (state.sortCol === col) state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
             else { state.sortCol = col; state.sortDir = 'asc'; }
             
-            // 1. 清除所有標題的排序狀態，並將圖示還原為「預設雙向箭頭」
+            // 1. 將「其他未選」的欄位還原為預設的雙向箭頭
             container.querySelectorAll('th[data-sort]').forEach(t => {
-                t.classList.remove('sort-asc', 'sort-desc');
-                const svgIcon = t.querySelector('svg.sort-icon');
-                if (svgIcon) {
-                    const defaultIcon = document.createElement('i');
-                    defaultIcon.setAttribute('data-lucide', 'arrow-up-down');
-                    defaultIcon.className = 'sort-icon';
-                    svgIcon.replaceWith(defaultIcon);
+                if (t !== th) {
+                    t.classList.remove('sort-asc', 'sort-desc');
+                    const icon = t.querySelector('.sort-icon');
+                    // 若它還不是雙向箭頭，才進行替換
+                    if (icon && !icon.classList.contains('lucide-arrow-up-down')) {
+                        const defaultIcon = document.createElement('i');
+                        defaultIcon.setAttribute('data-lucide', 'arrow-up-down');
+                        defaultIcon.className = 'sort-icon';
+                        icon.replaceWith(defaultIcon);
+                    }
                 }
             });
             
-            // 2. 套用新的排序狀態，並將圖示替換為明確的「單向箭頭」
+            // 2. 切換當前點擊欄位的 class
+            th.classList.remove('sort-asc', 'sort-desc');
             th.classList.add(state.sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
-            const targetIcon = th.querySelector('i.sort-icon, svg.sort-icon');
-            if (targetIcon) {
+            
+            // 3. 只有當它「還不是單向箭頭」時才替換 DOM，保留它讓 CSS 負責旋轉動畫！
+            const targetIcon = th.querySelector('.sort-icon');
+            if (targetIcon && !targetIcon.classList.contains('lucide-arrow-up')) {
                 const activeIcon = document.createElement('i');
-                activeIcon.setAttribute('data-lucide', state.sortDir === 'asc' ? 'arrow-up' : 'arrow-down');
+                activeIcon.setAttribute('data-lucide', 'arrow-up');
                 activeIcon.className = 'sort-icon';
                 targetIcon.replaceWith(activeIcon);
             }
             
-            // 3. 呼叫 Lucide 重新渲染剛剛替換的圖示
             if (window.lucide) window.lucide.createIcons();
-            
             Render.renderTable();
         }
 
