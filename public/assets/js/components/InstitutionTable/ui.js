@@ -271,3 +271,67 @@ export function closeBatchParentModal() {
         document.getElementById('batch-parent-search').value = ''; 
     }
 }
+
+
+/**
+ * 將查詢到的登記資料自動填入機構表單
+ * 支援「台」與「臺」自動配對相容
+ * 
+ * @param {Object} data - 查詢結果物件 { name, city, address, type }
+ * @param {HTMLFormElement|Document} [container=document] - 表單容器
+ */
+export function populateInstitutionFields(data, container = document) {
+  if (!data) return;
+
+  // 1. 機構名稱
+  const nameInput = container.querySelector('#institution-name, input[name="name"]');
+  if (nameInput) {
+    nameInput.value = data.name;
+    nameInput.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  // 2. 縣市下拉選單 (支援「台」與「臺」相容匹配)
+  const citySelect = container.querySelector('#institution-city, select[name="city"]');
+  if (citySelect && data.city) {
+    const normalize = (str) => (str || '').replace(/台/g, '臺').trim();
+    const targetCity = normalize(data.city);
+
+    for (const option of citySelect.options) {
+      const optVal = normalize(option.value);
+      const optText = normalize(option.textContent);
+
+      if (optVal === targetCity || optText.includes(targetCity)) {
+        citySelect.value = option.value;
+        citySelect.dispatchEvent(new Event('change', { bubbles: true }));
+        break;
+      }
+    }
+  }
+
+  // 3. 詳細地址
+  const addrInput = container.querySelector('#institution-address, input[name="address"]');
+  if (addrInput) {
+    addrInput.value = data.address;
+    addrInput.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+}
+
+/**
+ * 查詢統編時的 Loading 狀態反饋
+ */
+export function toggleTaxIdLoading(isLoading, taxIdInput, feedbackEl = null) {
+  if (!taxIdInput) return;
+
+  if (isLoading) {
+    taxIdInput.classList.add('is-loading');
+    if (feedbackEl) {
+      feedbackEl.textContent = '經濟部資料庫查詢中...';
+      feedbackEl.className = 'form-text text-primary';
+    }
+  } else {
+    taxIdInput.classList.remove('is-loading');
+    if (feedbackEl) {
+      feedbackEl.textContent = '';
+    }
+  }
+}
