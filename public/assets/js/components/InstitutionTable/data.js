@@ -91,3 +91,73 @@ export async function executeBatchSetParent(parentId) {
     await batch.commit();
     state.selectedIds = []; // 批次執行完畢後清空選取
 }
+
+
+/**
+ * 依統一編號向經濟部商工行政 API 查詢登記資料
+ * 查詢策略：先查「公司登記」，若查無資料或回傳空值，則改查「商業登記」
+ * 
+ * @param {string} taxId - 8 碼統一編號
+ * @returns {Promise<{name: string, city: string, address: string, type: string}|null>}
+ */
+export async function fetchCompanyInfoByTaxId(taxId) {
+  const cleanTaxId = (taxId || '').trim();
+  if (!/^\d{8}$/.test(cleanTaxId)) {
+    return null;
+  }
+
+  try {
+    // -------------------------------------------------------------
+    // 1. 優先查詢：經濟部【公司登記基本資料】API
+    // -------------------------------------------------------------
+    const companyApiUrl = `https://data.gcis.nat.gov.tw/od/data/api/5F64D864-61CB-4D0D-8AD9-492047CC10F8?$format=json&$filter=Business_Accounting_NO eq ${cleanTaxId}`;
+    
+    const companyResp = await fetch(companyApiUrl);
+    if (companyResp.ok) {
+      const companyData = await companyResp.json();
+      if (Array.isArray(companyData) && companyData.length > 0) {
+        const item = companyData[0];
+        return parseCompanyData(item.Company_Name, item.Company_Location, '公司');
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 2. 次要查詢：經濟部【商業登記基本資料】API（獨資、合夥、商號、行號）
+    // -------------------------------------------------------------
+    const busiApiUrl = `https://data.gcis.nat.gov.tw/od/data/api/236EE382-4942-41A9-BD3A-169488B73E6E?$format=json&$filter=President_No eq ${cleanTaxId}`;
+    
+    const busiResp = await fetch(busiApiUrl);
+    if (busiResp.ok) {
+      const busiData = await busiResp.json();
+      if (Array.isArray(busiData) && busiData.length > 0) {
+        const item = busiData[0];
+        return parseCompanyData(item.Busi_Name, item.Busi_Address, '商業登記');
+      }
+    }
+
+    return null; // 兩邊皆查無資料
+  } catch (err) {
+    console.error('[GCIS API Error] 經濟部 API 查詢失敗:', err);
+    throw err;
+  }
+}
+
+/**
+ * 地址解析與格式標準化（拆解縣市與完整地址、過濾郵遞區號）
+ */
+function parseCompanyData(rawName, rawAddress, type) {
+  const name = (rawName || '').trim();
+  // 移除可能帶在前方的 3~5 碼郵遞區號
+  const cleanAddr = (rawAddress || '').replace(/^\d{3,5}\s*/, '').trim();
+
+  // 擷取前 3 個字的縣市（如：臺北市、新北市、彰化縣）
+  const match = cleanAddr.match(/^(.{2}[縣市])/);
+  const city = match ? match[1] : '';
+
+  return {
+    name,
+    city,
+    address: cleanAddr,
+    type
+  };
+}
