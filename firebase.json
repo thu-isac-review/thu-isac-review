@@ -8,7 +8,6 @@
       "**/.*",
       "**/node_modules/**"
     ],
-    // ▼▼▼【在此處加入 rewrites 反向代理設定】▼▼▼
     "rewrites": [
       {
         "source": "/api/gcis/company/**",
@@ -19,6 +18,5 @@
         "destination": "https://data.gcis.nat.gov.tw/od/data/api/236EE382-4942-41A9-BD3A-169488B73E6E"
       }
     ]
-    // ▲▲▲【結束加入】▲▲▲
   }
 }
