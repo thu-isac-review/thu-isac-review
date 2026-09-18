@@ -123,9 +123,12 @@
                     </tr>
                 </thead>
                 <tbody id="institution-table-body"></tbody>
+                    <!-- 初始載入時保持空白，交給 JS 控制 empty state -->
+                </tbody>
             </table>
         </div>
         
+        <!-- 🌟 [修改] 移至 table-scroll 外層，並透過 CSS 控制絕對定位覆蓋資料區 -->
         <div id="empty-state-container" class="empty-state" style="display: none;">
             <i class="ti ti-loader-2 ti-spin empty-icon" style="color:var(--brand); opacity:1;"></i>
             <div class="empty-text">資料載入中...</div>
@@ -183,19 +186,12 @@
                         </div>
                         
                         <div class="field"><label class="field-label">實習場所國別 <span class="req">*</span></label><select id="input-country" required class="field-select"></select></div>
-
-                        <!-- 🌟 統一編號（移至機構名稱上方，支援輸入 8 碼自動查詢與狀態提示） -->
-                        <div class="field" id="wrap-tax-id">
-                            <label class="field-label">統一編號 <span class="req">*</span></label>
-                            <input type="text" id="input-tax-id" required maxlength="8" placeholder="輸入 8 碼統編 (自動帶入名稱與地址)" class="field-input" style="text-transform:uppercase;" autocomplete="off">
-                            <small id="tax-id-feedback" style="display: block; margin-top: 4px; font-size: 12px; color: var(--text-muted);"></small>
-                        </div>
-
                         <div class="field"><label class="field-label">機構主名稱 <span class="req">*</span></label><input type="text" id="input-name" required placeholder="請輸入完整機構名稱" class="field-input"></div>
                         
                         <div class="field" id="wrap-name-translated" style="display:none;"><label class="field-label">中文譯名</label><input type="text" id="input-name-translated" placeholder="例如：蘋果公司 (選填)" class="field-input"></div>
                         <div class="field" id="wrap-overseas-tax" style="display:none;"><label class="field-label">海外稅號 / 立案號碼</label><input type="text" id="input-overseas-tax-id" placeholder="當地稅務或機構登記號碼 (選填)" class="field-input"></div>
                         
+                        <div class="field" id="wrap-tax-id"><label class="field-label">統一編號 <span class="req">*</span></label><input type="text" id="input-tax-id" required placeholder="如: 12345678" class="field-input" style="text-transform:uppercase;"></div>
                         <div class="field" id="wrap-city"><label class="field-label">縣市別 <span id="req-city" class="req">*</span></label><select id="input-city" required class="field-select"><option value="">請選擇</option></select></div>
                         
                         <div class="field" style="margin-bottom:0;"><label class="field-label">實際實習地址 <span class="req">*</span></label><input type="text" id="input-address" required placeholder="請輸入完整實習地址" class="field-input"></div>
@@ -371,7 +367,8 @@
                     </div>
                 </div>
                 
-                <div id="batch-parent-dropdown-list" class="custom-scroll" style="max-height: 300px; overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column;"></div>
+                <div id="batch-parent-dropdown-list" class="custom-scroll" style="max-height: 300px; overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column;">
+                    </div>
             </div>
             <div class="dialog-footer" style="background:#f8fafc; border-top:1px solid var(--border); padding:16px 24px; border-radius: 0 0 12px 12px; display:flex; justify-content:flex-end; gap:8px;">
                 <button type="button" class="btn btn-secondary" id="btn-cancel-batch-parent" style="background:white;">取消</button>

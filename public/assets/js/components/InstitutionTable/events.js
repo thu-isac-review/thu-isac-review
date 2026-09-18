@@ -1,15 +1,10 @@
 import { state, Utils } from './state.js';
 import * as UI from './ui.js';
-import { fetchCompanyInfoByTaxId } from './data.js';
-import { populateInstitutionFields, toggleTaxIdLoading } from './ui.js';
 import * as Render from './render.js';
 import * as Data from './data.js';
 
 export function bindEvents(container) {
     if (!container) return;
-
-    // 統編查詢暫存（避免重複發送相同請求）
-    let lastQueriedTaxId = '';
 
     // 🌟 全域鍵盤快捷鍵綁定
     if (!state.isKeyboardShortcutBound) {
@@ -129,7 +124,6 @@ export function bindEvents(container) {
     container.querySelector('#btn-create-inst')?.addEventListener('click', () => {
         if(state.isReadOnly) return;
         state.editingId = null; state.editingOldData = null; state.currentHistory = [];
-        lastQueriedTaxId = ''; // 重置統編快取
         document.getElementById('data-form')?.reset();
         if(document.getElementById('input-parent-id')) document.getElementById('input-parent-id').value = '';
         if(document.getElementById('parent-search-input')) document.getElementById('parent-search-input').value = '';
@@ -378,46 +372,6 @@ export function bindEvents(container) {
     container.querySelector('#btn-close-modal-x')?.addEventListener('click', UI.closeModal);
     container.querySelector('#btn-cancel-modal')?.addEventListener('click', UI.closeModal);
 
-    // 🌟 統編自動查詢並帶入（經濟部商工 API）
-    const taxIdInput = container.querySelector('#input-tax-id');
-    const handleTaxIdQuery = async () => {
-        const country = document.getElementById('input-country')?.value || '中華民國';
-        if (country !== '中華民國') return; // 非國內機構不查詢
-
-        const taxId = taxIdInput?.value.trim() || '';
-        if (!/^\d{8}$/.test(taxId) || taxId === lastQueriedTaxId) return;
-
-        try {
-            toggleTaxIdLoading(true, taxIdInput);
-            lastQueriedTaxId = taxId;
-
-            const result = await fetchCompanyInfoByTaxId(taxId);
-            if (result) {
-                populateInstitutionFields(result, document.getElementById('data-modal') || container);
-                showNotification(`已自動帶入：${result.name}（${result.type}）`, "info");
-            } else {
-                showNotification("經濟部查無此統一編號登記資料，請手動填寫", "info");
-            }
-        } catch (err) {
-            console.error(err);
-            showNotification("經濟部 API 連線逾時或受阻，請手動填寫", "error");
-        } finally {
-            toggleTaxIdLoading(false, taxIdInput);
-        }
-    };
-
-    // 滿 8 碼時自動查詢
-    taxIdInput?.addEventListener('input', (e) => {
-        if (e.target.value.trim().length === 8) {
-            handleTaxIdQuery();
-        }
-    });
-
-    // 失焦時防漏查詢
-    taxIdInput?.addEventListener('blur', () => {
-        handleTaxIdQuery();
-    });
-
     const parentSearchInput = container.querySelector('#parent-search-input');
     const parentDropdown = container.querySelector('#parent-dropdown-list');
     const parentIdHidden = container.querySelector('#input-parent-id');
@@ -554,7 +508,7 @@ export function bindEvents(container) {
             await Data.executeBatchEdit(indVal, venVal);
             closeBatchEdit();
             await Data.fetchInitialDataOnce(); 
-            UI.updateBatchActionBar(); UI.buildBaseTree(); Render.renderTable(); 
+            UI.updateBatchActionBar(); UI.buildBaseTree(); Render.renderTable();
             showNotification(`已成功批次更新 ${state.selectedIds.length} 筆機構屬性！`, "success");
         } catch(e) {
             showNotification("批次更新失敗，請重試", "error");
@@ -591,7 +545,7 @@ export function bindEvents(container) {
             await Data.executeMerge(masterId, masterInst.name, instsToDelete, deletedNames);
             closeMerge();
             await Data.fetchInitialDataOnce(); 
-            UI.updateBatchActionBar(); UI.buildBaseTree(); Render.renderTable(); 
+            UI.updateBatchActionBar(); UI.buildBaseTree(); Render.renderTable();
             showNotification("機構合併與關聯移轉完成！", "success");
         } catch(e) {
             showNotification("合併失敗，請重試", "error");
@@ -642,7 +596,7 @@ export function bindEvents(container) {
             await Data.fetchInitialDataOnce(); 
             UI.updateBatchActionBar(); 
             UI.buildBaseTree(); 
-            Render.renderTable(); 
+            Render.renderTable();
             showNotification(`已成功更新 ${state.selectedIds.length} 筆機構的隸屬關係！`, "success");
         } catch(e) {
             console.error(e);
@@ -691,7 +645,6 @@ export function bindEvents(container) {
             state.editingId = id; 
             state.editingOldData = { ...docData }; 
             state.currentHistory = docData.history || [];
-            lastQueriedTaxId = docData.tax_id || ''; // 載入既有統編，防止編輯彈窗開啟時重複查詢
             
             if(document.getElementById('modal-tabs')) document.getElementById('modal-tabs').style.display = 'block';
             document.getElementById('tab-btn-main')?.click();
@@ -740,7 +693,7 @@ export function bindEvents(container) {
                 try {
                     await Data.deleteData(id);
                     await Data.fetchInitialDataOnce(); 
-                    UI.updateBatchActionBar(); UI.buildBaseTree(); Render.renderTable(); 
+                    UI.updateBatchActionBar(); UI.buildBaseTree(); Render.renderTable();
                     showNotification(`機構「${name}」已刪除成功！`, "success");
                 } catch(e) {
                     showNotification("刪除失敗", "error");
