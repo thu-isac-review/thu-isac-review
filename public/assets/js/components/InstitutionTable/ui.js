@@ -283,15 +283,15 @@ export function closeBatchParentModal() {
 export function populateInstitutionFields(data, container = document) {
   if (!data) return;
 
-  // 1. 機構名稱
-  const nameInput = container.querySelector('#institution-name, input[name="name"]');
+  // 1. 機構名稱 (相容 input-name 與 institution-name)
+  const nameInput = container.querySelector('#input-name, #institution-name, input[name="name"]');
   if (nameInput) {
     nameInput.value = data.name;
     nameInput.dispatchEvent(new Event('input', { bubbles: true }));
   }
 
-  // 2. 縣市下拉選單 (支援「台」與「臺」相容匹配)
-  const citySelect = container.querySelector('#institution-city, select[name="city"]');
+  // 2. 縣市下拉選單 (支援「台」與「臺」相容)
+  const citySelect = container.querySelector('#input-city, #institution-city, select[name="city"]');
   if (citySelect && data.city) {
     const normalize = (str) => (str || '').replace(/台/g, '臺').trim();
     const targetCity = normalize(data.city);
@@ -308,8 +308,8 @@ export function populateInstitutionFields(data, container = document) {
     }
   }
 
-  // 3. 詳細地址
-  const addrInput = container.querySelector('#institution-address, input[name="address"]');
+  // 3. 詳細地址 (相容 input-address 與 institution-address)
+  const addrInput = container.querySelector('#input-address, #institution-address, input[name="address"]');
   if (addrInput) {
     addrInput.value = data.address;
     addrInput.dispatchEvent(new Event('input', { bubbles: true }));
