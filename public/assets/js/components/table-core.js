@@ -100,3 +100,29 @@ export function pageSlice(records, page, pageSize) {
   const start = (currentPage - 1) * size;
   return { currentPage, totalPages, start, items: records.slice(start, start + size) };
 }
+
+/** Shared compact paginator markup, with explicit aria labels. */
+export function paginationMarkup(page, totalPages) {
+  const max = Math.max(1, Number(totalPages) || 1);
+  const current = Math.min(max, Math.max(1, Number(page) || 1));
+  const parts = [];
+  let previous = 0;
+  for (let p = 1; p <= max; p++) {
+    if (p !== 1 && p !== max && Math.abs(p - current) > 1) continue;
+    if (previous && p - previous > 1) {
+      parts.push('<span class="page-btn page-gap" aria-hidden="true">…</span>');
+    }
+    parts.push('<button type="button" class="page-btn page-num-btn' +
+      (p === current ? ' active' : '') + '" data-page="' + p +
+      '" aria-label="第 ' + p + ' 頁"' + (p === current ? ' aria-current="page"' : '') +
+      '>' + p + '</button>');
+    previous = p;
+  }
+  const back = '<button type="button" class="page-btn page-step-btn" data-page="' + (current - 1) +
+    '" aria-label="上一頁"' + (current <= 1 ? ' disabled' : '') +
+    '><i class="ti ti-chevron-left" aria-hidden="true"></i></button>';
+  const next = '<button type="button" class="page-btn page-step-btn" data-page="' + (current + 1) +
+    '" aria-label="下一頁"' + (current >= max ? ' disabled' : '') +
+    '><i class="ti ti-chevron-right" aria-hidden="true"></i></button>';
+  return back + parts.join('') + next;
+}
