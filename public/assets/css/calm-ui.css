@@ -1,0 +1,131 @@
+/* THU ISAC — Calm Database UI / 2026-11
+   Visual refresh for the current modular application.
+   No changes to authentication, Firestore, imports, exports or event handlers. */
+:root {
+  --brand:#245c86; --brand-hover:#194b70;
+  --brand-light:#eef5fb; --brand-border:#c9ddec;
+  --bg:#f8fafc; --surface:#fff;
+  --border:#e5eaf0; --border-strong:#cbd5e1;
+  --text-primary:#17212f; --text-secondary:#475569; --text-muted:#64748b;
+  --radius-sm:5px; --radius:7px; --radius-lg:10px; --radius-xl:12px;
+  --shadow-sm:0 1px 2px rgba(15,23,42,.03);
+  --shadow:0 1px 3px rgba(15,23,42,.045);
+  --shadow-md:0 8px 24px rgba(15,23,42,.09);
+  --shadow-lg:0 14px 34px rgba(15,23,42,.12);
+}
+:where(button,a,input,select,textarea,[role="button"]):focus-visible {
+  outline:2px solid #2563eb;outline-offset:2px;
+}
+:where(input,select,textarea){font-family:inherit}
+:where(input,select,textarea)::placeholder{color:#94a3b8;opacity:1}
+:where(input[type="checkbox"],input[type="radio"]){accent-color:var(--brand)}
+:where(button){transition-property:background-color,border-color,color,box-shadow;transition-duration:160ms}
+#sidebar {border-radius:0 12px 12px 0;box-shadow:var(--shadow-lg)}
+#sidebar .nav-item {border-radius:7px;font-weight:500}
+#sidebar .nav-item.active {background:#eef5fb;color:#245c86;font-weight:650}
+#sidebar .nav-item:hover:not(.active) {background:#f1f5f9}
+#topbar {box-shadow:none;border-bottom:1px solid var(--border)}
+/* Shared data components, scoping prevents leaking into review tables */
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .toolbar {
+  padding:12px 20px;gap:10px;background:#fff;border-bottom:1px solid var(--border)
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .search-wrap {
+  flex:0 1 300px;min-width:180px;max-width:100%
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .search-input {
+  height:38px;border:1px solid var(--border-strong);border-radius:7px;background:#fff;color:var(--text-primary)
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .search-input:focus {
+  border-color:var(--brand);box-shadow:0 0 0 3px rgba(36,92,134,.12)
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .btn {
+  border-radius:7px;font-weight:600;box-shadow:none
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .btn-primary {
+  background:var(--brand);border-color:var(--brand);color:#fff
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .btn-primary:hover {
+  background:var(--brand-hover);border-color:var(--brand-hover)
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .btn-secondary {
+  background:#fff;border:1px solid var(--border-strong);color:#475569
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .btn-secondary:hover {
+  background:#f8fafc;color:#17212f
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .btn-success-solid,
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .btn-indigo-solid,
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .btn-teal-solid {
+  background:#f8fafc;border:1px solid var(--border-strong);color:#334155
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .btn-success-solid:hover,
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .btn-indigo-solid:hover,
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .btn-teal-solid:hover {
+  background:#eef5fb;border-color:#bcd2e5;color:var(--brand)
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .filter-row {
+  padding:10px 20px;background:#fafbfc;border-bottom:1px solid var(--border)
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .filter-pill {
+  border-radius:7px;border:1px solid var(--border-strong);background:#fff;box-shadow:none;color:#475569
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .filter-pill.active {
+  background:#eef5fb;color:var(--brand);border-color:#c9ddec
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .filter-pill .pill-count {
+  background:#dce9f5;color:#245c86
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .filter-dropdown {
+  border:1px solid var(--border);border-radius:9px;box-shadow:var(--shadow-md)
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .table-wrap {
+  background:#fff
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) table {
+  font-variant-numeric:tabular-nums
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) th {
+  background:#f8fafc;color:#64748b;letter-spacing:0;font-size:12px;border-bottom:1px solid var(--border);font-weight:650
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) td {
+  border-bottom:1px solid #eef1f5;color:#334155
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) tbody tr:hover {
+  background:#f8fafc
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) tr.selected {
+  background:#eff6ff!important
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .col-checkbox {
+  background:inherit
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) th.col-checkbox {
+  background:#f8fafc
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) :where(input:not([type="checkbox"]):not([type="radio"]),select,textarea):focus {
+  border-color:var(--brand);outline:2px solid rgba(36,92,134,.20);outline-offset:1px
+}
+/* Login page visual consistency */
+#loginForm {box-shadow:var(--shadow-md)!important;border-radius:12px!important}
+#loginForm .input-field {background:#fff;border-color:var(--border-strong)}
+#loginForm .btn-primary {background:var(--brand)}
+#loginForm .btn-primary:hover:not(:disabled) {background:var(--brand-hover)}
+/* Independent card-based and review screens */
+.card-hover:hover {transform:translateY(-1px)}
+.shadow-xl,.shadow-2xl {box-shadow:var(--shadow-md)}
+.rounded-3xl {border-radius:12px}
+@media(max-width:768px) {
+  :is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .toolbar,
+  :is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .filter-row {
+    padding:10px 12px
+  }
+  :is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .search-wrap {
+    flex:1 1 200px
+  }
+  :is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .toolbar-actions {
+    flex-wrap:wrap
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after {animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
