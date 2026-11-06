@@ -1,3 +1,4 @@
+import { toggleVisibleSelection, updateVisibleSelectAll } from '../table-core.js';
 import { state, formatCourseForExport, getRecordTerm, getColShort, getDeptShort } from './state.js';
 import * as UI from './ui.js';
 import * as Render from './render.js';
@@ -72,19 +73,8 @@ export function bindEvents(container) {
         if (toggleBtn) {
             e.stopPropagation();
             const type = toggleBtn.dataset.type;
-            const isSelectAll = toggleBtn.dataset.state !== 'all';
-            toggleBtn.dataset.state = isSelectAll ? 'all' : 'none';
-            toggleBtn.innerText = isSelectAll ? '取消選取' : '全選';
-            
-            const set = state.filterSelections[type]; // 根據你的 state 資料結構取得 Set
-            if (!set) return;
-
-            container.querySelectorAll(`.filter-chk-${type}`).forEach(c => {
-                if(c.closest('.filter-option').style.display !== 'none') { 
-                    c.checked = isSelectAll; 
-                    if(isSelectAll) set.add(c.value); else set.delete(c.value); 
-                }
-            });
+            const set = state.filterSelections[type];
+            toggleVisibleSelection(container, type, set);
             state.currentPage = 1; 
             UI.updatePillActive(type); 
             Render.renderTable();
