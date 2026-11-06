@@ -153,8 +153,8 @@ export function bindEvents(container) {
         container.querySelector(`#${type}-options-container`)?.addEventListener('change', (e) => { 
             if(e.target.type === 'checkbox') {
                 let set = type === 'country' ? state.filterCountrySet : (type === 'city' ? state.filterCitySet : (type === 'industry' ? state.filterIndustrySet : state.filterVenueSet));
-                if (set.has(e.target.value)) set.delete(e.target.value); else set.add(e.target.value);
-                document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
+                if (e.target.checked) set.add(e.target.value); else set.delete(e.target.value);
+                container.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
                 updateVisibleSelectAll(container, type);
                 state.currentPage = 1; UI.updatePillActive(type); Render.renderTable();
             }
