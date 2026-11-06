@@ -1,3 +1,4 @@
+import { pageSlice, matchesSelection } from '../table-core.js';
 import { state, Utils } from './state.js';
 
 function getCollegeSortValue(collegeName) {
@@ -48,9 +49,9 @@ export function renderTable() {
     state.filteredData = state.allData.filter(d => {
         const matchSearch = (d.name || '').toLowerCase().includes(searchTerm) || (d.student_id || '').toLowerCase().includes(searchTerm);
         const matchCol = state.filterCollegeSet.size === 0 || state.filterCollegeSet.has(d.college);
-        const matchDept = state.filterDeptSet.size === 0 || state.filterDeptSet.has(d.department);
-        const matchGender = state.filterGenderSet.size === 0 || state.filterGenderSet.has(d.gender || '男');
-        const matchNat = state.filterNatSet.size === 0 || state.filterNatSet.has(d.nationality || '本國籍');
+        const matchDept = matchesSelection(d.department, state.filterDeptSet);
+        const matchGender = matchesSelection(d.gender || '男', state.filterGenderSet);
+        const matchNat = matchesSelection(d.nationality || '本國籍', state.filterNatSet);
         
         return matchSearch && matchCol && matchDept && matchGender && matchNat;
     });
@@ -86,11 +87,8 @@ export function renderTable() {
     });
 
     const total = state.filteredData.length;
-    const totalPages = Math.max(1, Math.ceil(total / state.itemsPerPage));
-    if (state.currentPage > totalPages) state.currentPage = totalPages;
-    
-    const start = (state.currentPage - 1) * state.itemsPerPage;
-    const paginatedItems = state.filteredData.slice(start, start + state.itemsPerPage);
+    const {currentPage, totalPages, start, items: paginatedItems} = pageSlice(state.filteredData, state.currentPage, state.itemsPerPage);
+    state.currentPage = currentPage;
 
     const infoEl = document.getElementById('pagination-info');
     if(infoEl) {
