@@ -48,10 +48,10 @@ export function renderTable() {
 
     state.filteredData = state.allData.filter(d => {
         const matchSearch = (d.name || '').toLowerCase().includes(searchTerm) || (d.student_id || '').toLowerCase().includes(searchTerm);
-        const matchCol = state.filterCollegeSet.size === 0 || state.filterCollegeSet.has(d.college);
-        const matchDept = state.filterDeptSet.size === 0 || state.filterDeptSet.has(d.department);
-        const matchGender = state.filterGenderSet.size === 0 || state.filterGenderSet.has(d.gender || '男');
-        const matchNat = state.filterNatSet.size === 0 || state.filterNatSet.has(d.nationality || '本國籍');
+        const matchCol = matchesFilter(d.college,state.filterCollegeSet);
+        const matchDept = matchesFilter(d.department,state.filterDeptSet);
+        const matchGender = matchesFilter(d.gender,state.filterGenderSet);
+        const matchNat = matchesFilter(d.nationality,state.filterNatSet);
         
         return matchSearch && matchCol && matchDept && matchGender && matchNat;
     });

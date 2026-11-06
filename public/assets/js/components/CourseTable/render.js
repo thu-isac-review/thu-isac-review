@@ -61,15 +61,15 @@ export function renderTable() {
 
     state.filteredData = state.allData.filter(d => {
         const matchSearch = (d.course_name || '').toLowerCase().includes(searchTerm) || (d.course_code || '').toLowerCase().includes(searchTerm);
-        const matchYear = state.filterYearSet.size === 0 || state.filterYearSet.has(d.academic_year);
-        const matchTerm = state.filterTermSet.size === 0 || state.filterTermSet.has(d.term);
-        const matchEdu = state.filterEduSet.size === 0 || state.filterEduSet.has(d.edu_system);
-        const matchCol = state.filterCollegeSet.size === 0 || state.filterCollegeSet.has(d.college);
-        const matchDept = state.filterDeptSet.size === 0 || state.filterDeptSet.has(d.department);
-        const matchCode = state.filterCodeSet.size === 0 || state.filterCodeSet.has(d.course_code);
-        const matchName = state.filterNameSet.size === 0 || state.filterNameSet.has(d.course_name);
-        const matchType = state.filterTypeSet.size === 0 || state.filterTypeSet.has(d.course_type);
-        const matchCredit = state.filterCreditSet.size === 0 || state.filterCreditSet.has(String(d.credits));
+        const matchYear = matchesFilter(d.academic_year,state.filterYearSet);
+        const matchTerm = matchesFilter(d.term,state.filterTermSet);
+        const matchEdu = matchesFilter(d.edu_system,state.filterEduSet);
+        const matchCol = matchesFilter(d.college,state.filterCollegeSet);
+        const matchDept = matchesFilter(d.department,state.filterDeptSet);
+        const matchCode = matchesFilter(d.course_code,state.filterCodeSet);
+        const matchName = matchesFilter(d.course_name,state.filterNameSet);
+        const matchType = matchesFilter(d.course_type,state.filterTypeSet);
+        const matchCredit = matchesFilter(String(d.credits),state.filterCreditSet);
         
         return matchSearch && matchYear && matchTerm && matchEdu && matchCol && matchDept && matchCode && matchName && matchType && matchCredit;
     });
