@@ -226,3 +226,19 @@
 @media(prefers-reduced-motion:reduce){
  .saas-db *,.saas-db *::before,.saas-db *::after{transition-duration:.01ms!important;animation-duration:.01ms!important}
 }
+
+/* Workspace display mode control */
+.saas-db .saas-heading-actions{display:flex;align-items:center;gap:15px}
+.saas-db .saas-density-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  min-height:35px;padding:0 12px;border:1px solid #dfe5e9;
+  background:#fff;border-radius:9px;color:#607382;font-size:12px;
+  font-weight:600;white-space:nowrap;cursor:pointer;
+}
+.saas-db .saas-density-btn:hover{background:#f1f5f7;border-color:#cbd9e1}
+.saas-db .saas-density-btn[aria-pressed="true"]{background:#e9f2f6;color:#3d647c;border-color:#cbdde7}
+.saas-db.saas-compact .table-scroll th{height:36px!important;padding:7px 13px!important}
+.saas-db.saas-compact .table-scroll td{padding:7px 13px!important;line-height:1.45!important}
+.saas-db.saas-compact .table-scroll tbody tr{height:36px!important}
+.saas-db .saas-filter-empty{font-size:12px;color:#81909b;text-align:center;padding:12px 7px}
+@media(max-width:580px){.saas-db .saas-heading-actions{width:100%;justify-content:flex-end;gap:8px}}
