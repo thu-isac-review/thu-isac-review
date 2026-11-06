@@ -1,3 +1,4 @@
+import { pageSlice, matchesSelection } from '../table-core.js';
 import { state, getDeptShort, getTime, getColShort, formatCourseForTable, formatCourseForExport, Utils, getRecordTerm } from './state.js';
 import * as UI from './ui.js';
 
@@ -93,10 +94,8 @@ export function renderTable() {
     });
 
     const total = state.filteredRecords.length;
-    const tPages = Math.max(1, Math.ceil(total / state.itemsPerPage));
-    if (state.currentPage > tPages) state.currentPage = tPages;
-    const start = (state.currentPage - 1) * state.itemsPerPage;
-    const items = state.filteredRecords.slice(start, start + state.itemsPerPage);
+    const {currentPage, totalPages: tPages, start, items} = pageSlice(state.filteredRecords, state.currentPage, state.itemsPerPage);
+    state.currentPage = currentPage;
 
     const pageInfo = document.getElementById('pagination-info');
     if (total > 0) {
