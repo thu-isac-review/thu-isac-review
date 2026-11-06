@@ -1,3 +1,4 @@
+import { pageSlice, matchesSelection } from '../table-core.js';
 import { state, Utils } from './state.js';
 
 // 用於解析學期權重的輔助函式，以便進行「多到少 (暑期 -> 2 -> 1)」排序
@@ -60,15 +61,15 @@ export function renderTable() {
 
     state.filteredData = state.allData.filter(d => {
         const matchSearch = (d.course_name || '').toLowerCase().includes(searchTerm) || (d.course_code || '').toLowerCase().includes(searchTerm);
-        const matchYear = state.filterYearSet.size === 0 || state.filterYearSet.has(d.academic_year);
-        const matchTerm = state.filterTermSet.size === 0 || state.filterTermSet.has(d.term);
-        const matchEdu = state.filterEduSet.size === 0 || state.filterEduSet.has(d.edu_system);
-        const matchCol = state.filterCollegeSet.size === 0 || state.filterCollegeSet.has(d.college);
-        const matchDept = state.filterDeptSet.size === 0 || state.filterDeptSet.has(d.department);
-        const matchCode = state.filterCodeSet.size === 0 || state.filterCodeSet.has(d.course_code);
-        const matchName = state.filterNameSet.size === 0 || state.filterNameSet.has(d.course_name);
-        const matchType = state.filterTypeSet.size === 0 || state.filterTypeSet.has(d.course_type);
-        const matchCredit = state.filterCreditSet.size === 0 || state.filterCreditSet.has(String(d.credits));
+        const matchYear = matchesSelection(d.academic_year, state.filterYearSet);
+        const matchTerm = matchesSelection(d.term, state.filterTermSet);
+        const matchEdu = matchesSelection(d.edu_system, state.filterEduSet);
+        const matchCol = matchesSelection(d.college, state.filterCollegeSet);
+        const matchDept = matchesSelection(d.department, state.filterDeptSet);
+        const matchCode = matchesSelection(d.course_code, state.filterCodeSet);
+        const matchName = matchesSelection(d.course_name, state.filterNameSet);
+        const matchType = matchesSelection(d.course_type, state.filterTypeSet);
+        const matchCredit = matchesSelection(String(d.credits), state.filterCreditSet);
         
         return matchSearch && matchYear && matchTerm && matchEdu && matchCol && matchDept && matchCode && matchName && matchType && matchCredit;
     });
@@ -109,11 +110,8 @@ export function renderTable() {
     });
 
     const total = state.filteredData.length;
-    const totalPages = Math.max(1, Math.ceil(total / state.itemsPerPage));
-    if (state.currentPage > totalPages) state.currentPage = totalPages;
-    
-    const start = (state.currentPage - 1) * state.itemsPerPage;
-    const paginatedItems = state.filteredData.slice(start, start + state.itemsPerPage);
+    const {currentPage, totalPages, start, items: paginatedItems} = pageSlice(state.filteredData, state.currentPage, state.itemsPerPage);
+    state.currentPage = currentPage;
 
     const infoEl = document.getElementById('pagination-info');
     if(infoEl) {
