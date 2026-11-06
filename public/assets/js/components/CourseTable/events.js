@@ -127,8 +127,8 @@ export function bindEvents(container) {
                 const setMap = { 'year': state.filterYearSet, 'term': state.filterTermSet, 'edu': state.filterEduSet, 'college': state.filterCollegeSet, 'dept': state.filterDeptSet, 'code': state.filterCodeSet, 'name': state.filterNameSet, 'type': state.filterTypeSet, 'credit': state.filterCreditSet };
                 const set = setMap[type];
 
-                if (set.has(val)) set.delete(val); else set.add(val);
-                document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
+                if (e.target.checked) set.add(val); else set.delete(val);
+                container.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
                 
                 if(type === 'college') { UI.populateDeptFilterUI(); }
                 updateVisibleSelectAll(container, type);
@@ -141,7 +141,7 @@ export function bindEvents(container) {
                 const setMap = { 'year': state.filterYearSet, 'term': state.filterTermSet, 'edu': state.filterEduSet, 'college': state.filterCollegeSet, 'dept': state.filterDeptSet, 'code': state.filterCodeSet, 'name': state.filterNameSet, 'type': state.filterTypeSet, 'credit': state.filterCreditSet };
                 setMap[type].clear();
                 
-                document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = false);
+                container.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = false);
                 const searchInput = document.getElementById(`search-${type}-input`);
                 if (searchInput) {
                     searchInput.value = '';
