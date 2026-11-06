@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {matchesSelection, pageSlice} from '../public/assets/js/components/table-core.js';
+import {matchesSelection, pageSlice, toggleVisibleSelection} from '../public/assets/js/components/table-core.js';
 
 test('empty selection leaves rows visible', () => {
   assert.equal(matchesSelection('臺中市', new Set()), true);
@@ -28,4 +28,24 @@ test('invalid page and page size are normalized', () => {
   assert.equal(p.currentPage,1);
   assert.equal(p.start,0);
   assert.equal(p.items.length,2);
+});
+
+test('select-all respects search visibility and toggles from actual state', async () => {
+  const makeBox = (value, visible = true) => ({
+    value, checked:false, closest:() => ({style:{display:visible ? 'flex' : 'none'}})
+  });
+  const boxes = [makeBox('台中'),makeBox('台北'),makeBox('高雄',false)];
+  const button = {dataset:{state:'all'},textContent:'取消選取',disabled:false};
+  const root = {
+    querySelectorAll:()=>boxes,
+    querySelector:()=>button
+  };
+  const selection = new Set();
+  toggleVisibleSelection(root,'city',selection);
+  assert.deepEqual([...selection],['台中','台北']);
+  assert.equal(boxes[2].checked,false);
+  assert.equal(button.textContent,'取消選取');
+  toggleVisibleSelection(root,'city',selection);
+  assert.equal(selection.size,0);
+  assert.equal(button.textContent,'全選');
 });
