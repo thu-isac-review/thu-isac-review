@@ -1,4 +1,6 @@
 import test from 'node:test';
+// Node does not expose the browser CSS.escape API.
+globalThis.CSS ??= {escape: value => String(value)};
 import assert from 'node:assert/strict';
 import {matchesSelection, pageSlice, toggleVisibleSelection} from '../public/assets/js/components/table-core.js';
 
