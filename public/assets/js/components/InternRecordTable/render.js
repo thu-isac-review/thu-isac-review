@@ -1,3 +1,4 @@
+import { pageControlsMarkup, slicePage, matchesFilter } from '../saas-database-core.js';
 import { state, getDeptShort, getTime, getColShort, formatCourseForTable, formatCourseForExport, Utils, getRecordTerm } from './state.js';
 import * as UI from './ui.js';
 
@@ -93,10 +94,8 @@ export function renderTable() {
     });
 
     const total = state.filteredRecords.length;
-    const tPages = Math.max(1, Math.ceil(total / state.itemsPerPage));
-    if (state.currentPage > tPages) state.currentPage = tPages;
-    const start = (state.currentPage - 1) * state.itemsPerPage;
-    const items = state.filteredRecords.slice(start, start + state.itemsPerPage);
+    const {current, pages: tPages, first: start, rows: items} = slicePage(state.filteredRecords,state.currentPage,state.itemsPerPage);
+    state.currentPage = current;
 
     const pageInfo = document.getElementById('pagination-info');
     if (total > 0) {
@@ -105,20 +104,8 @@ export function renderTable() {
         if(pageInfo) pageInfo.innerHTML = `共 <strong>0</strong> 筆`;
     }
 
-    let pHtml = `<button class="page-btn page-step-btn" data-page="${state.currentPage-1}" ${state.currentPage<=1?'disabled':''}><i class="ti ti-chevron-left"></i></button>`;
-    const pages = [];
-    for (let p=1; p<=tPages; p++) {
-        if (p===1 || p===tPages || Math.abs(p-state.currentPage)<=1) pages.push(p);
-        else if (pages[pages.length-1] !== '…') pages.push('…');
-    }
-    pages.forEach(p => {
-        if (p === '…') pHtml += `<span class="page-btn" style="cursor:default;border:none">…</span>`;
-        else pHtml += `<button class="page-btn page-num-btn ${p === state.currentPage ? 'active' : ''}" data-page="${p}">${p}</button>`;
-    });
-    pHtml += `<button class="page-btn page-step-btn" data-page="${state.currentPage+1}" ${state.currentPage>=tPages?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
-    
-    const pageControls = document.getElementById('pagination-controls');
-    if(pageControls) pageControls.innerHTML = pHtml;
+    const pHtml = pageControlsMarkup(state.currentPage, tPages);
+    pHtml;
 
     const selectAll = document.getElementById('selectAll');
     if(selectAll) selectAll.checked = items.length > 0 && items.every(i => state.selectedIds.includes(i.id));

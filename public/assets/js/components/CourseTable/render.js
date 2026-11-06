@@ -1,3 +1,4 @@
+import { pageControlsMarkup, slicePage, matchesFilter } from '../saas-database-core.js';
 import { state, Utils } from './state.js';
 
 // 用於解析學期權重的輔助函式，以便進行「多到少 (暑期 -> 2 -> 1)」排序
@@ -109,11 +110,8 @@ export function renderTable() {
     });
 
     const total = state.filteredData.length;
-    const totalPages = Math.max(1, Math.ceil(total / state.itemsPerPage));
-    if (state.currentPage > totalPages) state.currentPage = totalPages;
-    
-    const start = (state.currentPage - 1) * state.itemsPerPage;
-    const paginatedItems = state.filteredData.slice(start, start + state.itemsPerPage);
+    const {current, pages: totalPages, first: start, rows: paginatedItems} = slicePage(state.filteredData,state.currentPage,state.itemsPerPage);
+    state.currentPage = current;
 
     const infoEl = document.getElementById('pagination-info');
     if(infoEl) {
@@ -124,20 +122,8 @@ export function renderTable() {
         }
     }
     
-    let pHtml = `<button class="page-btn page-step-btn" data-page="${state.currentPage-1}" ${state.currentPage<=1?'disabled':''}><i class="ti ti-chevron-left"></i></button>`;
-    const pages = [];
-    for (let p=1; p<=totalPages; p++) {
-        if (p===1 || p===totalPages || Math.abs(p-state.currentPage)<=1) pages.push(p);
-        else if (pages[pages.length-1] !== '…') pages.push('…');
-    }
-    pages.forEach(p => {
-        if (p === '…') pHtml += `<span class="page-btn" style="cursor:default;border:none">…</span>`;
-        else pHtml += `<button class="page-btn page-num-btn ${p === state.currentPage ? 'active' : ''}" data-page="${p}">${p}</button>`;
-    });
-    pHtml += `<button class="page-btn page-step-btn" data-page="${state.currentPage+1}" ${state.currentPage>=totalPages?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
-    
-    const controls = document.getElementById('pagination-controls');
-    if(controls) controls.innerHTML = pHtml;
+    const pHtml = pageControlsMarkup(state.currentPage, totalPages);
+    pHtml;
 
     const currentPaginatedIds = paginatedItems.map(d => d.id);
     const isAllVisibleSelected = currentPaginatedIds.length > 0 && currentPaginatedIds.every(id => state.selectedIds.includes(id));
