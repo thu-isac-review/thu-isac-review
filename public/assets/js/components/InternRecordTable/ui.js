@@ -1,4 +1,4 @@
-import { tableRoot, filterDropdownItems as filterScopedDropdownItems } from '../table-core.js';
+import { tableRoot, toggleDropdown as toggleScopedDropdown, filterDropdownItems as filterScopedDropdownItems } from '../table-core.js';
 import { state } from './state.js';
 
 export function showToast(message, type = "info") {
@@ -119,44 +119,29 @@ export function updatePillActive(type) {
 
 // 🌟 新增：處理選單的展開與收合
 export function toggleDropdown(type) {
-    const drop = document.getElementById(`drop-${type}`);
-    const wrap = document.getElementById(`pill-wrap-${type}`);
-    const pill = document.getElementById(`pill-${type}`); // 取得點擊的按鈕本體
-    
-    if (!drop || !wrap || !pill) return;
-
-    const isOpen = drop.classList.contains('show');
-    
-    // 1. 先關閉所有開啟的選單，並「清除殘留的內聯座標設定」
-    document.querySelectorAll('.filter-dropdown').forEach(d => {
-        d.classList.remove('show');
-        d.style.top = ''; 
-        d.style.left = '';
-    });
-    document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
-    
-    // 2. 如果原本是關閉狀態，則展開
-    if (!isOpen) { 
-        drop.classList.add('show'); 
-        wrap.classList.add('open'); 
-        
-        // ✨ 核心修復：判斷若是手機版螢幕 (<768px)，靠 JS 動態寫入絕對座標
-        if (window.innerWidth <= 768) {
-            // 取得按鈕目前在螢幕上的真實位置
-            const rect = pill.getBoundingClientRect(); 
-            
-            // 設定選單的 top (按鈕底部 + 6px 的距離)
-            drop.style.top = `${rect.bottom + 6}px`;
-            
-            // 防呆機制：確保選單不會超出螢幕右側邊界
-            const dropWidth = 220; // 對應 CSS 設定的 220px
-            let leftPos = rect.left;
-            if (leftPos + dropWidth > window.innerWidth) {
-                leftPos = window.innerWidth - dropWidth - 16; // 留一點安全邊距
-            }
-            // 確保也不會超出左側界線，寫入 left 座標
-            drop.style.left = `${Math.max(10, leftPos)}px`; 
-        }
+    const pill = document.getElementById('pill-' + type);
+    if (!pill) return;
+    const root = tableRoot(pill);
+    const drop = root.querySelector('#drop-' + CSS.escape(type));
+    if (!drop) return;
+    const opening = !drop.classList.contains('show');
+    // One shared handler manages open/close, ARIA and all other menus.
+    toggleScopedDropdown(root, type);
+    if (opening) {
+        // Filter bar is horizontally scrollable: use viewport coordinates to
+        // prevent clipping on desktop as well as on mobile.
+        const rect = pill.getBoundingClientRect();
+        const width = Math.min(280, window.innerWidth - 24);
+        drop.style.position = 'fixed';
+        drop.style.top = Math.min(rect.bottom + 6, window.innerHeight - 60) + 'px';
+        drop.style.left = Math.max(12, Math.min(rect.left, window.innerWidth - width - 12)) + 'px';
+        drop.style.width = width + 'px';
+        drop.style.maxHeight = Math.max(100, window.innerHeight - rect.bottom - 20) + 'px';
+        drop.style.overflowY = 'auto';
+        drop.style.zIndex = '9999';
+    } else {
+        drop.style.position = '';
+        drop.style.width = '';
     }
 }
 
