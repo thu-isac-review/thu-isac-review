@@ -156,3 +156,22 @@ export function slicePage(rows,page,size){
   const first=(current-1)*pageSize;
   return {current,pages,first,rows:rows.slice(first,first+pageSize)};
 }
+
+export function pageControlsMarkup(page,totalPages){
+  const count=Math.max(1,Number(totalPages)||1);
+  const active=Math.max(1,Math.min(count,Number(page)||1));
+  const nodes=[];
+  let last=0;
+  for(let n=1;n<=count;n++){
+    if(n!==1&&n!==count&&Math.abs(n-active)>1)continue;
+    if(last&&n-last>1)nodes.push('<span class="page-btn" aria-hidden="true">…</span>');
+    nodes.push('<button type="button" class="page-btn page-num-btn'+(active===n?' active':'')+
+      '" data-page="'+n+'" aria-label="第 '+n+' 頁"'+(active===n?' aria-current="page"':'')+'>'+n+'</button>');
+    last=n;
+  }
+  const previous='<button type="button" class="page-btn page-step-btn" aria-label="上一頁" data-page="'+(active-1)+
+    '"'+(active<=1?' disabled':'')+'><i class="ti ti-chevron-left" aria-hidden="true"></i></button>';
+  const next='<button type="button" class="page-btn page-step-btn" aria-label="下一頁" data-page="'+(active+1)+
+    '"'+(active>=count?' disabled':'')+'><i class="ti ti-chevron-right" aria-hidden="true"></i></button>';
+  return previous+nodes.join('')+next;
+}
