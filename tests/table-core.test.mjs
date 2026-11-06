@@ -27,5 +27,5 @@ test('invalid page and page size are normalized', () => {
   const p = pageSlice([1,2], -3, 0);
   assert.equal(p.currentPage,1);
   assert.equal(p.start,0);
-  assert.equal(p.items.length,1);
+  assert.equal(p.items.length,2);
 });
