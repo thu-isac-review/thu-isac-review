@@ -50,19 +50,19 @@ export function renderTable() {
                  stuNameStr.toLowerCase().includes(searchTerm) || 
                  instNameStr.toLowerCase().includes(searchTerm);
                  
-        if (ok && state.filterSelections.term.size > 0) ok = state.filterSelections.term.has(getRecordTerm(d));
-        if (ok && state.filterSelections.dept.size > 0) ok = stu.department && state.filterSelections.dept.has(stu.department);
-        if (ok && state.filterSelections.grade.size > 0) ok = state.filterSelections.grade.has(d.grade);
-        if (ok && state.filterSelections.inst_raw.size > 0) ok = state.filterSelections.inst_raw.has(instNameStr);
-        if (ok && state.filterSelections.course.size > 0) ok = d.courses && d.courses.some(cid => state.filterSelections.course.has(cid));
-        if (ok && state.filterSelections.resp_dept.size > 0) ok = state.filterSelections.resp_dept.has(d.resp_dept);
-        if (ok && state.filterSelections.period.size > 0) ok = state.filterSelections.period.has(d.period_type);
-        if (ok && state.filterSelections.proof.size > 0) ok = state.filterSelections.proof.has(d.proof_type);
-        if (ok && state.filterSelections.insurance.size > 0) ok = state.filterSelections.insurance.has(d.insurance);
-        if (ok && state.filterSelections.employment.size > 0) ok = state.filterSelections.employment.has(d.employment);
-        if (ok && state.filterSelections.allowance.size > 0) ok = state.filterSelections.allowance.has(d.allowance);
-        if (ok && state.filterSelections.payment_type.size > 0) ok = state.filterSelections.payment_type.has(d.payment_type);
-        if (ok && state.filterSelections.is_moe_compliant.size > 0) ok = state.filterSelections.is_moe_compliant.has(d.is_moe_compliant);
+        if (ok) ok = matchesSelection(getRecordTerm(d), state.filterSelections.term);
+        if (ok) ok = matchesSelection(stu.department, state.filterSelections.dept);
+        if (ok) ok = matchesSelection(d.grade, state.filterSelections.grade);
+        if (ok) ok = matchesSelection(instNameStr, state.filterSelections.inst_raw);
+        if (ok) ok = matchesSelection(d.courses, state.filterSelections.course);
+        if (ok) ok = matchesSelection(d.resp_dept, state.filterSelections.resp_dept);
+        if (ok) ok = matchesSelection(d.period_type, state.filterSelections.period);
+        if (ok) ok = matchesSelection(d.proof_type, state.filterSelections.proof);
+        if (ok) ok = matchesSelection(d.insurance, state.filterSelections.insurance);
+        if (ok) ok = matchesSelection(d.employment, state.filterSelections.employment);
+        if (ok) ok = matchesSelection(d.allowance, state.filterSelections.allowance);
+        if (ok) ok = matchesSelection(d.payment_type, state.filterSelections.payment_type);
+        if (ok) ok = matchesSelection(d.is_moe_compliant, state.filterSelections.is_moe_compliant);
         return ok;
     });
 
