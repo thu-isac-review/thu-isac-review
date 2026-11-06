@@ -141,8 +141,8 @@ export function bindEvents(container) {
                 const setMap = { 'college': state.filterCollegeSet, 'dept': state.filterDeptSet, 'gender': state.filterGenderSet, 'nationality': state.filterNatSet };
                 const set = setMap[type];
 
-                if (set.has(val)) set.delete(val); else set.add(val);
-                document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
+                if (e.target.checked) set.add(val); else set.delete(val);
+                container.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
                 
                 if(type === 'college') { UI.populateDeptFilterUI(); }
                 updateVisibleSelectAll(container, type);
@@ -155,7 +155,7 @@ export function bindEvents(container) {
                 const setMap = { 'college': state.filterCollegeSet, 'dept': state.filterDeptSet, 'gender': state.filterGenderSet, 'nationality': state.filterNatSet };
                 setMap[type].clear();
                 
-                document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = false);
+                container.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = false);
                 const searchInput = document.getElementById(`search-${type}-input`);
                 if (searchInput) {
                     searchInput.value = '';
