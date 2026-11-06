@@ -339,35 +339,7 @@ export function renderFilterDropdowns() {
             `).join('');
     }
 
-    container.querySelectorAll('.filter-pill').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const targetBtn = e.target.closest('.filter-pill');
-            if (!targetBtn) return;
-            
-            const type = targetBtn.id.replace('pill-', '');
-            const drop = document.getElementById(`drop-${type}`);
-            const wrap = document.getElementById(`pill-wrap-${type}`);
-            if (!drop || !wrap) return;
-            
-            const isOpen = drop.classList.contains('show');
-            
-            document.querySelectorAll('.filter-dropdown').forEach(d => {
-                d.classList.remove('show');
-                d.style.position = ''; d.style.top = ''; d.style.left = ''; d.style.width = '';
-            });
-            document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
-            
-            if (!isOpen) { 
-                drop.classList.add('show'); wrap.classList.add('open'); 
-                const rect = targetBtn.getBoundingClientRect();
-                drop.style.position = 'fixed'; drop.style.top = `${rect.bottom + 4}px`;
-                let leftPos = rect.left;
-                if (leftPos + 220 > window.innerWidth) leftPos = window.innerWidth - 230;
-                drop.style.left = `${leftPos}px`; drop.style.width = '220px'; drop.style.zIndex = '99999';
-            }
-        });
-    });
+    // Filter pill events are delegated once in events.js; never bind on every render.
 
     const filterScrollArea = document.getElementById('filter-container');
     if (filterScrollArea && !filterScrollArea.dataset.scrollBound) {
@@ -401,35 +373,15 @@ export function renderFilterDropdowns() {
                 const type = classMatch.replace('filter-chk-', '');
                 const val = e.target.value;
                 const set = state.filterSelections[type];
-                if (set.has(val)) set.delete(val); else set.add(val);
-                document.querySelectorAll(`.${classMatch}`).forEach(c => c.checked = set.has(c.value));
+                if (e.target.checked) set.add(val); else set.delete(val);
+                wrapper.querySelectorAll(`.${classMatch}`).forEach(c => c.checked = set.has(c.value));
                 state.currentPage = 1; 
                 if(UI.updatePillActive) UI.updatePillActive(type); 
                 renderTable();
             }
         });
 
-        wrapper.addEventListener('click', (e) => {
-            if (e.target.classList.contains('btn-filter-toggle')) {
-                e.stopPropagation();
-                const btn = e.target;
-                const type = btn.dataset.type;
-                const isSelectAll = btn.dataset.state !== 'all';
-                btn.dataset.state = isSelectAll ? 'all' : 'none';
-                btn.innerText = isSelectAll ? '取消選取' : '全選';
-                
-                const set = state.filterSelections[type];
-                document.querySelectorAll(`.filter-chk-${type}`).forEach(c => {
-                    if(c.closest('.filter-option').style.display !== 'none') { 
-                        c.checked = isSelectAll; 
-                        if(isSelectAll) set.add(c.value); else set.delete(c.value); 
-                    }
-                });
-                state.currentPage = 1; 
-                if(UI.updatePillActive) UI.updatePillActive(type); 
-                renderTable();
-            }
-        });
+        // Select-all clicks are handled by the single delegated listener in events.js.
         wrapper.dataset.filterBound = "true";
     }
     
