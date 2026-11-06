@@ -71,7 +71,22 @@ export function installDatabaseFilters({root,selections,onChange,onSelectionChan
     onSelectionChange?.(key);
     onChange?.(key);
   };
+  const densityButton=$(root,'.saas-density-btn');
+  if(densityButton){
+    const saved=localStorage.getItem('thu-saas-table-density')==='compact';
+    root.classList.toggle('saas-compact',saved);
+    densityButton.setAttribute('aria-pressed',String(saved));
+    densityButton.querySelector('span').textContent=saved?'標準顯示':'緊湊顯示';
+  }
   root.addEventListener('click',event=>{
+    const density=event.target.closest('.saas-density-btn');
+    if(density && root.contains(density)){
+      const compact=root.classList.toggle('saas-compact');
+      localStorage.setItem('thu-saas-table-density',compact?'compact':'comfortable');
+      density.setAttribute('aria-pressed',String(compact));
+      density.querySelector('span').textContent=compact?'標準顯示':'緊湊顯示';
+      return;
+    }
     const pill=event.target.closest('.filter-pill[id^="pill-"]');
     if (pill && root.contains(pill)) {
       event.stopPropagation();open(root,pill);
