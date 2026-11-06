@@ -1,3 +1,4 @@
+import { toggleVisibleSelection, updateVisibleSelectAll } from '../table-core.js';
 import { state, Utils } from './state.js';
 import * as UI from './ui.js';
 import * as Render from './render.js';
@@ -154,6 +155,7 @@ export function bindEvents(container) {
                 let set = type === 'country' ? state.filterCountrySet : (type === 'city' ? state.filterCitySet : (type === 'industry' ? state.filterIndustrySet : state.filterVenueSet));
                 if (set.has(e.target.value)) set.delete(e.target.value); else set.add(e.target.value);
                 document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
+                updateVisibleSelectAll(container, type);
                 state.currentPage = 1; UI.updatePillActive(type); Render.renderTable();
             }
         });
@@ -163,17 +165,8 @@ export function bindEvents(container) {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
             const type = btn.dataset.type;
-            const isSelectAll = btn.dataset.state !== 'all';
-            btn.dataset.state = isSelectAll ? 'all' : 'none';
-            btn.innerText = isSelectAll ? '取消選取' : '全選';
-            
-            let set = type === 'country' ? state.filterCountrySet : (type === 'city' ? state.filterCitySet : (type === 'industry' ? state.filterIndustrySet : state.filterVenueSet));
-            container.querySelectorAll(`.filter-chk-${type}`).forEach(c => {
-                if(c.closest('.filter-option').style.display !== 'none') { 
-                    c.checked = isSelectAll; 
-                    if(isSelectAll) set.add(c.value); else set.delete(c.value); 
-                }
-            });
+            const set = type === 'country' ? state.filterCountrySet : type === 'city' ? state.filterCitySet : type === 'industry' ? state.filterIndustrySet : state.filterVenueSet;
+            toggleVisibleSelection(container, type, set);
             state.currentPage = 1; UI.updatePillActive(type); Render.renderTable();
         });
     });
