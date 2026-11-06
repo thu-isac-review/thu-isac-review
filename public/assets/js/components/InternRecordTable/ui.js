@@ -1,3 +1,4 @@
+import { tableRoot, filterDropdownItems as filterScopedDropdownItems } from '../table-core.js';
 import { state } from './state.js';
 
 export function showToast(message, type = "info") {
@@ -97,15 +98,8 @@ export function updateRespDeptOptions(preselectedValue = '') {
     else if (stuDept && uniqueDepts.includes(stuDept)) selectEl.value = stuDept; 
 }
 
-export function filterDropdownItems(input, containerId) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    const term = input.value.toLowerCase().trim();
-    container.querySelectorAll('.filter-option').forEach(lbl => {
-        const text = lbl.querySelector('span').textContent.toLowerCase();
-        if (text.includes(term)) { lbl.style.display = 'flex'; } 
-        else { lbl.style.display = 'none'; }
-    });
+export function filterDropdownItems(inputElement, containerId) {
+    filterScopedDropdownItems(inputElement, containerId);
 }
 
 export function updatePillActive(type) {
