@@ -1,4 +1,4 @@
-import { pageSlice, matchesSelection } from '../table-core.js';
+import { pageSlice, matchesSelection, paginationMarkup } from '../table-core.js';
 import { state, Utils } from './state.js';
 
 export function renderTable() {
@@ -82,18 +82,8 @@ export function renderTable() {
         document.getElementById('pagination-info').innerHTML = totalMainItems > 0 ? `共 <strong>${totalMainItems}</strong> 間實習機構，顯示第 ${start + 1}–${Math.min(start + state.itemsPerPage, totalMainItems)} 間` : `共 <strong>0</strong> 間實習機構`;
     }
     
-    let pHtml = `<button class="page-btn page-step-btn" data-page="${state.currentPage-1}" ${state.currentPage<=1?'disabled':''}><i class="ti ti-chevron-left"></i></button>`;
-    const pages = [];
-    for (let p=1; p<=totalPages; p++) {
-        if (p===1 || p===totalPages || Math.abs(p-state.currentPage)<=1) pages.push(p);
-        else if (pages[pages.length-1] !== '…') pages.push('…');
-    }
-    pages.forEach(p => {
-        if (p === '…') pHtml += `<span class="page-btn" style="cursor:default;border:none">…</span>`;
-        else pHtml += `<button class="page-btn page-num-btn ${p === state.currentPage ? 'active' : ''}" data-page="${p}">${p}</button>`;
-    });
-    pHtml += `<button class="page-btn page-step-btn" data-page="${state.currentPage+1}" ${state.currentPage>=totalPages?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
-    document.getElementById('pagination-controls').innerHTML = pHtml;
+    const pHtml = paginationMarkup(state.currentPage, totalPages);
+    pHtml;
 
     const currentPaginatedIds = paginatedItems.map(d => d.id);
     document.getElementById('selectAll').checked = currentPaginatedIds.length > 0 && currentPaginatedIds.every(id => state.selectedIds.includes(id));
