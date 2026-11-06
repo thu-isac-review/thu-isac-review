@@ -1,3 +1,4 @@
+import { pageSlice, matchesSelection } from '../table-core.js';
 import { state, Utils } from './state.js';
 
 export function renderTable() {
@@ -11,10 +12,10 @@ export function renderTable() {
         const matchSearch = String(d.name || '').toLowerCase().includes(searchTerm) || 
                             String(d.tax_id || '').toLowerCase().includes(searchTerm) ||
                             String(d.address || '').toLowerCase().includes(searchTerm);
-        const matchCountry = state.filterCountrySet.size === 0 || state.filterCountrySet.has(d.country);
-        const matchCity = state.filterCitySet.size === 0 || state.filterCitySet.has(d.city);
-        const matchIndustry = state.filterIndustrySet.size === 0 || state.filterIndustrySet.has(d.industry);
-        const matchVenue = state.filterVenueSet.size === 0 || state.filterVenueSet.has(d.venue_type);
+        const matchCountry = matchesSelection(d.country, state.filterCountrySet);
+        const matchCity = matchesSelection(d.city, state.filterCitySet);
+        const matchIndustry = matchesSelection(d.industry, state.filterIndustrySet);
+        const matchVenue = matchesSelection(d.venue_type, state.filterVenueSet);
         return matchSearch && matchCountry && matchCity && matchIndustry && matchVenue;
     };
 
@@ -66,10 +67,8 @@ export function renderTable() {
     }
 
     const totalMainItems = state.filteredInstitutions.length;
-    const totalPages = Math.max(1, Math.ceil(totalMainItems / state.itemsPerPage));
-    if (state.currentPage > totalPages) state.currentPage = totalPages;
-    const start = (state.currentPage - 1) * state.itemsPerPage;
-    const paginatedItems = state.filteredInstitutions.slice(start, start + state.itemsPerPage);
+    const {currentPage, totalPages, start, items: paginatedItems} = pageSlice(state.filteredInstitutions, state.currentPage, state.itemsPerPage);
+    state.currentPage = currentPage;
 
     let totalAllMatched = 0;
     let totalChildrenMatched = 0;
