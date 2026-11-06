@@ -1,3 +1,4 @@
+import { installDatabaseFilters } from '../saas-database-core.js';
 import { state, Utils } from './state.js';
 import * as UI from './ui.js';
 import * as Render from './render.js';
@@ -145,37 +146,16 @@ export function bindEvents(container) {
         }, 250);
     });
 
-    // ---------------- 2. 篩選器事件 ----------------
-    ['country', 'city', 'industry', 'venue'].forEach(type => {
-        container.querySelector(`#pill-${type}`)?.addEventListener('click', (e) => { e.stopPropagation(); UI.toggleDropdown(type); });
-        container.querySelector(`#search-${type}-input`)?.addEventListener('keyup', (e) => UI.filterDropdownItems(e.target, `${type}-options-container`));
-        container.querySelector(`#${type}-options-container`)?.addEventListener('change', (e) => { 
-            if(e.target.type === 'checkbox') {
-                let set = type === 'country' ? state.filterCountrySet : (type === 'city' ? state.filterCitySet : (type === 'industry' ? state.filterIndustrySet : state.filterVenueSet));
-                if (set.has(e.target.value)) set.delete(e.target.value); else set.add(e.target.value);
-                document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
-                state.currentPage = 1; UI.updatePillActive(type); Render.renderTable();
-            }
-        });
-    });
-
-    container.querySelectorAll('.btn-filter-toggle').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const type = btn.dataset.type;
-            const isSelectAll = btn.dataset.state !== 'all';
-            btn.dataset.state = isSelectAll ? 'all' : 'none';
-            btn.innerText = isSelectAll ? '取消選取' : '全選';
-            
-            let set = type === 'country' ? state.filterCountrySet : (type === 'city' ? state.filterCitySet : (type === 'industry' ? state.filterIndustrySet : state.filterVenueSet));
-            container.querySelectorAll(`.filter-chk-${type}`).forEach(c => {
-                if(c.closest('.filter-option').style.display !== 'none') { 
-                    c.checked = isSelectAll; 
-                    if(isSelectAll) set.add(c.value); else set.delete(c.value); 
-                }
-            });
-            state.currentPage = 1; UI.updatePillActive(type); Render.renderTable();
-        });
+    // SaaS Database v2: one delegated filter controller for this table.
+    installDatabaseFilters({
+      root: container,
+      selections: () => ({country:state.filterCountrySet,city:state.filterCitySet,industry:state.filterIndustrySet,venue:state.filterVenueSet}),
+      onSelectionChange: key => { if (key === 'college') UI.populateDeptFilterUI?.(); },
+      onChange: key => {
+        state.currentPage = 1;
+        UI.updatePillActive(key);
+        Render.renderTable();
+      }
     });
 
     // ---------------- 3. 表格顯示設定與全域關閉 ----------------

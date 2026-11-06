@@ -1,3 +1,4 @@
+import { installDatabaseFilters } from '../saas-database-core.js';
 import { state } from './state.js';
 import * as UI from './ui.js';
 import * as Render from './render.js';
@@ -127,76 +128,17 @@ export function bindEvents(container) {
         }, 250);
     });
 
-    // ---------------- 2. 篩選器事件 ----------------
-    const filterTypes = ['college', 'dept', 'gender', 'nationality'];
-    
-    filterTypes.forEach(type => {
-        container.querySelector(`#pill-${type}`)?.addEventListener('click', (e) => { e.stopPropagation(); UI.toggleDropdown(type); });
-        container.querySelector(`#search-${type}-input`)?.addEventListener('keyup', (e) => UI.filterDropdownItems(e.target, `${type}-options-container`));
-        
-        container.querySelector(`#drop-${type}`)?.addEventListener('change', (e) => {
-            if(e.target.classList.contains(`filter-chk-${type}`)) {
-                const val = e.target.value;
-                const setMap = { 'college': state.filterCollegeSet, 'dept': state.filterDeptSet, 'gender': state.filterGenderSet, 'nationality': state.filterNatSet };
-                const set = setMap[type];
-
-                if (set.has(val)) set.delete(val); else set.add(val);
-                document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
-                
-                if(type === 'college') { UI.populateDeptFilterUI(); }
-                state.currentPage = 1; UI.updatePillActive(type); Render.renderTable();
-            }
-        });
-        
-        container.querySelector(`#drop-${type}`)?.addEventListener('click', (e) => {
-            if(e.target.classList.contains('btn-clear-filter') && e.target.dataset.type === type) {
-                const setMap = { 'college': state.filterCollegeSet, 'dept': state.filterDeptSet, 'gender': state.filterGenderSet, 'nationality': state.filterNatSet };
-                setMap[type].clear();
-                
-                document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = false);
-                const searchInput = document.getElementById(`search-${type}-input`);
-                if (searchInput) {
-                    searchInput.value = '';
-                    UI.filterDropdownItems(searchInput, `${type}-options-container`);
-                }
-
-                if(type === 'college') { UI.populateDeptFilterUI(); }
-                state.currentPage = 1; UI.updatePillActive(type); Render.renderTable();
-            }
-        });
+    // SaaS Database v2: one delegated filter controller for this table.
+    installDatabaseFilters({
+      root: container,
+      selections: () => ({college:state.filterCollegeSet,dept:state.filterDeptSet,gender:state.filterGenderSet,nationality:state.filterNatSet}),
+      onSelectionChange: key => { if (key === 'college') UI.populateDeptFilterUI?.(); },
+      onChange: key => {
+        state.currentPage = 1;
+        UI.updatePillActive(key);
+        Render.renderTable();
+      }
     });
-
-    container.querySelectorAll('.btn-filter-toggle').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const type = btn.dataset.type;
-            const isSelectAll = btn.dataset.state !== 'all';
-            btn.dataset.state = isSelectAll ? 'all' : 'none';
-            btn.innerText = isSelectAll ? '取消選取' : '全選';
-            
-            const setMap = { 'college': state.filterCollegeSet, 'dept': state.filterDeptSet, 'gender': state.filterGenderSet, 'nationality': state.filterNatSet };
-            const set = setMap[type];
-            container.querySelectorAll(`.filter-chk-${type}`).forEach(c => {
-                if(c.closest('.filter-option').style.display !== 'none') { 
-                    c.checked = isSelectAll; 
-                    if(isSelectAll) set.add(c.value); else set.delete(c.value); 
-                }
-            });
-            
-            if(type === 'college') { UI.populateDeptFilterUI(); }
-            state.currentPage = 1; UI.updatePillActive(type); Render.renderTable();
-        });
-    });
-
-    if (!state.isGlobalListenerBound) {
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.filter-pill-wrap')) {
-                document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
-                document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
-            }
-        });
-        state.isGlobalListenerBound = true;
-    }
 
     // ---------------- 3. 批次操作列事件 ----------------
     container.querySelector('#selectAll')?.addEventListener('change', (e) => {

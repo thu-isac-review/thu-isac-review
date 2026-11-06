@@ -1,3 +1,4 @@
+import { installDatabaseFilters } from '../saas-database-core.js';
 import { state } from './state.js';
 import * as UI from './ui.js';
 import * as Render from './render.js';
@@ -113,81 +114,17 @@ export function bindEvents(container) {
         }, 250);
     });
 
-    // ---------------- 2. 篩選器事件 ----------------
-    const filterTypes = ['year', 'term', 'edu', 'college', 'dept', 'code', 'name', 'type', 'credit'];
-    
-    filterTypes.forEach(type => {
-        container.querySelector(`#pill-${type}`)?.addEventListener('click', (e) => { e.stopPropagation(); UI.toggleDropdown(type); });
-        container.querySelector(`#search-${type}-input`)?.addEventListener('keyup', (e) => UI.filterDropdownItems(e.target, `${type}-options-container`));
-        
-        container.querySelector(`#drop-${type}`)?.addEventListener('change', (e) => {
-            if(e.target.classList.contains(`filter-chk-${type}`)) {
-                const val = e.target.value;
-                const setMap = { 'year': state.filterYearSet, 'term': state.filterTermSet, 'edu': state.filterEduSet, 'college': state.filterCollegeSet, 'dept': state.filterDeptSet, 'code': state.filterCodeSet, 'name': state.filterNameSet, 'type': state.filterTypeSet, 'credit': state.filterCreditSet };
-                const set = setMap[type];
-
-                if (set.has(val)) set.delete(val); else set.add(val);
-                document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = set.has(c.value));
-                
-                if(type === 'college') { UI.populateDeptFilterUI(); }
-                state.currentPage = 1; UI.updatePillActive(type); Render.renderTable();
-            }
-        });
-        
-        container.querySelector(`#drop-${type}`)?.addEventListener('click', (e) => {
-            if(e.target.classList.contains('btn-clear-filter') && e.target.dataset.type === type) {
-                const setMap = { 'year': state.filterYearSet, 'term': state.filterTermSet, 'edu': state.filterEduSet, 'college': state.filterCollegeSet, 'dept': state.filterDeptSet, 'code': state.filterCodeSet, 'name': state.filterNameSet, 'type': state.filterTypeSet, 'credit': state.filterCreditSet };
-                setMap[type].clear();
-                
-                document.querySelectorAll(`.filter-chk-${type}`).forEach(c => c.checked = false);
-                const searchInput = document.getElementById(`search-${type}-input`);
-                if (searchInput) {
-                    searchInput.value = '';
-                    UI.filterDropdownItems(searchInput, `${type}-options-container`);
-                }
-
-                if(type === 'college') { UI.populateDeptFilterUI(); }
-                state.currentPage = 1; UI.updatePillActive(type); Render.renderTable();
-            }
-        });
+    // SaaS Database v2: one delegated filter controller for this table.
+    installDatabaseFilters({
+      root: container,
+      selections: () => ({year:state.filterYearSet,term:state.filterTermSet,edu:state.filterEduSet,college:state.filterCollegeSet,dept:state.filterDeptSet,code:state.filterCodeSet,name:state.filterNameSet,type:state.filterTypeSet,credit:state.filterCreditSet}),
+      onSelectionChange: key => { if (key === 'college') UI.populateDeptFilterUI?.(); },
+      onChange: key => {
+        state.currentPage = 1;
+        UI.updatePillActive(key);
+        Render.renderTable();
+      }
     });
-
-    // 🌟 [新增] 依據指示 F：修復課程篩選之「全選/取消選取」觸發綁定
-    container.querySelectorAll('.btn-filter-toggle').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const type = btn.dataset.type;
-            const isSelectAll = btn.dataset.state !== 'all';
-            btn.dataset.state = isSelectAll ? 'all' : 'none';
-            btn.innerText = isSelectAll ? '取消選取' : '全選';
-            
-            const setMap = { 
-                'year': state.filterYearSet, 'term': state.filterTermSet, 'edu': state.filterEduSet, 
-                'college': state.filterCollegeSet, 'dept': state.filterDeptSet, 'code': state.filterCodeSet, 
-                'name': state.filterNameSet, 'type': state.filterTypeSet, 'credit': state.filterCreditSet 
-            };
-            const set = setMap[type];
-            container.querySelectorAll(`.filter-chk-${type}`).forEach(c => {
-                if(c.closest('.filter-option').style.display !== 'none') { 
-                    c.checked = isSelectAll; 
-                    if(isSelectAll) set.add(c.value); else set.delete(c.value); 
-                }
-            });
-            
-            if(type === 'college') { UI.populateDeptFilterUI(); }
-            state.currentPage = 1; UI.updatePillActive(type); Render.renderTable();
-        });
-    });
-
-    if (!state.isGlobalListenerBound) {
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.filter-pill-wrap')) {
-                document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
-                document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
-            }
-        });
-        state.isGlobalListenerBound = true;
-    }
 
     // ---------------- 3. 批次操作列事件 ----------------
     container.querySelector('#selectAll')?.addEventListener('change', (e) => {
