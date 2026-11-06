@@ -1,4 +1,4 @@
-/* THU ISAC — Calm Database UI / 2026-11
+/* THU ISAC — Chat-inspired Database UI / 2026-11
    Visual refresh for the current modular application.
    No changes to authentication, Firestore, imports, exports or event handlers. */
 :root {
@@ -128,4 +128,178 @@
 }
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after {animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+
+/* ================================================================
+   CHAT-INSPIRED NEUTRAL INTERFACE — editorial admin aesthetic
+   Distinct from a chat app: preserve the dense, functional tables.
+   ================================================================ */
+:root {
+  --brand:#202123;
+  --brand-hover:#343541;
+  --brand-light:#f2f2f2;
+  --brand-border:#e6e6e6;
+  --bg:#ffffff;
+  --surface:#ffffff;
+  --border:#ececec;
+  --border-strong:#dedede;
+  --text-primary:#202123;
+  --text-secondary:#5d5d5d;
+  --text-muted:#737373;
+  --radius-sm:8px;
+  --radius:10px;
+  --radius-lg:12px;
+  --radius-xl:16px;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.02);
+  --shadow:0 2px 6px rgba(0,0,0,.035);
+  --shadow-md:0 10px 35px rgba(0,0,0,.09);
+  --shadow-lg:0 16px 40px rgba(0,0,0,.10);
+}
+body,html { background:#fff; }
+:where(button,a,input,select,textarea,[role="button"]):focus-visible {
+  outline:2px solid #555; outline-offset:3px;
+}
+:where(input[type="checkbox"],input[type="radio"]) {accent-color:#202123}
+/* Off-white drawer akin to a quiet conversation navigation column */
+#sidebar {
+  background:#f9f9f9;
+  border-right:1px solid #f0f0f0;
+  border-radius:0 16px 16px 0;
+  box-shadow:0 12px 36px rgba(0,0,0,.08);
+}
+#sidebar .sidebar-logo { border-bottom-color:#efefef; }
+#sidebar .nav-item {
+  border-radius:10px;
+  font-size:13px;
+  min-height:39px;
+  color:#444;
+  font-weight:500;
+}
+#sidebar .nav-item.active {color:#202123;background:#eaeaea;font-weight:650}
+#sidebar .nav-item:hover:not(.active) {background:#ededed;color:#202123}
+#sidebar .nav-group-label {color:#777;letter-spacing:0;font-weight:600}
+#sidebar #sidebarMenu > .sticky {background:#f9f9f9!important;border-color:#efefef!important}
+#sidebar .border-t {border-color:#eaeaea}
+#sidebar .bg-gray-50\/50 {background:#f9f9f9}
+#main,#content-view-container {background:#fff}
+#topbar {
+  background:#fff;
+  border-bottom:1px solid #efefef;
+  box-shadow:none;
+}
+#topbar button,#topbar #profileBtn {
+  border-radius:10px;
+}
+#topbar #profileBtn:hover,#topbar button:hover {background:#f5f5f5}
+#topbar #logoutBtn {
+  color:#555;
+  background:transparent;
+  border:1px solid transparent;
+}
+#topbar #logoutBtn:hover {color:#b42318;background:#fff1f0}
+#profileBtn.active {background:#f1f1f1!important}
+#profileBtn.active #userTitleName {color:#202123!important}
+#userAvatar {background:#f0f0f0!important;color:#444!important;border-color:#e2e2e2!important}
+/* Administrative databases — clean workspace, airy toolbar */
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) {
+  background:#fff;
+  color:#202123;
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .toolbar {
+  background:#fff;padding:15px 24px;gap:10px;border-bottom:1px solid #f0f0f0;
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .filter-row {
+  background:#fff;padding:11px 24px;border-bottom:1px solid #efefef;
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .search-input {
+  height:39px;background:#f7f7f7;border:1px solid transparent;
+  border-radius:12px;font-size:13px;color:#202123;
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .search-input:focus {
+  background:#fff;border-color:#b7b7b7;box-shadow:0 0 0 3px rgba(0,0,0,.045);
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .btn {
+  border-radius:10px;font-size:13px;box-shadow:none;letter-spacing:0;
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .btn-primary {
+  background:#202123;color:#fff;border:1px solid #202123;
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .btn-primary:hover {
+  background:#343541;border-color:#343541;
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) :is(.btn-secondary,.btn-success-solid,.btn-indigo-solid,.btn-teal-solid) {
+  background:#fff;color:#444;border:1px solid #e6e6e6;
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) :is(.btn-secondary,.btn-success-solid,.btn-indigo-solid,.btn-teal-solid):hover {
+  background:#f5f5f5;border-color:#d9d9d9;color:#202123;
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .filter-pill {
+  background:#f7f7f7;border:1px solid transparent;
+  border-radius:10px;height:32px;color:#555;
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .filter-pill:hover {
+  background:#ededed;color:#202123;
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .filter-pill.active {
+  background:#ececec;border-color:#d8d8d8;color:#202123;
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .filter-pill .pill-count {
+  background:#fff;color:#555;border-radius:7px;
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .filter-dropdown {
+  border-radius:14px;border-color:#eaeaea;box-shadow:0 12px 32px rgba(0,0,0,.10)
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .table-wrap {
+  background:#fff;
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) th {
+  background:#fafafa!important;
+  color:#737373;
+  border-bottom:1px solid #ededed;
+  font-size:12px;font-weight:600;letter-spacing:0;
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) td {
+  color:#404040;border-bottom:1px solid #f0f0f0;
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) tbody tr:hover {
+  background:#fafafa;
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) tbody tr.selected {
+  background:#f1f1f1!important;
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) :is(.cell-primary,.cell-primary.bold) {
+  color:#202123;
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .pagination-bar {
+  background:#fff;border-top-color:#ededed;
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) #batch-bar {
+  background:#f3f3f3;border-color:#e2e2e2;
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .batch-info {
+  color:#333;
+}
+:is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) :where(input:not([type="checkbox"]):not([type="radio"]),select,textarea):focus {
+  outline:2px solid rgba(0,0,0,.14);outline-offset:1px;border-color:#9a9a9a;
+}
+/* Keep destructive and semantic statuses recognizable, not all-gray */
+:is(.btn-danger,.btn-danger-solid) {--danger:#b42318}
+#loginForm {
+  border:1px solid #ebebeb!important;
+  background:#fff!important;
+  box-shadow:0 8px 28px rgba(0,0,0,.045)!important;
+  border-radius:18px!important;
+}
+#loginForm .input-field {background:#f8f8f8;border:1px solid #ececec;border-radius:11px}
+#loginForm .input-field:focus {background:#fff;border-color:#888;box-shadow:0 0 0 3px rgba(0,0,0,.05)}
+#loginForm .btn-primary {background:#202123;border-radius:11px}
+#loginForm .btn-primary:hover:not(:disabled) {background:#343541}
+/* Lower-card visual noise on report, review and directory screens */
+.card-hover:hover {transform:translateY(-1px)}
+.shadow-lg,.shadow-xl,.shadow-2xl {box-shadow:0 2px 12px rgba(0,0,0,.045)}
+.rounded-3xl {border-radius:16px}
+@media(max-width:768px) {
+  :is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .toolbar,
+  :is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .filter-row {padding:10px 12px}
+  :is(#institution-page-wrapper,#course-page-wrapper,#student-page-wrapper,.intern-record-container) .search-wrap {flex:1 1 190px}
 }
