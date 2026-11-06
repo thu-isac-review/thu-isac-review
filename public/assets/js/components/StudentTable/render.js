@@ -48,7 +48,7 @@ export function renderTable() {
 
     state.filteredData = state.allData.filter(d => {
         const matchSearch = (d.name || '').toLowerCase().includes(searchTerm) || (d.student_id || '').toLowerCase().includes(searchTerm);
-        const matchCol = state.filterCollegeSet.size === 0 || state.filterCollegeSet.has(d.college);
+        const matchCol = matchesSelection(d.college, state.filterCollegeSet);
         const matchDept = matchesSelection(d.department, state.filterDeptSet);
         const matchGender = matchesSelection(d.gender || '男', state.filterGenderSet);
         const matchNat = matchesSelection(d.nationality || '本國籍', state.filterNatSet);
