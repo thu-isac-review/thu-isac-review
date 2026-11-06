@@ -1,3 +1,4 @@
+import { tableRoot, toggleDropdown as toggleScopedDropdown, filterDropdownItems as filterScopedDropdownItems } from '../table-core.js';
 import { state } from './state.js';
 import * as Render from './render.js';
 
@@ -25,40 +26,12 @@ export function applyReadOnlyMode() {
 }
 
 export function toggleDropdown(type) {
-    const drop = document.getElementById(`drop-${type}`);
-    const wrap = document.getElementById(`pill-wrap-${type}`);
-    const isOpen = drop.classList.contains('show');
-    document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('show'));
-    document.querySelectorAll('.filter-pill-wrap').forEach(w => w.classList.remove('open'));
-    if (!isOpen) { drop.classList.add('show'); wrap.classList.add('open'); }
+    const pill = document.getElementById('pill-' + type);
+    if (pill) toggleScopedDropdown(tableRoot(pill), type);
 }
 
 export function filterDropdownItems(inputElement, containerId) {
-    const term = inputElement.value.toLowerCase().trim();
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    const labels = container.querySelectorAll('.filter-option');
-    let visibleCount = 0;
-
-    labels.forEach(lbl => {
-        const text = lbl.textContent.toLowerCase();
-        const isMatch = text.includes(term);
-        lbl.style.display = isMatch ? 'flex' : 'none';
-        if (isMatch) visibleCount++;
-    });
-
-    let emptyMsg = container.querySelector('.empty-filter-msg');
-    if (visibleCount === 0) {
-        if (!emptyMsg) {
-            emptyMsg = document.createElement('div');
-            emptyMsg.className = 'empty-filter-msg';
-            emptyMsg.style.cssText = 'color: #dc2626; font-weight: 700; padding: 12px; text-align: center; font-size: 13px;';
-            emptyMsg.textContent = '查無符合的選項';
-            container.appendChild(emptyMsg);
-        }
-    } else {
-        if (emptyMsg) emptyMsg.remove();
-    }
+    filterScopedDropdownItems(inputElement, containerId);
 }
 
 export function updatePillActive(type) {
